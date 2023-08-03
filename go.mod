@@ -1,4 +1,4 @@
-module github.com/josh-diamond/rancher-terratest-framework
+module github.com/rancher/tfp-automation
 
 go 1.19
 
@@ -8,6 +8,7 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.4
 	k8s.io/client-go => github.com/rancher/client-go v1.25.4-rancher1
 )
+
 require (
 	github.com/rancher/rancher v0.0.0-20230525094739-ff2e09449efc
 	github.com/stretchr/testify v1.8.3

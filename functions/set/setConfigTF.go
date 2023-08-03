@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	framework "github.com/rancher/rancher/tests/framework/pkg/config"
-	"github.com/josh-diamond/rancher-terratest-framework/config"
+	"github.com/rancher/tfp-automation/config"
 )
 
 func SetConfigTF(t *testing.T, k8sVersion string, nodePools []config.Nodepool) (done bool, err error) {

@@ -8,9 +8,9 @@ import (
 	"github.com/rancher/rancher/tests/framework/clients/rancher"
 	"github.com/rancher/rancher/tests/framework/extensions/clusters"
 	framework "github.com/rancher/rancher/tests/framework/pkg/config"
-	set "github.com/josh-diamond/rancher-terratest-framework/functions/set"
-	wait "github.com/josh-diamond/rancher-terratest-framework/functions/wait"
-	"github.com/josh-diamond/rancher-terratest-framework/config"
+	set "github.com/rancher/tfp-automation/functions/set"
+	wait "github.com/rancher/tfp-automation/functions/wait"
+	"github.com/rancher/tfp-automation/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
