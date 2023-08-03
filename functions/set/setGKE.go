@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/rancher/tests/framework/clients/rancher"
 	framework "github.com/rancher/rancher/tests/framework/pkg/config"
-	"github.com/josh-diamond/rancher-terratest-framework/config"
+	"github.com/rancher/tfp-automation/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/zclconf/go-cty/cty"

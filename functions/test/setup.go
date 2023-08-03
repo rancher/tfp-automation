@@ -5,8 +5,8 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	framework "github.com/rancher/rancher/tests/framework/pkg/config"
-	set "github.com/josh-diamond/rancher-terratest-framework/functions/set"
-	"github.com/josh-diamond/rancher-terratest-framework/config"
+	set "github.com/rancher/tfp-automation/functions/set"
+	"github.com/rancher/tfp-automation/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

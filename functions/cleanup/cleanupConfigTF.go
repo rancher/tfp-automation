@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	set "github.com/josh-diamond/rancher-terratest-framework/functions/set"
+	set "github.com/rancher/tfp-automation/functions/set"
 )
 
 func CleanupConfigTF(t *testing.T) error {
