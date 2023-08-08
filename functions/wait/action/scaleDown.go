@@ -14,24 +14,34 @@ import (
 func ScaleDown(t *testing.T, client *rancher.Client, clusterID string) (done bool, err error) {
 	clusterConfig := new(config.TerratestConfig)
 	framework.LoadConfig("terratest", clusterConfig)
-
-	wait_err := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
-		cluster, err := client.Management.Cluster.ByID(clusterID)
+	waiting := false
+	waitErr := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
+		cluster, clientErr := client.Management.Cluster.ByID(clusterID)
 		require.NoError(t, err)
 
-		if err != nil {
+		if clientErr != nil {
 			t.Logf("Failed to locate cluster and grab client specs. Error: %v", err)
 			return false, err
 		}
 
 		if cluster.NodeCount == clusterConfig.ScaledDownNodeCount {
+			t.Logf("Successfully scaled down cluster to %v nodes", clusterConfig.ScaledDownNodeCount)
 			return true, nil
 		}
 
-		t.Logf("Failed to instantiate wait poll.")
+		if !waiting {
+			t.Logf("Waiting for cluster to scale down...")
+			waiting = true
+		}
+
 		return false, nil
 	})
-	require.NoError(t, wait_err)
+	require.NoError(t, waitErr)
+
+	if waitErr != nil {
+		t.Logf("Failed to instantiate scale down wait poll.")
+		return false, waitErr
+	}
 
 	return true, nil
 }

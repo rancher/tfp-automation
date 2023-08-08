@@ -17,32 +17,44 @@ func KubernetesUpgrade(t *testing.T, client *rancher.Client, clusterID string, m
 
 	if module == "aks" || module == "gke" {
 		expectedUpgradedKubernetesVersion := `v` + clusterConfig.UpgradedKubernetesVersion
-		err := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
-			cluster, err := client.Management.Cluster.ByID(clusterID)
+		waiting := false
+		waitErr := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
+			cluster, clientErr := client.Management.Cluster.ByID(clusterID)
 			require.NoError(t, err)
 
-			if err != nil {
+			if clientErr != nil {
 				t.Logf("Failed to locate cluster and grab client specs. Error: %v", err)
 				return false, err
 			}
 
 			if cluster.Version.GitVersion == expectedUpgradedKubernetesVersion {
+				t.Logf("Successfully updated kubernetes version to %v", clusterConfig.UpgradedKubernetesVersion)
 				return true, nil
 			}
 
-			t.Logf("Failed to instantiate wait poll.")
+			if !waiting {
+				t.Logf("Waiting for cluster to upgrade kubernetes version...")
+				waiting = true
+			}
+
 			return false, nil
 		})
-		require.NoError(t, err)
+		require.NoError(t, waitErr)
+
+		if waitErr != nil {
+			t.Logf("Failed to instantiate kubernetes upgrade wait poll.")
+			return false, waitErr
+		}
 	}
 
 	if module == "ec2_rke1" || module == "linode_rke1" {
 		expectedUpgradedKubernetesVersion := clusterConfig.UpgradedKubernetesVersion[:len(clusterConfig.UpgradedKubernetesVersion)-11]
-		err := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
-			cluster, err := client.Management.Cluster.ByID(clusterID)
+		waiting := false
+		waitErr := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
+			cluster, clientErr := client.Management.Cluster.ByID(clusterID)
 			require.NoError(t, err)
 
-			if err != nil {
+			if clientErr != nil {
 				t.Logf("Failed to locate cluster and grab client specs. Error: %v", err)
 				return false, err
 			}
@@ -51,18 +63,28 @@ func KubernetesUpgrade(t *testing.T, client *rancher.Client, clusterID string, m
 				return true, nil
 			}
 
-			t.Logf("Failed to instantiate wait poll.")
+			if !waiting {
+				t.Logf("Waiting for cluster to upgrade kubernetes version...")
+				waiting = true
+			}
+
 			return false, nil
 		})
-		require.NoError(t, err)
+		require.NoError(t, waitErr)
+
+		if waitErr != nil {
+			t.Logf("Failed to instantiate kubernetes upgrade wait poll.")
+			return false, waitErr
+		}
 	}
 
 	if module == "ec2_k3s" || module == "ec2_rke2" || module == "linode_k3s" || module == "linode_rke2" {
-		err := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
-			cluster, err := client.Management.Cluster.ByID(clusterID)
+		waiting := false
+		waitErr := wait.Poll(100*time.Millisecond, 30*time.Minute, func() (done bool, err error) {
+			cluster, clientErr := client.Management.Cluster.ByID(clusterID)
 			require.NoError(t, err)
 
-			if err != nil {
+			if clientErr != nil {
 				t.Logf("Failed to locate cluster and grab client specs. Error: %v", err)
 				return false, err
 			}
@@ -71,10 +93,19 @@ func KubernetesUpgrade(t *testing.T, client *rancher.Client, clusterID string, m
 				return true, nil
 			}
 
-			t.Logf("Failed to instantiate wait poll.")
+			if !waiting {
+				t.Logf("Waiting for cluster to upgrade kubernetes version...")
+				waiting = true
+			}
+			
 			return false, nil
 		})
-		require.NoError(t, err)
+		require.NoError(t, waitErr)
+
+		if waitErr != nil {
+			t.Logf("Failed to instantiate kubernetes upgrade wait poll.")
+			return false, waitErr
+		}
 	}
 
 	return true, nil

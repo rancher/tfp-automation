@@ -5,8 +5,8 @@ import (
 
 	"github.com/rancher/rancher/tests/framework/clients/rancher"
 	framework "github.com/rancher/rancher/tests/framework/pkg/config"
-	wait_action "github.com/rancher/tfp-automation/functions/wait/action"
-	wait_state "github.com/rancher/tfp-automation/functions/wait/state"
+	waitAction "github.com/rancher/tfp-automation/functions/wait/action"
+	waitState "github.com/rancher/tfp-automation/functions/wait/state"
 	"github.com/rancher/tfp-automation/config"
 )
 
@@ -18,31 +18,31 @@ func WaitFor(t *testing.T, client *rancher.Client, clusterID string, action stri
 
 	if module == "aks" || module == "eks" || module == "ec2_k3s" || module == "ec2_rke1" || module == "ec2_rke2" || module == "linode_k3s" || module == "linode_rke1" || module == "linode_rke2" {
 		if module != "eks" && !((module == "ec2_rke1" || module == "linode_rke1") && action == "kubernetes-upgrade") {
-			wait_state.WaitingOrUpdating(t, client, clusterID)
+			waitState.WaitingOrUpdating(t, client, clusterID)
 		}
 
-		wait_state.ActiveAndReady(t, client, clusterID)
+		waitState.ActiveAndReady(t, client, clusterID)
 
 		if action == "scale-up" || action == "kubernetes-upgrade" {
-			wait_state.ActiveNodes(t, client, clusterID)
+			waitState.ActiveNodes(t, client, clusterID)
 
-			wait_state.ActiveAndReady(t, client, clusterID)
+			waitState.ActiveAndReady(t, client, clusterID)
 		}
 	}
 
 	if action == "scale-up" {
-		wait_action.ScaleUp(t, client, clusterID)
-		wait_state.ActiveAndReady(t, client, clusterID)
+		waitAction.ScaleUp(t, client, clusterID)
+		waitState.ActiveAndReady(t, client, clusterID)
 	}
 
 	if action == "scale-down" {
-		wait_action.ScaleDown(t, client, clusterID)
-		wait_state.ActiveAndReady(t, client, clusterID)
+		waitAction.ScaleDown(t, client, clusterID)
+		waitState.ActiveAndReady(t, client, clusterID)
 	}
 
 	if action == "kubernetes-upgrade" {
-		wait_action.KubernetesUpgrade(t, client, clusterID, module)
-		wait_state.ActiveAndReady(t, client, clusterID)
+		waitAction.KubernetesUpgrade(t, client, clusterID, module)
+		waitState.ActiveAndReady(t, client, clusterID)
 	}
 
 }
