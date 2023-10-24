@@ -286,7 +286,7 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
 ##### Example:
 
 ```yaml
-terratest:
+terraform:
   providerVersion: '1.25.0'
   module: aks
   cloudCredentialName: tf-aks
@@ -416,7 +416,7 @@ terratest:
 ##### Example:
 
 ```yaml
-terratest:
+terraform:
   providerVersion: '1.25.0'
   module: eks
   cloudCredentialName: tf-eks
@@ -644,7 +644,7 @@ terraform:
 ##### Example:
 
 ```yaml
-terratest:
+terraform:
   providerVersion: '1.25.0'
   module: ec2_rke1
   awsAccessKey: XXXXXXXXXXXXXXXXXXXX
