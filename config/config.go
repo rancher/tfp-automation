@@ -1,5 +1,98 @@
 package config
 
+// TestClientName is string enum for client/user names used in provisioning tests.
+type TestClientName string
+type PSACT string
+
+const (
+	StandardClientName TestClientName = "Standard User"
+
+	RancherPrivileged PSACT = "rancher-privileged"
+	RancherRestricted PSACT = "rancher-restricted"
+)
+
+var AllRolesNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: true,
+	Worker:       true,
+	Quantity:     1,
+}
+
+var EtcdControlPlaneNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: true,
+	Worker:       false,
+	Quantity:     1,
+}
+
+var EtcdNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: false,
+	Worker:       false,
+	Quantity:     1,
+}
+
+var ControlPlaneNodePool = Nodepool{
+	Etcd:         false,
+	Controlplane: true,
+	Worker:       false,
+	Quantity:     1,
+}
+
+var WorkerNodePool = Nodepool{
+	Etcd:         false,
+	Controlplane: false,
+	Worker:       true,
+	Quantity:     1,
+}
+
+var ScaleUpAllRolesNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: true,
+	Worker:       true,
+	Quantity:     4,
+}
+
+var ScaleDownAllRolesNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: true,
+	Worker:       true,
+	Quantity:     3,
+}
+
+var ScaleUpEtcdControlPlaneNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: true,
+	Worker:       false,
+	Quantity:     3,
+}
+
+var ScaleUpEtcdNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: false,
+	Worker:       false,
+	Quantity:     3,
+}
+
+var ScaleUpControlPlaneNodePool = Nodepool{
+	Etcd:         false,
+	Controlplane: true,
+	Worker:       false,
+	Quantity:     2,
+}
+
+var ScaleUpWorkerNodePool = Nodepool{
+	Etcd:         false,
+	Controlplane: false,
+	Worker:       true,
+	Quantity:     3,
+}
+
+// String stringer for the TestClientName
+func (c TestClientName) String() string {
+	return string(c)
+}
+
 type GoogleAuthEncodedJSON struct {
 	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url" yaml:"auth_provider_x509_cert_url"`
 	AuthURI                 string `json:"auth_uri" yaml:"auth_uri"`
@@ -42,7 +135,6 @@ type TerraformConfig struct {
 	AzureClientSecret                   string   `json:"azureClientSecret" yaml:"azureClientSecret"`
 	AzureSubscriptionID                 string   `json:"azureSubscriptionID" yaml:"azureSubscriptionID"`
 	CloudCredentialName                 string   `json:"cloudCredentialName" yaml:"cloudCredentialName"`
-	ClusterName                         string   `json:"clusterName" yaml:"clusterName"`
 	DefaultClusterRoleForProjectMembers string   `json:"defaultClusterRoleForProjectMembers" yaml:"defaultClusterRoleForProjectMembers"`
 	EnableNetworkPolicy                 bool     `json:"enableNetworkPolicy" yaml:"enableNetworkPolicy"`
 	GKENetwork                          string   `json:"gkeNetwork" yaml:"gkeNetwork"`
@@ -75,4 +167,5 @@ type TerratestConfig struct {
 	ScaledUpNodeCount         int64      `json:"scaledUpNodeCount" yaml:"scaledUpNodeCount"`
 	ScaledUpNodepools         []Nodepool `json:"scaledUpNodepools" yaml:"scaledUpNodepools"`
 	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion" yaml:"upgradedKubernetesVersion"`
+	PSACT                     string     `json:"psact" yaml:"psact"`
 }
