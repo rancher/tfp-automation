@@ -4,75 +4,6 @@
 
 ---
 
-### Modules + supported tests:
-
-<table align="center">
-  <tbody>
-    <tr>
-      <th>Module</th>
-      <th>Provision</th>
-      <th>Scale</th>
-      <th>K8s Upgrade</th>
-    </tr>
-    <tr>
-      <td>aks</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:x:</td>
-    </tr>
-    <tr>
-      <td>eks</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:x:</td>
-    </tr>
-    <tr>
-      <td>gke</td>
-      <td>:white_check_mark:</td>
-      <td>:x:</td>
-      <td>:x:</td>
-    </tr>
-    <tr>
-      <td>ec2_rke1</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-    </tr>
-    <tr>
-      <td>ec2_rke2</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-    </tr>
-    <tr>
-      <td>ec2_k3s</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-    </tr>
-    <tr>
-      <td>linode_rke1</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-    </tr>
-    <tr>
-      <td>linode_rke2</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-    </tr>
-    <tr>
-      <td>linode_k3s</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-      <td>:white_check_mark:</td>
-    </tr>
-  </tbody>
-</table>
-
----
-
 <a name="top"></a>
 
 # <p align="center"> :scroll: Table of contents </p>
@@ -196,7 +127,7 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
       <td>providerVersion</td>
       <td>rancher2 provider version</td>
       <td>string</td>
-      <td>'1.25.0'</td>
+      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -229,12 +160,6 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
       <td>XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</td>
     </tr>
     <tr>
-      <td>clusterName</td>
-      <td>provide a unique name for cluster</td>
-      <td>string</td>
-      <td>jkeslar-cluster</td>
-    </tr>
-    <tr>
       <td>resourceGroup</td>
       <td>provide an existing resource group from Azure</td>
       <td>string</td>
@@ -250,7 +175,7 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
       <td>hostnamePrefix</td>
       <td>provide a unique hostname prefix for resources</td>
       <td>string</td>
-      <td>jkeslar</td>
+      <td>tfp</td>
     </tr>
     <tr>
       <td>networkPlugin</td>
@@ -287,16 +212,15 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
 
 ```yaml
 terraform:
-  providerVersion: '1.25.0'
+  providerVersion: '3.2.0'
   module: aks
   cloudCredentialName: tf-aks
   azureClientID: XXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
   azureClientSecret: XXXXXXXXXXXXXXXXXXXXXXXXXX
   azureSubscriptionID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-  clusterName: jkeslar-cluster
   resourceGroup: my-resource-group
   resourceLocation: eastus
-  hostnamePrefix: jkeslar
+  hostnamePrefix: tf-prefix
   networkPlugin: kubenet
   availabilityZones:
     - '1'
@@ -326,7 +250,7 @@ terraform:
       <td>providerVersion</td>
       <td>rancher2 provider version</td>
       <td>string</td>
-      <td>'1.25.0'</td>
+      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -381,16 +305,10 @@ terraform:
       <td>- sg-xxxxxxxxxxxxxxxxx</td>
     </tr>
     <tr>
-      <td>clusterName</td>
-      <td>provide a unique name for your cluster</td>
-      <td>string</td>
-      <td>jkeslar-cluster</td>
-    </tr>
-    <tr>
       <td>hostnamePrefix</td>
       <td>provide a unique hostname prefix for resources</td>
       <td>string</td>
-      <td>jkeslar</td>
+      <td>tfp</td>
     </tr>
     <tr>
       <td>publicAccess</td>
@@ -417,7 +335,7 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '1.25.0'
+  providerVersion: '3.2.0'
   module: eks
   cloudCredentialName: tf-eks
   awsAccessKey: XXXXXXXXXXXXXXXXXXXX
@@ -430,8 +348,7 @@ terraform:
     - subnet-zzzzzzzz
   awsSecurityGroups:
     - sg-xxxxxxxxxxxxxxxxx
-  clusterName: jkeslar-cluster
-  hostnamePrefix: jkeslar
+  hostnamePrefix: tfp
   publicAccess: true
   privateAccess: true
   nodeRole: arn:aws:iam::############:role/my-custom-NodeInstanceRole-############
@@ -458,7 +375,7 @@ terraform:
       <td>providerVersion</td>
       <td>rancher2 provider version</td>
       <td>string</td>
-      <td>'1.25.0'</td>
+      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -471,12 +388,6 @@ terraform:
       <td>provide the name of unique cloud credentials to be created during testing</td>
       <td>string</td>
       <td>tf-eks</td>
-    </tr>
-    <tr>
-      <td>clusterName</td>
-      <td>provide a unique cluster name</td>
-      <td>string</td>
-      <td>jkeslar-cluster</td>
     </tr>
     <tr>
       <td>region</td>
@@ -506,7 +417,7 @@ terraform:
       <td>hostnamePrefix</td>
       <td>provide a unique hostname prefix for resources</td>
       <td>string</td>
-      <td>jkeslar</td>
+      <td>tfp</td>
     </tr>
   </tbody>
 </table>
@@ -515,15 +426,14 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '1.25.0'
+  providerVersion: '3.2.0'
   module: gke
   cloudCredentialName: tf-creds-gke
-  clusterName: jkeslar-cluster
   region: us-central1-a
   gkeProjectID: my-project-id-here
   gkeNetwork: default
   gkeSubnetwork: default
-  hostnamePrefix: jkeslar
+  hostnamePrefix: tfp
 ```
 
 ---
@@ -546,7 +456,7 @@ terraform:
       <td>providerVersion</td>
       <td>rancher2 provider version</td>
       <td>string</td>
-      <td>'1.25.0'</td>
+      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -615,12 +525,6 @@ terraform:
       <td>80</td>
     </tr>
     <tr>
-      <td>clusterName</td>
-      <td>provide a unique name for your cluster</td>
-      <td>string</td>
-      <td>jkeslar-cluster</td>
-    </tr>
-    <tr>
       <td>networkPlugin</td>
       <td>provide network plugin to be used</td>
       <td>string</td>
@@ -636,7 +540,7 @@ terraform:
       <td>hostnamePrefix</td>
       <td>provide a unique hostname prefix for resources</td>
       <td>string</td>
-      <td>jkeslar</td>
+      <td>tfp</td>
     </tr>
   </tbody>
 </table>
@@ -645,7 +549,7 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '1.25.0'
+  providerVersion: '3.2.0'
   module: ec2_rke1
   awsAccessKey: XXXXXXXXXXXXXXXXXXXX
   awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -658,10 +562,9 @@ terraform:
   awsVpcID: vpc-xxxxxxxx
   awsZoneLetter: a
   awsRootSize: 80
-  clusterName: jkeslar-cluster
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
-  hostnamePrefix: jkeslar
+  hostnamePrefix: tfp
 ```
 ---
 
@@ -683,7 +586,7 @@ terraform:
       <td>providerVersion</td>
       <td>rancher2 provider version</td>
       <td>string</td>
-      <td>'1.25.0'</td>
+      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -710,12 +613,6 @@ terraform:
       <td>xxxxxxxxxxxxxxxx</td>
     </tr>
     <tr>
-      <td>clusterName</td>
-      <td>provide a unique name for your cluster</td>
-      <td>string</td>
-      <td>jkeslar-cluster</td>
-    </tr>
-    <tr>
       <td>networkPlugin</td>
       <td>provide network plugin to be used</td>
       <td>string</td>
@@ -731,7 +628,7 @@ terraform:
       <td>hostnamePrefix</td>
       <td>provide a unique hostname prefix for resources</td>
       <td>string</td>
-      <td>jkeslar</td>
+      <td>tfp</td>
     </tr>
   </tbody>
 </table>
@@ -739,15 +636,14 @@ terraform:
 ##### Example:
 ```yaml
 terraform:
-  providerVersion: '1.25.0'
+  providerVersion: '3.2.0'
   module: linode_rke1
   linodeToken: XXXXXXXXXXXXXXXXXXXX
   region: us-east
   linodeRootPass: xxxxxxxxxxxxxxxx
-  clusterName: jkeslar
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
-  hostnamePrefix: jkeslar
+  hostnamePrefix: tfp
 ```
 
 ---
@@ -769,7 +665,7 @@ terraform:
       <td>providerVersion</td>
       <td>rancher2 provider version</td>
       <td>string</td>
-      <td>'1.25.0'</td>
+      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -838,12 +734,6 @@ terraform:
       <td>tf-rke2</td>
     </tr>
     <tr>
-      <td>clusterName</td>
-      <td>provide a unique name for your cluster</td>
-      <td>string</td>
-      <td>jkeslar-cluster</td>
-    </tr>
-    <tr>
       <td>enableNetworkPolicy</td>
       <td>If true, Network Policy will be enabled</td>
       <td>boolean</td>
@@ -861,7 +751,7 @@ terraform:
 ##### Example:
 ```yaml
 terraform:
-  providerVersion: '1.25.0'
+  providerVersion: '3.2.0'
   module: ec2_rke2
   cloudCredentialName: tf-creds-rke2
   awsAccessKey: XXXXXXXXXXXXXXXXXXXX
@@ -874,7 +764,6 @@ terraform:
   awsVpcID: vpc-xxxxxxxx
   awsZoneLetter: a
   machineConfigName: tf-rke2
-  clusterName: jkeslar-cluster
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: user
 ```
@@ -899,7 +788,7 @@ terraform:
       <td>providerVersion</td>
       <td>rancher2 provider version</td>
       <td>string</td>
-      <td>'1.25.0'</td>
+      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -944,12 +833,6 @@ terraform:
       <td>tf-k3s</td>
     </tr>
     <tr>
-      <td>clusterName</td>
-      <td>provide a unique name for your cluster</td>
-      <td>string</td>
-      <td>jkeslar-cluster</td>
-    </tr>
-    <tr>
       <td>enableNetworkPolicy</td>
       <td>If true, Network Policy will be enabled</td>
       <td>boolean</td>
@@ -967,7 +850,7 @@ terraform:
 ##### Example:
 ```yaml
 terraform:
-  providerVersion: '1.25.0'
+  providerVersion: '3.2.0'
   module: linode_k3s
   cloudCredentialName: tf-linode-creds
   linodeToken: XXXXXXXXXXXXXXXXXXXX
@@ -975,7 +858,6 @@ terraform:
   region: us-east
   linodeRootPass: xxxxxxxxxxxx
   machineConfigName: tf-k3s
-  clusterName: jkeslar-cluster
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: user
 ```
@@ -1120,7 +1002,7 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
-  kubernetesVersion: v1.24.9-rancher1-1
+  kubernetesVersion: v1.27.6-rancher1-1
   nodeCount: 3
 
 
@@ -1144,6 +1026,8 @@ terratest:
   # K3S with leading v and +k3s# tail
   # e.g. v1.24.9+k3s1
 ```
+
+Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 
 ---
 
@@ -1253,6 +1137,7 @@ terratest:
   scaledUpNodeCount: 8
   scaledDownNodeCount: 6
 ```
+Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 
 ---
 
@@ -1317,6 +1202,7 @@ terratest:
   kubernetesVersion: v1.23.14+k3s1
   upgradedKubernetesVersion: v1.24.8+k3s1
 ```
+Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 
 ---
 

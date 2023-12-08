@@ -19,6 +19,7 @@ require (
 require (
 	github.com/gruntwork-io/terratest v0.42.0
 	github.com/rancher/norman v0.0.0-20230328153514-ae12f166495a
+	github.com/sirupsen/logrus v1.9.2
 )
 
 require (
@@ -115,7 +116,6 @@ require (
 	github.com/rancher/rke v1.4.6-rc3 // indirect
 	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20210727200656-10b094e30007 // indirect
 	github.com/rancher/wrangler v1.1.1 // indirect
-	github.com/sirupsen/logrus v1.9.2 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
