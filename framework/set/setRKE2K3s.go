@@ -1,4 +1,4 @@
-package functions
+package framework
 
 import (
 	"os"
@@ -100,10 +100,7 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
 
-		_, err := SetResourceNodepoolValidation(pool, poolNum)
-		if err != nil {
-			return err
-		}
+		SetResourceNodepoolValidation(pool, poolNum)
 
 		machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock("machine_pools", nil)
 		machinePoolsBlockBody := machinePoolsBlock.Body()

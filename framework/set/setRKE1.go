@@ -1,4 +1,4 @@
-package functions
+package framework
 
 import (
 	"os"
@@ -87,10 +87,7 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
 
-		_, err := SetResourceNodepoolValidation(pool, poolNum)
-		if err != nil {
-			return err
-		}
+		SetResourceNodepoolValidation(pool, poolNum)
 
 		nodePoolBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_node_pool", `pool` + poolNum})
 		nodePoolBlockBody := nodePoolBlock.Body()

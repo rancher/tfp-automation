@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
-	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	provisioning "github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -16,7 +16,7 @@ type BuildModuleTestSuite struct {
 func (r *BuildModuleTestSuite) TestBuildModule() {
 	defer cleanup.CleanupConfigTF()
 
-	err := provisioning.BuildModule()
+	err := provisioning.BuildModule(r.T())
 	require.NoError(r.T(), err)
 }
 

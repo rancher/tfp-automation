@@ -1,4 +1,4 @@
-package functions
+package framework
 
 import (
 	"os"
@@ -65,10 +65,8 @@ func SetEKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
 
-		_, err := SetResourceNodepoolValidation(pool, poolNum)
-		if err != nil {
-			return err
-		}
+		SetResourceNodepoolValidation(pool, poolNum)
+
 
 		nodePoolsBlock := eksConfigBlockBody.AppendNewBlock("node_groups", nil)
 		nodePoolsBlockBody := nodePoolsBlock.Body()
