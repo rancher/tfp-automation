@@ -31,7 +31,7 @@ node {
     stage('Run Module Test') {
             def dockerImage = docker.image('tfp-automation')
             dockerImage.inside() {
-                sh "go test -v -timeout ${timeout} -run ${params.TEST_CASE} ${testsDir}"
+                sh "go test -v -timeout ${timeout} ${params.TEST_CASE} ${testsDir}"
             }
     }
 }
