@@ -25,7 +25,7 @@ RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform
 
 RUN apt-get update -y && apt-get install -y gzip
 
-ARG RANCHER2_PROVIDER_VERSION=4.0.0-rc5
+ARG RANCHER2_PROVIDER_VERSION
 RUN cat ${RANCHER2_PROVIDER_VERSION}
 RUN chmod +x scripts/setup-provider.sh
 RUN ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
