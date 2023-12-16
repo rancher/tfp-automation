@@ -13,10 +13,7 @@ node {
   if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
         timeout = "${env.TIMEOUT}" 
   }
-  def providerVersion = "${env.RANCHER2_PROVIDER_VERSION}"
-  if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
-        providerVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
-  }
+
   stage('Checkout') {
           deleteDir()
           checkout([
@@ -29,13 +26,15 @@ node {
     stage('Build Docker image') {
             writeFile file: 'config.yml', text: env.CONFIG
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
-            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PROVIDER_VERSION=${providerVersion} -f Dockerfile -t tfp-automation . "
+            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${params.RANCHER2_PROVIDER_VERSION}\" -f Dockerfile -t tfp-automation . "
     }
     
     
     stage('Run Module Test') {
             def dockerImage = docker.image('tfp-automation')
             dockerImage.inside('-u root') {
+                sh "echo ${params.RANCHER2_PROVIDER_VERSION}"
+                sh "echo ${env.RANCHER2_PROVIDER_VERSION}"
                 sh "go test -v -timeout ${timeout} -run ${params.TEST_CASE} ${testsDir}"
             }
     }

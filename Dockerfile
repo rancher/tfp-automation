@@ -25,9 +25,9 @@ RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform
 
 RUN apt-get update -y && apt-get install -y gzip
 
-ARG PROVIDER_VERSION
+ARG RANCHER2_PROVIDER_VERSION
 RUN chmod +x scripts/setup-provider.sh
-RUN ./scripts/setup-provider.sh rancher2 v${PROVIDER_VERSION}
+RUN ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 ARG CONFIG_FILE
 COPY ${CONFIG_FILE} /config.yml
