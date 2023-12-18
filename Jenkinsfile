@@ -31,9 +31,6 @@ node {
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
             def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t tfp-automation . "
             sh test
-            sh "usermod -aG docker jenkinsuser"
-            sh "systemctl enable docker"
-            sh "systemctl start docker"
     }
     
     

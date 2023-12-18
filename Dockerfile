@@ -29,10 +29,12 @@ ARG CONFIG_FILE
 COPY ${CONFIG_FILE} /config.yml
 
 ARG RANCHER2_PROVIDER_VERSION
-# RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
+RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 # Create a new user 'jenkinsuser'
 RUN useradd -m jenkinsuser
+RUN groupadd docker
+RUN usermod -aG docker jenkinsuser
 
 # # Change the owner of the directory and its contents to 'jenkinsuser'
 # RUN chown -R jenkinsuser:jenkinsuser ~/.terraform.d
@@ -40,5 +42,5 @@ RUN useradd -m jenkinsuser
 # Switch to 'jenkinsuser'
 USER jenkinsuser
 
-RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
+# RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
