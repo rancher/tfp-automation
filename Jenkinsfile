@@ -29,12 +29,8 @@ node {
     stage('Build Docker image') {
             writeFile file: 'config.yml', text: env.CONFIG
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
-                // sh "echo ${params.RANCHER2_PROVIDER_VERSION}"
-                // sh "echo ${env.RANCHER2_PROVIDER_VERSION}"
-                // sh "chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${rancher2ProviderVersion}"
            def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t tfp-automation . "
-                  sh "cat ${test}"
-                  sh test
+                sh test
     }
     
     
