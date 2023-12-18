@@ -13,7 +13,10 @@ node {
   if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
         timeout = "${env.TIMEOUT}" 
   }
-
+  def rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}"
+  if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
+        rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
+  }
   stage('Checkout') {
           deleteDir()
           checkout([
@@ -28,7 +31,8 @@ node {
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
                 sh "echo ${params.RANCHER2_PROVIDER_VERSION}"
                 sh "echo ${env.RANCHER2_PROVIDER_VERSION}"
-            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${params.RANCHER2_PROVIDER_VERSION}\" -f Dockerfile -t tfp-automation . "
+                sh "chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v$${rancher2ProviderVersion}"
+            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t tfp-automation . "
     }
     
     
