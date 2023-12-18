@@ -40,4 +40,4 @@ RUN chown -R jenkinsuser:jenkinsuser ~/.terraform.d
 # Switch to 'jenkinsuser'
 USER jenkinsuser
 
-RUN chmod +x ~/.terraform.d/plugins/terraform.local/local/rancher2/4.0.0-rc5/linux_amd64
+RUN chmod +x ~/.terraform.d/plugins/terraform.local/local/rancher2/4.0.0-rc5/linux_amd64/terraform-provider-rancher2
