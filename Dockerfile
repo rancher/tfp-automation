@@ -32,6 +32,7 @@ ARG RANCHER2_PROVIDER_VERSION
 RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 COPY ["~/.terraform.d/plugins/terraform.local/local/rancher2/${RANCHER2_PROVIDER_VERSION}/linux_amd64/terraform-provider-rancher2", "."]
+RUN pwd
 
 # Create a new user 'jenkinsuser'
 # RUN useradd -m jenkinsuser
