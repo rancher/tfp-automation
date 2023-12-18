@@ -34,12 +34,10 @@ DIR=~/.terraform.d/plugins/terraform.local/local/${PROVIDER}/${VERSION_TAG}/linu
 sudo mkdir -p $DIR
 curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_linux_amd64.zip | gunzip -c - > ${DIR}/terraform-provider-${PROVIDER}
 
-cd ${DIR}/terraform-provider-${PROVIDER}
-echo "pwd below"
-pwd
 
 # Mod binary
 chmod +x ${DIR}/terraform-provider-${PROVIDER}
+chmod -R 757 ${DIR}/terraform-provider-${PROVIDER}
 
 echo -e "Terraform provider ${PROVIDER} ${VERSION} is ready to test!
 Please update the required_providers block in your Terraform config file
