@@ -1,6 +1,6 @@
 FROM golang:1.19
 
-USER root
+# USER root
 
 RUN apt-get update && apt-get install -y sudo
 
@@ -32,15 +32,15 @@ ARG RANCHER2_PROVIDER_VERSION
 RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 # Create a new user 'jenkinsuser'
-RUN useradd -m jenkinsuser
-RUN groupadd docker
-RUN usermod -aG docker jenkinsuser
+# RUN useradd -m jenkinsuser
+# RUN groupadd docker
+# RUN usermod -aG docker jenkinsuser
 
-# # Change the owner of the directory and its contents to 'jenkinsuser'
-# RUN chown -R jenkinsuser:jenkinsuser ~/.terraform.d
+# # # Change the owner of the directory and its contents to 'jenkinsuser'
+# # RUN chown -R jenkinsuser:jenkinsuser ~/.terraform.d
 
-# Switch to 'jenkinsuser'
-USER jenkinsuser
+# # Switch to 'jenkinsuser'
+# USER jenkinsuser
 
 # RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
