@@ -31,13 +31,13 @@ COPY ${CONFIG_FILE} /config.yml
 ARG RANCHER2_PROVIDER_VERSION
 RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
-# Create a new user 'jenkinsuser'
-RUN useradd -m jenkinsuser
+# # Create a new user 'jenkinsuser'
+# RUN useradd -m jenkinsuser
 
-# Change the owner of the directory and its contents to 'jenkinsuser'
-RUN chown -R jenkinsuser:jenkinsuser ~/.terraform.d
+# # Change the owner of the directory and its contents to 'jenkinsuser'
+# RUN chown -R jenkinsuser:jenkinsuser ~/.terraform.d
 
-# Switch to 'jenkinsuser'
-USER jenkinsuser
+# # Switch to 'jenkinsuser'
+# USER jenkinsuser
 
 # RUN chmod +x ~/.terraform.d/plugins/terraform.local/local/rancher2/4.0.0-rc5/linux_amd64/terraform-provider-rancher2

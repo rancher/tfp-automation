@@ -36,8 +36,7 @@ node {
     
     stage('Run Module Test') {
             def dockerImage = docker.image('tfp-automation')
-            dockerImage.inside("-u jenkinsuser") {
-                // sh "~/.terraform.d/plugins/terraform.local/local/rancher2/4.0.0-rc5/linux_amd64/terraform-provider-rancher2 -version"
+            dockerImage.inside() {
                 sh "go test -v -timeout ${timeout} -run ${params.TEST_CASE} ${testsDir}"
             }
     }
