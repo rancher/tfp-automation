@@ -119,13 +119,18 @@ func (r *ScaleTestSuite) TestScale() {
 			provisioning.Provision(r.T(), clusterName, r.terraformConfig, &clusterConfig, r.terraformOptions)
 			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
 
-			provisioning.ScaleUp(r.T(), clusterName, r.terraformOptions, &clusterConfig)
+			clusterConfig.Nodepools = clusterConfig.ScaledUpNodepools
+
+			provisioning.Scale(r.T(), clusterName, r.terraformOptions, &clusterConfig)
 			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
 			provisioning.VerifyNodeCount(r.T(), tt.client, clusterName, scaledUpCount)
 
-			provisioning.ScaleDown(r.T(), clusterName, r.terraformOptions, &clusterConfig)
+			clusterConfig.Nodepools = clusterConfig.ScaledDownNodepools
+
+			provisioning.Scale(r.T(), clusterName, r.terraformOptions, &clusterConfig)
 			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
 			provisioning.VerifyNodeCount(r.T(), tt.client, clusterName, scaledDownCount)
+
 			cleanup.Cleanup(r.T(), r.terraformOptions)
 		})
 	}
@@ -146,13 +151,18 @@ func (r *ScaleTestSuite) TestScaleDynamicInput() {
 			provisioning.Provision(r.T(), clusterName, r.terraformConfig, r.clusterConfig, r.terraformOptions)
 			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
 
-			provisioning.ScaleUp(r.T(), clusterName, r.terraformOptions, r.clusterConfig)
+			r.clusterConfig.Nodepools = r.clusterConfig.ScaledUpNodepools
+
+			provisioning.Scale(r.T(), clusterName, r.terraformOptions, r.clusterConfig)
 			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
 			provisioning.VerifyNodeCount(r.T(), r.client, clusterName, r.clusterConfig.ScaledUpNodeCount)
 
-			provisioning.ScaleDown(r.T(), clusterName, r.terraformOptions, r.clusterConfig)
+			r.clusterConfig.Nodepools = r.clusterConfig.ScaledDownNodepools
+
+			provisioning.Scale(r.T(), clusterName, r.terraformOptions, r.clusterConfig)
 			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
 			provisioning.VerifyNodeCount(r.T(), r.client, clusterName, r.clusterConfig.ScaledDownNodeCount)
+
 			cleanup.Cleanup(r.T(), r.terraformOptions)
 		})
 	}
