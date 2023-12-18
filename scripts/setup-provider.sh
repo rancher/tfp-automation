@@ -37,7 +37,6 @@ curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/dow
 
 # Mod binary
 chmod +x ${DIR}/terraform-provider-${PROVIDER}
-chmod -R 757 ${DIR}/terraform-provider-${PROVIDER}
 
 echo -e "Terraform provider ${PROVIDER} ${VERSION} is ready to test!
 Please update the required_providers block in your Terraform config file
