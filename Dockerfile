@@ -1,6 +1,6 @@
 FROM golang:1.19
 
-# USER root
+USER root
 
 RUN apt-get update && apt-get install -y sudo
 
@@ -8,7 +8,7 @@ RUN mkdir -p /.cache && chmod -R 777 /.cache
 
 RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
-# RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
+RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
 
 WORKDIR /usr/app/src
 
@@ -31,7 +31,7 @@ COPY ${CONFIG_FILE} /config.yml
 ARG RANCHER2_PROVIDER_VERSION
 RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 RUN ls -la /root/.terraform.d/plugins/terraform.local/local/rancher2/${RANCHER2_PROVIDER_VERSION}/linux_amd64/
-COPY ["//root/.terraform.d/plugins/terraform.local/local/rancher2/${RANCHER2_PROVIDER_VERSION}/linux_amd64/terraform-provider-rancher2", "/home/jenkins/workspace/rancher_qa/tfp-automation"]
+COPY ["/root/.terraform.d/plugins/terraform.local/local/rancher2/${RANCHER2_PROVIDER_VERSION}/linux_amd64/terraform-provider-rancher2", "/home/jenkins/workspace/rancher_qa/tfp-automation"]
 
 
 # Create a new user 'jenkinsuser'
