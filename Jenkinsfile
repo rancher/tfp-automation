@@ -29,14 +29,15 @@ node {
     stage('Build Docker image') {
             writeFile file: 'config.yml', text: env.CONFIG
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
-           def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t tfp-automation . "
-                sh test
+            def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t tfp-automation . "
+            sh test
     }
     
     
     stage('Run Module Test') {
             def dockerImage = docker.image('tfp-automation')
             dockerImage.inside("-u jenkinsuser") {
+                // sh "~/.terraform.d/plugins/terraform.local/local/rancher2/4.0.0-rc5/linux_amd64/terraform-provider-rancher2 -version"
                 sh "go test -v -timeout ${timeout} -run ${params.TEST_CASE} ${testsDir}"
             }
     }
