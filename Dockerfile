@@ -29,9 +29,8 @@ ARG CONFIG_FILE
 COPY ${CONFIG_FILE} /config.yml
 
 ARG RANCHER2_PROVIDER_VERSION
-RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
+# RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
-RUN mv /usr/app/src/terraform-provider-rancher2 /.terraform.d/plugins/terraform.local/local/rancher2/4.0.0-rc5/linux_amd64
 
 
 

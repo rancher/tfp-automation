@@ -50,7 +50,7 @@ node {
                 sh "ls -la"
                 sh "pwd"
                 sh "docker run --name ${buildTestContainer} -t --env-file ${envFile} " + 
-              "${golangImageName} sh -c \"${workPath}pipeline/scripts/setup_environment.sh\""
+              "${golangImageName} sh -c \"${workPath}/scripts/setup-provider.sh\""
             } catch(err) {
                 sh "docker stop ${buildTestContainer}"
                 sh "docker rm -v ${buildTestContainer}"
