@@ -16,7 +16,8 @@ func setProvidersTF(rancherConfig *rancher.Config, terraformConfig *config.Terra
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
 	
 	if strings.Contains(providerVersion, "-rc") { 
-		source = "terraform.local/local/rancher2"
+		// source = "terraform.local/local/rancher2"
+		source = "/home/jenkins/workspace/rancher_qa/tfp-automation/.terraform.d/plugins/terraform.local/local/rancher2"
 	} 
 	
 	newFile := hclwrite.NewEmptyFile()
