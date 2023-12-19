@@ -48,6 +48,7 @@ node {
             sh test
             try {
                 sh "ls -la"
+                sh "pwd"
                 sh "docker run --name ${buildTestContainer} -t --env-file ${envFile} " + 
               "${golangImageName} sh -c \"${workPath}pipeline/scripts/setup_environment.sh\""
             } catch(err) {
