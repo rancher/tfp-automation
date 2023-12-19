@@ -9,7 +9,7 @@ RUN usermod -aG sudo jenkins
 WORKDIR /home/jenkins
 
 
-# RUN apt-get update && apt-get install -y sudo
+RUN apt-get update && apt-get install -y sudo
 
 RUN mkdir -p /.cache && chmod -R 777 /.cache
 
