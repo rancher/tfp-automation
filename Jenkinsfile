@@ -44,7 +44,7 @@ node {
     stage('Build Docker image') {
             writeFile file: 'config.yml', text: env.CONFIG
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
-            def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t tfp-automation . "
+            def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t ${golangImageName} . "
             sh test
             try {
                 sh "ls -la"
@@ -61,7 +61,7 @@ node {
     
     
     stage('Run Module Test') {
-            def dockerImage = docker.image('tfp-automation')
+            def dockerImage = docker.image(${golangImageName})
             dockerImage.inside() {
                 sh "go test -v -timeout ${timeout} -run ${params.TEST_CASE} ${testsDir}"
             }
