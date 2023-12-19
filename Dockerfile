@@ -1,12 +1,16 @@
 FROM golang:1.19
 
-USER root
+# USER root
+
+RUN apt-get update && apt-get install -y sudo
 
 RUN mkdir -p /.cache && chmod -R 777 /.cache
 
 RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
-RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
+# RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
+ARG RANCHER2_PROVIDER_VERSION
+RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 WORKDIR /usr/app/src
 
@@ -21,5 +25,10 @@ RUN go mod download && \
 ARG TERRAFORM_VERSION=1.6.5
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && apt-get update && apt-get install unzip &&  unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && chmod u+x terraform && mv terraform /usr/bin/terraform
 
+RUN apt-get update -y && apt-get install -y gzip
+
 ARG CONFIG_FILE
 COPY ${CONFIG_FILE} /config.yml
+
+
+

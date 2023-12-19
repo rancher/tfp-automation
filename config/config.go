@@ -150,7 +150,6 @@ type TerraformConfig struct {
 	NodeTemplateName                    string   `json:"nodeTemplateName" yaml:"nodeTemplateName"`
 	OSDiskSizeGB                        int64    `json:"osDiskSizeGB" yaml:"osDiskSizeGB"`
 	PrivateAccess                       bool     `json:"privateAccess" yaml:"privateAccess"`
-	ProviderVersion                     string   `json:"providerVersion" yaml:"providerVersion"`
 	PublicAccess                        bool     `json:"publicAccess" yaml:"publicAccess"`
 	Region                              string   `json:"region" yaml:"region"`
 	ResourceGroup                       string   `json:"resourceGroup" yaml:"resourceGroup"`

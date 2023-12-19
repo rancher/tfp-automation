@@ -7,7 +7,6 @@ import (
 	framework "github.com/rancher/rancher/tests/framework/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	set "github.com/rancher/tfp-automation/framework/set"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -22,8 +21,7 @@ func Setup(t *testing.T) *terraform.Options {
 
 	keyPath := set.SetKeyPath()
 
-	err := set.SetConfigTF(clusterConfig, "")
-	require.NoError(t, err)
+	set.SetConfigTF(clusterConfig, "")
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: keyPath,

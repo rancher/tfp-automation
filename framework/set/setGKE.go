@@ -1,4 +1,4 @@
-package functions
+package framework
 
 import (
 	"os"
@@ -67,10 +67,7 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
 
-		_, err := SetResourceNodepoolValidation(pool, poolNum)
-		if err != nil {
-			return err
-		}
+		SetResourceNodepoolValidation(pool, poolNum)
 
 		nodePoolsBlock := gkeConfigBlockBody.AppendNewBlock("node_pools", nil)
 		nodePoolsBlockBody := nodePoolsBlock.Body()
