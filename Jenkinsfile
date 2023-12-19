@@ -49,7 +49,7 @@ node {
             try {
                 sh "ls -la"
                 sh "pwd"
-                sh "docker run --name ${buildTestContainer} -t --env-file ${envFile} " + 
+                sh "docker run --name ${buildTestContainer} -t " + 
               "${golangImageName} sh -c \"${workPath}/scripts/setup-provider.sh\""
             } catch(err) {
                 sh "docker stop ${buildTestContainer}"
