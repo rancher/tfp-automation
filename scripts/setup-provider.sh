@@ -32,8 +32,6 @@ VERSION_TAG=$(echo $2 | cut -c 2-)
 DIR=~/.terraform.d/plugins/terraform.local/local/${PROVIDER}/${VERSION_TAG}/linux_amd64
 mkdir -p $DIR
 curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_linux_amd64.zip | gunzip -c - > ${DIR}/terraform-provider-${PROVIDER}
-cd ${DIR}
-ls -la ${DIR}
 
 # Mod binary
 chmod +x ${DIR}/terraform-provider-${PROVIDER}
