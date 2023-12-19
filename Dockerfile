@@ -9,13 +9,13 @@ USER jenkins
 WORKDIR /home/jenkins
 
 
-RUN apt-get update && apt-get install -y sudo
+# RUN apt-get update && apt-get install -y sudo
 
 RUN mkdir -p /.cache && chmod -R 777 /.cache
 
 RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
-RUN chown -R myuser:sudo $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
+RUN chown -R jenkins:sudo $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
 
 # WORKDIR /usr/app/src
 
