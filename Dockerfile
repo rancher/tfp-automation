@@ -3,11 +3,10 @@ FROM golang:1.19
 # USER root
 
 # Create a new user 'myuser'
-RUN useradd -m myuser
-RUN usermod -aG sudo myuser
-RUN usermod -aG docker myuser
-USER myuser
-WORKDIR /home/myuser
+RUN useradd -m jenkins
+RUN usermod -aG sudo jenkins
+USER jenkins
+WORKDIR /home/jenkins
 
 
 RUN apt-get update && apt-get install -y sudo
@@ -40,7 +39,7 @@ ARG RANCHER2_PROVIDER_VERSION
 RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 # remove sudo access from myuser
-RUN gpasswd -d myuser sudo
+RUN gpasswd -d jenkins sudo
 
 
 
