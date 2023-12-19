@@ -50,7 +50,7 @@ node {
                 sh "ls -la"
                 sh "pwd"
                 sh "docker run --name ${buildTestContainer} -t " + 
-              "${golangImageName} sh -c \"${workPath}/tfp-automation/scripts/setup-provider.sh\""
+              "${golangImageName} sh -c \"./scripts/setup-provider.sh\""
             } catch(err) {
                 sh "docker stop ${buildTestContainer}"
                 sh "docker rm -v ${buildTestContainer}"
