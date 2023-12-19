@@ -5,7 +5,7 @@ FROM golang:1.19
 # Create a new user 'myuser'
 RUN useradd -m jenkins
 RUN usermod -aG sudo jenkins
-USER jenkins
+# USER jenkins
 WORKDIR /home/jenkins
 
 
