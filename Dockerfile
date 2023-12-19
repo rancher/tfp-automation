@@ -1,9 +1,6 @@
 FROM golang:1.19
 
 # USER root
-RUN adduser --system --group --no-create-home jenkinsuser
-
-USER jenkinsuser
 
 RUN apt-get update && apt-get install -y sudo
 
@@ -11,7 +8,9 @@ RUN mkdir -p /.cache && chmod -R 777 /.cache
 
 RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
-RUN chown -R jenkinsuser:jenkinsuser $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
+# RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
+ARG RANCHER2_PROVIDER_VERSION
+RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 WORKDIR /usr/app/src
 
@@ -31,6 +30,5 @@ RUN apt-get update -y && apt-get install -y gzip
 ARG CONFIG_FILE
 COPY ${CONFIG_FILE} /config.yml
 
-ARG RANCHER2_PROVIDER_VERSION
-RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
+
 
