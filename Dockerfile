@@ -2,17 +2,23 @@ FROM golang:1.19
 
 # USER root
 
+# Create a new user 'myuser'
+RUN useradd -m myuser
+RUN usermod -aG sudo myuser
+RUN usermod -aG docker myuser
+USER myuser
+WORKDIR /home/myuser
+
+
 RUN apt-get update && apt-get install -y sudo
 
 RUN mkdir -p /.cache && chmod -R 777 /.cache
 
 RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
-# RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
-ARG RANCHER2_PROVIDER_VERSION
-RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
+RUN chown -R myuser:sudo $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
 
-WORKDIR /usr/app/src
+# WORKDIR /usr/app/src
 
 COPY [".", "$WORKDIR"]
 
@@ -29,6 +35,14 @@ RUN apt-get update -y && apt-get install -y gzip
 
 ARG CONFIG_FILE
 COPY ${CONFIG_FILE} /config.yml
+
+ARG RANCHER2_PROVIDER_VERSION
+RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
+
+# remove sudo access from myuser
+RUN gpasswd -d myuser sudo
+
+
 
 
 
