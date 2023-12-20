@@ -12,7 +12,7 @@ node {
 //   def golangTestContainer = "${job_name}${env.BUILD_NUMBER}-golangtest"
   def buildTestContainer = "${job_name}${env.BUILD_NUMBER}-buildtest"
 //   def cleanupTestContainer = "${job_name}${env.BUILD_NUMBER}-cleanuptest"
-  def envFile = ".env"
+//   def envFile = ".env"
   def golangImageName = "rancher-validation-${job_name}${env.BUILD_NUMBER}"
 
   def testsDir = "./tests/${env.TEST_PACKAGE}"
@@ -46,17 +46,6 @@ node {
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
             def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t ${golangImageName} . "
             sh test
-        //     try {
-        //         sh "ls -la"
-        //         sh "pwd"
-        //         sh "docker run --name ${buildTestContainer} -t " + 
-        //       "${golangImageName} sh -c \"./scripts/setup-provider.sh\""
-        //     } catch(err) {
-        //         sh "docker stop ${buildTestContainer}"
-        //         sh "docker rm -v ${buildTestContainer}"
-        //         // sh "docker volume rm -f ${validationVolume}"
-        //         error "Build Environment had failures."
-        //       }
     }
     
     stage('Run Module Test') {
