@@ -46,19 +46,18 @@ node {
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
             def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t ${golangImageName} . "
             sh test
-            try {
-                sh "ls -la"
-                sh "pwd"
-                sh "docker run --name ${buildTestContainer} -t " + 
-              "${golangImageName} sh -c \"./scripts/setup-provider.sh\""
-            } catch(err) {
-                sh "docker stop ${buildTestContainer}"
-                sh "docker rm -v ${buildTestContainer}"
-                // sh "docker volume rm -f ${validationVolume}"
-                error "Build Environment had failures."
-              }
+        //     try {
+        //         sh "ls -la"
+        //         sh "pwd"
+        //         sh "docker run --name ${buildTestContainer} -t " + 
+        //       "${golangImageName} sh -c \"./scripts/setup-provider.sh\""
+        //     } catch(err) {
+        //         sh "docker stop ${buildTestContainer}"
+        //         sh "docker rm -v ${buildTestContainer}"
+        //         // sh "docker volume rm -f ${validationVolume}"
+        //         error "Build Environment had failures."
+        //       }
     }
-    
     
     stage('Run Module Test') {
             def dockerImage = docker.image(${golangImageName})

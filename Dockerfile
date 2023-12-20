@@ -29,7 +29,7 @@ ARG CONFIG_FILE
 COPY ${CONFIG_FILE} /config.yml
 
 ARG RANCHER2_PROVIDER_VERSION
-# RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
+RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
 
 
 
