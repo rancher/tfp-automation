@@ -1,11 +1,11 @@
-package functions
+package framework
 
 import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/rancher/tests/framework/clients/rancher"
-	"github.com/rancher/rancher/tests/framework/pkg/config"
+	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/pkg/config"
 )
 
 // Cleanup is a function that will run terraform destroy and cleanup Terraform resources.
