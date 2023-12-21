@@ -1,10 +1,10 @@
-package functions
+package framework
 
 import (
 	"os"
 	"strings"
 
-	framework "github.com/rancher/rancher/tests/framework/pkg/config"
+	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/sirupsen/logrus"
 )

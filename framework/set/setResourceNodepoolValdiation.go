@@ -1,10 +1,10 @@
-package functions
+package framework
 
 import (
 	"fmt"
 	"strings"
 
-	ranchFrame "github.com/rancher/rancher/tests/framework/pkg/config"
+	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 )
 

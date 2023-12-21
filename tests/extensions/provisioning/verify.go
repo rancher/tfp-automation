@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/rancher/tests/framework/clients/rancher"
-	"github.com/rancher/rancher/tests/framework/extensions/clusters"
-	psadeploy "github.com/rancher/rancher/tests/framework/extensions/psact"
+	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/extensions/clusters"
+	"github.com/rancher/shepherd/extensions/psact"
+	"github.com/rancher/shepherd/extensions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
 	waitState "github.com/rancher/tfp-automation/framework/wait/state"
 	"github.com/sirupsen/logrus"
@@ -32,13 +33,6 @@ const (
 	rke1                     = "rke1"
 	rke2                     = "rke2"
 	k3s                      = "k3s"
-
-	active                        = "active"
-	ProvisioningSteveResourceType = "provisioning.cattle.io.cluster"
-	provisioning                  = "provisioning"
-	kubernetesUpgrade             = "kubernetes-upgrade"
-	scaleUp                       = "scale-up"
-	scaleDown                     = "scale-down"
 )
 
 // VerifyCluster validates that a downstream cluster and its resources are in a good state, matching a given config.
@@ -76,9 +70,12 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	if clusterConfig.PSACT == string(config.RancherPrivileged) || clusterConfig.PSACT == string(config.RancherRestricted) {
 		require.NotEmpty(t, cluster.DefaultPodSecurityAdmissionConfigurationTemplateName)
 
-		_, err := psadeploy.CreateNginxDeployment(adminClient, clusterID, clusterConfig.PSACT)
+		err := psact.CreateNginxDeployment(adminClient, clusterID, clusterConfig.PSACT)
 		require.NoError(t, err)
 	}
+
+	podErrors := pods.StatusPods(adminClient, cluster.ID)
+	assert.Empty(t, podErrors)
 }
 
 // VerifyUpgradedKubernetesVersion validates that the cluster has the expected upgraded Kubernetes version.

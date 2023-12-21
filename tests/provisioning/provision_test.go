@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/rancher/tests/framework/clients/rancher"
-	management "github.com/rancher/rancher/tests/framework/clients/rancher/generated/management/v3"
-	"github.com/rancher/rancher/tests/framework/extensions/users"
-	password "github.com/rancher/rancher/tests/framework/extensions/users/passwordgenerator"
-	ranchFrame "github.com/rancher/rancher/tests/framework/pkg/config"
-	namegen "github.com/rancher/rancher/tests/framework/pkg/namegenerator"
-	"github.com/rancher/rancher/tests/framework/pkg/session"
+	"github.com/rancher/shepherd/clients/rancher"
+	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
+	"github.com/rancher/shepherd/extensions/users"
+	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
+	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	namegen "github.com/rancher/shepherd/pkg/namegenerator"
+	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
@@ -96,6 +96,7 @@ func (r *ProvisionTestSuite) TestProvision() {
 		r.Run((tt.name), func() {
 			provisioning.Provision(r.T(), clusterName, r.terraformConfig, &clusterConfig, r.terraformOptions)
 			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
+
 			cleanup.Cleanup(r.T(), r.terraformOptions)
 		})
 	}
@@ -115,6 +116,7 @@ func (r *ProvisionTestSuite) TestProvisionDynamicInput() {
 		r.Run((tt.name), func() {
 			provisioning.Provision(r.T(), clusterName, r.terraformConfig, r.clusterConfig, r.terraformOptions)
 			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
+
 			cleanup.Cleanup(r.T(), r.terraformOptions)
 		})
 	}
