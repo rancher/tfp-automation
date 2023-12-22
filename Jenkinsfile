@@ -46,6 +46,8 @@ node {
             writeFile file: 'config.yml', text: env.CONFIG
             env.CATTLE_TEST_CONFIG=rootPath+"config.yml"
             try {
+                sh "chmod +x ./build.sh"
+                sh "chmod +x ./configure.sh"
                 sh "./configure.sh"
                 sh "./build.sh"
             } catch(err) {
