@@ -1,5 +1,21 @@
 #!groovy
 node {
+  def rootPath = "/root/go/src/github.com/josh-diamond/tfp-automation/"
+//   def workPath = "/root/go/src/github.com/rancher/rancher/tests/v2/validation/"
+//   def workPath = "/home/jenkins/workspace/rancher_qa/tfp-automation"
+
+  def job_name = "${JOB_NAME}"
+  if (job_name.contains('/')) { 
+    job_names = job_name.split('/')
+    job_name = job_names[job_names.size() - 1] 
+  }
+  def testContainer = "${job_name}${env.BUILD_NUMBER}_test"
+//   def golangTestContainer = "${job_name}${env.BUILD_NUMBER}-golangtest"
+  def buildTestContainer = "${job_name}${env.BUILD_NUMBER}-buildtest"
+//   def cleanupTestContainer = "${job_name}${env.BUILD_NUMBER}-cleanuptest"
+  def envFile = ".env"
+  def golangImageName = "rancher-validation-${job_name}${env.BUILD_NUMBER}"
+
   def testsDir = "./tests/${env.TEST_PACKAGE}"
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
@@ -28,15 +44,27 @@ node {
         }
     stage('Build Docker image') {
             writeFile file: 'config.yml', text: env.CONFIG
-            env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
-            def test = "docker build --build-arg CONFIG_FILE=config.yml --build-arg RANCHER2_PROVIDER_VERSION=\"${rancher2ProviderVersion}\" -f Dockerfile -t tfp-automation . "
-            sh test
+            env.CATTLE_TEST_CONFIG=rootPath+"config.yml"
+            try {
+                sh "./configure.sh"
+                sh "./build.sh"
+            } catch(err) {
+                sh "docker stop ${buildTestContainer}"
+                sh "docker rm -v ${buildTestContainer}"
+                error "Build Environment had failures."
+              }
     }
     
     stage('Run Module Test') {
-            def dockerImage = docker.image("tfp-automation")
-            dockerImage.inside() {
-                sh "go test -v -timeout ${timeout} -run ${params.TEST_CASE} ${testsDir}"
-            }
+        //     def dockerImage = docker.image(${golangImageName})
+        //     dockerImage.inside() {
+        //         sh "go test -v -timeout ${timeout} -run ${params.TEST_CASE} ${testsDir}"
+        //     }
+        try {
+          sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
+          "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} ${params.TEST_CASE} -timeout=${timeout} -v\""
+        } catch(err) {
+          echo 'Test run had failures. Collecting results...'
+        }
     }
 }
