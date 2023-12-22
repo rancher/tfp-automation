@@ -1,6 +1,8 @@
 FROM golang:1.19
 
 # USER root
+ENV GOPATH /root/go
+ENV PATH ${PATH}:/root/go/bin
 
 RUN apt-get update && apt-get install -y sudo
 
@@ -10,7 +12,7 @@ RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
 # RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
 
-WORKDIR /root/go/src/github.com/rancher/tfp-automation
+WORKDIR ${GOPATH}/src/github.com/rancher/tfp-automation
 
 COPY [".", "$WORKDIR"]
 
