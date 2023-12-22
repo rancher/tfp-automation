@@ -16,7 +16,7 @@ node {
   def envFile = ".env"
   def golangImageName = "rancher-validation-${job_name}${env.BUILD_NUMBER}"
 
-  def testsDir = "./tests/${env.TEST_PACKAGE}"
+  def testsDir = "github.com/josh-diamond/tfp-automation/tests/${env.TEST_PACKAGE}"
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
         branch = "${env.BRANCH}"
