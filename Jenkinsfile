@@ -72,7 +72,7 @@ node {
         //   "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} -- ${env.TEST_CASE} -timeout=${timeout} -v\""
         try {
           sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
-          "${golangImageName} sh -c \"/root/go/bin test -v -timeout ${timeout} ${params.TEST_CASE} ${testsDir}\""
+          "${golangImageName} sh -c \"/root/go test -v -timeout ${timeout} ${params.TEST_CASE} ${testsDir}\""
         } catch(err) {
           echo 'Test run had failures. Collecting results...'
         }
