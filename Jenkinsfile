@@ -14,7 +14,7 @@ node {
   def buildTestContainer = "${job_name}${env.BUILD_NUMBER}-buildtest"
 //   def cleanupTestContainer = "${job_name}${env.BUILD_NUMBER}-cleanuptest"
   def envFile = ".env"
-  def testResultsOut = "results.xml"
+//   def testResultsOut = "results.xml"
   def golangImageName = "rancher-validation-${job_name}${env.BUILD_NUMBER}"
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
@@ -68,7 +68,7 @@ node {
         //     }
         try {
           sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
-          "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile ${testResultsOut} -- ${env.TEST_CASE} -timeout=${timeout} -v\""
+          "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} ${env.TEST_CASE} -timeout=${timeout} -v\""
         } catch(err) {
           echo 'Test run had failures. Collecting results...'
         }
