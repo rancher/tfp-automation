@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/josh-diamond/tfp-automation/config"
+	"github.com/rancher/tfp-automation/config"
 	"github.com/zclconf/go-cty/cty"
 )
 

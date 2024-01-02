@@ -3,7 +3,7 @@ package provisioning
 import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	"github.com/josh-diamond/tfp-automation/config"
+	"github.com/rancher/tfp-automation/config"
 )
 
 // SupportedModules is a function that will check if the user-inputted module is supported.

@@ -3,8 +3,8 @@ package tests
 import (
 	"testing"
 
-	cleanup "github.com/josh-diamond/tfp-automation/framework/cleanup"
-	provisioning "github.com/josh-diamond/tfp-automation/tests/extensions/provisioning"
+	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	provisioning "github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )

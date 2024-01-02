@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/josh-diamond/tfp-automation/config"
-	set "github.com/josh-diamond/tfp-automation/framework/set"
+	"github.com/rancher/tfp-automation/config"
+	set "github.com/rancher/tfp-automation/framework/set"
 	"github.com/stretchr/testify/require"
 )
 
