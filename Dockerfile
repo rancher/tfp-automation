@@ -14,6 +14,8 @@ RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
 WORKDIR ${GOPATH}/src/github.com/rancher/tfp-automation
 
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on
+
 COPY [".", "$WORKDIR"]
 
 ADD ./* ./
@@ -32,10 +34,3 @@ COPY ${CONFIG_FILE} /config.yml
 
 ARG RANCHER2_PROVIDER_VERSION
 # RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
-
-
-
-
-
-
-
