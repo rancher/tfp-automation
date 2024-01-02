@@ -15,8 +15,6 @@ node {
 //   def cleanupTestContainer = "${job_name}${env.BUILD_NUMBER}-cleanuptest"
   def envFile = ".env"
   def golangImageName = "rancher-validation-${job_name}${env.BUILD_NUMBER}"
-
-  def testsDir = "github.com/josh-diamond/tfp-automation/tests/${env.TEST_PACKAGE}"
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
         branch = "${env.BRANCH}"
@@ -29,10 +27,15 @@ node {
   if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
         timeout = "${env.TIMEOUT}" 
   }
+  def testcase = "${env.TEST_CASE}"
+  if ("${env.TEST_CASE}" != "null" && "${env.TEST_CASE}" != "") {
+        testcase = "${env.TEST_CASE}" 
+  }
   def rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}"
   if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
         rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
   }
+  def testsDir = "github.com/josh-diamond/tfp-automation/tests/${env.TEST_PACKAGE}"
   stage('Checkout') {
           deleteDir()
           checkout([
@@ -64,7 +67,7 @@ node {
         //     }
         try {
           sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
-          "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} ${params.TEST_CASE} -timeout=${timeout} -v\""
+          "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} -- -run ${env.TEST_CASE} -timeout=${timeout} -v\""
         } catch(err) {
           echo 'Test run had failures. Collecting results...'
         }
