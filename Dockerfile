@@ -12,7 +12,7 @@ RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
 # RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
 
-WORKDIR ${GOPATH}/src/github.com/rancher/tfp-automation
+WORKDIR ${GOPATH}/src/github.com/josh-diamond/tfp-automation
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on
 
