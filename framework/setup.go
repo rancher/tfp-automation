@@ -5,8 +5,8 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	framework "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/tfp-automation/config"
-	set "github.com/rancher/tfp-automation/framework/set"
+	"github.com/josh-diamond/tfp-automation/config"
+	set "github.com/josh-diamond/tfp-automation/framework/set"
 )
 
 const (

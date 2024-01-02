@@ -1,4 +1,4 @@
-module github.com/rancher/tfp-automation
+module github.com/josh-diamond/tfp-automation
 
 go 1.20
 

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
-	set "github.com/rancher/tfp-automation/framework/set"
+	cleanup "github.com/josh-diamond/tfp-automation/framework/cleanup"
+	set "github.com/josh-diamond/tfp-automation/framework/set"
 )
 
 // ForceCleanup is a function that will forcibly run terraform destroy and cleanup Terraform resources.

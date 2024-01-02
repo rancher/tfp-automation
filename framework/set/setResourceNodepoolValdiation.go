@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/tfp-automation/config"
+	"github.com/josh-diamond/tfp-automation/config"
 	"github.com/sirupsen/logrus"
 )
 

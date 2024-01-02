@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/josh-diamond/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/suite"
 )
 
