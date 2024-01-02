@@ -16,7 +16,7 @@ ENV WORKSPACE ${GOPATH}/src/github.com/josh-diamond/tfp-automation
 WORKDIR $WORKSPACE/tests
 # WORKDIR ${GOPATH}/src/github.com/josh-diamond/tfp-automation
 
-RUN CGO_ENABLED=0 GO111MODULE=off
+RUN CGO_ENABLED=0
 
 COPY [".", "$WORKSPACE"]
 
@@ -25,7 +25,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN go mod download && \
     go install gotest.tools/gotestsum@latest
-RUN go clean -modcache
+
 RUN go mod tidy
 
 ARG TERRAFORM_VERSION=1.6.5
