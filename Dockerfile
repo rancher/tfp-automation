@@ -18,8 +18,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on
 
 COPY [".", "$WORKDIR"]
 
-COPY go.* ${WORKDIR}/
-
 ADD ./* ./
 SHELL ["/bin/bash", "-c"] 
 
