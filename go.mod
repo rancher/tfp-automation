@@ -25,6 +25,7 @@ require (
 	github.com/rancher/norman v0.0.0-20230831160711-5de27f66385d
 	github.com/rancher/shepherd v0.0.0-20231221153749-b41f540bc67e
 	github.com/sirupsen/logrus v1.9.3
+	github.com/josh-diamond/tfp-automation v0.0.0-20231208224452-846fa29bfbe1
 )
 
 require (
