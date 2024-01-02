@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	ranchFrame "github.com/rancher/rancher/tests/framework/pkg/config"
+	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	set "github.com/rancher/tfp-automation/framework/set"
 	"github.com/sirupsen/logrus"

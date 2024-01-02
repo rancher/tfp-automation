@@ -3,7 +3,7 @@ package framework
 import (
 	"time"
 
-	"github.com/rancher/rancher/tests/framework/clients/rancher"
+	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/wait"
 )

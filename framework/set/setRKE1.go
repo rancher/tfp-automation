@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/rancher/rancher/tests/framework/clients/rancher"
-	ranchFrame "github.com/rancher/rancher/tests/framework/pkg/config"
+	"github.com/rancher/shepherd/clients/rancher"
+	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	format "github.com/rancher/tfp-automation/framework/format"
 	"github.com/sirupsen/logrus"

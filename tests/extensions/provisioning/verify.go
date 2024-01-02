@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/rancher/tests/framework/clients/rancher"
-	"github.com/rancher/rancher/tests/framework/extensions/clusters"
-	psadeploy "github.com/rancher/rancher/tests/framework/extensions/psact"
+	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/extensions/clusters"
+	"github.com/rancher/shepherd/extensions/psact"
 	"github.com/rancher/tfp-automation/config"
 	waitState "github.com/rancher/tfp-automation/framework/wait/state"
 	"github.com/sirupsen/logrus"
@@ -76,7 +76,7 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	if clusterConfig.PSACT == string(config.RancherPrivileged) || clusterConfig.PSACT == string(config.RancherRestricted) {
 		require.NotEmpty(t, cluster.DefaultPodSecurityAdmissionConfigurationTemplateName)
 
-		_, err := psadeploy.CreateNginxDeployment(adminClient, clusterID, clusterConfig.PSACT)
+		err := psact.CreateNginxDeployment(adminClient, clusterID, clusterConfig.PSACT)
 		require.NoError(t, err)
 	}
 }
