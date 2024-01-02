@@ -35,7 +35,7 @@ node {
   if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
         rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
   }
-  def testsDir = "github.com/josh-diamond/tfp-automation/tests/${env.TEST_PACKAGE}"
+  def testsDir = "github.com/rancher/tfp-automation/tests/${env.TEST_PACKAGE}"
   stage('Checkout') {
           deleteDir()
           checkout([
