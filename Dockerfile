@@ -16,7 +16,7 @@ ENV WORKSPACE ${GOPATH}/src/github.com/josh-diamond/tfp-automation
 WORKDIR $WORKSPACE/tests
 # WORKDIR ${GOPATH}/src/github.com/josh-diamond/tfp-automation
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on
+RUN CGO_ENABLED=0
 
 COPY [".", "$WORKSPACE"]
 
