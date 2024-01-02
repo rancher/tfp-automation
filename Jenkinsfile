@@ -1,6 +1,6 @@
 #!groovy
 node {
-  def rootPath = "/root/go/src/github.com/josh-diamond/tfp-automation/"
+  def rootPath = "/root/go/src/github.com/rancher/tfp-automation/"
 //   def workPath = "/root/go/src/github.com/rancher/rancher/tests/v2/validation/"
 //   def workPath = "/home/jenkins/workspace/rancher_qa/tfp-automation"
 
@@ -36,7 +36,7 @@ node {
   if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
         rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
   }
-  def testsDir = "github.com/josh-diamond/tfp-automation/tests/${env.TEST_PACKAGE}"
+  def testsDir = "github.com/rancher/tfp-automation/tests/${env.TEST_PACKAGE}"
 
   stage('Checkout') {
           deleteDir()
