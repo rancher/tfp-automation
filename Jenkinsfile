@@ -72,6 +72,7 @@ node {
         // sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
         //   "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} -- ${env.TEST_CASE} -timeout=${timeout} -v\""
         try {
+          sh "go get -u github.com/rancher/tfp-automation@v0.0.0-20231221235250-846fa29bfbe1"
           sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
           "${golangImageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} -- ${env.TEST_CASE} -timeout=${timeout} -v\""
         } catch(err) {

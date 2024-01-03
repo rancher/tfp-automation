@@ -21,8 +21,7 @@ ADD ./* ./
 SHELL ["/bin/bash", "-c"] 
 
 RUN go mod download && \
-    go install gotest.tools/gotestsum@latest && \
-    go get -u github.com/rancher/tfp-automation@v0.0.0-20231221235250-846fa29bfbe1
+    go install gotest.tools/gotestsum@latest
 
 ARG TERRAFORM_VERSION=1.6.5
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && apt-get update && apt-get install unzip &&  unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && chmod u+x terraform && mv terraform /usr/bin/terraform
