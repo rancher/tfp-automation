@@ -5,7 +5,7 @@ go 1.20
 replace (
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20230525094739-ff2e09449efc
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20230525094739-ff2e09449efc
-	github.com/rancher/tfp-automation/tests/provisioning => ./tests/provisioning
+	github.com/rancher/tfp-automation => github.com/rancher/tfp-automation v0.0.0-20231221235250-846fa29bfbe1
 	k8s.io/api => k8s.io/api v0.27.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.27.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.27.4
