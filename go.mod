@@ -5,13 +5,13 @@ go 1.20
 replace (
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20230525094739-ff2e09449efc
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20230525094739-ff2e09449efc
+	github.com/rancher/tfp-automation/tests/provisioning => ./tests/provisioning
 	k8s.io/api => k8s.io/api v0.27.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.27.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.27.4
 	k8s.io/apiserver => k8s.io/apiserver v0.27.4
 	k8s.io/client-go => github.com/rancher/client-go v1.27.4-rancher1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f
-    github.com/rancher/tfp-automation/tests/provisioning => ./tests/provisioning
 )
 
 require (
