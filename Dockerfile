@@ -1,6 +1,7 @@
 FROM golang:1.20
 
 # USER root
+ENV GOROOT /usr/local/go/src/github.com/rancher/tfp-automation
 ENV GOPATH /root/go
 ENV PATH ${PATH}:/root/go/bin
 
