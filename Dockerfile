@@ -20,6 +20,9 @@ COPY [".", "$WORKSPACE"]
 ADD ./* ./
 SHELL ["/bin/bash", "-c"] 
 
+RUN go mod download && \
+    go install gotest.tools/gotestsum@latest
+    
 ARG TERRAFORM_VERSION=1.6.5
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && apt-get update && apt-get install unzip &&  unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && chmod u+x terraform && mv terraform /usr/bin/terraform
 
@@ -30,6 +33,3 @@ COPY ${CONFIG_FILE} /config.yml
 
 ARG RANCHER2_PROVIDER_VERSION
 # RUN chmod +x scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION}
-
-RUN go mod download && \
-    go install gotest.tools/gotestsum@latest
