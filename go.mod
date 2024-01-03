@@ -11,6 +11,7 @@ replace (
 	k8s.io/apiserver => k8s.io/apiserver v0.27.4
 	k8s.io/client-go => github.com/rancher/client-go v1.27.4-rancher1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f
+    github.com/rancher/tfp-automation/tests/provisioning => ./tests/provisioning
 )
 
 require (
