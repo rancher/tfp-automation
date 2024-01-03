@@ -1,7 +1,6 @@
 FROM golang:1.20
 
 # USER root
-ENV GOROOT /usr/local/go/src/github.com/rancher/tfp-automation
 ENV GOPATH /root/go
 ENV PATH ${PATH}:/root/go/bin
 
@@ -15,9 +14,8 @@ RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 
 ENV WORKSPACE ${GOPATH}/src/github.com/rancher/tfp-automation
 WORKDIR $WORKSPACE
-# WORKDIR ${GOPATH}/src/github.com/josh-diamond/tfp-automation
 
-COPY [".", "$WORKSPACE"]
+COPY [".tfp-automation", "$WORKSPACE"]
 
 ADD ./* ./
 SHELL ["/bin/bash", "-c"] 
