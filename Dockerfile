@@ -15,7 +15,7 @@ RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 ENV WORKSPACE ${GOPATH}/src/github.com/rancher/tfp-automation
 WORKDIR $WORKSPACE
 
-COPY [".tfp-automation", "$WORKSPACE"]
+COPY ["./tfp-automation", "$WORKSPACE"]
 
 ADD ./* ./
 SHELL ["/bin/bash", "-c"] 
