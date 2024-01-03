@@ -13,7 +13,7 @@ RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
 # RUN chown -R root:root $GOPATH/pkg/mod && chmod -R g+rwx $GOPATH/pkg/mod
 
 ENV WORKSPACE ${GOPATH}/src/github.com/rancher/tfp-automation
-WORKDIR $WORKSPACE/tests
+WORKDIR $WORKSPACE
 # WORKDIR ${GOPATH}/src/github.com/josh-diamond/tfp-automation
 
 RUN CGO_ENABLED=0
