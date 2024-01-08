@@ -1,4 +1,4 @@
-package framework
+package provisioning
 
 import (
 	"os"
@@ -58,11 +58,11 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	}
 
 	gkeConfigBlockBody.SetAttributeRaw("google_credential_secret", cloudCredSecret)
-	gkeConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.Region))
-	gkeConfigBlockBody.SetAttributeValue("project_id", cty.StringVal(terraformConfig.GKEProjectID))
+	gkeConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.GoogleConfig.Region))
+	gkeConfigBlockBody.SetAttributeValue("project_id", cty.StringVal(terraformConfig.GoogleConfig.GKEProjectID))
 	gkeConfigBlockBody.SetAttributeValue("kubernetes_version", cty.StringVal(k8sVersion))
-	gkeConfigBlockBody.SetAttributeValue("network", cty.StringVal(terraformConfig.GKENetwork))
-	gkeConfigBlockBody.SetAttributeValue("subnetwork", cty.StringVal(terraformConfig.GKESubnetwork))
+	gkeConfigBlockBody.SetAttributeValue("network", cty.StringVal(terraformConfig.GoogleConfig.GKENetwork))
+	gkeConfigBlockBody.SetAttributeValue("subnetwork", cty.StringVal(terraformConfig.GoogleConfig.GKESubnetwork))
 
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)

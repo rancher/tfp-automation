@@ -29,7 +29,7 @@ The provisioning tests have static test cases as well as dynamicInput tests you 
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.26.10+k3s2"
+  kubernetesVersion: "v1.26.11+k3s2"
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   ```
 

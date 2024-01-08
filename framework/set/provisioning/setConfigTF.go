@@ -1,4 +1,4 @@
-package framework
+package provisioning
 
 import (
 	"os"
@@ -53,10 +53,10 @@ func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName string) erro
 		err = SetGKE(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
 		return err
 	case strings.Contains(module, rke1):
-		err = SetRKE1(clusterName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, file)
+		err = SetRKE1(clusterName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
 		return err
 	case strings.Contains(module, rke2) || strings.Contains(module, k3s):
-		err = SetRKE2K3s(clusterName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, file)
+		err = SetRKE2K3s(clusterName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
 		return err
 	default:
 		logrus.Errorf("Unsupported module: %v", module)
