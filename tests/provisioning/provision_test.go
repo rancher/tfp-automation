@@ -29,14 +29,14 @@ type ProvisionTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (r *ProvisionTestSuite) SetupSuite() {
+func (p *ProvisionTestSuite) SetupSuite() {
 	testSession := session.NewSession()
-	r.session = testSession
+	p.session = testSession
 
 	client, err := rancher.NewClient("", testSession)
-	require.NoError(r.T(), err)
+	require.NoError(p.T(), err)
 
-	r.client = client
+	p.client = client
 
 	enabled := true
 	var testuser = namegen.AppendRandomString("testuser-")
@@ -49,30 +49,30 @@ func (r *ProvisionTestSuite) SetupSuite() {
 	}
 
 	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(r.T(), err)
+	require.NoError(p.T(), err)
 
 	newUser.Password = user.Password
 
 	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(r.T(), err)
+	require.NoError(p.T(), err)
 
-	r.standardUserClient = standardUserClient
+	p.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig("terraform", terraformConfig)
+	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
-	r.terraformConfig = terraformConfig
+	p.terraformConfig = terraformConfig
 
 	clusterConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig("terratest", clusterConfig)
+	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, clusterConfig)
 
-	r.clusterConfig = clusterConfig
+	p.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(r.T())
-	r.terraformOptions = terraformOptions
+	terraformOptions := framework.Setup(p.T())
+	p.terraformOptions = terraformOptions
 }
 
-func (r *ProvisionTestSuite) TestProvision() {
+func (p *ProvisionTestSuite) TestProvision() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
@@ -82,42 +82,42 @@ func (r *ProvisionTestSuite) TestProvision() {
 		nodeRoles []config.Nodepool
 		client    *rancher.Client
 	}{
-		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll, r.standardUserClient},
-		{"2 nodes - etcd/cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, r.standardUserClient},
-		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated, r.standardUserClient},
+		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll, p.standardUserClient},
+		{"2 nodes - etcd/cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, p.standardUserClient},
+		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated, p.standardUserClient},
 	}
 
 	for _, tt := range tests {
-		clusterConfig := *r.clusterConfig
+		clusterConfig := *p.clusterConfig
 		clusterConfig.Nodepools = tt.nodeRoles
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
-		r.Run((tt.name), func() {
-			provisioning.Provision(r.T(), clusterName, r.terraformConfig, &clusterConfig, r.terraformOptions)
-			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
+		p.Run((tt.name), func() {
+			provisioning.Provision(p.T(), clusterName, p.terraformConfig, &clusterConfig, p.terraformOptions)
+			provisioning.VerifyCluster(p.T(), tt.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 
-			cleanup.Cleanup(r.T(), r.terraformOptions)
+			cleanup.Cleanup(p.T(), p.terraformOptions)
 		})
 	}
 }
 
-func (r *ProvisionTestSuite) TestProvisionDynamicInput() {
+func (p *ProvisionTestSuite) TestProvisionDynamicInput() {
 	tests := []struct {
 		name   string
 		client *rancher.Client
 	}{
-		{config.StandardClientName.String(), r.standardUserClient},
+		{config.StandardClientName.String(), p.standardUserClient},
 	}
 
 	for _, tt := range tests {
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
-		r.Run((tt.name), func() {
-			provisioning.Provision(r.T(), clusterName, r.terraformConfig, r.clusterConfig, r.terraformOptions)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
+		p.Run((tt.name), func() {
+			provisioning.Provision(p.T(), clusterName, p.terraformConfig, p.clusterConfig, p.terraformOptions)
+			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
 
-			cleanup.Cleanup(r.T(), r.terraformOptions)
+			cleanup.Cleanup(p.T(), p.terraformOptions)
 		})
 	}
 }

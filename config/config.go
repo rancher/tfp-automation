@@ -1,10 +1,18 @@
 package config
 
+import (
+	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
+	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
+)
+
 // TestClientName is string enum for client/user names used in provisioning tests.
 type TestClientName string
 type PSACT string
 
 const (
+	TerraformConfigurationFileKey = "terraform"
+	TerratestConfigurationFileKey = "terratest"
+
 	StandardClientName TestClientName = "Standard User"
 
 	RancherPrivileged PSACT = "rancher-privileged"
@@ -94,78 +102,74 @@ func (c TestClientName) String() string {
 }
 
 type GoogleAuthEncodedJSON struct {
-	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url" yaml:"auth_provider_x509_cert_url"`
-	AuthURI                 string `json:"auth_uri" yaml:"auth_uri"`
-	ClientEmail             string `json:"client_email" yaml:"client_email"`
-	ClientID                string `json:"client_id" yaml:"client_id"`
-	ClientX509CertURL       string `json:"client_x509_cert_url" yaml:"client_x509_cert_url"`
-	PrivateKey              string `json:"private_key" yaml:"private_key"`
-	PrivateKeyID            string `json:"private_key_id" yaml:"private_key_id"`
-	ProjectID               string `json:"project_id" yaml:"project_id"`
-	TokenURI                string `json:"token_uri" yaml:"token_uri"`
-	Type                    string `json:"type" yaml:"type"`
+	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url,omitempty" yaml:"auth_provider_x509_cert_url,omitempty"`
+	AuthURI                 string `json:"auth_uri,omitempty" yaml:"auth_uri,omitempty"`
+	ClientEmail             string `json:"client_email,omitempty" yaml:"client_email,omitempty"`
+	ClientID                string `json:"client_id,omitempty" yaml:"client_id,omitempty"`
+	ClientX509CertURL       string `json:"client_x509_cert_url,omitempty" yaml:"client_x509_cert_url,omitempty"`
+	PrivateKey              string `json:"private_key,omitempty" yaml:"private_key,omitempty"`
+	PrivateKeyID            string `json:"private_key_id,omitempty" yaml:"private_key_id,omitempty"`
+	ProjectID               string `json:"project_id,omitempty" yaml:"project_id,omitempty"`
+	TokenURI                string `json:"token_uri,omitempty" yaml:"token_uri,omitempty"`
+	Type                    string `json:"type,omitempty" yaml:"type,omitempty"`
 }
 
 type Nodepool struct {
-	Quantity         int64  `json:"quantity" yaml:"quantity"`
-	Etcd             bool   `json:"etcd" yaml:"etcd"`
-	Controlplane     bool   `json:"controlplane" yaml:"controlplane"`
-	Worker           bool   `json:"worker" yaml:"worker"`
-	InstanceType     string `json:"instanceType" yaml:"instanceType"`
-	DesiredSize      int64  `json:"desiredSize" yaml:"desiredSize"`
-	MaxSize          int64  `json:"maxSize" yaml:"maxSize"`
-	MinSize          int64  `json:"minSize" yaml:"minSize"`
-	MaxPodsContraint int64  `json:"maxPodsContraint" yaml:"maxPodsContraint"`
+	Quantity         int64  `json:"quantity,omitempty" yaml:"quantity,omitempty"`
+	Etcd             bool   `json:"etcd,omitempty" yaml:"etcd,omitempty"`
+	Controlplane     bool   `json:"controlplane,omitempty" yaml:"controlplane,omitempty"`
+	Worker           bool   `json:"worker,omitempty" yaml:"worker,omitempty"`
+	InstanceType     string `json:"instanceType,omitempty" yaml:"instanceType,omitempty"`
+	DesiredSize      int64  `json:"desiredSize,omitempty" yaml:"desiredSize,omitempty"`
+	MaxSize          int64  `json:"maxSize,omitempty" yaml:"maxSize,omitempty"`
+	MinSize          int64  `json:"minSize,omitempty" yaml:"minSize,omitempty"`
+	MaxPodsContraint int64  `json:"maxPodsContraint,omitempty" yaml:"maxPodsContraint,omitempty"`
 }
 
 type TerraformConfig struct {
-	Ami                                 string   `json:"ami,omitempty" yaml:"ami,omitempty"`
-	AvailabilityZones                   []string `json:"availabilityZones" yaml:"availabilityZones"`
-	AWSAccessKey                        string   `json:"awsAccessKey" yaml:"awsAccessKey"`
-	AWSInstanceType                     string   `json:"awsInstanceType" yaml:"awsInstanceType"`
-	AWSRootSize                         int64    `json:"awsRootSize" yaml:"awsRootSize"`
-	AWSSecretKey                        string   `json:"awsSecretKey" yaml:"awsSecretKey"`
-	AWSSecurityGroupNames               []string `json:"awsSecurityGroupNames" yaml:"awsSecurityGroupNames"`
-	AWSSecurityGroups                   []string `json:"awsSecurityGroups" yaml:"awsSecurityGroups"`
-	AWSSubnetID                         string   `json:"awsSubnetID" yaml:"awsSubnetID"`
-	AWSSubnets                          []string `json:"awsSubnets" yaml:"awsSubnets"`
-	AWSVpcID                            string   `json:"awsVpcID" yaml:"awsVpcID"`
-	AWSZoneLetter                       string   `json:"awsZoneLetter" yaml:"awsZoneLetter"`
-	AzureClientID                       string   `json:"azureClientID" yaml:"azureClientID"`
-	AzureClientSecret                   string   `json:"azureClientSecret" yaml:"azureClientSecret"`
-	AzureSubscriptionID                 string   `json:"azureSubscriptionID" yaml:"azureSubscriptionID"`
-	CloudCredentialName                 string   `json:"cloudCredentialName" yaml:"cloudCredentialName"`
-	DefaultClusterRoleForProjectMembers string   `json:"defaultClusterRoleForProjectMembers" yaml:"defaultClusterRoleForProjectMembers"`
-	EnableNetworkPolicy                 bool     `json:"enableNetworkPolicy" yaml:"enableNetworkPolicy"`
-	GKENetwork                          string   `json:"gkeNetwork" yaml:"gkeNetwork"`
-	GKEProjectID                        string   `json:"gkeProjectID" yaml:"gkeProjectID"`
-	GKESubnetwork                       string   `json:"gkeSubnetwork" yaml:"gkeSubnetwork"`
-	HostnamePrefix                      string   `json:"hostnamePrefix" yaml:"hostnamePrefix"`
-	LinodeImage                         string   `json:"linodeImage" yaml:"linodeImage"`
-	LinodeRootPass                      string   `json:"linodeRootPass" yaml:"linodeRootPass"`
-	LinodeToken                         string   `json:"linodeToken" yaml:"linodeToken"`
-	MachineConfigName                   string   `json:"machineConfigName" yaml:"machineConfigName"`
-	Module                              string   `json:"module" yaml:"module"`
-	NetworkPlugin                       string   `json:"networkPlugin" yaml:"networkPlugin"`
-	NodeTemplateName                    string   `json:"nodeTemplateName" yaml:"nodeTemplateName"`
-	OSDiskSizeGB                        int64    `json:"osDiskSizeGB" yaml:"osDiskSizeGB"`
-	PrivateAccess                       bool     `json:"privateAccess" yaml:"privateAccess"`
-	ProviderVersion                     string   `json:"providerVersion" yaml:"providerVersion"`
-	PublicAccess                        bool     `json:"publicAccess" yaml:"publicAccess"`
-	Region                              string   `json:"region" yaml:"region"`
-	ResourceGroup                       string   `json:"resourceGroup" yaml:"resourceGroup"`
-	ResourceLocation                    string   `json:"resourceLocation" yaml:"resourceLocation"`
-	VMSize                              string   `json:"vmSize" yaml:"vmSize"`
+	AWSConfig                           AWSConfig               `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
+	AzureConfig                         AzureConfig             `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
+	GoogleConfig                        GoogleConfig            `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
+	LinodeConfig                        LinodeConfig            `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
+	CloudCredentialName                 string                  `json:"cloudCredentialName,omitempty" yaml:"cloudCredentialName,omitempty"`
+	DefaultClusterRoleForProjectMembers string                  `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
+	EnableNetworkPolicy                 bool                    `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
+	ETCD                                *rkev1.ETCD             `json:"etcd,omitempty" yaml:"etcd,omitempty"`
+	ETCDRKE1                            *management.ETCDService `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
+	HostnamePrefix                      string                  `json:"hostnamePrefix,omitempty" yaml:"hostnamePrefix,omitempty"`
+	MachineConfigName                   string                  `json:"machineConfigName,omitempty" yaml:"machineConfigName,omitempty"`
+	Module                              string                  `json:"module,omitempty" yaml:"module,omitempty"`
+	NetworkPlugin                       string                  `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
+	NodeTemplateName                    string                  `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
+	ProviderVersion                     string                  `json:"providerVersion,omitempty" yaml:"providerVersion,omitempty"`
+}
+
+type Scaling struct {
+	ScaledDownNodeCount int64      `json:"scaledDownNodeCount,omitempty" yaml:"scaledDownNodeCount,omitempty"`
+	ScaledDownNodepools []Nodepool `json:"scaledDownNodepools,omitempty" yaml:"scaledDownNodepools,omitempty"`
+	ScaledUpNodeCount   int64      `json:"scaledUpNodeCount,omitempty" yaml:"scaledUpNodeCount,omitempty"`
+	ScaledUpNodepools   []Nodepool `json:"scaledUpNodepools,omitempty" yaml:"scaledUpNodepools,omitempty"`
+}
+
+type Snapshots struct {
+	CreateSnapshot               bool   `json:"createSnapshot,omitempty" yaml:"createSnapshot,omitempty"`
+	RestoreSnapshot              bool   `json:"restoreSnapshot,omitempty" yaml:"restoreSnapshot,omitempty"`
+	SnapshotName                 string `json:"snapshotName,omitempty" yaml:"snapshotName,omitempty"`
+	UpgradeKubernetesVersion     string `json:"upgradeKubernetesVersion,omitempty" yaml:"upgradeKubernetesVersion,omitempty"`
+	SnapshotRestore              string `json:"snapshotRestore,omitempty" yaml:"snapshotRestore,omitempty"`
+	ControlPlaneConcurrencyValue string `json:"controlPlaneConcurrencyValue,omitempty" yaml:"controlPlaneConcurrencyValue,omitempty"`
+	ControlPlaneUnavailableValue string `json:"controlPlaneUnavailableValue,omitempty" yaml:"controlPlaneUnavailableValue,omitempty"`
+	WorkerConcurrencyValue       string `json:"workerConcurrencyValue,omitempty" yaml:"workerConcurrencyValue,omitempty"`
+	WorkerUnavailableValue       string `json:"workerUnavailableValue,omitempty" yaml:"workerUnavailableValue,omitempty"`
+	RecurringRestores            int    `json:"recurringRestores,omitempty" yaml:"recurringRestores,omitempty"`
 }
 
 type TerratestConfig struct {
-	KubernetesVersion         string     `json:"kubernetesVersion" yaml:"kubernetesVersion"`
-	NodeCount                 int64      `json:"nodeCount" yaml:"nodeCount"`
-	Nodepools                 []Nodepool `json:"nodepools" yaml:"nodepools"`
-	ScaledDownNodeCount       int64      `json:"scaledDownNodeCount" yaml:"scaledDownNodeCount"`
-	ScaledDownNodepools       []Nodepool `json:"scaledDownNodepools" yaml:"scaledDownNodepools"`
-	ScaledUpNodeCount         int64      `json:"scaledUpNodeCount" yaml:"scaledUpNodeCount"`
-	ScaledUpNodepools         []Nodepool `json:"scaledUpNodepools" yaml:"scaledUpNodepools"`
-	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion" yaml:"upgradedKubernetesVersion"`
-	PSACT                     string     `json:"psact" yaml:"psact"`
+	KubernetesVersion         string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
+	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
+	NodeCount                 int64      `json:"nodeCount,omitempty" yaml:"nodeCoun,omitemptyt"`
+	Nodepools                 []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
+	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
+	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
+	SnapshotInput             Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
 }

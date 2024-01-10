@@ -1,4 +1,4 @@
-package framework
+package provisioning
 
 import (
 	"os"
@@ -9,13 +9,12 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
-	format "github.com/rancher/tfp-automation/framework/format"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
-func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool, file *os.File) error {
+func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
 	rancherConfig := new(rancher.Config)
 	ranchFrame.LoadConfig("rancher", rancherConfig)
 
@@ -32,30 +31,11 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 	nodeTemplateBlockBody.SetAttributeValue("name", cty.StringVal(terraformConfig.NodeTemplateName))
 
 	if terraformConfig.Module == ec2RKE1 {
-		ec2ConfigBlock := nodeTemplateBlockBody.AppendNewBlock("amazonec2_config", nil)
-		ec2ConfigBlockBody := ec2ConfigBlock.Body()
-
-		ec2ConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.AWSAccessKey))
-		ec2ConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.AWSSecretKey))
-		ec2ConfigBlockBody.SetAttributeValue("ami", cty.StringVal(terraformConfig.Ami))
-		ec2ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.Region))
-		awsSecGroupNames := format.ListOfStrings(terraformConfig.AWSSecurityGroupNames)
-		ec2ConfigBlockBody.SetAttributeRaw("security_group", awsSecGroupNames)
-		ec2ConfigBlockBody.SetAttributeValue("subnet_id", cty.StringVal(terraformConfig.AWSSubnetID))
-		ec2ConfigBlockBody.SetAttributeValue("vpc_id", cty.StringVal(terraformConfig.AWSVpcID))
-		ec2ConfigBlockBody.SetAttributeValue("zone", cty.StringVal(terraformConfig.AWSZoneLetter))
-		ec2ConfigBlockBody.SetAttributeValue("root_size", cty.NumberIntVal(terraformConfig.AWSRootSize))
-		ec2ConfigBlockBody.SetAttributeValue("instance_type", cty.StringVal(terraformConfig.AWSInstanceType))
+		setEC2RKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	}
 
 	if terraformConfig.Module == linodeRKE1 {
-		linodeConfigBlock := nodeTemplateBlockBody.AppendNewBlock("linode_config", nil)
-		linodeConfigBlockBody := linodeConfigBlock.Body()
-
-		linodeConfigBlockBody.SetAttributeValue("image", cty.StringVal(terraformConfig.LinodeImage))
-		linodeConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.Region))
-		linodeConfigBlockBody.SetAttributeValue("root_pass", cty.StringVal(terraformConfig.LinodeRootPass))
-		linodeConfigBlockBody.SetAttributeValue("token", cty.StringVal(terraformConfig.LinodeToken))
+		setLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()
@@ -64,7 +44,7 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 	clusterBlockBody := clusterBlock.Body()
 
 	dependsOnTemp := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(`[rancher2_node_template.rancher2_node_template]`)},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_node_template.rancher2_node_template]")},
 	}
 
 	clusterBlockBody.SetAttributeRaw("depends_on", dependsOnTemp)
@@ -83,7 +63,38 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 
 	rootBody.AppendNewline()
 
-	clusterSyncNodePoolIDs := ``
+	servicesBlock := rkeConfigBlockBody.AppendNewBlock("services", nil)
+	servicesBlockBody := servicesBlock.Body()
+
+	etcdBlock := servicesBlockBody.AppendNewBlock("etcd", nil)
+	etcdBlockBody := etcdBlock.Body()
+
+	backupConfigBlock := etcdBlockBody.AppendNewBlock("backup_config", nil)
+	backupConfigBlockBody := backupConfigBlock.Body()
+
+	backupConfigBlockBody.SetAttributeValue("enabled", cty.BoolVal(true))
+	backupConfigBlockBody.SetAttributeValue("interval_hours", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.IntervalHours))
+	backupConfigBlockBody.SetAttributeValue("safe_timestamp", cty.BoolVal(terraformConfig.ETCDRKE1.BackupConfig.SafeTimestamp))
+	backupConfigBlockBody.SetAttributeValue("timeout", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.Timeout))
+
+	if terraformConfig.Module == ec2RKE1 && terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil {
+		s3ConfigBlock := backupConfigBlockBody.AppendNewBlock("s3_backup_config", nil)
+		s3ConfigBlockBody := s3ConfigBlock.Body()
+
+		s3ConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.AccessKey))
+		s3ConfigBlockBody.SetAttributeValue("bucket_name", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.BucketName))
+		s3ConfigBlockBody.SetAttributeValue("endpoint", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Endpoint))
+		s3ConfigBlockBody.SetAttributeValue("folder", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Folder))
+		s3ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Region))
+		s3ConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.SecretKey))
+	}
+
+	etcdBlockBody.SetAttributeValue("retention", cty.StringVal("72h"))
+	etcdBlockBody.SetAttributeValue("snapshot", cty.BoolVal(false))
+
+	rootBody.AppendNewline()
+
+	clusterSyncNodePoolIDs := ""
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
 
@@ -92,25 +103,25 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 			return err
 		}
 
-		nodePoolBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_node_pool", `pool` + poolNum})
+		nodePoolBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_node_pool", "pool" + poolNum})
 		nodePoolBlockBody := nodePoolBlock.Body()
 
 		dependsOnCluster := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`[rancher2_cluster.rancher2_cluster]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_cluster.rancher2_cluster]")},
 		}
 
 		nodePoolBlockBody.SetAttributeRaw("depends_on", dependsOnCluster)
 
 		clusterID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`rancher2_cluster.rancher2_cluster.id`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cluster.rancher2_cluster.id")},
 		}
 
 		nodePoolBlockBody.SetAttributeRaw("cluster_id", clusterID)
-		nodePoolBlockBody.SetAttributeValue("name", cty.StringVal(`pool`+poolNum))
-		nodePoolBlockBody.SetAttributeValue("hostname_prefix", cty.StringVal(terraformConfig.HostnamePrefix+`-pool`+poolNum+`-`))
+		nodePoolBlockBody.SetAttributeValue("name", cty.StringVal("pool"+poolNum))
+		nodePoolBlockBody.SetAttributeValue("hostname_prefix", cty.StringVal(terraformConfig.HostnamePrefix+"-pool"+poolNum+"-"))
 
 		nodeTempID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`rancher2_node_template.rancher2_node_template.id`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_node_template.rancher2_node_template.id")},
 		}
 
 		nodePoolBlockBody.SetAttributeRaw("node_template_id", nodeTempID)
@@ -122,10 +133,10 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 		rootBody.AppendNewline()
 
 		if count != len(nodePools) {
-			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + `rancher2_node_pool.pool` + poolNum + `.id, `
+			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + "rancher2_node_pool.pool" + poolNum + ".id, "
 		}
 		if count == len(nodePools) {
-			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + `rancher2_node_pool.pool` + poolNum + `.id`
+			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + "rancher2_node_pool.pool" + poolNum + ".id"
 		}
 
 		count++
@@ -135,13 +146,13 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 	clusterSyncBlockBody := clusterSyncBlock.Body()
 
 	clusterID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(`rancher2_cluster.rancher2_cluster.id`)},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cluster.rancher2_cluster.id")},
 	}
 
 	clusterSyncBlockBody.SetAttributeRaw("cluster_id", clusterID)
 
 	nodePoolIDs := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(`[` + clusterSyncNodePoolIDs + `]`)},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + clusterSyncNodePoolIDs + "]")},
 	}
 
 	clusterSyncBlockBody.SetAttributeRaw("node_pool_ids", nodePoolIDs)

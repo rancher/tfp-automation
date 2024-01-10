@@ -29,14 +29,14 @@ type KubernetesUpgradeTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (r *KubernetesUpgradeTestSuite) SetupSuite() {
+func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 	testSession := session.NewSession()
-	r.session = testSession
+	k.session = testSession
 
 	client, err := rancher.NewClient("", testSession)
-	require.NoError(r.T(), err)
+	require.NoError(k.T(), err)
 
-	r.client = client
+	k.client = client
 
 	enabled := true
 	var testuser = namegen.AppendRandomString("testuser-")
@@ -49,30 +49,30 @@ func (r *KubernetesUpgradeTestSuite) SetupSuite() {
 	}
 
 	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(r.T(), err)
+	require.NoError(k.T(), err)
 
 	newUser.Password = user.Password
 
 	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(r.T(), err)
+	require.NoError(k.T(), err)
 
-	r.standardUserClient = standardUserClient
+	k.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig("terraform", terraformConfig)
+	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
-	r.terraformConfig = terraformConfig
+	k.terraformConfig = terraformConfig
 
 	clusterConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig("terratest", clusterConfig)
+	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, clusterConfig)
 
-	r.clusterConfig = clusterConfig
+	k.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(r.T())
-	r.terraformOptions = terraformOptions
+	terraformOptions := framework.Setup(k.T())
+	k.terraformOptions = terraformOptions
 }
 
-func (r *KubernetesUpgradeTestSuite) TestKubernetesUpgrade() {
+func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgrade() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
@@ -82,50 +82,50 @@ func (r *KubernetesUpgradeTestSuite) TestKubernetesUpgrade() {
 		nodeRoles []config.Nodepool
 		client    *rancher.Client
 	}{
-		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll, r.standardUserClient},
-		{"2 nodes - etcd/cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, r.standardUserClient},
-		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated, r.standardUserClient},
+		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll, k.standardUserClient},
+		{"2 nodes - etcd/cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, k.standardUserClient},
+		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated, k.standardUserClient},
 	}
 
 	for _, tt := range tests {
-		clusterConfig := *r.clusterConfig
+		clusterConfig := *k.clusterConfig
 		clusterConfig.Nodepools = tt.nodeRoles
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
-		r.Run((tt.name), func() {
-			provisioning.Provision(r.T(), clusterName, r.terraformConfig, &clusterConfig, r.terraformOptions)
-			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
+		k.Run((tt.name), func() {
+			provisioning.Provision(k.T(), clusterName, k.terraformConfig, &clusterConfig, k.terraformOptions)
+			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 
-			provisioning.KubernetesUpgrade(r.T(), clusterName, r.terraformOptions, &clusterConfig)
-			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
-			provisioning.VerifyUpgradedKubernetesVersion(r.T(), tt.client, r.terraformConfig, clusterName, r.clusterConfig.UpgradedKubernetesVersion)
+			provisioning.KubernetesUpgrade(k.T(), clusterName, k.terraformOptions, &clusterConfig)
+			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
+			provisioning.VerifyUpgradedKubernetesVersion(k.T(), tt.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
 
-			cleanup.Cleanup(r.T(), r.terraformOptions)
+			cleanup.Cleanup(k.T(), k.terraformOptions)
 		})
 	}
 }
 
-func (r *KubernetesUpgradeTestSuite) TestKubernetesUpgradeDynamicInput() {
+func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgradeDynamicInput() {
 	tests := []struct {
 		name   string
 		client *rancher.Client
 	}{
-		{config.StandardClientName.String(), r.standardUserClient},
+		{config.StandardClientName.String(), k.standardUserClient},
 	}
 
 	for _, tt := range tests {
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
-		r.Run((tt.name), func() {
-			provisioning.Provision(r.T(), clusterName, r.terraformConfig, r.clusterConfig, r.terraformOptions)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
+		k.Run((tt.name), func() {
+			provisioning.Provision(k.T(), clusterName, k.terraformConfig, k.clusterConfig, k.terraformOptions)
+			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
-			provisioning.KubernetesUpgrade(r.T(), clusterName, r.terraformOptions, r.clusterConfig)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
-			provisioning.VerifyUpgradedKubernetesVersion(r.T(), r.client, r.terraformConfig, clusterName, r.clusterConfig.UpgradedKubernetesVersion)
+			provisioning.KubernetesUpgrade(k.T(), clusterName, k.terraformOptions, k.clusterConfig)
+			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
+			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
 
-			cleanup.Cleanup(r.T(), r.terraformOptions)
+			cleanup.Cleanup(k.T(), k.terraformOptions)
 		})
 	}
 }

@@ -3,7 +3,7 @@ package framework
 import (
 	"os"
 
-	set "github.com/rancher/tfp-automation/framework/set"
+	set "github.com/rancher/tfp-automation/framework/set/provisioning"
 	"github.com/sirupsen/logrus"
 )
 

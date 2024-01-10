@@ -6,7 +6,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
-	set "github.com/rancher/tfp-automation/framework/set"
+	set "github.com/rancher/tfp-automation/framework/set/provisioning"
 	"github.com/stretchr/testify/require"
 )
 

@@ -29,14 +29,14 @@ type ScaleTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (r *ScaleTestSuite) SetupSuite() {
+func (s *ScaleTestSuite) SetupSuite() {
 	testSession := session.NewSession()
-	r.session = testSession
+	s.session = testSession
 
 	client, err := rancher.NewClient("", testSession)
-	require.NoError(r.T(), err)
+	require.NoError(s.T(), err)
 
-	r.client = client
+	s.client = client
 
 	enabled := true
 	var testuser = namegen.AppendRandomString("testuser-")
@@ -49,30 +49,30 @@ func (r *ScaleTestSuite) SetupSuite() {
 	}
 
 	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(r.T(), err)
+	require.NoError(s.T(), err)
 
 	newUser.Password = user.Password
 
 	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(r.T(), err)
+	require.NoError(s.T(), err)
 
-	r.standardUserClient = standardUserClient
+	s.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig("terraform", terraformConfig)
+	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
-	r.terraformConfig = terraformConfig
+	s.terraformConfig = terraformConfig
 
 	clusterConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig("terratest", clusterConfig)
+	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, clusterConfig)
 
-	r.clusterConfig = clusterConfig
+	s.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(r.T())
-	r.terraformOptions = terraformOptions
+	terraformOptions := framework.Setup(s.T())
+	s.terraformOptions = terraformOptions
 }
 
-func (r *ScaleTestSuite) TestScale() {
+func (s *ScaleTestSuite) TestScale() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	scaleUpRolesAll := []config.Nodepool{config.ScaleUpAllRolesNodePool}
 	scaleDownRolesAll := []config.Nodepool{config.ScaleDownAllRolesNodePool}
@@ -92,16 +92,16 @@ func (r *ScaleTestSuite) TestScale() {
 		scaleDownNodeRoles []config.Nodepool
 		client             *rancher.Client
 	}{
-		{"Scaling 1 node all roles -> 4 nodes -> 3 nodes " + config.StandardClientName.String(), nodeRolesAll, scaleUpRolesAll, scaleDownRolesAll, r.standardUserClient},
-		{"Scaling 2 nodes shared roles -> 6 nodes -> 4 nodes  " + config.StandardClientName.String(), nodeRolesShared, scaleUpRolesShared, scaleDownRolesShared, r.standardUserClient},
-		{"Scaling 3 nodes dedicated roles -> 8 nodes -> 6 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated, r.standardUserClient},
+		{"Scaling 1 node all roles -> 4 nodes -> 3 nodes " + config.StandardClientName.String(), nodeRolesAll, scaleUpRolesAll, scaleDownRolesAll, s.standardUserClient},
+		{"Scaling 2 nodes shared roles -> 6 nodes -> 4 nodes  " + config.StandardClientName.String(), nodeRolesShared, scaleUpRolesShared, scaleDownRolesShared, s.standardUserClient},
+		{"Scaling 3 nodes dedicated roles -> 8 nodes -> 6 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated, s.standardUserClient},
 	}
 
 	for _, tt := range tests {
-		clusterConfig := *r.clusterConfig
+		clusterConfig := *s.clusterConfig
 		clusterConfig.Nodepools = tt.nodeRoles
-		clusterConfig.ScaledUpNodepools = tt.scaleUpNodeRoles
-		clusterConfig.ScaledDownNodepools = tt.scaleDownNodeRoles
+		clusterConfig.ScalingInput.ScaledUpNodepools = tt.scaleUpNodeRoles
+		clusterConfig.ScalingInput.ScaledDownNodepools = tt.scaleDownNodeRoles
 
 		var scaledUpCount, scaledDownCount int64
 
@@ -115,55 +115,55 @@ func (r *ScaleTestSuite) TestScale() {
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
-		r.Run((tt.name), func() {
-			provisioning.Provision(r.T(), clusterName, r.terraformConfig, &clusterConfig, r.terraformOptions)
-			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
+		s.Run((tt.name), func() {
+			provisioning.Provision(s.T(), clusterName, s.terraformConfig, &clusterConfig, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
-			clusterConfig.Nodepools = clusterConfig.ScaledUpNodepools
+			clusterConfig.Nodepools = clusterConfig.ScalingInput.ScaledUpNodepools
 
-			provisioning.Scale(r.T(), clusterName, r.terraformOptions, &clusterConfig)
-			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
-			provisioning.VerifyNodeCount(r.T(), tt.client, clusterName, scaledUpCount)
+			provisioning.Scale(s.T(), clusterName, s.terraformOptions, &clusterConfig)
+			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
+			provisioning.VerifyNodeCount(s.T(), tt.client, clusterName, scaledUpCount)
 
-			clusterConfig.Nodepools = clusterConfig.ScaledDownNodepools
+			clusterConfig.Nodepools = clusterConfig.ScalingInput.ScaledDownNodepools
 
-			provisioning.Scale(r.T(), clusterName, r.terraformOptions, &clusterConfig)
-			provisioning.VerifyCluster(r.T(), tt.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
-			provisioning.VerifyNodeCount(r.T(), tt.client, clusterName, scaledDownCount)
+			provisioning.Scale(s.T(), clusterName, s.terraformOptions, &clusterConfig)
+			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
+			provisioning.VerifyNodeCount(s.T(), tt.client, clusterName, scaledDownCount)
 
-			cleanup.Cleanup(r.T(), r.terraformOptions)
+			cleanup.Cleanup(s.T(), s.terraformOptions)
 		})
 	}
 }
 
-func (r *ScaleTestSuite) TestScaleDynamicInput() {
+func (s *ScaleTestSuite) TestScaleDynamicInput() {
 	tests := []struct {
 		name   string
 		client *rancher.Client
 	}{
-		{config.StandardClientName.String(), r.standardUserClient},
+		{config.StandardClientName.String(), s.standardUserClient},
 	}
 
 	for _, tt := range tests {
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
-		r.Run((tt.name), func() {
-			provisioning.Provision(r.T(), clusterName, r.terraformConfig, r.clusterConfig, r.terraformOptions)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
+		s.Run((tt.name), func() {
+			provisioning.Provision(s.T(), clusterName, s.terraformConfig, s.clusterConfig, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
-			r.clusterConfig.Nodepools = r.clusterConfig.ScaledUpNodepools
+			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledUpNodepools
 
-			provisioning.Scale(r.T(), clusterName, r.terraformOptions, r.clusterConfig)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
-			provisioning.VerifyNodeCount(r.T(), r.client, clusterName, r.clusterConfig.ScaledUpNodeCount)
+			provisioning.Scale(s.T(), clusterName, s.terraformOptions, s.clusterConfig)
+			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
+			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.clusterConfig.ScalingInput.ScaledUpNodeCount)
 
-			r.clusterConfig.Nodepools = r.clusterConfig.ScaledDownNodepools
+			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledDownNodepools
 
-			provisioning.Scale(r.T(), clusterName, r.terraformOptions, r.clusterConfig)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, r.clusterConfig)
-			provisioning.VerifyNodeCount(r.T(), r.client, clusterName, r.clusterConfig.ScaledDownNodeCount)
+			provisioning.Scale(s.T(), clusterName, s.terraformOptions, s.clusterConfig)
+			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
+			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.clusterConfig.ScalingInput.ScaledDownNodeCount)
 
-			cleanup.Cleanup(r.T(), r.terraformOptions)
+			cleanup.Cleanup(s.T(), s.terraformOptions)
 		})
 	}
 }

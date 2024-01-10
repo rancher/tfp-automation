@@ -33,7 +33,7 @@ Similar to the `provisioning` tests, the node scaling tests have static test cas
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.26.10+k3s2"
+  kubernetesVersion: "v1.26.11+k3s2"
   nodeCount: 3
   scaledUpNodeCount: 8
   scaledDownNodeCount: 6

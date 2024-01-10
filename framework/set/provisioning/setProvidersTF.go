@@ -1,4 +1,4 @@
-package framework
+package provisioning
 
 import (
 	"github.com/hashicorp/hcl/v2/hclwrite"

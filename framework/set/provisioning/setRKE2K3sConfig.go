@@ -1,59 +1,40 @@
-package framework
+package provisioning
 
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
-	format "github.com/rancher/tfp-automation/framework/format"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
-func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepool, file *os.File) error {
+func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
 	rancherConfig := new(rancher.Config)
 	ranchFrame.LoadConfig("rancher", rancherConfig)
 
 	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig("terraform", terraformConfig)
+	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
 	newFile, rootBody := setProvidersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 
 	if terraformConfig.Module == ec2RKE2 || terraformConfig.Module == ec2K3s {
-		cloudCredBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_cloud_credential", "rancher2_cloud_credential"})
-		cloudCredBlockBody := cloudCredBlock.Body()
-
-		cloudCredBlockBody.SetAttributeValue("name", cty.StringVal(terraformConfig.CloudCredentialName))
-
-		ec2CredBlock := cloudCredBlockBody.AppendNewBlock("amazonec2_credential_config", nil)
-		ec2CredBlockBody := ec2CredBlock.Body()
-
-		ec2CredBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.AWSAccessKey))
-		ec2CredBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.AWSSecretKey))
-
-		rootBody.AppendNewline()
+		setEC2RKE2K3SProvider(rootBody, terraformConfig)
 	}
 
 	if terraformConfig.Module == linodeRKE2 || terraformConfig.Module == linodeK3s {
-		cloudCredBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_cloud_credential", "rancher2_cloud_credential"})
-		cloudCredBlockBody := cloudCredBlock.Body()
-
-		cloudCredBlockBody.SetAttributeValue("name", cty.StringVal(terraformConfig.CloudCredentialName))
-
-		linodeCredBlock := cloudCredBlockBody.AppendNewBlock("linode_credential_config", nil)
-		linodeCredBlockBody := linodeCredBlock.Body()
-
-		linodeCredBlockBody.SetAttributeValue("token", cty.StringVal(terraformConfig.LinodeToken))
-
-		rootBody.AppendNewline()
+		setLinodeRKE2K3SProvider(rootBody, terraformConfig)
 	}
+
+	rootBody.AppendNewline()
 
 	machineConfigBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_machine_config_v2", "rancher2_machine_config_v2"})
 	machineConfigBlockBody := machineConfigBlock.Body()
@@ -61,26 +42,11 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 	machineConfigBlockBody.SetAttributeValue("generate_name", cty.StringVal(terraformConfig.MachineConfigName))
 
 	if terraformConfig.Module == ec2RKE2 || terraformConfig.Module == ec2K3s {
-		ec2ConfigBlock := machineConfigBlockBody.AppendNewBlock("amazonec2_config", nil)
-		ec2ConfigBlockBody := ec2ConfigBlock.Body()
-
-		ec2ConfigBlockBody.SetAttributeValue("ami", cty.StringVal(terraformConfig.Ami))
-		ec2ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.Region))
-		awsSecGroupNames := format.ListOfStrings(terraformConfig.AWSSecurityGroupNames)
-		ec2ConfigBlockBody.SetAttributeRaw("security_group", awsSecGroupNames)
-		ec2ConfigBlockBody.SetAttributeValue("subnet_id", cty.StringVal(terraformConfig.AWSSubnetID))
-		ec2ConfigBlockBody.SetAttributeValue("vpc_id", cty.StringVal(terraformConfig.AWSVpcID))
-		ec2ConfigBlockBody.SetAttributeValue("zone", cty.StringVal(terraformConfig.AWSZoneLetter))
+		setEC2RKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	}
 
 	if terraformConfig.Module == linodeRKE2 || terraformConfig.Module == linodeK3s {
-		linodeConfigBlock := machineConfigBlockBody.AppendNewBlock("linode_config", nil)
-		linodeConfigBlockBody := linodeConfigBlock.Body()
-
-		linodeConfigBlockBody.SetAttributeValue("image", cty.StringVal(terraformConfig.LinodeImage))
-		linodeConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.Region))
-		linodeConfigBlockBody.SetAttributeValue("root_pass", cty.StringVal(terraformConfig.LinodeRootPass))
-		linodeConfigBlockBody.SetAttributeValue("token", cty.StringVal(terraformConfig.LinodeToken))
+		setLinodeRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()
@@ -108,10 +74,10 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 		machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock("machine_pools", nil)
 		machinePoolsBlockBody := machinePoolsBlock.Body()
 
-		machinePoolsBlockBody.SetAttributeValue("name", cty.StringVal(`pool`+poolNum))
+		machinePoolsBlockBody.SetAttributeValue("name", cty.StringVal("tfp-pool"+poolNum))
 
 		cloudCredSecretName := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`rancher2_cloud_credential.rancher2_cloud_credential.id`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cloud_credential.rancher2_cloud_credential.id")},
 		}
 
 		machinePoolsBlockBody.SetAttributeRaw("cloud_credential_secret_name", cloudCredSecretName)
@@ -124,18 +90,56 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 		machineConfigBlockBody := machineConfigBlock.Body()
 
 		kind := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`rancher2_machine_config_v2.rancher2_machine_config_v2.kind`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_machine_config_v2.rancher2_machine_config_v2.kind")},
 		}
 
 		machineConfigBlockBody.SetAttributeRaw("kind", kind)
 
 		name := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`rancher2_machine_config_v2.rancher2_machine_config_v2.name`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_machine_config_v2.rancher2_machine_config_v2.name")},
 		}
 
 		machineConfigBlockBody.SetAttributeRaw("name", name)
 
 		count++
+	}
+
+	upgradeStrategyBlock := rkeConfigBlockBody.AppendNewBlock("upgrade_strategy", nil)
+	upgradeStrategyBlockBody := upgradeStrategyBlock.Body()
+
+	upgradeStrategyBlockBody.SetAttributeValue("control_plane_concurrency", cty.StringVal(("10%")))
+	upgradeStrategyBlockBody.SetAttributeValue("worker_concurrency", cty.StringVal(("10%")))
+
+	snapshotBlock := rkeConfigBlockBody.AppendNewBlock("etcd", nil)
+	snapshotBlockBody := snapshotBlock.Body()
+
+	snapshotBlockBody.SetAttributeValue("disable_snapshots", cty.BoolVal(terraformConfig.ETCD.DisableSnapshots))
+	snapshotBlockBody.SetAttributeValue("snapshot_schedule_cron", cty.StringVal(terraformConfig.ETCD.SnapshotScheduleCron))
+	snapshotBlockBody.SetAttributeValue("snapshot_retention", cty.NumberIntVal(int64(terraformConfig.ETCD.SnapshotRetention)))
+
+	if strings.Contains(terraformConfig.Module, "ec2") && terraformConfig.ETCD.S3 != nil {
+		s3ConfigBlock := snapshotBlockBody.AppendNewBlock("s3_config", nil)
+		s3ConfigBlockBody := s3ConfigBlock.Body()
+
+		cloudCredSecretName := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cloud_credential.rancher2_cloud_credential.id")},
+		}
+
+		s3ConfigBlockBody.SetAttributeValue("bucket", cty.StringVal(terraformConfig.ETCD.S3.Bucket))
+		s3ConfigBlockBody.SetAttributeValue("endpoint", cty.StringVal(terraformConfig.ETCD.S3.Endpoint))
+		s3ConfigBlockBody.SetAttributeRaw("cloud_credential_name", cloudCredSecretName)
+		s3ConfigBlockBody.SetAttributeValue("endpoint_ca", cty.StringVal(terraformConfig.ETCD.S3.EndpointCA))
+		s3ConfigBlockBody.SetAttributeValue("folder", cty.StringVal(terraformConfig.ETCD.S3.Folder))
+		s3ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.ETCD.S3.Region))
+		s3ConfigBlockBody.SetAttributeValue("skip_ssl_verify", cty.BoolVal(terraformConfig.ETCD.S3.SkipSSLVerify))
+	}
+
+	if snapshots.CreateSnapshot {
+		setCreateRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody)
+	}
+
+	if snapshots.RestoreSnapshot {
+		setRestoreRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody, snapshots)
 	}
 
 	_, err := file.Write(newFile.Bytes())

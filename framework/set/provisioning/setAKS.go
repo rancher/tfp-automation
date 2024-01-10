@@ -1,4 +1,4 @@
-package framework
+package provisioning
 
 import (
 	"os"
@@ -34,9 +34,9 @@ func SetAKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	azCredConfigBlock := cloudCredBlockBody.AppendNewBlock("azure_credential_config", nil)
 	azCredConfigBlockBody := azCredConfigBlock.Body()
 
-	azCredConfigBlockBody.SetAttributeValue("client_id", cty.StringVal(terraformConfig.AzureClientID))
-	azCredConfigBlockBody.SetAttributeValue("client_secret", cty.StringVal(terraformConfig.AzureClientSecret))
-	azCredConfigBlockBody.SetAttributeValue("subscription_id", cty.StringVal(terraformConfig.AzureSubscriptionID))
+	azCredConfigBlockBody.SetAttributeValue("client_id", cty.StringVal(terraformConfig.AzureConfig.AzureClientID))
+	azCredConfigBlockBody.SetAttributeValue("client_secret", cty.StringVal(terraformConfig.AzureConfig.AzureClientSecret))
+	azCredConfigBlockBody.SetAttributeValue("subscription_id", cty.StringVal(terraformConfig.AzureConfig.AzureSubscriptionID))
 
 	rootBody.AppendNewline()
 
@@ -53,13 +53,13 @@ func SetAKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	}
 
 	aksConfigBlockBody.SetAttributeRaw("cloud_credential_id", cloudCredID)
-	aksConfigBlockBody.SetAttributeValue("resource_group", cty.StringVal(terraformConfig.ResourceGroup))
-	aksConfigBlockBody.SetAttributeValue("resource_location", cty.StringVal(terraformConfig.ResourceLocation))
+	aksConfigBlockBody.SetAttributeValue("resource_group", cty.StringVal(terraformConfig.AzureConfig.ResourceGroup))
+	aksConfigBlockBody.SetAttributeValue("resource_location", cty.StringVal(terraformConfig.AzureConfig.ResourceLocation))
 	aksConfigBlockBody.SetAttributeValue("dns_prefix", cty.StringVal(terraformConfig.HostnamePrefix))
 	aksConfigBlockBody.SetAttributeValue("kubernetes_version", cty.StringVal(k8sVersion))
 	aksConfigBlockBody.SetAttributeValue("network_plugin", cty.StringVal(terraformConfig.NetworkPlugin))
 
-	availabilityZones := format.ListOfStrings(terraformConfig.AvailabilityZones)
+	availabilityZones := format.ListOfStrings(terraformConfig.AzureConfig.AvailabilityZones)
 
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
@@ -76,8 +76,8 @@ func SetAKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 		nodePoolsBlockBody.SetAttributeValue("name", cty.StringVal("pool"+poolNum))
 		nodePoolsBlockBody.SetAttributeValue("count", cty.NumberIntVal(pool.Quantity))
 		nodePoolsBlockBody.SetAttributeValue("orchestrator_version", cty.StringVal(k8sVersion))
-		nodePoolsBlockBody.SetAttributeValue("os_disk_size_gb", cty.NumberIntVal(terraformConfig.OSDiskSizeGB))
-		nodePoolsBlockBody.SetAttributeValue("vm_size", cty.StringVal(terraformConfig.VMSize))
+		nodePoolsBlockBody.SetAttributeValue("os_disk_size_gb", cty.NumberIntVal(terraformConfig.AzureConfig.OSDiskSizeGB))
+		nodePoolsBlockBody.SetAttributeValue("vm_size", cty.StringVal(terraformConfig.AzureConfig.VMSize))
 	}
 
 	_, err := file.Write(newFile.Bytes())

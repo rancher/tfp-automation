@@ -1,4 +1,4 @@
-package framework
+package provisioning
 
 import (
 	"os"
@@ -34,9 +34,9 @@ func SetEKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	ec2CredConfigBlock := cloudCredBlockBody.AppendNewBlock("amazonec2_credential_config", nil)
 	ec2CredConfigBlockBody := ec2CredConfigBlock.Body()
 
-	ec2CredConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.AWSAccessKey))
-	ec2CredConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.AWSSecretKey))
-	ec2CredConfigBlockBody.SetAttributeValue("default_region", cty.StringVal(terraformConfig.Region))
+	ec2CredConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.AWSConfig.AWSAccessKey))
+	ec2CredConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.AWSConfig.AWSSecretKey))
+	ec2CredConfigBlockBody.SetAttributeValue("default_region", cty.StringVal(terraformConfig.AWSConfig.Region))
 
 	rootBody.AppendNewline()
 
@@ -53,14 +53,14 @@ func SetEKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	}
 
 	eksConfigBlockBody.SetAttributeRaw("cloud_credential_id", cloudCredID)
-	eksConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.Region))
+	eksConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.AWSConfig.Region))
 	eksConfigBlockBody.SetAttributeValue("kubernetes_version", cty.StringVal(k8sVersion))
-	awsSubnetsList := format.ListOfStrings(terraformConfig.AWSSubnets)
+	awsSubnetsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSubnets)
 	eksConfigBlockBody.SetAttributeRaw("subnets", awsSubnetsList)
-	awsSecGroupsList := format.ListOfStrings(terraformConfig.AWSSecurityGroups)
+	awsSecGroupsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroups)
 	eksConfigBlockBody.SetAttributeRaw("security_groups", awsSecGroupsList)
-	eksConfigBlockBody.SetAttributeValue("private_access", cty.BoolVal(terraformConfig.PrivateAccess))
-	eksConfigBlockBody.SetAttributeValue("public_access", cty.BoolVal(terraformConfig.PublicAccess))
+	eksConfigBlockBody.SetAttributeValue("private_access", cty.BoolVal(terraformConfig.AWSConfig.PrivateAccess))
+	eksConfigBlockBody.SetAttributeValue("public_access", cty.BoolVal(terraformConfig.AWSConfig.PublicAccess))
 
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)

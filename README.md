@@ -215,19 +215,20 @@ terraform:
   providerVersion: '3.2.0'
   module: aks
   cloudCredentialName: tf-aks
-  azureClientID: XXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-  azureClientSecret: XXXXXXXXXXXXXXXXXXXXXXXXXX
-  azureSubscriptionID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-  resourceGroup: my-resource-group
-  resourceLocation: eastus
-  hostnamePrefix: tf-prefix
-  networkPlugin: kubenet
-  availabilityZones:
-    - '1'
-    - '2'
-    - '3'
-  osDiskSizeGB: 128
-  vmSize: Standard_DS2_v2
+  azureConfig:
+    azureClientID: XXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+    azureClientSecret: XXXXXXXXXXXXXXXXXXXXXXXXXX
+    azureSubscriptionID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+    resourceGroup: my-resource-group
+    resourceLocation: eastus
+    hostnamePrefix: tf-prefix
+    networkPlugin: kubenet
+    availabilityZones:
+      - '1'
+      - '2'
+      - '3'
+    osDiskSizeGB: 128
+    vmSize: Standard_DS2_v2
 ```
 
 ---
@@ -338,20 +339,21 @@ terraform:
   providerVersion: '3.2.0'
   module: eks
   cloudCredentialName: tf-eks
-  awsAccessKey: XXXXXXXXXXXXXXXXXXXX
-  awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  awsInstanceType: t3.medium
-  region: us-east-2
-  awsSubnets:
-    - subnet-xxxxxxxx
-    - subnet-yyyyyyyy
-    - subnet-zzzzzzzz
-  awsSecurityGroups:
-    - sg-xxxxxxxxxxxxxxxxx
   hostnamePrefix: tfp
-  publicAccess: true
-  privateAccess: true
-  nodeRole: arn:aws:iam::############:role/my-custom-NodeInstanceRole-############
+  awsConfig:
+    awsAccessKey: XXXXXXXXXXXXXXXXXXXX
+    awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    awsInstanceType: t3.medium
+    region: us-east-2
+    awsSubnets:
+      - subnet-xxxxxxxx
+      - subnet-yyyyyyyy
+      - subnet-zzzzzzzz
+    awsSecurityGroups:
+      - sg-xxxxxxxxxxxxxxxxx
+    publicAccess: true
+    privateAccess: true
+    nodeRole: arn:aws:iam::############:role/my-custom-NodeInstanceRole-############
 ```
 
 ---
@@ -429,11 +431,12 @@ terraform:
   providerVersion: '3.2.0'
   module: gke
   cloudCredentialName: tf-creds-gke
-  region: us-central1-a
-  gkeProjectID: my-project-id-here
-  gkeNetwork: default
-  gkeSubnetwork: default
   hostnamePrefix: tfp
+  google:
+    region: us-central1-a
+    gkeProjectID: my-project-id-here
+    gkeNetwork: default
+    gkeSubnetwork: default
 ```
 
 ---
@@ -551,20 +554,21 @@ terraform:
 terraform:
   providerVersion: '3.2.0'
   module: ec2_rke1
-  awsAccessKey: XXXXXXXXXXXXXXXXXXXX
-  awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ami:
-  awsInstanceType: t3.medium
-  region: us-east-2
-  awsSecurityGroupNames:
-    - security-group-name
-  awsSubnetID: subnet-xxxxxxxx
-  awsVpcID: vpc-xxxxxxxx
-  awsZoneLetter: a
-  awsRootSize: 80
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
+  awsConfig:
+    awsAccessKey: XXXXXXXXXXXXXXXXXXXX
+    awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ami:
+    awsInstanceType: t3.medium
+    region: us-east-2
+    awsSecurityGroupNames:
+      - security-group-name
+    awsSubnetID: subnet-xxxxxxxx
+    awsVpcID: vpc-xxxxxxxx
+    awsZoneLetter: a
+    awsRootSize: 80
 ```
 ---
 
@@ -638,12 +642,13 @@ terraform:
 terraform:
   providerVersion: '3.2.0'
   module: linode_rke1
-  linodeToken: XXXXXXXXXXXXXXXXXXXX
-  region: us-east
-  linodeRootPass: xxxxxxxxxxxxxxxx
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
+  linodeConfig:
+    linodeToken: XXXXXXXXXXXXXXXXXXXX
+    region: us-east
+    linodeRootPass: xxxxxxxxxxxxxxxx
 ```
 
 ---
@@ -754,18 +759,19 @@ terraform:
   providerVersion: '3.2.0'
   module: ec2_rke2
   cloudCredentialName: tf-creds-rke2
-  awsAccessKey: XXXXXXXXXXXXXXXXXXXX
-  awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ami:
-  region: us-east-2
-  awsSecurityGroupNames:
-    - my-security-group
-  awsSubnetID: subnet-xxxxxxxx
-  awsVpcID: vpc-xxxxxxxx
-  awsZoneLetter: a
   machineConfigName: tf-rke2
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: user
+  awsConfig:
+    awsAccessKey: XXXXXXXXXXXXXXXXXXXX
+    awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ami:
+    region: us-east-2
+    awsSecurityGroupNames:
+      - my-security-group
+    awsSubnetID: subnet-xxxxxxxx
+    awsVpcID: vpc-xxxxxxxx
+    awsZoneLetter: a
 ```
 
 ---
@@ -853,13 +859,14 @@ terraform:
   providerVersion: '3.2.0'
   module: linode_k3s
   cloudCredentialName: tf-linode-creds
-  linodeToken: XXXXXXXXXXXXXXXXXXXX
-  linodeImage: linode/ubuntu20.04
-  region: us-east
-  linodeRootPass: xxxxxxxxxxxx
   machineConfigName: tf-k3s
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: user
+  linodeConfig:
+    linodeToken: XXXXXXXXXXXXXXXXXXXX
+    linodeImage: linode/ubuntu20.04
+    region: us-east
+    linodeRootPass: xxxxxxxxxxxx
 ```
 
 ---
