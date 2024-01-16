@@ -9,6 +9,10 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
+	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
+	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
+	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -30,12 +34,15 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 
 	nodeTemplateBlockBody.SetAttributeValue("name", cty.StringVal(terraformConfig.NodeTemplateName))
 
-	if terraformConfig.Module == ec2RKE1 {
-		setEC2RKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	}
-
-	if terraformConfig.Module == linodeRKE1 {
-		setLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
+	switch {
+	case terraformConfig.Module == azure_rke1:
+		azure.SetAzureRKE1Provider(nodeTemplateBlockBody, terraformConfig)
+	case terraformConfig.Module == ec2RKE1:
+		ec2.SetEC2RKE1Provider(nodeTemplateBlockBody, terraformConfig)
+	case terraformConfig.Module == linodeRKE1:
+		linode.SetLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
+	case terraformConfig.Module == vsphereRKE1:
+		vsphere.SetVsphereRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()

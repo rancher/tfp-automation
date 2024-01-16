@@ -10,6 +10,10 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
+	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
+	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
+	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -26,12 +30,15 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 
 	rootBody.AppendNewline()
 
-	if terraformConfig.Module == ec2RKE2 || terraformConfig.Module == ec2K3s {
-		setEC2RKE2K3SProvider(rootBody, terraformConfig)
-	}
-
-	if terraformConfig.Module == linodeRKE2 || terraformConfig.Module == linodeK3s {
-		setLinodeRKE2K3SProvider(rootBody, terraformConfig)
+	switch {
+	case terraformConfig.Module == azure_rke2 || terraformConfig.Module == azure_k3s:
+		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig)
+	case terraformConfig.Module == ec2RKE2 || terraformConfig.Module == ec2K3s:
+		ec2.SetEC2RKE2K3SProvider(rootBody, terraformConfig)
+	case terraformConfig.Module == linodeRKE2 || terraformConfig.Module == linodeK3s:
+		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig)
+	case terraformConfig.Module == vsphereRKE2 || terraformConfig.Module == vsphereK3s:
+		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()
@@ -41,12 +48,15 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 
 	machineConfigBlockBody.SetAttributeValue("generate_name", cty.StringVal(terraformConfig.MachineConfigName))
 
-	if terraformConfig.Module == ec2RKE2 || terraformConfig.Module == ec2K3s {
-		setEC2RKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	}
-
-	if terraformConfig.Module == linodeRKE2 || terraformConfig.Module == linodeK3s {
-		setLinodeRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
+	switch {
+	case terraformConfig.Module == azure_rke2 || terraformConfig.Module == azure_k3s:
+		azure.SetAzureRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
+	case terraformConfig.Module == ec2RKE2 || terraformConfig.Module == ec2K3s:
+		ec2.SetEC2RKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
+	case terraformConfig.Module == linodeRKE2 || terraformConfig.Module == linodeK3s:
+		linode.SetLinodeRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
+	case terraformConfig.Module == vsphereRKE2 || terraformConfig.Module == vsphereK3s:
+		vsphere.SetVsphereRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()

@@ -1,4 +1,4 @@
-package config
+package nodeproviders
 
 type LinodeConfig struct {
 	LinodeImage    string `json:"linodeImage,omitempty" yaml:"linodeImage,omitempty"`

@@ -1,4 +1,4 @@
-package config
+package nodeproviders
 
 type GoogleConfig struct {
 	GKENetwork    string `json:"gkeNetwork,omitempty" yaml:"gkeNetwork,omitempty"`

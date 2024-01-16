@@ -10,18 +10,24 @@ import (
 )
 
 const (
-	aks        = "aks"
-	eks        = "eks"
-	gke        = "gke"
-	ec2RKE1    = "ec2_rke1"
-	ec2RKE2    = "ec2_rke2"
-	ec2K3s     = "ec2_k3s"
-	linodeRKE1 = "linode_rke1"
-	linodeRKE2 = "linode_rke2"
-	linodeK3s  = "linode_k3s"
-	rke1       = "rke1"
-	rke2       = "rke2"
-	k3s        = "k3s"
+	aks         = "aks"
+	eks         = "eks"
+	gke         = "gke"
+	azure_rke1  = "azure_rke1"
+	azure_rke2  = "azure_rke2"
+	azure_k3s   = "azure_k3s"
+	ec2RKE1     = "ec2_rke1"
+	ec2RKE2     = "ec2_rke2"
+	ec2K3s      = "ec2_k3s"
+	linodeRKE1  = "linode_rke1"
+	linodeRKE2  = "linode_rke2"
+	linodeK3s   = "linode_k3s"
+	vsphereRKE1 = "vsphere_rke1"
+	vsphereRKE2 = "vsphere_rke2"
+	vsphereK3s  = "vsphere_k3s"
+	rke1        = "rke1"
+	rke2        = "rke2"
+	k3s         = "k3s"
 )
 
 // SetConfigTF is a function that will set the main.tf file based on the module type.

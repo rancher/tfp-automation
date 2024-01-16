@@ -1,4 +1,4 @@
-package provisioning
+package ec2
 
 import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -7,14 +7,14 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// setEC2RKE1 is a helper function that will set the EC2 RKE1 Terraform configurations in the main.tf file.
-func setEC2RKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+// SetEC2RKE1Provider is a helper function that will set the EC2 RKE1 Terraform configurations in the main.tf file.
+func SetEC2RKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
 	ec2ConfigBlock := nodeTemplateBlockBody.AppendNewBlock("amazonec2_config", nil)
 	ec2ConfigBlockBody := ec2ConfigBlock.Body()
 
 	ec2ConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.AWSConfig.AWSAccessKey))
 	ec2ConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.AWSConfig.AWSSecretKey))
-	ec2ConfigBlockBody.SetAttributeValue("ami", cty.StringVal(terraformConfig.AWSConfig.Ami))
+	ec2ConfigBlockBody.SetAttributeValue("ami", cty.StringVal(terraformConfig.AWSConfig.AMI))
 	ec2ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.AWSConfig.Region))
 	awsSecGroupNames := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroupNames)
 	ec2ConfigBlockBody.SetAttributeRaw("security_group", awsSecGroupNames)
@@ -25,13 +25,16 @@ func setEC2RKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *c
 	ec2ConfigBlockBody.SetAttributeValue("instance_type", cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
 }
 
-// setLinodeRKE1 is a helper function that will set the Linode RKE1 Terraform configurations in the main.tf file.
-func setLinodeRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	linodeConfigBlock := nodeTemplateBlockBody.AppendNewBlock("linode_config", nil)
-	linodeConfigBlockBody := linodeConfigBlock.Body()
+// SetEC2RKE2K3SProvider is a helper function that will set the EC2 RKE2/K3S Terraform provider details in the main.tf file.
+func SetEC2RKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+	cloudCredBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_cloud_credential", "rancher2_cloud_credential"})
+	cloudCredBlockBody := cloudCredBlock.Body()
 
-	linodeConfigBlockBody.SetAttributeValue("image", cty.StringVal(terraformConfig.LinodeConfig.LinodeImage))
-	linodeConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.LinodeConfig.Region))
-	linodeConfigBlockBody.SetAttributeValue("root_pass", cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
-	linodeConfigBlockBody.SetAttributeValue("token", cty.StringVal(terraformConfig.LinodeConfig.LinodeToken))
+	cloudCredBlockBody.SetAttributeValue("name", cty.StringVal(terraformConfig.CloudCredentialName))
+
+	ec2CredBlock := cloudCredBlockBody.AppendNewBlock("amazonec2_credential_config", nil)
+	ec2CredBlockBody := ec2CredBlock.Body()
+
+	ec2CredBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.AWSConfig.AWSAccessKey))
+	ec2CredBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.AWSConfig.AWSSecretKey))
 }

@@ -14,10 +14,14 @@
         -   [AKS](#configurations-terraform-aks)
         -   [EKS](#configurations-terraform-eks)
         -   [GKE](#configurations-terraform-gke)
+        -   [AZURE_RKE1](#configurations-terraform-azure_rke1)
         -   [EC2_RKE1](#configurations-terraform-ec2_rke1)
         -   [LINODE_RKE1](#configurations-terraform-linode_rke1)
+        -   [VSPHERE_RKE1](#configurations-terraform-vsphere_rke1)
+        -   [AZURE_RKE2 + AZURE_K3S](#configurations-terraform-rke2_k3s_azure)
         -   [EC2_RKE2 + EC2_K3S](#configurations-terraform-rke2_k3s_ec2)
         -   [LINODE_RKE2 + LINODE_K3S](#configurations-terraform-rke2_k3s_linode)
+        -   [VSPHERE_RKE2 + VSPHERE_K3S](#configurations-terraform-rke2_k3s_vsphere)
     -   [Terratest](#configurations-terratest)
         -   [Nodepools](#configurations-terratest-nodepools)
             -   [AKS Nodepools](#configurations-terratest-nodepools-aks)
@@ -27,6 +31,7 @@
         -  [Provision](#configurations-terratest-provision)
         -  [Scale](#configurations-terratest-scale)
         -  [Kubernetes Upgrade](#configurations-terratest-kubernetes_upgrade)
+        -  [Snapshots](#configurations-terratest-snapshots)
         -  [Build Module](#configurations-terratest-build_module)
         -  [Cleanup](#configurations-terratest-cleanup)
 
@@ -232,7 +237,6 @@ terraform:
 ```
 
 ---
-
 
 <a name="configurations-terraform-eks"></a>
 #### :small_red_triangle: [Back to top](#top)
@@ -441,6 +445,193 @@ terraform:
 
 ---
 
+<a name="configurations-terraform-azure_rke1"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+##### AZURE_RKE1
+
+<table>
+  <tbody>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+      <th>Type</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>providerVersion</td>
+      <td>rancher2 provider version</td>
+      <td>string</td>
+      <td>'3.2.0'</td>
+    </tr>
+    <tr>
+      <td>module</td>
+      <td>specify terraform module here</td>
+      <td>string</td>
+      <td>ec2_rke1</td>
+    </tr>
+    <tr>
+      <td>availabilitySet</td>
+      <td>provide availability set to put virtual machine in</td>
+      <td>string</td>
+      <td>docker-machine</td>
+    </tr>
+    <tr>
+      <td>clientId</td>
+      <td>provide client ID</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>clientSecret</td>
+      <td>provide client secret</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>subscriptionId</td>
+      <td>provide subscription ID</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>customData</td>
+      <td>provide path to file</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>diskSize</td>
+      <td>disk size if using managed disk</td>
+      <td>string</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <td>dockerPort</td>
+      <td>port number for Docker engine</td>
+      <td>string</td>
+      <td>2376</td>
+    </tr>
+    <tr>
+      <td>environment</td>
+      <td>Azure environment</td>
+      <td>string</td>
+      <td>AzurePublicCloud</td>
+    </tr>
+    <tr>
+      <td>faultDomainCount</td>
+      <td>fault domain count to use for availability set</td>
+      <td>string</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>image</td>
+      <td>Azure virtual machine OS image</td>
+      <td>string</td>
+      <td>Canonical:0001-com-ubuntu-server-jammy:22_04-lts:latest</td>
+    </tr>
+    <tr>
+      <td>location</td>
+      <td>Azure region to create virtual machines</td>
+      <td>string</td>
+      <td>eastus2</td>
+    </tr>
+    <tr>
+      <td>managedDisks</td>
+      <td>configures VM and availability set for managed disks</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>noPublicIp</td>
+      <td>do not create a public IP address for the machine</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>openPort</td>
+      <td>make the specified port number accessible from the Internet</td>
+      <td>list</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>privateIpAddress</td>
+      <td>specify a static private IP address for the machine</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>resourceGroup</td>
+      <td>provide a Azure resource group</td>
+      <td>string</td>
+      <td>docker-machine</td>
+    </tr>
+    <tr>
+      <td>size</td>
+      <td>size for Azure virtual machine</td>
+      <td>string</td>
+      <td>Standard_A2</td>
+    </tr>
+    <tr>
+      <td>sshUser</td>
+      <td>ssh username</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>staticPublicIp</td>
+      <td>Assign a static public IP address to the machine</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>storageType</td>
+      <td>type of Storage Account to host the OS Disk for the machine</td>
+      <td>string</td>
+      <td>Standard_LRS</td>
+    </tr>
+    <tr>
+      <td>updateDomainCount</td>
+      <td>update domain count to use for availability set</td>
+      <td>string</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+
+##### Example:
+
+```yaml
+terraform:
+  providerVersion: '3.2.0'
+  module: azure_rke1
+  networkPlugin: canal
+  nodeTemplateName: tf-rke1-template
+  hostnamePrefix: tfp
+  azureConfig:
+    availabilitySet: "docker-machine"
+    clientId: ""
+    clientSecret: ""
+    subscriptionId: ""
+    customData: ""
+    diskSize: "100"
+    dockerPort: "2376"
+    environment: "AzurePublicCloud"
+    faultDomainCount: "3"
+    image: "Canonical:0001-com-ubuntu-server-jammy:22_04-lts:latest"
+    location: "westus2"
+    managedDisks: false
+    noPublicIp: false
+    openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
+    privateIpAddress: ""
+    resourceGroup: ""
+    size: "Standard_D2_v2"
+    sshUser: "azureuser"
+    staticPublicIp: false
+    storageType: "Standard_LRS"
+    updateDomainCount: "5"
+```
+---
 
 <a name="configurations-terraform-ec2_rke1"></a>
 #### :small_red_triangle: [Back to top](#top)
@@ -649,6 +840,405 @@ terraform:
     linodeToken: XXXXXXXXXXXXXXXXXXXX
     region: us-east
     linodeRootPass: xxxxxxxxxxxxxxxx
+```
+
+---
+
+<a name="configurations-terraform-vsphere_rke1"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+##### VSPHERE_RKE1
+
+<table>
+  <tbody>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+      <th>Type</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>providerVersion</td>
+      <td>rancher2 provider version</td>
+      <td>string</td>
+      <td>'3.2.0'</td>
+    </tr>
+    <tr>
+      <td>module</td>
+      <td>specify terraform module here</td>
+      <td>string</td>
+      <td>ec2_rke1</td>
+    </tr>
+    <tr>
+      <td>cfgparam</td>
+      <td>vSphere vm configuration parameters</td>
+      <td>list</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>cloneFrom</td>
+      <td>name of what VM you want to clone</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>cloudConfig</td>
+      <td>cloud config YAML content to inject as user-data</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>contentLibrary</td>
+      <td>specify the name of the library</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>cpuCount</td>
+      <td>vSphere CPU number for docker VM</td>
+      <td>string</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>creationType</td>
+      <td>disk size if using managed disk</td>
+      <td>string</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <td>datacenter</td>
+      <td>vSphere datacenter for docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>datastore</td>
+      <td>vSphere datastore for docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>datastoreCluster</td>
+      <td>fvSphere datastore cluster for VM</td>
+      <td>string</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>diskSize</td>
+      <td>vSphere size of disk for docker VM (in MB)</td>
+      <td>string</td>
+      <td>2048</td>
+    </tr>
+    <tr>
+      <td>folder</td>
+      <td>vSphere folder for the docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>hostsystem</td>
+      <td>vSphere compute resource where the docker VM will be instantiated</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>memorySize</td>
+      <td>vSphere size of memory for docker VM (in MB)</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>network</td>
+      <td>vSphere network where the docker VM will be attached</td>
+      <td>list</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>password</td>
+      <td>specify the vSphere password</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>pool</td>
+      <td>vSphere resource pool for docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>sshPassword</td>
+      <td>specify the ssh password</td>
+      <td>string</td>
+      <td>tc_user</td>
+    </tr>
+    <tr>
+      <td>sshPort</td>
+      <td>specify the ssh port</td>
+      <td>string</td>
+      <td>22</td>
+    </tr>
+    <tr>
+      <td>sshUser</td>
+      <td>specify the ssh user</td>
+      <td>string</td>
+      <td>docker</td>
+    </tr>
+    <tr>
+      <td>sshUserGroup</td>
+      <td>specify the ssh user group</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>username</td>
+      <td>specify the vSphere username</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>vcenter</td>
+      <td>specify the vcenter</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>vcenterPort</td>
+      <td>specify the vcenter port</td>
+      <td>string</td>
+      <td>44</td>
+    </tr>
+  </tbody>
+</table>
+
+##### Example:
+
+```yaml
+terraform:
+  providerVersion: '3.2.0'
+  module: vsphere_rke1
+  networkPlugin: canal
+  nodeTemplateName: tf-rke1-template
+  hostnamePrefix: tfp
+  vsphereConfig:  
+    cfgparam: ["disk.enableUUID=TRUE"]
+    cloneFrom: ""
+    cloudConfig: ""
+    contentLibrary: ""
+    cpuCount: "4"
+    creationType: "template"
+    datacenter: ""
+    datastore: ""
+    datastoreCluster: ""
+    diskSize: "40000"
+    folder: ""
+    hostsystem: ""
+    memorySize: "8192"
+    network: [""]
+    password: ""
+    pool: ""
+    sshPassword: "tcuser"
+    sshPort: "22"
+    sshUser: "docker"
+    sshUserGroup: "staff"
+    username: ""
+    vcenter: ""
+    vcenterPort: "443"
+```
+
+---
+
+<a name="configurations-terraform-rke2_k3s_azure"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+##### AZURE_RKE2 + AZURE_K3S
+
+<table>
+  <tbody>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+      <th>Type</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>providerVersion</td>
+      <td>rancher2 provider version</td>
+      <td>string</td>
+      <td>'3.2.0'</td>
+    </tr>
+    <tr>
+      <td>module</td>
+      <td>specify terraform module here</td>
+      <td>string</td>
+      <td>ec2_rke1</td>
+    </tr>
+    <tr>
+      <td>availabilitySet</td>
+      <td>provide availability set to put virtual machine in</td>
+      <td>string</td>
+      <td>docker-machine</td>
+    </tr>
+    <tr>
+      <td>clientId</td>
+      <td>provide client ID</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>clientSecret</td>
+      <td>provide client secret</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>subscriptionId</td>
+      <td>provide subscription ID</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>customData</td>
+      <td>provide path to file</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>diskSize</td>
+      <td>disk size if using managed disk</td>
+      <td>string</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <td>dockerPort</td>
+      <td>port number for Docker engine</td>
+      <td>string</td>
+      <td>2376</td>
+    </tr>
+    <tr>
+      <td>environment</td>
+      <td>Azure environment</td>
+      <td>string</td>
+      <td>AzurePublicCloud</td>
+    </tr>
+    <tr>
+      <td>faultDomainCount</td>
+      <td>fault domain count to use for availability set</td>
+      <td>string</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>image</td>
+      <td>Azure virtual machine OS image</td>
+      <td>string</td>
+      <td>Canonical:0001-com-ubuntu-server-jammy:22_04-lts:latest</td>
+    </tr>
+    <tr>
+      <td>location</td>
+      <td>Azure region to create virtual machines</td>
+      <td>string</td>
+      <td>eastus2</td>
+    </tr>
+    <tr>
+      <td>managedDisks</td>
+      <td>configures VM and availability set for managed disks</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>noPublicIp</td>
+      <td>do not create a public IP address for the machine</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>openPort</td>
+      <td>make the specified port number accessible from the Internet</td>
+      <td>list</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>privateIpAddress</td>
+      <td>specify a static private IP address for the machine</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>resourceGroup</td>
+      <td>provide a Azure resource group</td>
+      <td>string</td>
+      <td>docker-machine</td>
+    </tr>
+    <tr>
+      <td>size</td>
+      <td>size for Azure virtual machine</td>
+      <td>string</td>
+      <td>Standard_A2</td>
+    </tr>
+    <tr>
+      <td>sshUser</td>
+      <td>ssh username</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>staticPublicIp</td>
+      <td>Assign a static public IP address to the machine</td>
+      <td>bool</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <td>storageType</td>
+      <td>type of Storage Account to host the OS Disk for the machine</td>
+      <td>string</td>
+      <td>Standard_LRS</td>
+    </tr>
+    <tr>
+      <td>tenantId</td>
+      <td>provide the tenant ID</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>updateDomainCount</td>
+      <td>update domain count to use for availability set</td>
+      <td>string</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+
+##### Example:
+
+```yaml
+terraform:
+  providerVersion: '3.2.0'
+  module: azure_k3s
+  networkPlugin: canal
+  nodeTemplateName: tf-rke1-template
+  hostnamePrefix: tfp
+  azureConfig:
+    availabilitySet: "docker-machine"
+    clientId: ""
+    clientSecret: ""
+    subscriptionId: ""
+    customData: ""
+    diskSize: "100"
+    dockerPort: "2376"
+    environment: "AzurePublicCloud"
+    faultDomainCount: "3"
+    image: "Canonical:0001-com-ubuntu-server-jammy:22_04-lts:latest"
+    location: "westus2"
+    managedDisks: false
+    noPublicIp: false
+    openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
+    privateIpAddress: ""
+    resourceGroup: ""
+    size: "Standard_D2_v2"
+    sshUser: ""
+    staticPublicIp: false
+    storageType: "Standard_LRS"
+    tenantId: ""
+    updateDomainCount: "5"
 ```
 
 ---
@@ -871,6 +1461,209 @@ terraform:
 
 ---
 
+<a name="configurations-terraform-rke2_k3s_vsphere"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+##### VSPHERE_RKE2 + VSPHERE_K3S
+
+<table>
+  <tbody>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+      <th>Type</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>providerVersion</td>
+      <td>rancher2 provider version</td>
+      <td>string</td>
+      <td>'3.2.0'</td>
+    </tr>
+    <tr>
+      <td>module</td>
+      <td>specify terraform module here</td>
+      <td>string</td>
+      <td>ec2_rke1</td>
+    </tr>
+    <tr>
+      <td>cfgparam</td>
+      <td>vSphere vm configuration parameters</td>
+      <td>list</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>cloneFrom</td>
+      <td>name of what VM you want to clone</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>cloudConfig</td>
+      <td>cloud config YAML content to inject as user-data</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>contentLibrary</td>
+      <td>specify the name of the library</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>cpuCount</td>
+      <td>vSphere CPU number for docker VM</td>
+      <td>string</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>creationType</td>
+      <td>disk size if using managed disk</td>
+      <td>string</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <td>datacenter</td>
+      <td>vSphere datacenter for docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>datastore</td>
+      <td>vSphere datastore for docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>datastoreCluster</td>
+      <td>fvSphere datastore cluster for VM</td>
+      <td>string</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>diskSize</td>
+      <td>vSphere size of disk for docker VM (in MB)</td>
+      <td>string</td>
+      <td>2048</td>
+    </tr>
+    <tr>
+      <td>folder</td>
+      <td>vSphere folder for the docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>hostsystem</td>
+      <td>vSphere compute resource where the docker VM will be instantiated</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>memorySize</td>
+      <td>vSphere size of memory for docker VM (in MB)</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>network</td>
+      <td>vSphere network where the docker VM will be attached</td>
+      <td>list</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>password</td>
+      <td>specify the vSphere password</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>pool</td>
+      <td>vSphere resource pool for docker VM</td>
+      <td>string</td>
+      <td>''</td>
+    </tr>
+    <tr>
+      <td>sshPassword</td>
+      <td>specify the ssh password</td>
+      <td>string</td>
+      <td>tc_user</td>
+    </tr>
+    <tr>
+      <td>sshPort</td>
+      <td>specify the ssh port</td>
+      <td>string</td>
+      <td>22</td>
+    </tr>
+    <tr>
+      <td>sshUser</td>
+      <td>specify the ssh user</td>
+      <td>string</td>
+      <td>docker</td>
+    </tr>
+    <tr>
+      <td>sshUserGroup</td>
+      <td>specify the ssh user group</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>username</td>
+      <td>specify the vSphere username</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>vcenter</td>
+      <td>specify the vcenter</td>
+      <td>string</td>
+      <td>staff</td>
+    </tr>
+    <tr>
+      <td>vcenterPort</td>
+      <td>specify the vcenter port</td>
+      <td>string</td>
+      <td>44</td>
+    </tr>
+  </tbody>
+</table>
+
+##### Example:
+
+```yaml
+terraform:
+  providerVersion: '3.2.0'
+  module: vsphere_k3s
+  networkPlugin: canal
+  nodeTemplateName: tf-rke1-template
+  hostnamePrefix: tfp
+  vsphereConfig:  
+    cfgparam: ["disk.enableUUID=TRUE"]
+    cloneFrom: ""
+    cloudConfig: ""
+    contentLibrary: ""
+    cpuCount: "4"
+    creationType: "template"
+    datacenter: ""
+    datastore: ""
+    datastoreCluster: ""
+    diskSize: "40000"
+    folder: ""
+    hostsystem: ""
+    memorySize: "8192"
+    network: [""]
+    password: ""
+    pool: ""
+    sshPassword: "tcuser"
+    sshPort: "22"
+    sshUser: "docker"
+    sshUserGroup: "staff"
+    username: ""
+    vcenter: ""
+    vcenterPort: "443"
+```
+
+---
+
 
 <a name="configurations-terratest"></a>
 #### :small_red_triangle: [Back to top](#top)
@@ -1009,7 +1802,7 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
-  kubernetesVersion: v1.27.6-rancher1-1
+  kubernetesVersion: v1.27.8-rancher2-1
   nodeCount: 3
 
 
@@ -1139,7 +1932,7 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
-  kubernetesVersion: v1.24.9-rancher1-1
+  kubernetesVersion: v1.27.8-rancher2-1
   nodeCount: 3
   scaledUpNodeCount: 8
   scaledDownNodeCount: 6
@@ -1206,8 +1999,88 @@ terratest:
       controlplane: false
       worker: true
   nodeCount: 3
-  kubernetesVersion: v1.23.14+k3s1
-  upgradedKubernetesVersion: v1.24.8+k3s1
+  kubernetesVersion: v1.26.11+k3s2
+  upgradedKubernetesVersion: v1.27.8+k3s2
+```
+Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
+
+---
+
+<a name="configurations-terratest-snapshots"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+##### ETCD Snapshots
+
+<table>
+  <tbody>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+      <th>Type</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>snapshotInput</td>
+      <td>Block in which to define snapshot parameters</td>
+      <td>Snapshots</td>
+      <td>view section on snapshotInput in example yaml below</td>
+    </tr>
+    <tr>
+      <td>snapshotRestore</td>
+      <td>provide the snapshot restore option (none, kubernetesVersion or all)</td>
+      <td>string</td>
+      <td>none</td>
+    </tr>
+    <tr>
+      <td>upgradeKubernetesVersion</td>
+      <td>specify the kubernetes version to be upgraded to</td>
+      <td>string</td>
+      <td>view section on snapshotInput in example yaml below</td>
+    </tr>
+    <tr>
+      <td>controlPlaneConcurrencyValue</td>
+      <td>specify the control plane concurrency value used when upgrading</td>
+      <td>string</td>
+      <td>view section on snapshotInput in example yaml below</td>
+    </tr>
+    <tr>
+      <td>workerConcurrencyValue</td>
+      <td>specify the worker plane concurrency value used when upgrading RKE2/K3s clusters</td>
+      <td>string</td>
+      <td>view section on snapshotInput in example yaml below</td>
+    </tr>
+    <tr>
+      <td>controlPlaneUnavailableValue</td>
+      <td>specify the control plane unavailable value used when upgrading RKE1 clusters</td>
+      <td>string</td>
+      <td>view section on snapshotInput in example yaml below</td>
+    </tr>
+    <tr>
+      <td>workerUnavailableValue</td>
+      <td>specify the worker unavailable value used when upgrading RKE1 clusters</td>
+      <td>string</td>
+      <td>view section on snapshotInput in example yaml below</td>
+    </tr>
+    <tr>
+      <td>recurringRestores</td>
+      <td>specify the number of times a snapshot is going to restore</td>
+      <td>string</td>
+      <td>view section on snapshotInput in example yaml below</td>
+    </tr>
+  </tbody>
+</table>
+
+###### Example:
+```yaml
+terratest:
+  snapshotInput:
+    snapshotRestore: "none"
+    upgradeKubernetesVersion: ""
+    controlPlaneConcurrencyValue: "15%"
+    workerConcurrencyValue: "20%"
+    controlPlaneUnavailableValue: "1"
+    workerUnavailableValue: "10%"
+    recurringRestores: 1
 ```
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 
