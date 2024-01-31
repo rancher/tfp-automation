@@ -3,6 +3,7 @@ package config
 import (
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
+	"github.com/rancher/tfp-automation/config/nodeproviders"
 )
 
 // TestClientName is string enum for client/user names used in provisioning tests.
@@ -127,21 +128,22 @@ type Nodepool struct {
 }
 
 type TerraformConfig struct {
-	AWSConfig                           AWSConfig               `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
-	AzureConfig                         AzureConfig             `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
-	GoogleConfig                        GoogleConfig            `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
-	LinodeConfig                        LinodeConfig            `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
-	CloudCredentialName                 string                  `json:"cloudCredentialName,omitempty" yaml:"cloudCredentialName,omitempty"`
-	DefaultClusterRoleForProjectMembers string                  `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
-	EnableNetworkPolicy                 bool                    `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
-	ETCD                                *rkev1.ETCD             `json:"etcd,omitempty" yaml:"etcd,omitempty"`
-	ETCDRKE1                            *management.ETCDService `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
-	HostnamePrefix                      string                  `json:"hostnamePrefix,omitempty" yaml:"hostnamePrefix,omitempty"`
-	MachineConfigName                   string                  `json:"machineConfigName,omitempty" yaml:"machineConfigName,omitempty"`
-	Module                              string                  `json:"module,omitempty" yaml:"module,omitempty"`
-	NetworkPlugin                       string                  `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
-	NodeTemplateName                    string                  `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
-	ProviderVersion                     string                  `json:"providerVersion,omitempty" yaml:"providerVersion,omitempty"`
+	AWSConfig                           nodeproviders.AWSConfig     `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
+	AzureConfig                         nodeproviders.AzureConfig   `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
+	GoogleConfig                        nodeproviders.GoogleConfig  `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
+	LinodeConfig                        nodeproviders.LinodeConfig  `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
+	VsphereConfig                       nodeproviders.VsphereConfig `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`
+	CloudCredentialName                 string                      `json:"cloudCredentialName,omitempty" yaml:"cloudCredentialName,omitempty"`
+	DefaultClusterRoleForProjectMembers string                      `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
+	EnableNetworkPolicy                 bool                        `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
+	ETCD                                *rkev1.ETCD                 `json:"etcd,omitempty" yaml:"etcd,omitempty"`
+	ETCDRKE1                            *management.ETCDService     `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
+	HostnamePrefix                      string                      `json:"hostnamePrefix,omitempty" yaml:"hostnamePrefix,omitempty"`
+	MachineConfigName                   string                      `json:"machineConfigName,omitempty" yaml:"machineConfigName,omitempty"`
+	Module                              string                      `json:"module,omitempty" yaml:"module,omitempty"`
+	NetworkPlugin                       string                      `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
+	NodeTemplateName                    string                      `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
+	ProviderVersion                     string                      `json:"providerVersion,omitempty" yaml:"providerVersion,omitempty"`
 }
 
 type Scaling struct {

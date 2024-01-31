@@ -1,7 +1,7 @@
-package config
+package nodeproviders
 
 type AWSConfig struct {
-	Ami                   string   `json:"ami,omitempty" yaml:"ami,omitempty"`
+	AMI                   string   `json:"ami,omitempty" yaml:"ami,omitempty"`
 	AWSAccessKey          string   `json:"awsAccessKey,omitempty" yaml:"awsAccessKey,omitempty"`
 	AWSInstanceType       string   `json:"awsInstanceType,omitempty" yaml:"awsInstanceType,omitempty"`
 	AWSRootSize           int64    `json:"awsRootSize,omitempty" yaml:"awsRootSiz,omitemptye"`

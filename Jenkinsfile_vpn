@@ -1,0 +1,46 @@
+#!groovy
+node {
+  def testsDir = "./tests/${env.TEST_PACKAGE}"
+  def branch = "${env.BRANCH}"
+  if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
+        branch = "${env.BRANCH}"
+  }
+  def repo = scm.userRemoteConfigs
+  if ("${env.REPO}" != "null" && "${env.REPO}" != "") {
+    repo = [[url: "${env.REPO}"]]
+  }
+  def timeout = "${env.TIMEOUT}"
+  if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
+        timeout = "${env.TIMEOUT}" 
+  }
+  withCredentials([ string(credentialsId: 'EXTERNAL_ENCODED_VPN', variable: 'EXTERNAL_ENCODED_VPN'),
+                      string(credentialsId: 'VPN_ENCODED_LOGIN', variable: 'VPN_ENCODED_LOGIN')]) {
+  stage('Checkout') {
+          deleteDir()
+          checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${branch}"]],
+                    extensions: scm.extensions + [[$class: 'CleanCheckout']],
+                    userRemoteConfigs: repo
+                  ])
+        }
+    stage('Build Docker image') {
+            writeFile file: 'config.yml', text: env.CONFIG
+            env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation-vsphere/config.yml'
+            sh "echo ${env.EXTERNAL_ENCODED_VPN} | base64 -d > external.ovpn"
+            sh "echo ${env.VPN_ENCODED_LOGIN} | base64 -d > passfile"
+            sh "sed -i 's/auth-user-pass/auth-user-pass passfile/g' external.ovpn"
+            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg EXTERNAL_ENCODED_VPN=external.ovpn --build-arg VPN_ENCODED_LOGIN=passfile -f Dockerfile -t tfp-automation . "   
+    }
+    def runArgs = ""
+    if (env.EXTERNAL_ENCODED_VPN) {
+      runArgs = runArgs + "openvpn --daemon --config external.ovpn && sleep 10 && "
+    }
+    stage('Run Module Test') {
+            def dockerImage = docker.image('tfp-automation')
+            dockerImage.inside("-u root --privileged") {
+              sh "${runArgs} go test -v -timeout ${timeout} ${params.TEST_CASE} ${testsDir}"
+            }
+    }
+  }
+}

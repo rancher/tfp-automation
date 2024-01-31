@@ -34,9 +34,9 @@ func SetAKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	azCredConfigBlock := cloudCredBlockBody.AppendNewBlock("azure_credential_config", nil)
 	azCredConfigBlockBody := azCredConfigBlock.Body()
 
-	azCredConfigBlockBody.SetAttributeValue("client_id", cty.StringVal(terraformConfig.AzureConfig.AzureClientID))
-	azCredConfigBlockBody.SetAttributeValue("client_secret", cty.StringVal(terraformConfig.AzureConfig.AzureClientSecret))
-	azCredConfigBlockBody.SetAttributeValue("subscription_id", cty.StringVal(terraformConfig.AzureConfig.AzureSubscriptionID))
+	azCredConfigBlockBody.SetAttributeValue("client_id", cty.StringVal(terraformConfig.AzureConfig.ClientID))
+	azCredConfigBlockBody.SetAttributeValue("client_secret", cty.StringVal(terraformConfig.AzureConfig.ClientSecret))
+	azCredConfigBlockBody.SetAttributeValue("subscription_id", cty.StringVal(terraformConfig.AzureConfig.SubscriptionID))
 
 	rootBody.AppendNewline()
 
