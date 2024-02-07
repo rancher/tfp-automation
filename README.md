@@ -41,6 +41,12 @@
 
 ### <p align="center"> Configurations </p>
 
+###### The Rancher2 provider version is determined via the `RANCHER2_PROVIDER_VERSION` environment variable.
+
+##### When testing locally, it is required to set the `RANCHER2_PROVIDER_VERSION`, as type `string`, and formatted without a leading `v`.
+
+##### Example: `export RANCHER2_PROVIDER_VERSION="3.2.0"` or `export RANCHER2_PROVIDER_VERSION="4.0.0-rc6"`
+
 ##### These tests require an accurately configured `cattle-config.yaml` to successfully run.
 
 ##### Each `cattle-config.yaml` must include the following configurations:
@@ -127,12 +133,6 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>

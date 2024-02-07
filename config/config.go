@@ -143,7 +143,6 @@ type TerraformConfig struct {
 	Module                              string                      `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                      `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
 	NodeTemplateName                    string                      `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
-	ProviderVersion                     string                      `json:"providerVersion,omitempty" yaml:"providerVersion,omitempty"`
 }
 
 type Scaling struct {

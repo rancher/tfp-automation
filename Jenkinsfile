@@ -13,6 +13,14 @@ node {
   if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
         timeout = "${env.TIMEOUT}" 
   }
+  def terraformVersion = "${env.TERRAFORM_VERSION}"
+  if ("${env.TERRAFORM_VERSION}" != "null" && "${env.TERRAFORM_VERSION}" != "") {
+        terraformVersion = "${env.TERRAFORM_VERSION}" 
+  }
+  def rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}"
+  if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
+        rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
+  }
   stage('Checkout') {
           deleteDir()
           checkout([
@@ -25,12 +33,12 @@ node {
     stage('Build Docker image') {
             writeFile file: 'config.yml', text: env.CONFIG
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
-            sh 'docker build --build-arg CONFIG_FILE=config.yml -f Dockerfile -t tfp-automation . '
+            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} -f Dockerfile -t tfp-automation . "
     }
     
     stage('Run Module Test') {
             def dockerImage = docker.image('tfp-automation')
-            dockerImage.inside() {
+            dockerImage.inside("-u root") {
                 sh "go test -v -timeout ${timeout} ${params.TEST_CASE} ${testsDir}"
             }
     }
