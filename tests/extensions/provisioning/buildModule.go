@@ -2,6 +2,7 @@ package provisioning
 
 import (
 	"os"
+	"testing"
 
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
@@ -15,7 +16,7 @@ const (
 )
 
 // BuildModule is a function that builds the Terraform module.
-func BuildModule() error {
+func BuildModule(t *testing.T) error {
 	clusterConfig := new(config.TerratestConfig)
 	ranchFrame.LoadConfig(terratest, clusterConfig)
 
@@ -32,7 +33,7 @@ func BuildModule() error {
 		return err
 	}
 
-	logrus.Infof(string(module))
+	t.Log(string(module))
 
 	return nil
 }

@@ -1,6 +1,9 @@
 package provisioning
 
 import (
+	"os"
+	"strings"
+
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
@@ -9,6 +12,13 @@ import (
 
 // setProvidersTF is a helper function that will set the general Terraform configurations in the main.tf file.
 func setProvidersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig) (*hclwrite.File, *hclwrite.Body) {
+	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
+	
+	source := "rancher/rancher2"
+	if strings.Contains(providerVersion, "-rc") {
+		source = "terraform.local/local/rancher2"
+	}
+	
 	newFile := hclwrite.NewEmptyFile()
 	rootBody := newFile.Body()
 
@@ -19,8 +29,8 @@ func setProvidersTF(rancherConfig *rancher.Config, terraformConfig *config.Terra
 	reqProvsBlockBody := reqProvsBlock.Body()
 
 	reqProvsBlockBody.SetAttributeValue("rancher2", cty.ObjectVal(map[string]cty.Value{
-		"source":  cty.StringVal("rancher/rancher2"),
-		"version": cty.StringVal(terraformConfig.ProviderVersion),
+		"source":  cty.StringVal(source),
+		"version": cty.StringVal(providerVersion),
 	}))
 
 	rootBody.AppendNewline()
