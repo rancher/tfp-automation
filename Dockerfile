@@ -1,4 +1,4 @@
-FROM golang:1.20
+FROM golang:1.21
 
 RUN mkdir -p /.cache && chmod -R 777 /.cache
 RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
@@ -33,4 +33,3 @@ RUN if [[ -z '$EXTERNAL_ENCODED_VPN' ]] ; then \
 RUN if [[ "$RANCHER2_PROVIDER_VERSION" == *"-rc"* ]]; then \
       chmod +x ./scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION} ; \
     fi;
-

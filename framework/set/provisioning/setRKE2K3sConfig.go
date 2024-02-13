@@ -120,28 +120,30 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 	upgradeStrategyBlockBody.SetAttributeValue("control_plane_concurrency", cty.StringVal(("10%")))
 	upgradeStrategyBlockBody.SetAttributeValue("worker_concurrency", cty.StringVal(("10%")))
 
-	snapshotBlock := rkeConfigBlockBody.AppendNewBlock("etcd", nil)
-	snapshotBlockBody := snapshotBlock.Body()
+	if terraformConfig.ETCD != nil {
+		snapshotBlock := rkeConfigBlockBody.AppendNewBlock("etcd", nil)
+		snapshotBlockBody := snapshotBlock.Body()
 
-	snapshotBlockBody.SetAttributeValue("disable_snapshots", cty.BoolVal(terraformConfig.ETCD.DisableSnapshots))
-	snapshotBlockBody.SetAttributeValue("snapshot_schedule_cron", cty.StringVal(terraformConfig.ETCD.SnapshotScheduleCron))
-	snapshotBlockBody.SetAttributeValue("snapshot_retention", cty.NumberIntVal(int64(terraformConfig.ETCD.SnapshotRetention)))
+		snapshotBlockBody.SetAttributeValue("disable_snapshots", cty.BoolVal(terraformConfig.ETCD.DisableSnapshots))
+		snapshotBlockBody.SetAttributeValue("snapshot_schedule_cron", cty.StringVal(terraformConfig.ETCD.SnapshotScheduleCron))
+		snapshotBlockBody.SetAttributeValue("snapshot_retention", cty.NumberIntVal(int64(terraformConfig.ETCD.SnapshotRetention)))
 
-	if strings.Contains(terraformConfig.Module, "ec2") && terraformConfig.ETCD.S3 != nil {
-		s3ConfigBlock := snapshotBlockBody.AppendNewBlock("s3_config", nil)
-		s3ConfigBlockBody := s3ConfigBlock.Body()
+		if strings.Contains(terraformConfig.Module, "ec2") && terraformConfig.ETCD.S3 != nil {
+			s3ConfigBlock := snapshotBlockBody.AppendNewBlock("s3_config", nil)
+			s3ConfigBlockBody := s3ConfigBlock.Body()
 
-		cloudCredSecretName := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cloud_credential.rancher2_cloud_credential.id")},
+			cloudCredSecretName := hclwrite.Tokens{
+				{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cloud_credential.rancher2_cloud_credential.id")},
+			}
+
+			s3ConfigBlockBody.SetAttributeValue("bucket", cty.StringVal(terraformConfig.ETCD.S3.Bucket))
+			s3ConfigBlockBody.SetAttributeValue("endpoint", cty.StringVal(terraformConfig.ETCD.S3.Endpoint))
+			s3ConfigBlockBody.SetAttributeRaw("cloud_credential_name", cloudCredSecretName)
+			s3ConfigBlockBody.SetAttributeValue("endpoint_ca", cty.StringVal(terraformConfig.ETCD.S3.EndpointCA))
+			s3ConfigBlockBody.SetAttributeValue("folder", cty.StringVal(terraformConfig.ETCD.S3.Folder))
+			s3ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.ETCD.S3.Region))
+			s3ConfigBlockBody.SetAttributeValue("skip_ssl_verify", cty.BoolVal(terraformConfig.ETCD.S3.SkipSSLVerify))
 		}
-
-		s3ConfigBlockBody.SetAttributeValue("bucket", cty.StringVal(terraformConfig.ETCD.S3.Bucket))
-		s3ConfigBlockBody.SetAttributeValue("endpoint", cty.StringVal(terraformConfig.ETCD.S3.Endpoint))
-		s3ConfigBlockBody.SetAttributeRaw("cloud_credential_name", cloudCredSecretName)
-		s3ConfigBlockBody.SetAttributeValue("endpoint_ca", cty.StringVal(terraformConfig.ETCD.S3.EndpointCA))
-		s3ConfigBlockBody.SetAttributeValue("folder", cty.StringVal(terraformConfig.ETCD.S3.Folder))
-		s3ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.ETCD.S3.Region))
-		s3ConfigBlockBody.SetAttributeValue("skip_ssl_verify", cty.BoolVal(terraformConfig.ETCD.S3.SkipSSLVerify))
 	}
 
 	if snapshots.CreateSnapshot {
