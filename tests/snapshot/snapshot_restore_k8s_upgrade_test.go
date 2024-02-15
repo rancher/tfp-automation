@@ -79,7 +79,7 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) TestSnapshotRestoreK8sUpgrade() {
 
 	snapshotRestoreK8sVersion := config.TerratestConfig{
 		SnapshotInput: config.Snapshots{
-			UpgradeKubernetesVersion: s.clusterConfig.UpgradedKubernetesVersion,
+			UpgradeKubernetesVersion: "",
 			SnapshotRestore:          "kubernetesVersion",
 			RecurringRestores:        1,
 		},
@@ -87,7 +87,7 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) TestSnapshotRestoreK8sUpgrade() {
 
 	snapshotRestoreAll := config.TerratestConfig{
 		SnapshotInput: config.Snapshots{
-			UpgradeKubernetesVersion: s.clusterConfig.UpgradedKubernetesVersion,
+			UpgradeKubernetesVersion: "",
 			SnapshotRestore:          "all",
 			RecurringRestores:        1,
 		},
@@ -101,10 +101,10 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) TestSnapshotRestoreK8sUpgrade() {
 	}{
 		{"Restore Kubernetes version and etcd: 1 node all roles", nodeRolesAll, snapshotRestoreK8sVersion, s.client},
 		{"Restore cluster config, Kubernetes version and etcd: 1 node all roles", nodeRolesAll, snapshotRestoreAll, s.client},
-		{"Restore Kubernetes version and etcd: 2 nodes - etcd/cp roles per 1 node", nodeRolesShared, snapshotRestoreK8sVersion, s.client},
-		{"Restore cluster config, Kubernetes version and etcd: 2 nodes - etcd/cp roles per 1 node", nodeRolesShared, snapshotRestoreAll, s.client},
-		{"Restore Kubernetes version and etcd: 3 nodes - 1 role per node", nodeRolesDedicated, snapshotRestoreK8sVersion, s.client},
-		{"Restore cluster config, Kubernetes version and etcd: 3 nodes - 1 role per node", nodeRolesDedicated, snapshotRestoreAll, s.client},
+		{"Restore Kubernetes version and etcd: 2 nodes shared roles", nodeRolesShared, snapshotRestoreK8sVersion, s.client},
+		{"Restore cluster config, Kubernetes version and etcd: 2 nodes shared roles", nodeRolesShared, snapshotRestoreAll, s.client},
+		{"Restore Kubernetes version and etcd: 3 nodes dedicated roles", nodeRolesDedicated, snapshotRestoreK8sVersion, s.client},
+		{"Restore cluster config, Kubernetes version and etcd: 3 nodes dedicated roles", nodeRolesDedicated, snapshotRestoreAll, s.client},
 	}
 
 	for _, tt := range tests {
@@ -128,6 +128,10 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) TestSnapshotRestoreK8sUpgrade() {
 }
 
 func (s *SnapshotRestoreK8sUpgradeTestSuite) TestSnapshotRestoreK8sUpgradeDynamicInput() {
+	if s.clusterConfig.SnapshotInput == (config.Snapshots{}) {
+		s.T().Skip()
+	}
+
 	tests := []struct {
 		name   string
 		client *rancher.Client

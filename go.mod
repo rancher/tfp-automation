@@ -1,6 +1,6 @@
 module github.com/rancher/tfp-automation
 
-go 1.20
+go 1.21
 
 replace (
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20230525094739-ff2e09449efc
@@ -24,7 +24,7 @@ require (
 	github.com/gruntwork-io/terratest v0.42.0
 	github.com/rancher/norman v0.0.0-20230831160711-5de27f66385d
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20231221153749-b41f540bc67e
+	github.com/rancher/shepherd v0.0.0-20240212210618-6f6f377a7e21
 	github.com/sirupsen/logrus v1.9.3
 )
 
@@ -187,7 +187,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.28.3 // indirect
-	k8s.io/cli-runtime v0.27.6 // indirect
+	k8s.io/cli-runtime v0.27.9 // indirect
 	k8s.io/client-go v12.0.0+incompatible // indirect
 	k8s.io/component-base v0.28.3 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect

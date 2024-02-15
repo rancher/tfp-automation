@@ -1893,6 +1893,10 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
 ```yaml
 # this example is valid for RKE1 scale
 terratest:
+  kubernetesVersion: v1.27.8-rancher2-1
+  nodeCount: 3
+  scaledUpNodeCount: 8
+  scaledDownNodeCount: 6
   nodepools:
     - quantity: 1
       etcd: true
@@ -1906,36 +1910,33 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
-  scaledUpNodepools:
-    - quantity: 3
-      etcd: true
-      controlplane: false
-      worker: false
-    - quantity: 2
-      etcd: false
-      controlplane: true
-      worker: false
-    - quantity: 3
-      etcd: false
-      controlplane: false
-      worker: true
-  scaledDownNodepools:
-    - quantity: 3
-      etcd: true
-      controlplane: false
-      worker: false
-    - quantity: 2
-      etcd: false
-      controlplane: true
-      worker: false
-    - quantity: 1
-      etcd: false
-      controlplane: false
-      worker: true
-  kubernetesVersion: v1.27.8-rancher2-1
-  nodeCount: 3
-  scaledUpNodeCount: 8
-  scaledDownNodeCount: 6
+  scalingInput:
+    scaledUpNodepools:
+      - quantity: 3
+        etcd: true
+        controlplane: false
+        worker: false
+      - quantity: 2
+        etcd: false
+        controlplane: true
+        worker: false
+      - quantity: 3
+        etcd: false
+        controlplane: false
+        worker: true
+    scaledDownNodepools:
+      - quantity: 3
+        etcd: true
+        controlplane: false
+        worker: false
+      - quantity: 2
+        etcd: false
+        controlplane: true
+        worker: false
+      - quantity: 1
+        etcd: false
+        controlplane: false
+        worker: true
 ```
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 

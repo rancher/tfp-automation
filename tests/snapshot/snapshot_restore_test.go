@@ -92,8 +92,8 @@ func (s *SnapshotRestoreTestSuite) TestSnapshotRestoreETCDOnly() {
 		client       *rancher.Client
 	}{
 		{"Restore etcd only: 1 node all roles", nodeRolesAll, snapshotRestoreNone, s.client},
-		{"Restore etcd only: 2 nodes - etcd/cp roles per 1 node", nodeRolesShared, snapshotRestoreNone, s.client},
-		{"Restore etcd only: 3 nodes - 1 role per node", nodeRolesDedicated, snapshotRestoreNone, s.client},
+		{"Restore etcd only: 2 nodes shared roles", nodeRolesShared, snapshotRestoreNone, s.client},
+		{"Restore etcd only: 3 nodes dedicated roles", nodeRolesDedicated, snapshotRestoreNone, s.client},
 	}
 
 	for _, tt := range tests {
@@ -117,6 +117,10 @@ func (s *SnapshotRestoreTestSuite) TestSnapshotRestoreETCDOnly() {
 }
 
 func (s *SnapshotRestoreTestSuite) TestSnapshotRestoreETCDOnlyDynamicInput() {
+	if s.clusterConfig.SnapshotInput == (config.Snapshots{}) {
+		s.T().Skip()
+	}
+
 	tests := []struct {
 		name   string
 		client *rancher.Client

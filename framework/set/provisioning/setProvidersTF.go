@@ -13,12 +13,12 @@ import (
 // setProvidersTF is a helper function that will set the general Terraform configurations in the main.tf file.
 func setProvidersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig) (*hclwrite.File, *hclwrite.Body) {
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
-	
+
 	source := "rancher/rancher2"
 	if strings.Contains(providerVersion, "-rc") {
 		source = "terraform.local/local/rancher2"
 	}
-	
+
 	newFile := hclwrite.NewEmptyFile()
 	rootBody := newFile.Body()
 

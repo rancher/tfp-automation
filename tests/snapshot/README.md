@@ -4,12 +4,13 @@ In the snapshot tests, the following workflow is followed:
 
 1. Provision a downstream cluster
 2. Perform post-cluster provisioning checks
-3. Check if the downstream cluster is RKE1, RKE2 or K3S
-4. Perform etcd snapshot
-5. Perform post etcd snapshot checks
-6. Perform etcd restore
-7. Perform post etcd restore checks
+3. Perform etcd snapshot
+4. Perform post etcd snapshot checks
+5. Perform etcd restore
+6. Perform post etcd restore checks
 7. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
+
+NOTE: Only RKE2/K3s clusters are supported in this package - RKE1 clusters are NOT supported. For reference, see this [ticket](https://github.com/rancher/terraform-provider-rancher2/issues/1292). 
 
 Please see below for more details for your config. Please note that the config can be in either JSON or YAML (all examples are illustrated in YAML).
 
@@ -48,13 +49,14 @@ Similar to the `provisioning` tests, the snapshot tests have static test cases a
 ```yaml
 terratest:
   kubernetesVersion: "v1.26.11+k3s2"
-  upgradeKubernetesVersion: "" # If left blank, the default version in Rancher will be used.
-  snapshotRestore: "all" # Options include none, kubernetesVersion, all. Option 'none' means that only the etcd will be restored.
-  controlPlaneConcurrencyValue: "15%"
-  workerConcurrencyValue: "20%"
-  controlPlaneUnavailableValue: "1"
-  workerUnavailableValue: "10%"
-  recurringRestores: 1 # By default, this is set to 1 if this field is not included in the config.
+  snapshotInput:
+    upgradeKubernetesVersion: "" # If left blank, the default version in Rancher will be used.
+    snapshotRestore: "all" # Options include none, kubernetesVersion, all. Option 'none' means that only the etcd will be restored.
+    controlPlaneConcurrencyValue: "15%"
+    workerConcurrencyValue: "20%"
+    controlPlaneUnavailableValue: "3"
+    workerUnavailableValue: "15%"
+    recurringRestores: 1 # By default, this is set to 1 if this field is not included in the config.
   ```
 
 See the below examples on how to run the tests:

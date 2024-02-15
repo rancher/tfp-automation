@@ -51,32 +51,33 @@ terratest:
       controlplane: false
       worker: true
       quantity: 1
-  scaledUpNodepools:
-    - etcd: true
-      controlplane: false
-      worker: false
-      quantity: 3
-    - etcd: false
-      controlplane: true
-      worker: false
-      quantity: 2
-    - etcd: false
-      controlplane: false
-      worker: true
-      quantity: 3
-  scaledDownNodepools:
-    - etcd: true
-      controlplane: false
-      worker: false
-      quantity: 3
-    - etcd: false
-      controlplane: true
-      worker: false
-      quantity: 2
-    - etcd: false
-      controlplane: false
-      worker: true
-      quantity: 1
+  scalingInput:
+    scaledUpNodepools:
+      - etcd: true
+        controlplane: false
+        worker: false
+        quantity: 3
+      - etcd: false
+        controlplane: true
+        worker: false
+        quantity: 2
+      - etcd: false
+        controlplane: false
+        worker: true
+        quantity: 3
+    scaledDownNodepools:
+      - etcd: true
+        controlplane: false
+        worker: false
+        quantity: 3
+      - etcd: false
+        controlplane: true
+        worker: false
+        quantity: 2
+      - etcd: false
+        controlplane: false
+        worker: true
+        quantity: 1
   ```
 
 See the below examples on how to run the tests:

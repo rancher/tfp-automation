@@ -73,31 +73,33 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 	servicesBlock := rkeConfigBlockBody.AppendNewBlock("services", nil)
 	servicesBlockBody := servicesBlock.Body()
 
-	etcdBlock := servicesBlockBody.AppendNewBlock("etcd", nil)
-	etcdBlockBody := etcdBlock.Body()
+	if terraformConfig.ETCDRKE1 != nil {
+		etcdBlock := servicesBlockBody.AppendNewBlock("etcd", nil)
+		etcdBlockBody := etcdBlock.Body()
 
-	backupConfigBlock := etcdBlockBody.AppendNewBlock("backup_config", nil)
-	backupConfigBlockBody := backupConfigBlock.Body()
+		backupConfigBlock := etcdBlockBody.AppendNewBlock("backup_config", nil)
+		backupConfigBlockBody := backupConfigBlock.Body()
 
-	backupConfigBlockBody.SetAttributeValue("enabled", cty.BoolVal(true))
-	backupConfigBlockBody.SetAttributeValue("interval_hours", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.IntervalHours))
-	backupConfigBlockBody.SetAttributeValue("safe_timestamp", cty.BoolVal(terraformConfig.ETCDRKE1.BackupConfig.SafeTimestamp))
-	backupConfigBlockBody.SetAttributeValue("timeout", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.Timeout))
+		backupConfigBlockBody.SetAttributeValue("enabled", cty.BoolVal(true))
+		backupConfigBlockBody.SetAttributeValue("interval_hours", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.IntervalHours))
+		backupConfigBlockBody.SetAttributeValue("safe_timestamp", cty.BoolVal(terraformConfig.ETCDRKE1.BackupConfig.SafeTimestamp))
+		backupConfigBlockBody.SetAttributeValue("timeout", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.Timeout))
 
-	if terraformConfig.Module == ec2RKE1 && terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil {
-		s3ConfigBlock := backupConfigBlockBody.AppendNewBlock("s3_backup_config", nil)
-		s3ConfigBlockBody := s3ConfigBlock.Body()
+		if terraformConfig.Module == ec2RKE1 && terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil {
+			s3ConfigBlock := backupConfigBlockBody.AppendNewBlock("s3_backup_config", nil)
+			s3ConfigBlockBody := s3ConfigBlock.Body()
 
-		s3ConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.AccessKey))
-		s3ConfigBlockBody.SetAttributeValue("bucket_name", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.BucketName))
-		s3ConfigBlockBody.SetAttributeValue("endpoint", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Endpoint))
-		s3ConfigBlockBody.SetAttributeValue("folder", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Folder))
-		s3ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Region))
-		s3ConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.SecretKey))
+			s3ConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.AccessKey))
+			s3ConfigBlockBody.SetAttributeValue("bucket_name", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.BucketName))
+			s3ConfigBlockBody.SetAttributeValue("endpoint", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Endpoint))
+			s3ConfigBlockBody.SetAttributeValue("folder", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Folder))
+			s3ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Region))
+			s3ConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.SecretKey))
+		}
+
+		etcdBlockBody.SetAttributeValue("retention", cty.StringVal(terraformConfig.ETCDRKE1.Retention))
+		etcdBlockBody.SetAttributeValue("snapshot", cty.BoolVal(false))
 	}
-
-	etcdBlockBody.SetAttributeValue("retention", cty.StringVal("72h"))
-	etcdBlockBody.SetAttributeValue("snapshot", cty.BoolVal(false))
 
 	rootBody.AppendNewline()
 
