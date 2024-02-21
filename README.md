@@ -2050,24 +2050,6 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
       <td>string</td>
       <td>view section on snapshotInput in example yaml below</td>
     </tr>
-    <tr>
-      <td>controlPlaneUnavailableValue</td>
-      <td>specify the control plane unavailable value used when upgrading RKE1 clusters</td>
-      <td>string</td>
-      <td>view section on snapshotInput in example yaml below</td>
-    </tr>
-    <tr>
-      <td>workerUnavailableValue</td>
-      <td>specify the worker unavailable value used when upgrading RKE1 clusters</td>
-      <td>string</td>
-      <td>view section on snapshotInput in example yaml below</td>
-    </tr>
-    <tr>
-      <td>recurringRestores</td>
-      <td>specify the number of times a snapshot is going to restore</td>
-      <td>string</td>
-      <td>view section on snapshotInput in example yaml below</td>
-    </tr>
   </tbody>
 </table>
 
@@ -2079,9 +2061,6 @@ terratest:
     upgradeKubernetesVersion: ""
     controlPlaneConcurrencyValue: "15%"
     workerConcurrencyValue: "20%"
-    controlPlaneUnavailableValue: "1"
-    workerUnavailableValue: "10%"
-    recurringRestores: 1
 ```
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 
