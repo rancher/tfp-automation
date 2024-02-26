@@ -32,7 +32,7 @@ Similar to the `provisioning` tests, the node scaling tests have static test cas
 ```yaml
 terratest:
   kubernetesVersion: "v1.26.11+k3s2"
-  upgradedKubernetesVersion: "v1.27.8+k3s2"
+  upgradedKubernetesVersion: "" # If left blank or is omitted completely, the latest version in Rancher will be used
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   ```
 
