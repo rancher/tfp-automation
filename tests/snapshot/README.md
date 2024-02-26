@@ -54,9 +54,6 @@ terratest:
     snapshotRestore: "all" # Options include none, kubernetesVersion, all. Option 'none' means that only the etcd will be restored.
     controlPlaneConcurrencyValue: "15%"
     workerConcurrencyValue: "20%"
-    controlPlaneUnavailableValue: "3"
-    workerUnavailableValue: "15%"
-    recurringRestores: 1 # By default, this is set to 1 if this field is not included in the config.
   ```
 
 See the below examples on how to run the tests:

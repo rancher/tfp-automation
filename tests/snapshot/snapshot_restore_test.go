@@ -81,7 +81,6 @@ func (s *SnapshotRestoreTestSuite) TestSnapshotRestoreETCDOnly() {
 		SnapshotInput: config.Snapshots{
 			UpgradeKubernetesVersion: "",
 			SnapshotRestore:          "none",
-			RecurringRestores:        1,
 		},
 	}
 
@@ -101,7 +100,6 @@ func (s *SnapshotRestoreTestSuite) TestSnapshotRestoreETCDOnly() {
 		clusterConfig.Nodepools = tt.nodeRoles
 		clusterConfig.SnapshotInput.UpgradeKubernetesVersion = tt.etcdSnapshot.SnapshotInput.UpgradeKubernetesVersion
 		clusterConfig.SnapshotInput.SnapshotRestore = tt.etcdSnapshot.SnapshotInput.SnapshotRestore
-		clusterConfig.SnapshotInput.RecurringRestores = tt.etcdSnapshot.SnapshotInput.RecurringRestores
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 

@@ -159,10 +159,7 @@ type Snapshots struct {
 	UpgradeKubernetesVersion     string `json:"upgradeKubernetesVersion,omitempty" yaml:"upgradeKubernetesVersion,omitempty"`
 	SnapshotRestore              string `json:"snapshotRestore,omitempty" yaml:"snapshotRestore,omitempty"`
 	ControlPlaneConcurrencyValue string `json:"controlPlaneConcurrencyValue,omitempty" yaml:"controlPlaneConcurrencyValue,omitempty"`
-	ControlPlaneUnavailableValue string `json:"controlPlaneUnavailableValue,omitempty" yaml:"controlPlaneUnavailableValue,omitempty"`
 	WorkerConcurrencyValue       string `json:"workerConcurrencyValue,omitempty" yaml:"workerConcurrencyValue,omitempty"`
-	WorkerUnavailableValue       string `json:"workerUnavailableValue,omitempty" yaml:"workerUnavailableValue,omitempty"`
-	RecurringRestores            int    `json:"recurringRestores,omitempty" yaml:"recurringRestores,omitempty"`
 }
 
 type TerratestConfig struct {

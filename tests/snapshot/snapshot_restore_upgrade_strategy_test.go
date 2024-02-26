@@ -82,10 +82,7 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStra
 			UpgradeKubernetesVersion:     "",
 			SnapshotRestore:              "kubernetesVersion",
 			ControlPlaneConcurrencyValue: "15%",
-			ControlPlaneUnavailableValue: "3",
 			WorkerConcurrencyValue:       "20%",
-			WorkerUnavailableValue:       "15%",
-			RecurringRestores:            1,
 		},
 	}
 
@@ -94,10 +91,7 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStra
 			UpgradeKubernetesVersion:     "",
 			SnapshotRestore:              "all",
 			ControlPlaneConcurrencyValue: "15%",
-			ControlPlaneUnavailableValue: "3",
 			WorkerConcurrencyValue:       "20%",
-			WorkerUnavailableValue:       "15%",
-			RecurringRestores:            1,
 		},
 	}
 
@@ -121,10 +115,7 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStra
 		clusterConfig.SnapshotInput.UpgradeKubernetesVersion = tt.etcdSnapshot.SnapshotInput.UpgradeKubernetesVersion
 		clusterConfig.SnapshotInput.SnapshotRestore = tt.etcdSnapshot.SnapshotInput.SnapshotRestore
 		clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue = tt.etcdSnapshot.SnapshotInput.ControlPlaneConcurrencyValue
-		clusterConfig.SnapshotInput.ControlPlaneUnavailableValue = tt.etcdSnapshot.SnapshotInput.ControlPlaneUnavailableValue
 		clusterConfig.SnapshotInput.WorkerConcurrencyValue = tt.etcdSnapshot.SnapshotInput.WorkerConcurrencyValue
-		clusterConfig.SnapshotInput.WorkerUnavailableValue = tt.etcdSnapshot.SnapshotInput.WorkerUnavailableValue
-		clusterConfig.SnapshotInput.RecurringRestores = tt.etcdSnapshot.SnapshotInput.RecurringRestores
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
