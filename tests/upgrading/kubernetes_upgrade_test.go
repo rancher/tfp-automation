@@ -97,7 +97,7 @@ func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgrade() {
 			provisioning.Provision(k.T(), clusterName, k.terraformConfig, &clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), clusterName, k.terraformOptions, &clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, &clusterConfig)
 			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), tt.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
 
@@ -121,7 +121,7 @@ func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgradeDynamicInput() {
 			provisioning.Provision(k.T(), clusterName, k.terraformConfig, k.clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), clusterName, k.terraformOptions, k.clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, k.clusterConfig)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
 
