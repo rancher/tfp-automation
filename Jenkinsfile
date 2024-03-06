@@ -1,6 +1,14 @@
 #!groovy
 node {
+  def rootPath = "/home/jenkins/workspace/rancher_qa/tfp-automation/"
   def testsDir = "./tests/${env.TEST_PACKAGE}"
+  def job_name = "${JOB_NAME}"
+  if (job_name.contains('/')) { 
+    job_names = job_name.split('/')
+    job_name = job_names[job_names.size() - 1] 
+  }
+  def testResultsOut = "results.xml"
+  def testResultsJSON = "results.json"
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
         branch = "${env.BRANCH}"
@@ -21,6 +29,7 @@ node {
   if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
         rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
   }
+  withCredentials([ string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
   stage('Checkout') {
           deleteDir()
           checkout([
@@ -32,14 +41,37 @@ node {
         }
     stage('Build Docker image') {
             writeFile file: 'config.yml', text: env.CONFIG
-            env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation/config.yml'
+            env.CATTLE_TEST_CONFIG=rootPath+'config.yml'
             sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} -f Dockerfile -t tfp-automation . "
     }
     
     stage('Run Module Test') {
+            def testResultsDir = rootPath+"results"
+            sh "mkdir -p ${testResultsDir}"
             def dockerImage = docker.image('tfp-automation')
-            dockerImage.inside("-u root") {
-                sh "go test -v -timeout ${timeout} ${params.TEST_CASE} ${testsDir}"
+            if (rancher2ProviderVersion.contains("rc")) {
+               try {
+                 dockerImage.inside("-u root -v ${testResultsDir}:/results") {
+                   sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
+                   sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
+                   sh "${rootPath}reporter"
+                  } 
+                 } catch(err) {
+                  echo 'Test run had failures. Collecting results...'
+                 }
+               }
+            else {
+                 try {
+                   dockerImage.inside("-u jenkins -v ${testResultsDir}:/results") {
+                     sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
+                     sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
+                     sh "${rootPath}reporter"
+                   }
+                  } catch(err) {
+                    echo 'Test run had failures. Collecting results...'
+                  }
             }
+            step([$class: 'JUnitResultArchiver', testResults: "**/results/${testResultsOut}"])
+      }
     }
-}
+  }

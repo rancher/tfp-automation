@@ -5,6 +5,7 @@ go 1.21
 replace (
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20230525094739-ff2e09449efc
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20230525094739-ff2e09449efc
+	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20231114201952-65195ec001fa
 	k8s.io/api => k8s.io/api v0.27.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.27.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.27.4
@@ -27,6 +28,8 @@ require (
 	github.com/rancher/shepherd v0.0.0-20240212210618-6f6f377a7e21
 	github.com/sirupsen/logrus v1.9.3
 )
+
+require github.com/antihax/optional v1.0.0
 
 require (
 	cloud.google.com/go v0.110.6 // indirect
@@ -174,6 +177,7 @@ require (
 	go.etcd.io/etcd/client/pkg/v3 v3.5.9 // indirect
 	go.etcd.io/etcd/client/v2 v2.305.7 // indirect
 	go.etcd.io/etcd/client/v3 v3.5.9 // indirect
+	go.qase.io/client v0.0.0-20231114201952-65195ec001fa
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.25.0 // indirect
@@ -185,7 +189,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20230803162519-f966b187b2e5 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apiextensions-apiserver v0.28.3 // indirect
 	k8s.io/cli-runtime v0.27.9 // indirect
 	k8s.io/client-go v12.0.0+incompatible // indirect
