@@ -26,7 +26,10 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
-	newFile, rootBody := setProvidersTF(rancherConfig, terraformConfig)
+	terratestConfig := new(config.TerratestConfig)
+	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
+
+	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 
@@ -40,11 +43,25 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 	case terraformConfig.Module == vsphereRKE2 || terraformConfig.Module == vsphereK3s:
 		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig)
 	}
-
 	rootBody.AppendNewline()
+
+	if strings.Contains(psact, rancherBaseline) {
+		newFile, rootBody = SetBaselinePSACT(newFile, rootBody)
+		
+		rootBody.AppendNewline()
+	}
 
 	machineConfigBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_machine_config_v2", "rancher2_machine_config_v2"})
 	machineConfigBlockBody := machineConfigBlock.Body()
+	
+	if psact == "rancher-baseline" {
+		dependsOnTemp := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_pod_security_admission_configuration_template." + 
+			"rancher2_pod_security_admission_configuration_template]")},
+		}
+	
+		machineConfigBlockBody.SetAttributeRaw("depends_on", dependsOnTemp)
+	}
 
 	machineConfigBlockBody.SetAttributeValue("generate_name", cty.StringVal(terraformConfig.MachineConfigName))
 

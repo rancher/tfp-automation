@@ -3,6 +3,7 @@ package provisioning
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -25,7 +26,10 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig("terraform", terraformConfig)
 
-	newFile, rootBody := setProvidersTF(rancherConfig, terraformConfig)
+	terratestConfig := new(config.TerratestConfig)
+	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
+
+	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 
@@ -47,11 +51,24 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 
 	rootBody.AppendNewline()
 
+	if strings.Contains(psact, rancherBaseline) {
+		newFile, rootBody = SetBaselinePSACT(newFile, rootBody)
+		
+		rootBody.AppendNewline()
+	}
+
 	clusterBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_cluster", "rancher2_cluster"})
 	clusterBlockBody := clusterBlock.Body()
 
 	dependsOnTemp := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_node_template.rancher2_node_template]")},
+	}
+
+	if psact == "rancher-baseline" {
+		dependsOnTemp = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_node_template.rancher2_node_template," + 
+			"rancher2_pod_security_admission_configuration_template.rancher2_pod_security_admission_configuration_template]")},
+		}	
 	}
 
 	clusterBlockBody.SetAttributeRaw("depends_on", dependsOnTemp)
