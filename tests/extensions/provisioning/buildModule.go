@@ -30,6 +30,7 @@ func BuildModule(t *testing.T) error {
 	module, err := os.ReadFile(keyPath + "/main.tf")
 	if err != nil {
 		logrus.Errorf("Failed to read main.tf file contents. Error: %v", err)
+
 		return err
 	}
 

@@ -52,4 +52,4 @@ terratest:
 
 See the below examples on how to run the tests:
 
-`go test -v -timeout 60m -run ^TestPSACTTestSuite$`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/psact --junitfile results.xml -- -timeout=60m -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$"`

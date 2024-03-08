@@ -70,9 +70,11 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) SetupSuite() {
 
 	terraformOptions := framework.Setup(s.T())
 	s.terraformOptions = terraformOptions
+
+	provisioning.DefaultK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig)
 }
 
-func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStrategy() {
+func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeStrategy() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
@@ -101,12 +103,12 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStra
 		etcdSnapshot config.TerratestConfig
 		client       *rancher.Client
 	}{
-		{"Restore Kubernetes version and etcd: 1 node all roles", nodeRolesAll, snapshotRestoreK8sVersion, s.client},
-		{"Restore cluster config, Kubernetes version and etcd: 1 node all roles", nodeRolesAll, snapshotRestoreAll, s.client},
-		{"Restore Kubernetes version and etcd: 2 nodes shared roles", nodeRolesShared, snapshotRestoreK8sVersion, s.client},
-		{"Restore cluster config, Kubernetes version and etcd: 2 nodes shared roles", nodeRolesShared, snapshotRestoreAll, s.client},
-		{"Restore Kubernetes version and etcd: 3 nodes dedicated roles", nodeRolesDedicated, snapshotRestoreK8sVersion, s.client},
-		{"Restore cluster config, Kubernetes version and etcd: 3 nodes dedicated roles", nodeRolesDedicated, snapshotRestoreAll, s.client},
+		{"Restore K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreK8sVersion, s.standardUserClient},
+		{"Restore cluster config, K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreAll, s.standardUserClient},
+		{"Restore K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreK8sVersion, s.standardUserClient},
+		{"Restore cluster config, K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreAll, s.standardUserClient},
+		{"Restore K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreK8sVersion, s.standardUserClient},
+		{"Restore cluster config, K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreAll, s.standardUserClient},
 	}
 
 	for _, tt := range tests {
@@ -117,20 +119,22 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStra
 		clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue = tt.etcdSnapshot.SnapshotInput.ControlPlaneConcurrencyValue
 		clusterConfig.SnapshotInput.WorkerConcurrencyValue = tt.etcdSnapshot.SnapshotInput.WorkerConcurrencyValue
 
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run(tt.name, func() {
-			provisioning.Provision(s.T(), clusterName, s.terraformConfig, &clusterConfig, s.terraformOptions)
+			defer cleanup.Cleanup(s.T(), s.terraformOptions)
+
+			provisioning.Provision(s.T(), tt.client, clusterName, &clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
 			snapshotRestore(s.T(), s.client, clusterName, &clusterConfig, s.terraformOptions)
-
-			cleanup.Cleanup(s.T(), s.terraformOptions)
 		})
 	}
 }
 
-func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStrategyDynamicInput() {
+func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeStrategyDynamicInput() {
 	if s.clusterConfig.SnapshotInput == (config.Snapshots{}) {
 		s.T().Skip()
 	}
@@ -143,19 +147,21 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestSnapshotRestoreUpgradeStra
 	}
 
 	for _, tt := range tests {
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run((tt.name), func() {
-			provisioning.Provision(s.T(), clusterName, s.terraformConfig, s.clusterConfig, s.terraformOptions)
+			defer cleanup.Cleanup(s.T(), s.terraformOptions)
+
+			provisioning.Provision(s.T(), tt.client, clusterName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			snapshotRestore(s.T(), s.client, clusterName, s.clusterConfig, s.terraformOptions)
-
-			cleanup.Cleanup(s.T(), s.terraformOptions)
 		})
 	}
 }
 
-func TestSnapshotRestoreUpgradeStrategyTestSuite(t *testing.T) {
+func TestTfpSnapshotRestoreUpgradeStrategyTestSuite(t *testing.T) {
 	suite.Run(t, new(SnapshotRestoreUpgradeStrategyTestSuite))
 }

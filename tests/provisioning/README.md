@@ -29,11 +29,13 @@ The provisioning tests have static test cases as well as dynamicInput tests you 
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.26.11+k3s2"
+  kubernetesVersion: "v1.28.6+k3s2"
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   ```
 
 See the below examples on how to run the tests:
 
-`go test -v -timeout 60m -run ^TestProvisionTestSuite/TestProvision$` \
-`go test -v -timeout 60m -run ^TestProvisionTestSuite/TestProvisionDynamicInput$`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/provisioning --junitfile results.xml -- -timeout=60m -v -run "TestTfpProvisionTestSuite/TestTfpProvision$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/provisioning --junitfile results.xml -- -timeout=60m -v -run "TestTfpProvisionTestSuite/TestTfpProvisionDynamicInput$"`
+
+If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.

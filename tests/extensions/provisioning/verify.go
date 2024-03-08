@@ -56,13 +56,19 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	clusterID, err := clusters.GetClusterIDByName(adminClient, clusterName)
 	require.NoError(t, err)
 
-	waitState.IsActiveCluster(adminClient, clusterID)
-	waitState.AreNodesActive(adminClient, clusterID)
+	if err := waitState.IsActiveCluster(adminClient, clusterID); err != nil {
+		require.NoError(t, err)
+	}
+
+	if err := waitState.AreNodesActive(adminClient, clusterID); err != nil {
+		require.NoError(t, err)
+	}
 
 	cluster, err := adminClient.Management.Cluster.ByID(clusterID)
 	require.NoError(t, err)
 
-	// EKS is formatted this way due to EKS formatting Kubernetes versions with a random string of letters after the version.
+	// EKS is formatted this way due to EKS formatting Kubernetes versions with a
+	// random string of letters after the version.
 	if module == eks {
 		assert.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion[1:5])
 	} else {
@@ -84,7 +90,8 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	assert.Empty(t, podErrors)
 }
 
-// VerifyUpgradedKubernetesVersion validates that the cluster has the expected upgraded Kubernetes version.
+// VerifyUpgradedKubernetesVersion validates that the cluster has the expected
+// upgraded Kubernetes version.
 func VerifyUpgradedKubernetesVersion(t *testing.T, client *rancher.Client, terraformConfig *config.TerraformConfig, clusterName, kubernetesVersion string) {
 	client, err := client.ReLogin()
 	require.NoError(t, err)
@@ -121,6 +128,7 @@ func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, n
 
 		if cluster.NodeCount == nodeCount {
 			logrus.Infof("Successfully scaled cluster to %v total nodes!", nodeCount)
+
 			return true, nil
 		}
 

@@ -1,6 +1,6 @@
 module github.com/rancher/tfp-automation
 
-go 1.21
+go 1.22
 
 replace (
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20230525094739-ff2e09449efc

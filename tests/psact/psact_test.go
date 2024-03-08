@@ -70,9 +70,11 @@ func (p *PSACTTestSuite) SetupSuite() {
 
 	terraformOptions := framework.Setup(p.T())
 	p.terraformOptions = terraformOptions
+
+	provisioning.DefaultK8sVersion(p.T(), p.client, p.clusterConfig, p.terraformConfig)
 }
 
-func (p *PSACTTestSuite) TestPSACT() {
+func (p *PSACTTestSuite) TestTfpPSACT() {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -106,17 +108,19 @@ func (p *PSACTTestSuite) TestPSACT() {
 		clusterConfig.Nodepools = tt.nodeRoles
 		clusterConfig.PSACT = string(tt.psact)
 
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		p.Run((tt.name), func() {
 			defer cleanup.Cleanup(p.T(), p.terraformOptions)
 
-			provisioning.Provision(p.T(), clusterName, p.terraformConfig, &clusterConfig, p.terraformOptions)
+			provisioning.Provision(p.T(), tt.client, clusterName, &clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), tt.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}
 }
 
-func TestPSACTTestSuite(t *testing.T) {
+func TestTfpPSACTTestSuite(t *testing.T) {
 	suite.Run(t, new(PSACTTestSuite))
 }

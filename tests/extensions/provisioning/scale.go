@@ -9,7 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Scale is a function that will run terraform apply and scale the provisioned cluster, according to user's desired amount.
+// Scale is a function that will run terraform apply and scale the provisioned
+// cluster, according to user's desired amount.
 func Scale(t *testing.T, clusterName string, terraformOptions *terraform.Options, clusterConfig *config.TerratestConfig) {
 	err := set.SetConfigTF(clusterConfig, clusterName)
 	require.NoError(t, err)
