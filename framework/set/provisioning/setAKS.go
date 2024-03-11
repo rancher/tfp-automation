@@ -22,7 +22,7 @@ func SetAKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	terraformConfig := new(config.TerraformConfig)
 	framework.LoadConfig("terraform", terraformConfig)
 
-	newFile, rootBody := setProvidersTF(rancherConfig, terraformConfig)
+	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 

@@ -24,7 +24,7 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	googleAuthEncodedJSONConfig := new(config.GoogleAuthEncodedJSON)
 	framework.LoadConfig("googleAuthEncodedJSON", googleAuthEncodedJSONConfig)
 
-	newFile, rootBody := setProvidersTF(rancherConfig, terraformConfig)
+	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 

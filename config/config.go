@@ -14,6 +14,7 @@ const (
 	TerraformConfigurationFileKey = "terraform"
 	TerratestConfigurationFileKey = "terratest"
 
+	AdminClientName    TestClientName = "Admin User"
 	StandardClientName TestClientName = "Standard User"
 
 	RancherPrivileged PSACT = "rancher-privileged"
