@@ -83,7 +83,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		client    *rancher.Client
 	}{
 		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll, k.standardUserClient},
-		{"2 nodes - etcd/cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, k.standardUserClient},
+		{"2 nodes - etcd|cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, k.standardUserClient},
 		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated, k.standardUserClient},
 	}
 

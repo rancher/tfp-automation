@@ -5,7 +5,7 @@ go 1.22
 replace (
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20230525094739-ff2e09449efc
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20230525094739-ff2e09449efc
-	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20231114201952-65195ec001fa
+	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20240308221502-c3b2635212be
 	k8s.io/api => k8s.io/api v0.27.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.27.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.27.4

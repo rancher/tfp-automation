@@ -85,7 +85,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		client    *rancher.Client
 	}{
 		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll, p.standardUserClient},
-		{"2 nodes - etcd/cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, p.standardUserClient},
+		{"2 nodes - etcd|cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, p.standardUserClient},
 		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated, p.standardUserClient},
 	}
 
