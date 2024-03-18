@@ -12,7 +12,23 @@ func SupportedModules(terraformOptions *terraform.Options) bool {
 	ranchFrame.LoadConfig(terraformFrameworkConfig, terraformConfig)
 
 	module := terraformConfig.Module
-	supportedModules := []string{aks, eks, gke, azureRKE1, azureRKE2, azureK3s, ec2RKE1, linodeRKE1, ec2RKE2, linodeRKE2, ec2K3s, linodeK3s, vsphereRKE1, vsphereRKE2, vsphereK3s}
+	supportedModules := []string{
+		aks,
+		eks,
+		gke,
+		azureRKE1,
+		azureRKE2,
+		azureK3s,
+		ec2RKE1,
+		linodeRKE1,
+		ec2RKE2,
+		linodeRKE2,
+		ec2K3s,
+		linodeK3s,
+		vsphereRKE1,
+		vsphereRKE2,
+		vsphereK3s,
+	}
 
 	for _, supportedModule := range supportedModules {
 		if module == supportedModule {

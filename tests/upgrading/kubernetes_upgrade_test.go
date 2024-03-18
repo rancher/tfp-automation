@@ -72,7 +72,7 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 	k.terraformOptions = terraformOptions
 }
 
-func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgrade() {
+func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
@@ -91,22 +91,25 @@ func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgrade() {
 		clusterConfig := *k.clusterConfig
 		clusterConfig.Nodepools = tt.nodeRoles
 
+		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		k.Run((tt.name), func() {
-			provisioning.Provision(k.T(), clusterName, k.terraformConfig, &clusterConfig, k.terraformOptions)
+			defer cleanup.Cleanup(k.T(), k.terraformOptions)
+
+			provisioning.Provision(k.T(), tt.client, clusterName, &clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, &clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, k.terraformConfig, &clusterConfig)
 			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
-			provisioning.VerifyUpgradedKubernetesVersion(k.T(), tt.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
-
-			cleanup.Cleanup(k.T(), k.terraformOptions)
+			provisioning.VerifyUpgradedKubernetesVersion(k.T(), tt.client, k.terraformConfig, clusterName,
+				k.clusterConfig.UpgradedKubernetesVersion)
 		})
 	}
 }
 
-func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgradeDynamicInput() {
+func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 	tests := []struct {
 		name   string
 		client *rancher.Client
@@ -115,21 +118,24 @@ func (k *KubernetesUpgradeTestSuite) TestKubernetesUpgradeDynamicInput() {
 	}
 
 	for _, tt := range tests {
+		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		k.Run((tt.name), func() {
-			provisioning.Provision(k.T(), clusterName, k.terraformConfig, k.clusterConfig, k.terraformOptions)
+			defer cleanup.Cleanup(k.T(), k.terraformOptions)
+
+			provisioning.Provision(k.T(), tt.client, clusterName, k.clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, k.clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, k.terraformConfig, k.clusterConfig)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
-			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
-
-			cleanup.Cleanup(k.T(), k.terraformOptions)
+			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
+				k.clusterConfig.UpgradedKubernetesVersion)
 		})
 	}
 }
 
-func TestKubernetesUpgradeTestSuite(t *testing.T) {
+func TestTfpKubernetesUpgradeTestSuite(t *testing.T) {
 	suite.Run(t, new(KubernetesUpgradeTestSuite))
 }

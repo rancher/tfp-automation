@@ -33,7 +33,7 @@ Similar to the `provisioning` tests, the node scaling tests have static test cas
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.26.11+k3s2"
+  kubernetesVersion: "v1.28.6+k3s2"
   nodeCount: 3
   scaledUpNodeCount: 8
   scaledDownNodeCount: 6
@@ -82,5 +82,7 @@ terratest:
 
 See the below examples on how to run the tests:
 
-`go test -v -timeout 60m -run ^TestScaleTestSuite/TestScale$` \
-`go test -v -timeout 60m -run ^TestScaleTestSuite/TestScaleDynamicInput$`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScale$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScaleDynamicInput$"`
+
+If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.

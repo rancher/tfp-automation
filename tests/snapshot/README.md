@@ -48,7 +48,7 @@ Similar to the `provisioning` tests, the snapshot tests have static test cases a
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.26.11+k3s2"
+  kubernetesVersion: "v1.28.6+k3s2"
   snapshotInput:
     upgradeKubernetesVersion: "" # If left blank, the default version in Rancher will be used.
     snapshotRestore: "all" # Options include none, kubernetesVersion, all. Option 'none' means that only the etcd will be restored.
@@ -59,13 +59,15 @@ terratest:
 See the below examples on how to run the tests:
 
 ### Snapshot restore
-`go test -v -timeout 60m -run "TestSnapshotRestoreTestSuite/TestSnapshotRestore"` \
-`go test -v -timeout 60m -run "TestSnapshotRestoreTestSuite/TestSnapshotRestoreDynamicInput"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestore$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestoreDynamicInput$"`
 
 ### Snapshot restore with K8s upgrade
-`go test -v -timeout 60m -run "TestSnapshotRestoreK8sUpgradeTestSuite/TestSnapshotRestoreK8sUpgrade"` \
-`go test -v -timeout 60m -run "TestSnapshotRestoreK8sUpgradeTestSuite/TestSnapshotRestoreK8sUpgradeDynamicInput"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreK8sUpgradeTestSuite/TestTfpSnapshotRestoreK8sUpgrade$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreK8sUpgradeTestSuite/TestTfpSnapshotRestoreK8sUpgradeDynamicInput$"`
 
 ### Sanpshot restore with upgrade strategy
-`go test -v -timeout 60m -run "TestSnapshotRestoreUpgradeStrategyTestSuite/TestSnapshotRestoreUpgradeStrategy"` \
-`go test -v -timeout 60m -run "TestSnapshotRestoreUpgradeStrategyTestSuite/TestSnapshotRestoreUpgradeStrategyDynamicInput"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreUpgradeStrategyTestSuite/TestTfpSnapshotRestoreUpgradeStrategy$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreUpgradeStrategyTestSuite/TestTfpSnapshotRestoreUpgradeStrategyDynamicInput$"`
+
+If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.

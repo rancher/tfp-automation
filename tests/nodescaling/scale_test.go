@@ -70,9 +70,11 @@ func (s *ScaleTestSuite) SetupSuite() {
 
 	terraformOptions := framework.Setup(s.T())
 	s.terraformOptions = terraformOptions
+
+	provisioning.DefaultK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig)
 }
 
-func (s *ScaleTestSuite) TestScale() {
+func (s *ScaleTestSuite) TestTfpScale() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	scaleUpRolesAll := []config.Nodepool{config.ScaleUpAllRolesNodePool}
 	scaleDownRolesAll := []config.Nodepool{config.ScaleDownAllRolesNodePool}
@@ -113,10 +115,13 @@ func (s *ScaleTestSuite) TestScale() {
 			scaledDownCount += scaleDownNodepool.Quantity
 		}
 
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " +
+			s.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run((tt.name), func() {
-			provisioning.Provision(s.T(), clusterName, s.terraformConfig, &clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), tt.client, clusterName, &clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
 			clusterConfig.Nodepools = clusterConfig.ScalingInput.ScaledUpNodepools
@@ -136,7 +141,7 @@ func (s *ScaleTestSuite) TestScale() {
 	}
 }
 
-func (s *ScaleTestSuite) TestScaleDynamicInput() {
+func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 	tests := []struct {
 		name   string
 		client *rancher.Client
@@ -145,10 +150,14 @@ func (s *ScaleTestSuite) TestScaleDynamicInput() {
 	}
 
 	for _, tt := range tests {
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run((tt.name), func() {
-			provisioning.Provision(s.T(), clusterName, s.terraformConfig, s.clusterConfig, s.terraformOptions)
+			defer cleanup.Cleanup(s.T(), s.terraformOptions)
+
+			provisioning.Provision(s.T(), tt.client, clusterName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledUpNodepools
@@ -162,12 +171,10 @@ func (s *ScaleTestSuite) TestScaleDynamicInput() {
 			provisioning.Scale(s.T(), clusterName, s.terraformOptions, s.clusterConfig)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.clusterConfig.ScalingInput.ScaledDownNodeCount)
-
-			cleanup.Cleanup(s.T(), s.terraformOptions)
 		})
 	}
 }
 
-func TestScaleTestSuite(t *testing.T) {
+func TestTfpScaleTestSuite(t *testing.T) {
 	suite.Run(t, new(ScaleTestSuite))
 }

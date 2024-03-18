@@ -70,9 +70,11 @@ func (p *ProvisionTestSuite) SetupSuite() {
 
 	terraformOptions := framework.Setup(p.T())
 	p.terraformOptions = terraformOptions
+
+	provisioning.DefaultK8sVersion(p.T(), p.client, p.clusterConfig, p.terraformConfig)
 }
 
-func (p *ProvisionTestSuite) TestProvision() {
+func (p *ProvisionTestSuite) TestTfpProvision() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
@@ -91,18 +93,21 @@ func (p *ProvisionTestSuite) TestProvision() {
 		clusterConfig := *p.clusterConfig
 		clusterConfig.Nodepools = tt.nodeRoles
 
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " +
+			p.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		p.Run((tt.name), func() {
-			provisioning.Provision(p.T(), clusterName, p.terraformConfig, &clusterConfig, p.terraformOptions)
-			provisioning.VerifyCluster(p.T(), tt.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
+			defer cleanup.Cleanup(p.T(), p.terraformOptions)
 
-			cleanup.Cleanup(p.T(), p.terraformOptions)
+			provisioning.Provision(p.T(), tt.client, clusterName, &clusterConfig, p.terraformOptions)
+			provisioning.VerifyCluster(p.T(), tt.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}
 }
 
-func (p *ProvisionTestSuite) TestProvisionDynamicInput() {
+func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 	tests := []struct {
 		name   string
 		client *rancher.Client
@@ -111,17 +116,19 @@ func (p *ProvisionTestSuite) TestProvisionDynamicInput() {
 	}
 
 	for _, tt := range tests {
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 
 		p.Run((tt.name), func() {
-			provisioning.Provision(p.T(), clusterName, p.terraformConfig, p.clusterConfig, p.terraformOptions)
-			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
+			defer cleanup.Cleanup(p.T(), p.terraformOptions)
 
-			cleanup.Cleanup(p.T(), p.terraformOptions)
+			provisioning.Provision(p.T(), tt.client, clusterName, p.clusterConfig, p.terraformOptions)
+			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
 		})
 	}
 }
 
-func TestProvisionTestSuite(t *testing.T) {
+func TestTfpProvisionTestSuite(t *testing.T) {
 	suite.Run(t, new(ProvisionTestSuite))
 }

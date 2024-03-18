@@ -1,4 +1,4 @@
-FROM golang:1.21
+FROM golang:1.22
 
 RUN mkdir -p /.cache && chmod -R 777 /.cache
 RUN mkdir -p $GOPATH/pkg/mod && chmod -R 777 $GOPATH/pkg/mod
