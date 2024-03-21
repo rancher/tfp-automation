@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
@@ -47,19 +48,19 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 
 	if strings.Contains(psact, rancherBaseline) {
 		newFile, rootBody = SetBaselinePSACT(newFile, rootBody)
-		
+
 		rootBody.AppendNewline()
 	}
 
 	machineConfigBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_machine_config_v2", "rancher2_machine_config_v2"})
 	machineConfigBlockBody := machineConfigBlock.Body()
-	
+
 	if psact == "rancher-baseline" {
 		dependsOnTemp := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_pod_security_admission_configuration_template." + 
-			"rancher2_pod_security_admission_configuration_template]")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_pod_security_admission_configuration_template." +
+				"rancher2_pod_security_admission_configuration_template]")},
 		}
-	
+
 		machineConfigBlockBody.SetAttributeRaw("depends_on", dependsOnTemp)
 	}
 
@@ -101,7 +102,7 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 		machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock("machine_pools", nil)
 		machinePoolsBlockBody := machinePoolsBlock.Body()
 
-		machinePoolsBlockBody.SetAttributeValue("name", cty.StringVal("tfp-pool"+poolNum))
+		machinePoolsBlockBody.SetAttributeValue("name", cty.StringVal(namegen.AppendRandomString("tfp-v2prov")))
 
 		cloudCredSecretName := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cloud_credential.rancher2_cloud_credential.id")},
