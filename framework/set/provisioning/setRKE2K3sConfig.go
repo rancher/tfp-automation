@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
@@ -20,7 +19,7 @@ import (
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
-func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
+func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
 	rancherConfig := new(rancher.Config)
 	ranchFrame.LoadConfig("rancher", rancherConfig)
 
@@ -102,7 +101,7 @@ func SetRKE2K3s(clusterName, k8sVersion, psact string, nodePools []config.Nodepo
 		machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock("machine_pools", nil)
 		machinePoolsBlockBody := machinePoolsBlock.Body()
 
-		machinePoolsBlockBody.SetAttributeValue("name", cty.StringVal(namegen.AppendRandomString("tfp-v2prov")))
+		machinePoolsBlockBody.SetAttributeValue("name", cty.StringVal(poolName+poolNum))
 
 		cloudCredSecretName := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cloud_credential.rancher2_cloud_credential.id")},

@@ -15,8 +15,8 @@ const (
 )
 
 // Provision is a function that will run terraform init and apply Terraform resources to provision a cluster.
-func Provision(t *testing.T, client *rancher.Client, clusterName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
-	err := set.SetConfigTF(clusterConfig, clusterName)
+func Provision(t *testing.T, client *rancher.Client, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
+	err := set.SetConfigTF(clusterConfig, clusterName, poolName)
 	require.NoError(t, err)
 
 	isSupported := SupportedModules(terraformOptions)

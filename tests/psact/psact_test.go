@@ -111,11 +111,12 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.clusterConfig.KubernetesVersion
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
+		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		p.Run((tt.name), func() {
 			defer cleanup.Cleanup(p.T(), p.terraformOptions)
 
-			provisioning.Provision(p.T(), tt.client, clusterName, &clusterConfig, p.terraformOptions)
+			provisioning.Provision(p.T(), tt.client, clusterName, poolName, &clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), tt.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}

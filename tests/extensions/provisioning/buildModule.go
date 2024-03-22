@@ -22,7 +22,7 @@ func BuildModule(t *testing.T) error {
 
 	keyPath := set.SetKeyPath()
 
-	err := set.SetConfigTF(clusterConfig, "")
+	err := set.SetConfigTF(clusterConfig, "", "")
 	if err != nil {
 		return err
 	}

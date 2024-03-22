@@ -94,14 +94,15 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
+		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		k.Run((tt.name), func() {
 			defer cleanup.Cleanup(k.T(), k.terraformOptions)
 
-			provisioning.Provision(k.T(), tt.client, clusterName, &clusterConfig, k.terraformOptions)
+			provisioning.Provision(k.T(), tt.client, clusterName, poolName, &clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, k.terraformConfig, &clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, poolName, k.terraformOptions, k.terraformConfig, &clusterConfig)
 			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), tt.client, k.terraformConfig, clusterName,
 				k.clusterConfig.UpgradedKubernetesVersion)
@@ -121,14 +122,15 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
+		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		k.Run((tt.name), func() {
 			defer cleanup.Cleanup(k.T(), k.terraformOptions)
 
-			provisioning.Provision(k.T(), tt.client, clusterName, k.clusterConfig, k.terraformOptions)
+			provisioning.Provision(k.T(), tt.client, clusterName, poolName, k.clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, k.terraformOptions, k.terraformConfig, k.clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, poolName, k.terraformOptions, k.terraformConfig, k.clusterConfig)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
 				k.clusterConfig.UpgradedKubernetesVersion)
