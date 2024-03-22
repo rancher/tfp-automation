@@ -22,7 +22,7 @@ func Setup(t *testing.T) *terraform.Options {
 
 	keyPath := set.SetKeyPath()
 
-	err := set.SetConfigTF(clusterConfig, "")
+	err := set.SetConfigTF(clusterConfig, "", "")
 	require.NoError(t, err)
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{

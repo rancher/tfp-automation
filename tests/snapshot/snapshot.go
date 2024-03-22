@@ -55,7 +55,7 @@ type initialSnapshotConfig struct {
 	snapshot                       string
 }
 
-func snapshotRestore(t *testing.T, client *rancher.Client, clusterName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
+func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
 	clusterID, err := clusters.GetClusterIDByName(client, clusterName)
 	require.NoError(t, err)
 
@@ -100,8 +100,8 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName string, c
 	require.NoError(t, err)
 	require.Equal(t, initialIngressName, ingressResp.ObjectMeta.Name)
 
-	initialSnapshotValues := snapshotV2Prov(t, client, podTemplate, deployment, clusterName, clusterID, localClusterID, clusterConfig, false, terraformOptions)
-	restoreV2Prov(t, client, initialSnapshotValues, clusterConfig, clusterName, clusterID, terraformOptions)
+	initialSnapshotValues := snapshotV2Prov(t, client, podTemplate, deployment, clusterName, poolName, clusterID, localClusterID, clusterConfig, false, terraformOptions)
+	restoreV2Prov(t, client, initialSnapshotValues, clusterConfig, clusterName, poolName, clusterID, terraformOptions)
 
 	logrus.Infof("Deleting created workloads...")
 	err = steveclient.SteveType(DeploymentSteveType).Delete(deploymentResp)
@@ -114,13 +114,13 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName string, c
 	require.NoError(t, err)
 }
 
-func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, clusterID, localClusterID string, clusterConfig *config.TerratestConfig, isRKE1 bool, terraformOptions *terraform.Options) initialSnapshotConfig {
+func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, poolName, clusterID, localClusterID string, clusterConfig *config.TerratestConfig, isRKE1 bool, terraformOptions *terraform.Options) initialSnapshotConfig {
 	existingSnapshots, err := etcdsnapshot.GetRKE2K3SSnapshots(client, localClusterID, clusterName)
 	require.NoError(t, err)
 
 	clusterConfig.SnapshotInput.CreateSnapshot = true
 
-	err = set.SetConfigTF(clusterConfig, clusterName)
+	err = set.SetConfigTF(clusterConfig, clusterName, poolName)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -177,7 +177,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 		clusterConfig.KubernetesVersion = clusterObject.Spec.KubernetesVersion
 		clusterConfig.SnapshotInput.CreateSnapshot = false
 
-		err = set.SetConfigTF(clusterConfig, clusterName)
+		err = set.SetConfigTF(clusterConfig, clusterName, poolName)
 		require.NoError(t, err)
 
 		terraform.Apply(t, terraformOptions)
@@ -203,12 +203,12 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 	return initialSnapshotConfig{initialKubernetesVersion, initialControlPlaneConcurrencyValue, initialWorkerConcurrencyValue, snapshotToRestore}
 }
 
-func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotConfig, clusterConfig *config.TerratestConfig, clusterName, clusterID string, terraformOptions *terraform.Options) {
+func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotConfig, clusterConfig *config.TerratestConfig, clusterName, poolName, clusterID string, terraformOptions *terraform.Options) {
 	clusterConfig.SnapshotInput.CreateSnapshot = false
 	clusterConfig.SnapshotInput.RestoreSnapshot = true
 	clusterConfig.SnapshotInput.SnapshotName = v2prov.snapshot
 
-	err := set.SetConfigTF(clusterConfig, clusterName)
+	err := set.SetConfigTF(clusterConfig, clusterName, poolName)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

@@ -106,14 +106,15 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
+		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run(tt.name, func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), tt.client, clusterName, &clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), tt.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
-			snapshotRestore(s.T(), s.client, clusterName, &clusterConfig, s.terraformOptions)
+			snapshotRestore(s.T(), s.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
 		})
 	}
 }
@@ -134,14 +135,15 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnlyDynamicInput() 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
 
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
+		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run((tt.name), func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), tt.client, clusterName, s.clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), tt.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
-			snapshotRestore(s.T(), s.client, clusterName, s.clusterConfig, s.terraformOptions)
+			snapshotRestore(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
 		})
 	}
 }

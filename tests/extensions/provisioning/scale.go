@@ -11,8 +11,8 @@ import (
 
 // Scale is a function that will run terraform apply and scale the provisioned
 // cluster, according to user's desired amount.
-func Scale(t *testing.T, clusterName string, terraformOptions *terraform.Options, clusterConfig *config.TerratestConfig) {
-	err := set.SetConfigTF(clusterConfig, clusterName)
+func Scale(t *testing.T, clusterName, poolName string, terraformOptions *terraform.Options, clusterConfig *config.TerratestConfig) {
+	err := set.SetConfigTF(clusterConfig, clusterName, poolName)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

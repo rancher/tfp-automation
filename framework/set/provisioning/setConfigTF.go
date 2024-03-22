@@ -33,10 +33,10 @@ const (
 )
 
 // SetConfigTF is a function that will set the main.tf file based on the module type.
-func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName string) error {
+func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName, poolName string) error {
 	rancherConfig := new(rancher.Config)
 	framework.LoadConfig("rancher", rancherConfig)
-	
+
 	terraformConfig := new(config.TerraformConfig)
 	framework.LoadConfig("terraform", terraformConfig)
 
@@ -64,10 +64,10 @@ func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName string) erro
 		err = SetGKE(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
 		return err
 	case strings.Contains(module, rke1):
-		err = SetRKE1(clusterName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
+		err = SetRKE1(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
 		return err
 	case strings.Contains(module, rke2) || strings.Contains(module, k3s):
-		err = SetRKE2K3s(clusterName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
+		err = SetRKE2K3s(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
 		return err
 	default:
 		logrus.Errorf("Unsupported module: %v", module)

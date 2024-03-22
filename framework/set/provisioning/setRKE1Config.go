@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
@@ -20,7 +19,7 @@ import (
 )
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
-func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
+func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
 	rancherConfig := new(rancher.Config)
 	ranchFrame.LoadConfig("rancher", rancherConfig)
 
@@ -122,6 +121,7 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 	rootBody.AppendNewline()
 
 	clusterSyncNodePoolIDs := ""
+
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
 
@@ -144,8 +144,8 @@ func SetRKE1(clusterName, k8sVersion, psact string, nodePools []config.Nodepool,
 		}
 
 		nodePoolBlockBody.SetAttributeRaw("cluster_id", clusterID)
-		nodePoolBlockBody.SetAttributeValue("name", cty.StringVal(namegen.AppendRandomString("tfp-rke1")))
-		nodePoolBlockBody.SetAttributeValue("hostname_prefix", cty.StringVal(terraformConfig.HostnamePrefix+namegen.AppendRandomString("tfp")))
+		nodePoolBlockBody.SetAttributeValue("name", cty.StringVal(poolName+poolNum))
+		nodePoolBlockBody.SetAttributeValue("hostname_prefix", cty.StringVal(terraformConfig.HostnamePrefix+"-"+poolName))
 
 		nodeTempID := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_node_template.rancher2_node_template.id")},
