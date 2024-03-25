@@ -31,8 +31,8 @@ Similar to the `provisioning` tests, the node scaling tests have static test cas
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.27.10+k3s2"
-  upgradedKubernetesVersion: "" # If left blank or is omitted completely, the latest version in Rancher will be used
+  kubernetesVersion: ""
+  upgradedKubernetesVersion: "" # If left blank or is omitted completely, the latest version in Rancher will be used. This is only for RKE1/RKE2/K3s. Hosted clusters MUST have this filled out.
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   ```
 
@@ -40,7 +40,13 @@ Additionally, you will need to ensure that the initial cluster version is NOT th
 
 See the below examples on how to run the tests:
 
+### RKE1/RKE2/K3S
+
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/upgrading --junitfile results.xml -- -timeout=60m -v -run "TestTfpKubernetesUpgradeTestSuite/TestTfpKubernetesUpgrade$"` \
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/upgrading --junitfile results.xml -- -timeout=60m -v -run "TestTfpKubernetesUpgradeTestSuite/TestTfpKubernetesUpgradeDynamicInput$"`
+
+### Hosted
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/upgrading --junitfile results.xml -- -timeout=60m -v -run "TestTfpKubernetesUpgradeHostedTestSuite/TestTfpKubernetesUpgradeHosted$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.

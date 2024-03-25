@@ -147,19 +147,19 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
       <td>tf-aks</td>
     </tr>
     <tr>
-      <td>azureClientID</td>
+      <td>clientID</td>
       <td>provide azure client id</td>
       <td>string</td>
       <td>XXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</td>
     </tr>
     <tr>
-      <td>azureClientSecret</td>
+      <td>clientSecret</td>
       <td>provide azure client secret</td>
       <td>string</td>
       <td>XXXXXXXXXXXXXXXXXXXXXXXXXX</td>
     </tr>
     <tr>
-      <td>azureSubscriptionID</td>
+      <td>subscriptionID</td>
       <td>provide azure subscription id</td>
       <td>string</td>
       <td>XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</td>
@@ -217,22 +217,20 @@ The `terraform` configurations in the `cattle-config.yaml` are module specific. 
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: aks
   cloudCredentialName: tf-aks
   azureConfig:
-    azureClientID: XXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-    azureClientSecret: XXXXXXXXXXXXXXXXXXXXXXXXXX
-    azureSubscriptionID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-    resourceGroup: my-resource-group
+    clientID: ""
+    clientSecret: ""
+    subscriptionID: ""
+    resourceGroup: ""
     resourceLocation: eastus
-    hostnamePrefix: tf-prefix
-    networkPlugin: kubenet
     availabilityZones:
       - '1'
       - '2'
       - '3'
     osDiskSizeGB: 128
+    tenantId: ""
     vmSize: Standard_DS2_v2
 ```
 
@@ -250,12 +248,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -340,24 +332,21 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: eks
   cloudCredentialName: tf-eks
   hostnamePrefix: tfp
   awsConfig:
-    awsAccessKey: XXXXXXXXXXXXXXXXXXXX
-    awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    awsAccessKey: ""
+    awsSecretKey: ""
     awsInstanceType: t3.medium
     region: us-east-2
     awsSubnets:
-      - subnet-xxxxxxxx
-      - subnet-yyyyyyyy
-      - subnet-zzzzzzzz
+      - ""
+      - ""
     awsSecurityGroups:
-      - sg-xxxxxxxxxxxxxxxxx
+      - ""
     publicAccess: true
     privateAccess: true
-    nodeRole: arn:aws:iam::############:role/my-custom-NodeInstanceRole-############
 ```
 
 ---
@@ -378,43 +367,37 @@ terraform:
       <th>Example</th>
     </tr>
     <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
-    </tr>
-    <tr>
       <td>module</td>
       <td>specify terraform module here</td>
       <td>string</td>
-      <td>eks</td>
+      <td>gke</td>
     </tr>
     <tr>
       <td>cloudCredentialName</td>
       <td>provide the name of unique cloud credentials to be created during testing</td>
       <td>string</td>
-      <td>tf-eks</td>
+      <td>tf-gke</td>
     </tr>
     <tr>
       <td>region</td>
       <td>provide region for resources to be created in</td>
       <td>string</td>
-      <td>us-central1-a</td>
+      <td>us-central1-c</td>
     </tr>
     <tr>
-      <td>gkeProjectID</td>
+      <td>projectID</td>
       <td>provide gke project ID</td>
       <td>string</td>
       <td>my-project-id-here</td>
     </tr>
     <tr>
-      <td>gkeNetwork</td>
+      <td>network</td>
       <td>specify network here</td>
       <td>string</td>
       <td>default</td>
     </tr>
     <tr>
-      <td>gkeSubnetwork</td>
+      <td>subnetwork</td>
       <td>specify subnetwork here</td>
       <td>string</td>
       <td>default</td>
@@ -432,15 +415,27 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: gke
   cloudCredentialName: tf-creds-gke
   hostnamePrefix: tfp
-  google:
-    region: us-central1-a
-    gkeProjectID: my-project-id-here
-    gkeNetwork: default
-    gkeSubnetwork: default
+  googleConfig:
+    authEncodedJson: |-
+      {
+        "type": "service_account",
+        "project_id": "",
+        "private_key_id": "",
+        "private_key": "",
+        "client_email": "",
+        "client_id": "",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": ""
+      }
+    region: us-central1-c
+    projectID: ""
+    network: default
+    subnetwork: default
 ```
 
 ---
@@ -457,12 +452,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -603,7 +592,6 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: azure_rke1
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
@@ -645,12 +633,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -743,7 +725,6 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: ec2_rke1
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
@@ -776,12 +757,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -831,7 +806,6 @@ terraform:
 ##### Example:
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: linode_rke1
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
@@ -856,12 +830,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -1014,7 +982,6 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: vsphere_rke1
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
@@ -1059,12 +1026,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -1211,7 +1172,6 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: azure_k3s
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
@@ -1255,12 +1215,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -1346,7 +1300,6 @@ terraform:
 ##### Example:
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: ec2_rke2
   cloudCredentialName: tf-creds-rke2
   machineConfigName: tf-rke2
@@ -1379,12 +1332,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -1446,7 +1393,6 @@ terraform:
 ##### Example:
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: linode_k3s
   cloudCredentialName: tf-linode-creds
   machineConfigName: tf-k3s
@@ -1473,12 +1419,6 @@ terraform:
       <th>Description</th>
       <th>Type</th>
       <th>Example</th>
-    </tr>
-    <tr>
-      <td>providerVersion</td>
-      <td>rancher2 provider version</td>
-      <td>string</td>
-      <td>'3.2.0'</td>
     </tr>
     <tr>
       <td>module</td>
@@ -1631,7 +1571,6 @@ terraform:
 
 ```yaml
 terraform:
-  providerVersion: '3.2.0'
   module: vsphere_k3s
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
@@ -1802,29 +1741,29 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
-  kubernetesVersion: v1.27.8-rancher2-1
+  kubernetesVersion: ""
   nodeCount: 3
 
 
   # Below are the expected formats for all module kubernetes versions
   
   # AKS without leading v
-  # e.g. '1.24.6'
+  # e.g. '1.28.5'
   
   # EKS without leading v or any tail ending
-  # e.g. '1.23' or '1.24'
+  # e.g. '1.28'
   
   # GKE without leading v but with tail ending included
-  # e.g. 1.23.12-gke.100
+  # e.g. 1.28.7-gke.1026000
   
   # RKE1 with leading v and -rancher1-1 tail
-  # e.g. v1.24.9-rancher1-1
+  # e.g. v1.28.7-rancher1-1
 
   # RKE2 with leading v and +rke2r# tail
-  # e.g. v1.24.9+rke2r1
+  # e.g. v1.28.7+rke2r1
 
   # K3S with leading v and +k3s# tail
-  # e.g. v1.24.9+k3s1
+  # e.g. v1.28.7+k3s1
 ```
 
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
@@ -1893,7 +1832,7 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
 ```yaml
 # this example is valid for RKE1 scale
 terratest:
-  kubernetesVersion: v1.27.8-rancher2-1
+  kubernetesVersion: ""
   nodeCount: 3
   scaledUpNodeCount: 8
   scaledDownNodeCount: 6
@@ -2000,8 +1939,8 @@ terratest:
       controlplane: false
       worker: true
   nodeCount: 3
-  kubernetesVersion: v1.26.11+k3s2
-  upgradedKubernetesVersion: v1.27.8+k3s2
+  kubernetesVersion: ""
+  upgradedKubernetesVersion: ""
 ```
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 

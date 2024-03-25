@@ -5,13 +5,14 @@ import (
 
 	"github.com/rancher/norman/types"
 	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/extensions/defaults"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 // AreNodesActive is a function that will wait for all nodes in the cluster to be in an active state.
 func AreNodesActive(client *rancher.Client, clusterID string) error {
-	err := wait.Poll(10*time.Second, 10*time.Minute, func() (bool, error) {
+	err := wait.Poll(10*time.Second, defaults.ThirtyMinuteTimeout, func() (bool, error) {
 		nodes, err := client.Management.Node.ListAll(&types.ListOpts{
 			Filters: map[string]interface{}{
 				"clusterId": clusterID,

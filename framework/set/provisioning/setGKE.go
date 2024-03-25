@@ -21,9 +21,6 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	terraformConfig := new(config.TerraformConfig)
 	framework.LoadConfig("terraform", terraformConfig)
 
-	googleAuthEncodedJSONConfig := new(config.GoogleAuthEncodedJSON)
-	framework.LoadConfig("googleAuthEncodedJSON", googleAuthEncodedJSONConfig)
-
 	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
@@ -34,12 +31,7 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	cloudCredBlockBody.SetAttributeValue("name", cty.StringVal(terraformConfig.CloudCredentialName))
 
 	googleCredConfigBlock := cloudCredBlockBody.AppendNewBlock("google_credential_config", nil)
-
-	authEncodedJSON := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(`jsonencode({"type" = "` + googleAuthEncodedJSONConfig.Type + `", "project_id" = "` + googleAuthEncodedJSONConfig.ProjectID + `", "private_key_id" = "` + googleAuthEncodedJSONConfig.PrivateKeyID + `", "private_key" = "` + googleAuthEncodedJSONConfig.PrivateKey + `", "client_email" = "` + googleAuthEncodedJSONConfig.ClientEmail + `", "client_id" = "` + googleAuthEncodedJSONConfig.ClientID + `", "auth_uri" = "` + googleAuthEncodedJSONConfig.AuthURI + `", "token_uri" = "` + googleAuthEncodedJSONConfig.TokenURI + `", "auth_provider_x509_cert_url" = "` + googleAuthEncodedJSONConfig.AuthProviderX509CertURL + `", "client_x509_cert_url" = "` + googleAuthEncodedJSONConfig.ClientX509CertURL + `"})`)},
-	}
-
-	googleCredConfigBlock.Body().SetAttributeRaw("auth_encoded_json", authEncodedJSON)
+	googleCredConfigBlock.Body().SetAttributeValue("auth_encoded_json", cty.StringVal(terraformConfig.GoogleConfig.AuthEncodedJSON))
 
 	rootBody.AppendNewline()
 
@@ -59,10 +51,10 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 
 	gkeConfigBlockBody.SetAttributeRaw("google_credential_secret", cloudCredSecret)
 	gkeConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.GoogleConfig.Region))
-	gkeConfigBlockBody.SetAttributeValue("project_id", cty.StringVal(terraformConfig.GoogleConfig.GKEProjectID))
+	gkeConfigBlockBody.SetAttributeValue("project_id", cty.StringVal(terraformConfig.GoogleConfig.ProjectID))
 	gkeConfigBlockBody.SetAttributeValue("kubernetes_version", cty.StringVal(k8sVersion))
-	gkeConfigBlockBody.SetAttributeValue("network", cty.StringVal(terraformConfig.GoogleConfig.GKENetwork))
-	gkeConfigBlockBody.SetAttributeValue("subnetwork", cty.StringVal(terraformConfig.GoogleConfig.GKESubnetwork))
+	gkeConfigBlockBody.SetAttributeValue("network", cty.StringVal(terraformConfig.GoogleConfig.Network))
+	gkeConfigBlockBody.SetAttributeValue("subnetwork", cty.StringVal(terraformConfig.GoogleConfig.Subnetwork))
 
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)

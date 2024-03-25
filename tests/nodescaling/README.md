@@ -31,9 +31,11 @@ To see what goes into the `terraform` block in addition to the `rancher`, please
 ## Scaling Node Pools
 Similar to the `provisioning` tests, the node scaling tests have static test cases as well as dynamicInput tests you can specify. In order to run the dynamicInput tests, you will need to define the `terratest` block in your config file. See an example below:
 
+### RKE1/RKE2/K3S
+
 ```yaml
 terratest:
-  kubernetesVersion: "v1.28.6+k3s2"
+  kubernetesVersion: ""
   nodeCount: 3
   scaledUpNodeCount: 8
   scaledDownNodeCount: 6
@@ -80,9 +82,78 @@ terratest:
         quantity: 1
   ```
 
+### AKS
+
+```yaml
+terratest:
+  kubernetesVersion: ""
+  nodeCount: 3
+  scaledUpNodeCount: 8
+  scaledDownNodeCount: 6
+  nodepools:
+    - quantity: 3
+  scalingInput:
+    scaledUpNodepools:
+      - quantity: 8
+    scaledDownNodepools:
+      - quantity: 6
+```
+
+### EKS
+
+```yaml
+terratest:
+  kubernetesVersion: ""
+  nodeCount: 3
+  scaledUpNodeCount: 8
+  scaledDownNodeCount: 6
+  nodepools:
+    - instanceType: "t3.medium"
+      desiredSize: 3
+      maxSize: 10
+      minSize: 3
+  scalingInput:
+    scaledUpNodepools:
+      - instanceType: "t3.medium"
+        desiredSize: 8
+        maxSize: 10
+        minSize: 3
+    scaledDownNodepools:
+      - instanceType: "t3.medium"
+        desiredSize: 6
+        maxSize: 10
+        minSize: 3
+```
+
+### GKE
+
+```yaml
+terratest:
+  kubernetesVersion: ""
+  nodeCount: 3
+  scaledUpNodeCount: 8
+  scaledDownNodeCount: 6
+  nodepools:
+    - quantity: 3
+      maxPodsContraint: 110
+  scalingInput:
+    scaledUpNodepools:
+      - quantity: 8
+        maxPodsContraint: 110
+    scaledDownNodepools:
+      - quantity: 6
+        maxPodsContraint: 110
+```
+
 See the below examples on how to run the tests:
+
+### RKE1/RKE2/K3S
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScale$"` \
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScaleDynamicInput$"`
+
+### Hosted
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml -- -timeout=60m -v -run "TestTfpScaleHostedTestSuite/TestTfpScaleHosted$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.

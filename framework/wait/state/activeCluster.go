@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/extensions/defaults"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -19,7 +20,7 @@ const (
 // IsActiveCluster is a function that will wait for the cluster to be in an active state.
 func IsActiveCluster(client *rancher.Client, clusterID string) error {
 	isWaiting := true
-	err := wait.Poll(10*time.Second, 10*time.Minute, func() (done bool, err error) {
+	err := wait.Poll(10*time.Second, defaults.ThirtyMinuteTimeout, func() (done bool, err error) {
 		cluster, err := client.Management.Cluster.ByID(clusterID)
 		if err != nil {
 			return false, err

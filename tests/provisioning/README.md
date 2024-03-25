@@ -29,13 +29,19 @@ The provisioning tests have static test cases as well as dynamicInput tests you 
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.28.6+k3s2"
+  kubernetesVersion: ""
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   ```
 
 See the below examples on how to run the tests:
 
+### RKE1/RKE2/K3S
+
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/provisioning --junitfile results.xml -- -timeout=60m -v -run "TestTfpProvisionTestSuite/TestTfpProvision$"` \
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/provisioning --junitfile results.xml -- -timeout=60m -v -run "TestTfpProvisionTestSuite/TestTfpProvisionDynamicInput$"`
+
+### Hosted
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/provisioning --junitfile results.xml -- -timeout=60m -v -run "TestTfpProvisionHostedTestSuite/TestTfpProvisionHosted$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
