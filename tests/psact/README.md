@@ -47,7 +47,7 @@ terraform:
     region: "us-east"
     linodeRootPass: "<placeholder>"
 terratest:
-  kubernetesVersion: "v1.28.6+k3s2"
+  kubernetesVersion: ""
   ```
 
 See the below examples on how to run the tests:

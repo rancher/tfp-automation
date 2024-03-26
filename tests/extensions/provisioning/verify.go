@@ -112,7 +112,7 @@ func VerifyUpgradedKubernetesVersion(t *testing.T, client *rancher.Client, terra
 }
 
 // VerifyNodeCount validates that a cluster has the expected number of nodes.
-func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, nodeCount int64) {
+func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, terraformConfig *config.TerraformConfig, nodeCount int64) {
 	client, err := client.ReLogin()
 	require.NoError(t, err)
 
@@ -126,10 +126,36 @@ func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, n
 		cluster, err := adminClient.Management.Cluster.ByID(clusterID)
 		require.NoError(t, err)
 
-		if cluster.NodeCount == nodeCount {
-			logrus.Infof("Successfully scaled cluster to %v total nodes!", nodeCount)
+		switch terraformConfig.Module {
+		case aks:
+			var aksConfig = cluster.AKSConfig
+			if cluster.NodeCount == *aksConfig.NodePools[0].Count {
+				logrus.Infof("Successfully scaled cluster to %v total nodes!", *aksConfig.NodePools[0].Count)
+			}
 
 			return true, nil
+		case eks:
+			var eksConfig = cluster.EKSConfig
+			if cluster.NodeCount == *eksConfig.NodeGroups[0].DesiredSize {
+				logrus.Infof("Successfully scaled cluster to %v total nodes!", *eksConfig.NodeGroups[0].DesiredSize)
+			}
+
+			return true, nil
+		case gke:
+			var gkeConfig = cluster.GKEConfig
+			if cluster.NodeCount == *gkeConfig.NodePools[0].InitialNodeCount {
+				logrus.Infof("Successfully scaled cluster to %v total nodes!", *gkeConfig.NodePools[0].InitialNodeCount)
+			}
+
+			return true, nil
+		case rke1, rke2, k3s:
+			if cluster.NodeCount == nodeCount {
+				logrus.Infof("Successfully scaled cluster to %v total nodes!", nodeCount)
+
+				return true, nil
+			}
+		default:
+			logrus.Errorf("Unsupported module: %v", terraformConfig.Module)
 		}
 
 		return false, nil

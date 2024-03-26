@@ -48,7 +48,7 @@ Similar to the `provisioning` tests, the snapshot tests have static test cases a
 
 ```yaml
 terratest:
-  kubernetesVersion: "v1.28.6+k3s2"
+  kubernetesVersion: ""
   snapshotInput:
     upgradeKubernetesVersion: "" # If left blank, the default version in Rancher will be used.
     snapshotRestore: "all" # Options include none, kubernetesVersion, all. Option 'none' means that only the etcd will be restored.
