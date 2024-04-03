@@ -15,6 +15,7 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -91,8 +92,6 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		clusterConfig := *k.clusterConfig
 		clusterConfig.Nodepools = tt.nodeRoles
 
-		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
-
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 		poolName := namegen.AppendRandomString(provisioning.TFP)
 
@@ -119,13 +118,14 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 	}
 
 	for _, tt := range tests {
-		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
-
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		k.Run((tt.name), func() {
 			defer cleanup.Cleanup(k.T(), k.terraformOptions)
+
+			logrus.Infof("Module: %s", k.terraformConfig.Module)
+			logrus.Infof("Kubernetes version: %s", k.clusterConfig.KubernetesVersion)
 
 			provisioning.Provision(k.T(), tt.client, clusterName, poolName, k.clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
