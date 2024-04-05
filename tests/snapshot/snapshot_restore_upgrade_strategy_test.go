@@ -15,7 +15,6 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -120,14 +119,13 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeS
 		clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue = tt.etcdSnapshot.SnapshotInput.ControlPlaneConcurrencyValue
 		clusterConfig.SnapshotInput.WorkerConcurrencyValue = tt.etcdSnapshot.SnapshotInput.WorkerConcurrencyValue
 
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run(tt.name, func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)
-
-			logrus.Infof("Module: %s", s.terraformConfig.Module)
-			logrus.Infof("Kubernetes version: %s", s.clusterConfig.KubernetesVersion)
 
 			provisioning.Provision(s.T(), tt.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
@@ -150,14 +148,13 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeS
 	}
 
 	for _, tt := range tests {
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run((tt.name), func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)
-
-			logrus.Infof("Module: %s", s.terraformConfig.Module)
-			logrus.Infof("Kubernetes version: %s", s.clusterConfig.KubernetesVersion)
 
 			provisioning.Provision(s.T(), tt.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)

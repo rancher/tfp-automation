@@ -15,7 +15,6 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -84,14 +83,13 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 	}
 
 	for _, tt := range tests {
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.clusterConfig.KubernetesVersion
+
 		clusterName := namegen.AppendRandomString(provisioning.TFP)
 		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		p.Run((tt.name), func() {
 			defer cleanup.Cleanup(p.T(), p.terraformOptions)
-
-			logrus.Infof("Module: %s", p.terraformConfig.Module)
-			logrus.Infof("Kubernetes version: %s", p.clusterConfig.KubernetesVersion)
 
 			provisioning.Provision(p.T(), tt.client, clusterName, poolName, p.clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
