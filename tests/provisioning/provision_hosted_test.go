@@ -5,9 +5,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
-	"github.com/rancher/shepherd/extensions/users"
-	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
@@ -21,12 +18,11 @@ import (
 
 type ProvisionHostedTestSuite struct {
 	suite.Suite
-	client             *rancher.Client
-	standardUserClient *rancher.Client
-	session            *session.Session
-	terraformConfig    *config.TerraformConfig
-	clusterConfig      *config.TerratestConfig
-	terraformOptions   *terraform.Options
+	client           *rancher.Client
+	session          *session.Session
+	terraformConfig  *config.TerraformConfig
+	clusterConfig    *config.TerratestConfig
+	terraformOptions *terraform.Options
 }
 
 func (p *ProvisionHostedTestSuite) SetupSuite() {
@@ -37,26 +33,6 @@ func (p *ProvisionHostedTestSuite) SetupSuite() {
 	require.NoError(p.T(), err)
 
 	p.client = client
-
-	enabled := true
-	var testuser = namegen.AppendRandomString("testuser-")
-	var testpassword = password.GenerateUserPassword("testpass-")
-	user := &management.User{
-		Username: testuser,
-		Password: testpassword,
-		Name:     testuser,
-		Enabled:  &enabled,
-	}
-
-	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(p.T(), err)
-
-	newUser.Password = user.Password
-
-	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(p.T(), err)
-
-	p.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
@@ -76,10 +52,9 @@ func (p *ProvisionHostedTestSuite) SetupSuite() {
 
 func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 	tests := []struct {
-		name   string
-		client *rancher.Client
+		name string
 	}{
-		{config.StandardClientName.String(), p.standardUserClient},
+		{config.StandardClientName.String()},
 	}
 
 	for _, tt := range tests {
@@ -91,7 +66,7 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 		p.Run((tt.name), func() {
 			defer cleanup.Cleanup(p.T(), p.terraformOptions)
 
-			provisioning.Provision(p.T(), tt.client, clusterName, poolName, p.clusterConfig, p.terraformOptions)
+			provisioning.Provision(p.T(), clusterName, poolName, p.clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
 		})
 	}

@@ -5,9 +5,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
-	"github.com/rancher/shepherd/extensions/users"
-	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
@@ -21,12 +18,11 @@ import (
 
 type PSACTTestSuite struct {
 	suite.Suite
-	client             *rancher.Client
-	standardUserClient *rancher.Client
-	session            *session.Session
-	terraformConfig    *config.TerraformConfig
-	clusterConfig      *config.TerratestConfig
-	terraformOptions   *terraform.Options
+	client           *rancher.Client
+	session          *session.Session
+	terraformConfig  *config.TerraformConfig
+	clusterConfig    *config.TerratestConfig
+	terraformOptions *terraform.Options
 }
 
 func (p *PSACTTestSuite) SetupSuite() {
@@ -37,26 +33,6 @@ func (p *PSACTTestSuite) SetupSuite() {
 	require.NoError(p.T(), err)
 
 	p.client = client
-
-	enabled := true
-	var testuser = namegen.AppendRandomString("testuser-")
-	var testpassword = password.GenerateUserPassword("testpass-")
-	user := &management.User{
-		Username: testuser,
-		Password: testpassword,
-		Name:     testuser,
-		Enabled:  &enabled,
-	}
-
-	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(p.T(), err)
-
-	newUser.Password = user.Password
-
-	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(p.T(), err)
-
-	p.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
@@ -81,25 +57,21 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		name      string
 		nodeRoles []config.Nodepool
 		psact     config.PSACT
-		client    *rancher.Client
 	}{
 		{
 			name:      "Rancher Privileged " + config.StandardClientName.String(),
 			nodeRoles: nodeRolesDedicated,
 			psact:     "rancher-privileged",
-			client:    p.standardUserClient,
 		},
 		{
 			name:      "Rancher Restricted " + config.StandardClientName.String(),
 			nodeRoles: nodeRolesDedicated,
 			psact:     "rancher-restricted",
-			client:    p.standardUserClient,
 		},
 		{
-			name:      "Rancher Baseline " + config.AdminClientName.String(),
+			name:      "Rancher Baseline " + config.StandardClientName.String(),
 			nodeRoles: nodeRolesDedicated,
 			psact:     "rancher-baseline",
-			client:    p.client,
 		},
 	}
 
@@ -116,8 +88,8 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		p.Run((tt.name), func() {
 			defer cleanup.Cleanup(p.T(), p.terraformOptions)
 
-			provisioning.Provision(p.T(), tt.client, clusterName, poolName, &clusterConfig, p.terraformOptions)
-			provisioning.VerifyCluster(p.T(), tt.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
+			provisioning.Provision(p.T(), clusterName, poolName, &clusterConfig, p.terraformOptions)
+			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}
 }
