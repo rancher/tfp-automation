@@ -5,9 +5,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
-	"github.com/rancher/shepherd/extensions/users"
-	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
@@ -21,12 +18,11 @@ import (
 
 type ScaleTestSuite struct {
 	suite.Suite
-	client             *rancher.Client
-	standardUserClient *rancher.Client
-	session            *session.Session
-	terraformConfig    *config.TerraformConfig
-	clusterConfig      *config.TerratestConfig
-	terraformOptions   *terraform.Options
+	client           *rancher.Client
+	session          *session.Session
+	terraformConfig  *config.TerraformConfig
+	clusterConfig    *config.TerratestConfig
+	terraformOptions *terraform.Options
 }
 
 func (s *ScaleTestSuite) SetupSuite() {
@@ -37,26 +33,6 @@ func (s *ScaleTestSuite) SetupSuite() {
 	require.NoError(s.T(), err)
 
 	s.client = client
-
-	enabled := true
-	var testuser = namegen.AppendRandomString("testuser-")
-	var testpassword = password.GenerateUserPassword("testpass-")
-	user := &management.User{
-		Username: testuser,
-		Password: testpassword,
-		Name:     testuser,
-		Enabled:  &enabled,
-	}
-
-	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(s.T(), err)
-
-	newUser.Password = user.Password
-
-	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(s.T(), err)
-
-	s.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
@@ -92,11 +68,10 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		nodeRoles          []config.Nodepool
 		scaleUpNodeRoles   []config.Nodepool
 		scaleDownNodeRoles []config.Nodepool
-		client             *rancher.Client
 	}{
-		{"Scaling 1 node all roles -> 4 nodes -> 3 nodes " + config.StandardClientName.String(), nodeRolesAll, scaleUpRolesAll, scaleDownRolesAll, s.standardUserClient},
-		{"Scaling 2 nodes shared roles -> 6 nodes -> 4 nodes  " + config.StandardClientName.String(), nodeRolesShared, scaleUpRolesShared, scaleDownRolesShared, s.standardUserClient},
-		{"Scaling 3 nodes dedicated roles -> 8 nodes -> 6 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated, s.standardUserClient},
+		{"Scaling 1 node all roles -> 4 nodes -> 3 nodes " + config.StandardClientName.String(), nodeRolesAll, scaleUpRolesAll, scaleDownRolesAll},
+		{"Scaling 2 nodes shared roles -> 6 nodes -> 4 nodes  " + config.StandardClientName.String(), nodeRolesShared, scaleUpRolesShared, scaleDownRolesShared},
+		{"Scaling 3 nodes dedicated roles -> 8 nodes -> 6 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
 	}
 
 	for _, tt := range tests {
@@ -122,20 +97,20 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		poolName := namegen.AppendRandomString(provisioning.TFP)
 
 		s.Run((tt.name), func() {
-			provisioning.Provision(s.T(), tt.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
+			provisioning.Provision(s.T(), clusterName, poolName, &clusterConfig, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
 			clusterConfig.Nodepools = clusterConfig.ScalingInput.ScaledUpNodepools
 
 			provisioning.Scale(s.T(), clusterName, poolName, s.terraformOptions, &clusterConfig)
-			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
-			provisioning.VerifyNodeCount(s.T(), tt.client, clusterName, s.terraformConfig, scaledUpCount)
+			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
+			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledUpCount)
 
 			clusterConfig.Nodepools = clusterConfig.ScalingInput.ScaledDownNodepools
 
 			provisioning.Scale(s.T(), clusterName, poolName, s.terraformOptions, &clusterConfig)
-			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
-			provisioning.VerifyNodeCount(s.T(), tt.client, clusterName, s.terraformConfig, scaledDownCount)
+			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
+			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledDownCount)
 
 			cleanup.Cleanup(s.T(), s.terraformOptions)
 		})
@@ -144,10 +119,9 @@ func (s *ScaleTestSuite) TestTfpScale() {
 
 func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 	tests := []struct {
-		name   string
-		client *rancher.Client
+		name string
 	}{
-		{config.StandardClientName.String(), s.standardUserClient},
+		{config.StandardClientName.String()},
 	}
 
 	for _, tt := range tests {
@@ -159,7 +133,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 		s.Run((tt.name), func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), tt.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledUpNodepools

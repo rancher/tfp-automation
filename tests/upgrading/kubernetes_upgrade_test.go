@@ -5,9 +5,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
-	"github.com/rancher/shepherd/extensions/users"
-	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
@@ -21,12 +18,11 @@ import (
 
 type KubernetesUpgradeTestSuite struct {
 	suite.Suite
-	client             *rancher.Client
-	standardUserClient *rancher.Client
-	session            *session.Session
-	terraformConfig    *config.TerraformConfig
-	clusterConfig      *config.TerratestConfig
-	terraformOptions   *terraform.Options
+	client           *rancher.Client
+	session          *session.Session
+	terraformConfig  *config.TerraformConfig
+	clusterConfig    *config.TerratestConfig
+	terraformOptions *terraform.Options
 }
 
 func (k *KubernetesUpgradeTestSuite) SetupSuite() {
@@ -37,26 +33,6 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 	require.NoError(k.T(), err)
 
 	k.client = client
-
-	enabled := true
-	var testuser = namegen.AppendRandomString("testuser-")
-	var testpassword = password.GenerateUserPassword("testpass-")
-	user := &management.User{
-		Username: testuser,
-		Password: testpassword,
-		Name:     testuser,
-		Enabled:  &enabled,
-	}
-
-	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(k.T(), err)
-
-	newUser.Password = user.Password
-
-	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(k.T(), err)
-
-	k.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
@@ -80,11 +56,10 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 	tests := []struct {
 		name      string
 		nodeRoles []config.Nodepool
-		client    *rancher.Client
 	}{
-		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll, k.standardUserClient},
-		{"2 nodes - etcd|cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared, k.standardUserClient},
-		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated, k.standardUserClient},
+		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll},
+		{"2 nodes - etcd|cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared},
+		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated},
 	}
 
 	for _, tt := range tests {
@@ -99,12 +74,12 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		k.Run((tt.name), func() {
 			defer cleanup.Cleanup(k.T(), k.terraformOptions)
 
-			provisioning.Provision(k.T(), tt.client, clusterName, poolName, &clusterConfig, k.terraformOptions)
-			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
+			provisioning.Provision(k.T(), clusterName, poolName, &clusterConfig, k.terraformOptions)
+			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, poolName, k.terraformOptions, k.terraformConfig, &clusterConfig)
-			provisioning.VerifyCluster(k.T(), tt.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
-			provisioning.VerifyUpgradedKubernetesVersion(k.T(), tt.client, k.terraformConfig, clusterName,
+			provisioning.KubernetesUpgrade(k.T(), k.client, clusterName, poolName, k.terraformOptions, k.terraformConfig, &clusterConfig)
+			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
+			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
 				k.clusterConfig.UpgradedKubernetesVersion)
 		})
 	}
@@ -112,10 +87,9 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 
 func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 	tests := []struct {
-		name   string
-		client *rancher.Client
+		name string
 	}{
-		{config.StandardClientName.String(), k.standardUserClient},
+		{config.StandardClientName.String()},
 	}
 
 	for _, tt := range tests {
@@ -127,10 +101,10 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 		k.Run((tt.name), func() {
 			defer cleanup.Cleanup(k.T(), k.terraformOptions)
 
-			provisioning.Provision(k.T(), tt.client, clusterName, poolName, k.clusterConfig, k.terraformOptions)
+			provisioning.Provision(k.T(), clusterName, poolName, k.clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), tt.client, clusterName, poolName, k.terraformOptions, k.terraformConfig, k.clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), k.client, clusterName, poolName, k.terraformOptions, k.terraformConfig, k.clusterConfig)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
 				k.clusterConfig.UpgradedKubernetesVersion)

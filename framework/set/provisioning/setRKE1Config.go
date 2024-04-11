@@ -29,7 +29,7 @@ func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config
 	terratestConfig := new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
 
-	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
+	newFile, rootBody := SetProvidersAndUsersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 

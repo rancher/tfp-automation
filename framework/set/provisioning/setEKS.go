@@ -22,7 +22,7 @@ func SetEKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig("terraform", terraformConfig)
 
-	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
+	newFile, rootBody := SetProvidersAndUsersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 

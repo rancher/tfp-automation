@@ -8,6 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/clusters"
+	"github.com/rancher/shepherd/extensions/defaults"
 	"github.com/rancher/shepherd/extensions/psact"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
@@ -122,9 +123,17 @@ func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, t
 	clusterID, err := clusters.GetClusterIDByName(adminClient, clusterName)
 	require.NoError(t, err)
 
-	err = wait.Poll(10*time.Second, 10*time.Minute, func() (done bool, err error) {
+	err = wait.Poll(10*time.Second, defaults.FifteenMinuteTimeout, func() (done bool, err error) {
 		cluster, err := adminClient.Management.Cluster.ByID(clusterID)
 		require.NoError(t, err)
+
+		if strings.Contains(terraformConfig.Module, rke1) {
+			terraformConfig.Module = rke1
+		} else if strings.Contains(terraformConfig.Module, rke2) {
+			terraformConfig.Module = rke2
+		} else if strings.Contains(terraformConfig.Module, k3s) {
+			terraformConfig.Module = k3s
+		}
 
 		switch terraformConfig.Module {
 		case aks:

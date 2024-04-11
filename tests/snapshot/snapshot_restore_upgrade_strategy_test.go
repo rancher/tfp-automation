@@ -5,9 +5,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
-	"github.com/rancher/shepherd/extensions/users"
-	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
@@ -21,12 +18,11 @@ import (
 
 type SnapshotRestoreUpgradeStrategyTestSuite struct {
 	suite.Suite
-	client             *rancher.Client
-	standardUserClient *rancher.Client
-	session            *session.Session
-	terraformConfig    *config.TerraformConfig
-	clusterConfig      *config.TerratestConfig
-	terraformOptions   *terraform.Options
+	client           *rancher.Client
+	session          *session.Session
+	terraformConfig  *config.TerraformConfig
+	clusterConfig    *config.TerratestConfig
+	terraformOptions *terraform.Options
 }
 
 func (s *SnapshotRestoreUpgradeStrategyTestSuite) SetupSuite() {
@@ -37,26 +33,6 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) SetupSuite() {
 	require.NoError(s.T(), err)
 
 	s.client = client
-
-	enabled := true
-	var testuser = namegen.AppendRandomString("testuser-")
-	var testpassword = password.GenerateUserPassword("testpass-")
-	user := &management.User{
-		Username: testuser,
-		Password: testpassword,
-		Name:     testuser,
-		Enabled:  &enabled,
-	}
-
-	newUser, err := users.CreateUserWithRole(client, user, "user")
-	require.NoError(s.T(), err)
-
-	newUser.Password = user.Password
-
-	standardUserClient, err := client.AsUser(newUser)
-	require.NoError(s.T(), err)
-
-	s.standardUserClient = standardUserClient
 
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
@@ -101,14 +77,13 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeS
 		name         string
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
-		client       *rancher.Client
 	}{
-		{"Restore K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreK8sVersion, s.standardUserClient},
-		{"Restore cluster config, K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreAll, s.standardUserClient},
-		{"Restore K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreK8sVersion, s.standardUserClient},
-		{"Restore cluster config, K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreAll, s.standardUserClient},
-		{"Restore K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreK8sVersion, s.standardUserClient},
-		{"Restore cluster config, K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreAll, s.standardUserClient},
+		{"Restore K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreK8sVersion},
+		{"Restore cluster config, K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreAll},
+		{"Restore K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreK8sVersion},
+		{"Restore cluster config, K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreAll},
+		{"Restore K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreK8sVersion},
+		{"Restore cluster config, K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreAll},
 	}
 
 	for _, tt := range tests {
@@ -127,8 +102,8 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeS
 		s.Run(tt.name, func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), tt.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), tt.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
+			provisioning.Provision(s.T(), clusterName, poolName, &clusterConfig, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
 			snapshotRestore(s.T(), s.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
 		})
@@ -141,10 +116,9 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeS
 	}
 
 	tests := []struct {
-		name   string
-		client *rancher.Client
+		name string
 	}{
-		{config.StandardClientName.String(), s.standardUserClient},
+		{config.StandardClientName.String()},
 	}
 
 	for _, tt := range tests {
@@ -156,7 +130,7 @@ func (s *SnapshotRestoreUpgradeStrategyTestSuite) TestTfpSnapshotRestoreUpgradeS
 		s.Run((tt.name), func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), tt.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			snapshotRestore(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)

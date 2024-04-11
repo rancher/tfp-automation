@@ -29,7 +29,7 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 	terratestConfig := new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
 
-	newFile, rootBody := SetProvidersTF(rancherConfig, terraformConfig)
+	newFile, rootBody := SetProvidersAndUsersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 
@@ -43,6 +43,7 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 	case terraformConfig.Module == vsphereRKE2 || terraformConfig.Module == vsphereK3s:
 		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig)
 	}
+
 	rootBody.AppendNewline()
 
 	if strings.Contains(psact, rancherBaseline) {
