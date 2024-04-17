@@ -1,8 +1,9 @@
-package framework
+package cleanup
 
 import (
 	"os"
 
+	"github.com/rancher/tfp-automation/defaults/configs"
 	set "github.com/rancher/tfp-automation/framework/set/provisioning"
 	"github.com/sirupsen/logrus"
 )
@@ -11,9 +12,10 @@ import (
 func CleanupConfigTF() error {
 	keyPath := set.SetKeyPath()
 
-	file, err := os.Create(keyPath + "/main.tf")
+	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		logrus.Errorf("Failed to overwrite main.tf file. Error: %v", err)
+
 		return err
 	}
 
@@ -22,10 +24,11 @@ func CleanupConfigTF() error {
 	_, err = file.WriteString("// Leave blank - main.tf will be set during testing")
 	if err != nil {
 		logrus.Errorf("Failed to write to main.tf file. Error: %v", err)
+
 		return err
 	}
 
-	delete_files := [3]string{"/terraform.tfstate", "/terraform.tfstate.backup", "/.terraform.lock.hcl"}
+	delete_files := [3]string{configs.TFState, configs.TFStateBackup, configs.TFLockHCL}
 
 	for _, delete_file := range delete_files {
 		delete_file = keyPath + delete_file
@@ -33,13 +36,15 @@ func CleanupConfigTF() error {
 
 		if err != nil {
 			logrus.Errorf("Failed to delete terraform.tfstate, terraform.tfstate.backup, and terraform.lock.hcl files. Error: %v", err)
+
 			return err
 		}
 	}
 
-	err = os.RemoveAll(keyPath + "/.terraform")
+	err = os.RemoveAll(keyPath + configs.TerraformFolder)
 	if err != nil {
 		logrus.Errorf("Failed to delete .terraform folder. Error: %v", err)
+
 		return err
 	}
 

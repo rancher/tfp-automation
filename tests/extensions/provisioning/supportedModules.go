@@ -4,30 +4,33 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/modules"
 )
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
 func SupportedModules(terraformOptions *terraform.Options) bool {
 	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(terraformFrameworkConfig, terraformConfig)
+	ranchFrame.LoadConfig(configs.Terraform, terraformConfig)
 
 	module := terraformConfig.Module
 	supportedModules := []string{
-		aks,
-		eks,
-		gke,
-		azureRKE1,
-		azureRKE2,
-		azureK3s,
-		ec2RKE1,
-		linodeRKE1,
-		ec2RKE2,
-		linodeRKE2,
-		ec2K3s,
-		linodeK3s,
-		vsphereRKE1,
-		vsphereRKE2,
-		vsphereK3s,
+		clustertypes.AKS,
+		clustertypes.EKS,
+		clustertypes.GKE,
+		modules.AzureRKE1,
+		modules.AzureRKE2,
+		modules.AzureK3s,
+		modules.EC2RKE1,
+		modules.EC2RKE2,
+		modules.EC2K3s,
+		modules.LinodeRKE1,
+		modules.LinodeRKE2,
+		modules.LinodeK3s,
+		modules.VsphereRKE1,
+		modules.VsphereRKE2,
+		modules.VsphereK3s,
 	}
 
 	for _, supportedModule := range supportedModules {

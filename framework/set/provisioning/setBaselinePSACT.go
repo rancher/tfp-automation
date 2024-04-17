@@ -5,67 +5,38 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	blocks "github.com/rancher/tfp-automation/defaults/resourceblocks"
+	"github.com/rancher/tfp-automation/defaults/resourceblocks/psact"
 	"github.com/zclconf/go-cty/cty"
 )
 
-const (
-	baseline    = "baseline"
-	description = "This is a custom baseline Pod Security Admission Configuration Template." + 
-	              "It defines a minimally restrictive policy which prevents known privilege escalations. " +
-	              "This policy contains namespace level exemptions for Rancher components."
-	latest      = "latest"
-)
-
-var exemptionsNamespaces = []string{
-    "ingress-nginx",
-    "kube-system",
-    "cattle-system",
-    "cattle-epinio-system",
-    "cattle-fleet-system",
-    "longhorn-system",
-    "cattle-neuvector-system",
-    "cattle-monitoring-system",
-    "rancher-alerting-drivers",
-    "cis-operator-system",
-    "cattle-csp-adapter-system",
-    "cattle-externalip-system",
-    "cattle-gatekeeper-system",
-    "istio-system",
-    "cattle-istio-system",
-    "cattle-logging-system",
-    "cattle-windows-gmsa-system",
-    "cattle-sriov-system",
-    "cattle-ui-plugin-system",
-    "tigera-operator",
-}
-
 // SetCustomPSACT is a function that will set the Custom PSACT configurations in the main.tf file.
 func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body) (*hclwrite.File, *hclwrite.Body) {
-	psactBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_pod_security_admission_configuration_template", "rancher2_pod_security_admission_configuration_template"})
+	psactBlock := rootBody.AppendNewBlock(blocks.ResourceName, []string{blocks.PodSecurityAdmission, blocks.PodSecurityAdmission})
 	psactBlockBody := psactBlock.Body()
 
-	psactBlockBody.SetAttributeValue("name", cty.StringVal("rancher-baseline"))
-	psactBlockBody.SetAttributeValue("description", cty.StringVal(description))
+	psactBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(psact.RancherBaseline))
+	psactBlockBody.SetAttributeValue(psact.Description, cty.StringVal(psact.BaselineDescription))
 
-	defaultsBlock := psactBlockBody.AppendNewBlock("defaults", nil)
+	defaultsBlock := psactBlockBody.AppendNewBlock(psact.Defaults, nil)
 	defaultsBlockBody := defaultsBlock.Body()
 
-	defaultsBlockBody.SetAttributeValue("audit", cty.StringVal(baseline))
-	defaultsBlockBody.SetAttributeValue("audit_version", cty.StringVal(latest))
-	defaultsBlockBody.SetAttributeValue("enforce", cty.StringVal(baseline))
-	defaultsBlockBody.SetAttributeValue("enforce_version", cty.StringVal(latest))
-	defaultsBlockBody.SetAttributeValue("warn", cty.StringVal(baseline))
-	defaultsBlockBody.SetAttributeValue("warn_version", cty.StringVal(latest))
+	defaultsBlockBody.SetAttributeValue(psact.Audit, cty.StringVal(psact.Baseline))
+	defaultsBlockBody.SetAttributeValue(psact.AuditVersion, cty.StringVal(psact.Latest))
+	defaultsBlockBody.SetAttributeValue(psact.Enforce, cty.StringVal(psact.Baseline))
+	defaultsBlockBody.SetAttributeValue(psact.EnforceVersion, cty.StringVal(psact.Latest))
+	defaultsBlockBody.SetAttributeValue(psact.Warn, cty.StringVal(psact.Baseline))
+	defaultsBlockBody.SetAttributeValue(psact.WarnVersion, cty.StringVal(psact.Latest))
 
-	exemptionsBlock := psactBlockBody.AppendNewBlock("exemptions", nil)
+	exemptionsBlock := psactBlockBody.AppendNewBlock(psact.Exemptions, nil)
 	exemptionsBlockBody := exemptionsBlock.Body()
 
-	namespacesStr := "\"" + strings.Join(exemptionsNamespaces, "\", \"") + "\""
+	namespacesStr := "\"" + strings.Join(psact.ExemptionsNamespaces, "\", \"") + "\""
 	namespaces := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + namespacesStr + "]")},
 	}
-	
-	exemptionsBlockBody.SetAttributeRaw("namespaces", namespaces)
+
+	exemptionsBlockBody.SetAttributeRaw(psact.Namespaces, namespaces)
 
 	return newFile, rootBody
 }

@@ -25,7 +25,7 @@ require (
 	github.com/gruntwork-io/terratest v0.42.0
 	github.com/rancher/norman v0.0.0-20230831160711-5de27f66385d
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20240327192714-e69b22cd17df
+	github.com/rancher/shepherd v0.0.0-20240412143227-f816adca9592
 	github.com/sirupsen/logrus v1.9.3
 )
 
