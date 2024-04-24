@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/antihax/optional"
-	defaults "github.com/rancher/tfp-automation/defaults/qase"
+	defaults "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/testcase"
 	"github.com/sirupsen/logrus"
 	qase "go.qase.io/client"

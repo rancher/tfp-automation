@@ -10,7 +10,6 @@ import (
 	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
-	blocks "github.com/rancher/tfp-automation/defaults/resourceblocks"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/google"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -28,34 +27,34 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 
 	rootBody.AppendNewline()
 
-	cloudCredBlock := rootBody.AppendNewBlock(blocks.Resource, []string{blocks.CloudCredential, blocks.CloudCredential})
+	cloudCredBlock := rootBody.AppendNewBlock(resource, []string{cloudCredential, cloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(resourceName, cty.StringVal(terraformConfig.CloudCredentialName))
 
 	googleCredConfigBlock := cloudCredBlockBody.AppendNewBlock(google.GoogleCredentialConfig, nil)
 	googleCredConfigBlock.Body().SetAttributeValue(google.AuthEncodedJSON, cty.StringVal(terraformConfig.GoogleConfig.AuthEncodedJSON))
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(blocks.Resource, []string{blocks.Cluster, blocks.Cluster})
+	clusterBlock := rootBody.AppendNewBlock(resource, []string{cluster, cluster})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(resourceName, cty.StringVal(clusterName))
 
 	gkeConfigBlock := clusterBlockBody.AppendNewBlock(google.GKEConfig, nil)
 	gkeConfigBlockBody := gkeConfigBlock.Body()
 
-	gkeConfigBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(clusterName))
+	gkeConfigBlockBody.SetAttributeValue(resourceName, cty.StringVal(clusterName))
 
 	cloudCredSecret := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(blocks.CloudCredential + "." + blocks.CloudCredential + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(cloudCredential + "." + cloudCredential + ".id")},
 	}
 
 	gkeConfigBlockBody.SetAttributeRaw(google.GoogleCredentialSecret, cloudCredSecret)
-	gkeConfigBlockBody.SetAttributeValue(blocks.Region, cty.StringVal(terraformConfig.GoogleConfig.Region))
+	gkeConfigBlockBody.SetAttributeValue(region, cty.StringVal(terraformConfig.GoogleConfig.Region))
 	gkeConfigBlockBody.SetAttributeValue(google.ProjectID, cty.StringVal(terraformConfig.GoogleConfig.ProjectID))
-	gkeConfigBlockBody.SetAttributeValue(blocks.KubernetesVersion, cty.StringVal(k8sVersion))
+	gkeConfigBlockBody.SetAttributeValue(kubernetesVersion, cty.StringVal(k8sVersion))
 	gkeConfigBlockBody.SetAttributeValue(google.Network, cty.StringVal(terraformConfig.GoogleConfig.Network))
 	gkeConfigBlockBody.SetAttributeValue(google.Subnetwork, cty.StringVal(terraformConfig.GoogleConfig.Subnetwork))
 
@@ -72,7 +71,7 @@ func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *o
 
 		nodePoolsBlockBody.SetAttributeValue(google.InitialNodeCount, cty.NumberIntVal(pool.Quantity))
 		nodePoolsBlockBody.SetAttributeValue(google.MaxPodsConstraint, cty.NumberIntVal(pool.MaxPodsContraint))
-		nodePoolsBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(terraformConfig.HostnamePrefix+`-pool`+poolNum))
+		nodePoolsBlockBody.SetAttributeValue(resourceName, cty.StringVal(terraformConfig.HostnamePrefix+`-pool`+poolNum))
 		nodePoolsBlockBody.SetAttributeValue(google.Version, cty.StringVal(k8sVersion))
 	}
 

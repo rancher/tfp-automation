@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	defaults "github.com/rancher/tfp-automation/defaults/qase"
+	defaults "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/sirupsen/logrus"
 	qase "go.qase.io/client"
 	"gopkg.in/yaml.v2"
