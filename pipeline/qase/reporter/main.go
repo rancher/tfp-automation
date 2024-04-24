@@ -1,4 +1,4 @@
-package main
+package reporter
 
 import (
 	"bufio"
@@ -10,34 +10,17 @@ import (
 	"strings"
 
 	"github.com/antihax/optional"
-	qasedefaults "github.com/rancher/tfp-automation/pipeline/qase"
+	defaults "github.com/rancher/tfp-automation/defaults/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/testcase"
 	"github.com/sirupsen/logrus"
 	qase "go.qase.io/client"
 	"gopkg.in/yaml.v2"
 )
 
-const (
-	automationSuiteID    = int32(554)
-	failStatus           = "fail"
-	passStatus           = "pass"
-	skipStatus           = "skip"
-	automationTestNameID = 15
-	testSourceID         = 14
-	testSource           = "GoValidation"
-	multiSubTestPattern  = `(\w+/\w+/\w+){1,}`
-	subtestPattern       = `(\w+/\w+){1,1}`
-	testResultsJSON      = "results/results.json"
-)
-
-var (
-	multiSubTestReg = regexp.MustCompile(multiSubTestPattern)
-	subTestReg      = regexp.MustCompile(subtestPattern)
-	qaseToken       = os.Getenv(qasedefaults.QaseTokenEnvVar)
-	runIDEnvVar     = os.Getenv(qasedefaults.TestRunEnvVar)
-)
-
 func main() {
+	qaseToken := os.Getenv(defaults.QaseTokenEnvVar)
+	runIDEnvVar := os.Getenv(defaults.TestRunNAMEEnvVar)
+
 	if runIDEnvVar != "" {
 		cfg := qase.NewConfiguration()
 		cfg.AddDefaultHeader("Token", qaseToken)
@@ -65,7 +48,7 @@ func getAllAutomationTestCases(client *qase.APIClient) (map[string]qase.TestCase
 		localVarOptionals := &qase.CasesApiGetCasesOpts{
 			Offset: offset,
 		}
-		tempResult, _, err := client.CasesApi.GetCases(context.TODO(), qasedefaults.RancherManagerProjectID, localVarOptionals)
+		tempResult, _, err := client.CasesApi.GetCases(context.TODO(), defaults.RancherManagerProjectID, localVarOptionals)
 		if err != nil {
 			return nil, err
 		}
@@ -89,7 +72,7 @@ func getAllAutomationTestCases(client *qase.APIClient) (map[string]qase.TestCase
 }
 
 func readTestCase() ([]testcase.GoTestOutput, error) {
-	file, err := os.Open(testResultsJSON)
+	file, err := os.Open(defaults.TestResultsJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -118,12 +101,15 @@ func parseCorrectTestCases(testCases []testcase.GoTestOutput) map[string]*testca
 		} else if testCase.Action == "output" && strings.Contains(testCase.Test, "/") {
 			goTestCase := finalTestCases[testCase.Test]
 			goTestCase.StackTrace += testCase.Output
-		} else if testCase.Action == skipStatus {
+		} else if testCase.Action == defaults.SkipStatus {
 			delete(finalTestCases, testCase.Test)
-		} else if (testCase.Action == failStatus || testCase.Action == passStatus) && strings.Contains(testCase.Test, "/") {
+		} else if (testCase.Action == defaults.FailStatus || testCase.Action == defaults.PassStatus) && strings.Contains(testCase.Test, "/") {
 			goTestCase := finalTestCases[testCase.Test]
 
 			if goTestCase != nil {
+				multiSubTestReg := regexp.MustCompile(defaults.MultiSubTestPattern)
+				subTestReg := regexp.MustCompile(defaults.SubtestPattern)
+
 				substring := subTestReg.FindString(goTestCase.Name)
 				goTestCase.StackTrace += testCase.Output
 				goTestCase.Status = testCase.Action
@@ -185,14 +171,14 @@ func reportTestQases(client *qase.APIClient, testRunID int64) error {
 }
 
 func writeTestSuiteToQase(client *qase.APIClient, testCase testcase.GoTestCase) (*int64, error) {
-	parentSuite := int64(automationSuiteID)
+	parentSuite := int64(defaults.AutomationSuiteID)
 	var id int64
 	for _, suiteGo := range testCase.TestSuite {
 		localVarOptionals := &qase.SuitesApiGetSuitesOpts{
 			FiltersSearch: optional.NewString(suiteGo),
 		}
 
-		qaseSuites, _, err := client.SuitesApi.GetSuites(context.TODO(), qasedefaults.RancherManagerProjectID, localVarOptionals)
+		qaseSuites, _, err := client.SuitesApi.GetSuites(context.TODO(), defaults.RancherManagerProjectID, localVarOptionals)
 		if err != nil {
 			return nil, err
 		}
@@ -210,7 +196,7 @@ func writeTestSuiteToQase(client *qase.APIClient, testCase testcase.GoTestCase) 
 				Title:    suiteGo,
 				ParentId: int64(parentSuite),
 			}
-			idResponse, _, err := client.SuitesApi.CreateSuite(context.TODO(), suiteBody, qasedefaults.RancherManagerProjectID)
+			idResponse, _, err := client.SuitesApi.CreateSuite(context.TODO(), suiteBody, defaults.RancherManagerProjectID)
 			id = idResponse.Result.Id
 			if err != nil {
 				return nil, err
@@ -236,10 +222,10 @@ func writeTestCaseToQase(client *qase.APIClient, testCase testcase.GoTestCase) (
 		IsFlaky:    int32(0),
 		Automation: int32(2),
 		CustomField: map[string]string{
-			fmt.Sprintf("%d", testSourceID): testSource,
+			fmt.Sprintf("%d", defaults.TestSourceID): defaults.TestSource,
 		},
 	}
-	caseID, _, err := client.CasesApi.CreateCase(context.TODO(), testQaseBody, qasedefaults.RancherManagerProjectID)
+	caseID, _, err := client.CasesApi.CreateCase(context.TODO(), testQaseBody, defaults.RancherManagerProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +250,7 @@ func updateTestInRun(client *qase.APIClient, testCase testcase.GoTestCase, qaseT
 		Time:    int64(elapsedTime),
 	}
 
-	_, _, err := client.ResultsApi.CreateResult(context.TODO(), resultBody, qasedefaults.RancherManagerProjectID, testRunID)
+	_, _, err := client.ResultsApi.CreateResult(context.TODO(), resultBody, defaults.RancherManagerProjectID, testRunID)
 	if err != nil {
 		return err
 	}
@@ -274,7 +260,7 @@ func updateTestInRun(client *qase.APIClient, testCase testcase.GoTestCase, qaseT
 
 func getAutomationTestName(customFields []qase.CustomFieldValue) string {
 	for _, field := range customFields {
-		if field.Id == automationTestNameID {
+		if field.Id == defaults.AutomationTestNameID {
 			return field.Value
 		}
 	}

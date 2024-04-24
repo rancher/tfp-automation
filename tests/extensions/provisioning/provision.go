@@ -9,10 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	TFP = "tfp"
-)
-
 // Provision is a function that will run terraform init and apply Terraform resources to provision a cluster.
 func Provision(t *testing.T, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
 	err := set.SetConfigTF(clusterConfig, clusterName, poolName)

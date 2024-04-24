@@ -1,0 +1,32 @@
+package vsphere
+
+const (
+	VsphereConfig           = "vsphere_config"
+	VsphereCredentialConfig = "vsphere_credential_config"
+	Password                = "password"
+	Username                = "username"
+	Vcenter                 = "vcenter"
+	VcenterPort             = "vcenter_port"
+
+	DockerURL        = "boot2docker_url"
+	Cfgparam         = "cfgparam"
+	CloneFrom        = "clone_from"
+	CloudConfig      = "cloud_config"
+	Cloudinit        = "cloudinit"
+	ContentLibrary   = "content_library"
+	CPUCount         = "cpu_count"
+	CreationType     = "creation_type"
+	DataCenter       = "datacenter"
+	DataStore        = "datastore"
+	DatastoreCluster = "datastore_cluster"
+	DiskSize         = "disk_size"
+	Folder           = "folder"
+	HostSystem       = "hostsystem"
+	MemorySize       = "memory_size"
+	Network          = "network"
+	Pool             = "pool"
+	SSHPassword      = "ssh_password"
+	SSHPort          = "ssh_port"
+	SSHUser          = "ssh_user"
+	SSHUserGroup     = "ssh_user_group"
+)

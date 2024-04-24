@@ -7,45 +7,25 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	aks             = "aks"
-	eks             = "eks"
-	gke             = "gke"
-	azure_rke1      = "azure_rke1"
-	azure_rke2      = "azure_rke2"
-	azure_k3s       = "azure_k3s"
-	ec2RKE1         = "ec2_rke1"
-	ec2RKE2         = "ec2_rke2"
-	ec2K3s          = "ec2_k3s"
-	linodeRKE1      = "linode_rke1"
-	linodeRKE2      = "linode_rke2"
-	linodeK3s       = "linode_k3s"
-	vsphereRKE1     = "vsphere_rke1"
-	vsphereRKE2     = "vsphere_rke2"
-	vsphereK3s      = "vsphere_k3s"
-	rke1            = "rke1"
-	rke2            = "rke2"
-	k3s             = "k3s"
-	rancherBaseline = "rancher-baseline"
 )
 
 // SetConfigTF is a function that will set the main.tf file based on the module type.
 func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName, poolName string) error {
 	rancherConfig := new(rancher.Config)
-	framework.LoadConfig("rancher", rancherConfig)
+	framework.LoadConfig(configs.Rancher, rancherConfig)
 
 	terraformConfig := new(config.TerraformConfig)
-	framework.LoadConfig("terraform", terraformConfig)
+	framework.LoadConfig(configs.Terraform, terraformConfig)
 
 	module := terraformConfig.Module
 
 	var file *os.File
 	keyPath := SetKeyPath()
 
-	file, err := os.Create(keyPath + "/main.tf")
+	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)
 		return err
@@ -54,19 +34,19 @@ func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName, poolName st
 	defer file.Close()
 
 	switch {
-	case module == aks:
+	case module == clustertypes.AKS:
 		err = SetAKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
 		return err
-	case module == eks:
+	case module == clustertypes.EKS:
 		err = SetEKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
 		return err
-	case module == gke:
+	case module == clustertypes.GKE:
 		err = SetGKE(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
 		return err
-	case strings.Contains(module, rke1):
+	case strings.Contains(module, clustertypes.RKE1):
 		err = SetRKE1(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
 		return err
-	case strings.Contains(module, rke2) || strings.Contains(module, k3s):
+	case strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S):
 		err = SetRKE2K3s(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
 		return err
 	default:

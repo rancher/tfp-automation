@@ -10,6 +10,11 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/modules"
+	blocks "github.com/rancher/tfp-automation/defaults/resourceblocks"
+	psactBlock "github.com/rancher/tfp-automation/defaults/resourceblocks/psact"
+	rke1Block "github.com/rancher/tfp-automation/defaults/resourceblocks/rke1"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
@@ -21,10 +26,10 @@ import (
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
 func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
 	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig("rancher", rancherConfig)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
 
 	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig("terraform", terraformConfig)
+	ranchFrame.LoadConfig(configs.Terraform, terraformConfig)
 
 	terratestConfig := new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
@@ -33,89 +38,89 @@ func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config
 
 	rootBody.AppendNewline()
 
-	nodeTemplateBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_node_template", "rancher2_node_template"})
+	nodeTemplateBlock := rootBody.AppendNewBlock(blocks.Resource, []string{rke1Block.NodeTemplate, rke1Block.NodeTemplate})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
 
-	nodeTemplateBlockBody.SetAttributeValue("name", cty.StringVal(terraformConfig.NodeTemplateName))
+	nodeTemplateBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(terraformConfig.NodeTemplateName))
 
 	switch {
-	case terraformConfig.Module == azure_rke1:
+	case terraformConfig.Module == modules.AzureRKE1:
 		azure.SetAzureRKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == ec2RKE1:
+	case terraformConfig.Module == modules.EC2RKE1:
 		ec2.SetEC2RKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == linodeRKE1:
+	case terraformConfig.Module == modules.LinodeRKE1:
 		linode.SetLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == vsphereRKE1:
+	case terraformConfig.Module == modules.VsphereRKE1:
 		vsphere.SetVsphereRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()
 
-	if strings.Contains(psact, rancherBaseline) {
+	if strings.Contains(psact, psactBlock.RancherBaseline) {
 		newFile, rootBody = SetBaselinePSACT(newFile, rootBody)
 
 		rootBody.AppendNewline()
 	}
 
-	clusterBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_cluster", "rancher2_cluster"})
+	clusterBlock := rootBody.AppendNewBlock(blocks.Resource, []string{blocks.Cluster, blocks.Cluster})
 	clusterBlockBody := clusterBlock.Body()
 
 	dependsOnTemp := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_node_template.rancher2_node_template]")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + rke1Block.NodeTemplate + "." + rke1Block.NodeTemplate + "]")},
 	}
 
-	if psact == "rancher-baseline" {
+	if psact == psactBlock.RancherBaseline {
 		dependsOnTemp = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_node_template.rancher2_node_template," +
-				"rancher2_pod_security_admission_configuration_template.rancher2_pod_security_admission_configuration_template]")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + rke1Block.NodeTemplate + "." + rke1Block.NodeTemplate + "," +
+				blocks.PodSecurityAdmission + "." + blocks.PodSecurityAdmission + "]")},
 		}
 	}
 
-	clusterBlockBody.SetAttributeRaw("depends_on", dependsOnTemp)
-	clusterBlockBody.SetAttributeValue("name", cty.StringVal(clusterName))
-	clusterBlockBody.SetAttributeValue("default_pod_security_admission_configuration_template_name", cty.StringVal(psact))
+	clusterBlockBody.SetAttributeRaw(blocks.DependsOn, dependsOnTemp)
+	clusterBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(blocks.DefaultPodSecurityAdmission, cty.StringVal(psact))
 
-	rkeConfigBlock := clusterBlockBody.AppendNewBlock("rke_config", nil)
+	rkeConfigBlock := clusterBlockBody.AppendNewBlock(blocks.RKEConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
 
-	rkeConfigBlockBody.SetAttributeValue("kubernetes_version", cty.StringVal(k8sVersion))
+	rkeConfigBlockBody.SetAttributeValue(blocks.KubernetesVersion, cty.StringVal(k8sVersion))
 
-	networkBlock := rkeConfigBlockBody.AppendNewBlock("network", nil)
+	networkBlock := rkeConfigBlockBody.AppendNewBlock(blocks.Network, nil)
 	networkBlockBody := networkBlock.Body()
 
-	networkBlockBody.SetAttributeValue("plugin", cty.StringVal(terraformConfig.NetworkPlugin))
+	networkBlockBody.SetAttributeValue(blocks.Plugin, cty.StringVal(terraformConfig.NetworkPlugin))
 
 	rootBody.AppendNewline()
 
-	servicesBlock := rkeConfigBlockBody.AppendNewBlock("services", nil)
+	servicesBlock := rkeConfigBlockBody.AppendNewBlock(blocks.Services, nil)
 	servicesBlockBody := servicesBlock.Body()
 
 	if terraformConfig.ETCDRKE1 != nil {
-		etcdBlock := servicesBlockBody.AppendNewBlock("etcd", nil)
+		etcdBlock := servicesBlockBody.AppendNewBlock(blocks.Etcd, nil)
 		etcdBlockBody := etcdBlock.Body()
 
-		backupConfigBlock := etcdBlockBody.AppendNewBlock("backup_config", nil)
+		backupConfigBlock := etcdBlockBody.AppendNewBlock(rke1Block.BackupConfig, nil)
 		backupConfigBlockBody := backupConfigBlock.Body()
 
-		backupConfigBlockBody.SetAttributeValue("enabled", cty.BoolVal(true))
-		backupConfigBlockBody.SetAttributeValue("interval_hours", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.IntervalHours))
-		backupConfigBlockBody.SetAttributeValue("safe_timestamp", cty.BoolVal(terraformConfig.ETCDRKE1.BackupConfig.SafeTimestamp))
-		backupConfigBlockBody.SetAttributeValue("timeout", cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.Timeout))
+		backupConfigBlockBody.SetAttributeValue(rke1Block.Enabled, cty.BoolVal(true))
+		backupConfigBlockBody.SetAttributeValue(rke1Block.IntervalHours, cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.IntervalHours))
+		backupConfigBlockBody.SetAttributeValue(rke1Block.SafeTimestamp, cty.BoolVal(terraformConfig.ETCDRKE1.BackupConfig.SafeTimestamp))
+		backupConfigBlockBody.SetAttributeValue(rke1Block.Timeout, cty.NumberIntVal(terraformConfig.ETCDRKE1.BackupConfig.Timeout))
 
-		if terraformConfig.Module == ec2RKE1 && terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil {
-			s3ConfigBlock := backupConfigBlockBody.AppendNewBlock("s3_backup_config", nil)
+		if terraformConfig.Module == modules.EC2RKE1 && terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil {
+			s3ConfigBlock := backupConfigBlockBody.AppendNewBlock(rke1Block.S3BackupConfig, nil)
 			s3ConfigBlockBody := s3ConfigBlock.Body()
 
-			s3ConfigBlockBody.SetAttributeValue("access_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.AccessKey))
-			s3ConfigBlockBody.SetAttributeValue("bucket_name", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.BucketName))
-			s3ConfigBlockBody.SetAttributeValue("endpoint", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Endpoint))
-			s3ConfigBlockBody.SetAttributeValue("folder", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Folder))
-			s3ConfigBlockBody.SetAttributeValue("region", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Region))
-			s3ConfigBlockBody.SetAttributeValue("secret_key", cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.SecretKey))
+			s3ConfigBlockBody.SetAttributeValue(blocks.AccessKey, cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.AccessKey))
+			s3ConfigBlockBody.SetAttributeValue(rke1Block.BucketName, cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.BucketName))
+			s3ConfigBlockBody.SetAttributeValue(blocks.Endpoint, cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Endpoint))
+			s3ConfigBlockBody.SetAttributeValue(blocks.Folder, cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Folder))
+			s3ConfigBlockBody.SetAttributeValue(blocks.Region, cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.Region))
+			s3ConfigBlockBody.SetAttributeValue(blocks.SecretKey, cty.StringVal(terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig.SecretKey))
 		}
 
-		etcdBlockBody.SetAttributeValue("retention", cty.StringVal(terraformConfig.ETCDRKE1.Retention))
-		etcdBlockBody.SetAttributeValue("snapshot", cty.BoolVal(false))
+		etcdBlockBody.SetAttributeValue(rke1Block.Retention, cty.StringVal(terraformConfig.ETCDRKE1.Retention))
+		etcdBlockBody.SetAttributeValue(rke1Block.Snapshot, cty.BoolVal(false))
 	}
 
 	rootBody.AppendNewline()
@@ -130,60 +135,59 @@ func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config
 			return err
 		}
 
-		nodePoolBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_node_pool", "pool" + poolNum})
+		nodePoolBlock := rootBody.AppendNewBlock(blocks.Resource, []string{rke1Block.NodePool, blocks.Pool + poolNum})
 		nodePoolBlockBody := nodePoolBlock.Body()
 
 		dependsOnCluster := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[rancher2_cluster.rancher2_cluster]")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + blocks.Cluster + "." + blocks.Cluster + "]")},
 		}
 
-		nodePoolBlockBody.SetAttributeRaw("depends_on", dependsOnCluster)
+		nodePoolBlockBody.SetAttributeRaw(blocks.DependsOn, dependsOnCluster)
 
 		clusterID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cluster.rancher2_cluster.id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(blocks.Cluster + "." + blocks.Cluster + ".id")},
 		}
 
-		nodePoolBlockBody.SetAttributeRaw("cluster_id", clusterID)
-		nodePoolBlockBody.SetAttributeValue("name", cty.StringVal(poolName+poolNum))
-		nodePoolBlockBody.SetAttributeValue("hostname_prefix", cty.StringVal(terraformConfig.HostnamePrefix+"-"+poolName))
+		nodePoolBlockBody.SetAttributeRaw(blocks.ClusterID, clusterID)
+		nodePoolBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(poolName+poolNum))
+		nodePoolBlockBody.SetAttributeValue(rke1Block.HostnamePrefix, cty.StringVal(terraformConfig.HostnamePrefix+"-"+poolName))
 
 		nodeTempID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_node_template.rancher2_node_template.id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(rke1Block.NodeTemplate + "." + rke1Block.NodeTemplate + ".id")},
 		}
 
-		nodePoolBlockBody.SetAttributeRaw("node_template_id", nodeTempID)
-		nodePoolBlockBody.SetAttributeValue("quantity", cty.NumberIntVal(pool.Quantity))
-		nodePoolBlockBody.SetAttributeValue("control_plane", cty.BoolVal(pool.Controlplane))
-		nodePoolBlockBody.SetAttributeValue("etcd", cty.BoolVal(pool.Etcd))
-		nodePoolBlockBody.SetAttributeValue("worker", cty.BoolVal(pool.Worker))
+		nodePoolBlockBody.SetAttributeRaw(rke1Block.NodeTemplateID, nodeTempID)
+		nodePoolBlockBody.SetAttributeValue(blocks.Quantity, cty.NumberIntVal(pool.Quantity))
+		nodePoolBlockBody.SetAttributeValue(rke1Block.ControlPlane, cty.BoolVal(pool.Controlplane))
+		nodePoolBlockBody.SetAttributeValue(blocks.Etcd, cty.BoolVal(pool.Etcd))
+		nodePoolBlockBody.SetAttributeValue(rke1Block.Worker, cty.BoolVal(pool.Worker))
 
 		rootBody.AppendNewline()
 
 		if count != len(nodePools) {
-			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + "rancher2_node_pool.pool" + poolNum + ".id, "
-		}
-		if count == len(nodePools) {
-			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + "rancher2_node_pool.pool" + poolNum + ".id"
+			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rke1Block.NodePool + "." + blocks.Pool + poolNum + ".id, "
 		}
 
-		count++
+		if count == len(nodePools) {
+			clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rke1Block.NodePool + "." + blocks.Pool + poolNum + ".id"
+		}
 	}
 
-	clusterSyncBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_cluster_sync", "rancher2_cluster_sync"})
+	clusterSyncBlock := rootBody.AppendNewBlock(blocks.Resource, []string{rke1Block.ClusterSync, rke1Block.ClusterSync})
 	clusterSyncBlockBody := clusterSyncBlock.Body()
 
 	clusterID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("rancher2_cluster.rancher2_cluster.id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(blocks.Cluster + "." + blocks.Cluster + ".id")},
 	}
 
-	clusterSyncBlockBody.SetAttributeRaw("cluster_id", clusterID)
+	clusterSyncBlockBody.SetAttributeRaw(blocks.ClusterID, clusterID)
 
 	nodePoolIDs := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + clusterSyncNodePoolIDs + "]")},
 	}
 
-	clusterSyncBlockBody.SetAttributeRaw("node_pool_ids", nodePoolIDs)
-	clusterSyncBlockBody.SetAttributeValue("state_confirm", cty.NumberIntVal(2))
+	clusterSyncBlockBody.SetAttributeRaw(rke1Block.NodePoolIDs, nodePoolIDs)
+	clusterSyncBlockBody.SetAttributeValue(rke1Block.StateConfirm, cty.NumberIntVal(2))
 
 	rootBody.AppendNewline()
 

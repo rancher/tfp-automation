@@ -8,30 +8,24 @@ import (
 	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/clusters/kubernetesversions"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/stretchr/testify/require"
-)
-
-const (
-	RKE1    = "rke1"
-	RKE2    = "rke2"
-	K3S     = "k3s"
-	RANCHER = "-rancher"
 )
 
 // DefaultK8sVersion is a function that will set the default Kubernetes version if the user has not specified one.
 func DefaultK8sVersion(t *testing.T, client *rancher.Client, clusterConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig) {
 	if clusterConfig.KubernetesVersion == "" {
-		if strings.Contains(terraformConfig.Module, RKE1) {
+		if strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 			defaultVersion, err := kubernetesversions.Default(client, clusters.RKE1ClusterType.String(), nil)
 			require.NoError(t, err)
 
 			clusterConfig.KubernetesVersion = defaultVersion[0]
-		} else if strings.Contains(terraformConfig.Module, RKE2) {
+		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
 			defaultVersion, err := kubernetesversions.Default(client, clusters.RKE2ClusterType.String(), nil)
 			require.NoError(t, err)
 
 			clusterConfig.KubernetesVersion = defaultVersion[0]
-		} else if strings.Contains(terraformConfig.Module, K3S) {
+		} else if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
 			defaultVersion, err := kubernetesversions.Default(client, clusters.K3SClusterType.String(), nil)
 			require.NoError(t, err)
 
@@ -44,17 +38,17 @@ func DefaultK8sVersion(t *testing.T, client *rancher.Client, clusterConfig *conf
 // if the user has not specified one.
 func DefaultUpgradedK8sVersion(t *testing.T, client *rancher.Client, clusterConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig) {
 	if clusterConfig.UpgradedKubernetesVersion == "" {
-		if strings.Contains(clusterConfig.KubernetesVersion, RANCHER) {
+		if strings.Contains(clusterConfig.KubernetesVersion, clustertypes.RANCHER) {
 			defaultVersion, err := kubernetesversions.Default(client, clusters.RKE1ClusterType.String(), nil)
 			require.NoError(t, err)
 
 			clusterConfig.KubernetesVersion = defaultVersion[0]
-		} else if strings.Contains(clusterConfig.KubernetesVersion, RKE2) {
+		} else if strings.Contains(clusterConfig.KubernetesVersion, clustertypes.RKE2) {
 			defaultVersion, err := kubernetesversions.Default(client, clusters.RKE2ClusterType.String(), nil)
 			require.NoError(t, err)
 
 			clusterConfig.KubernetesVersion = defaultVersion[0]
-		} else if strings.Contains(clusterConfig.KubernetesVersion, K3S) {
+		} else if strings.Contains(clusterConfig.KubernetesVersion, clustertypes.K3S) {
 			defaultVersion, err := kubernetesversions.Default(client, clusters.K3SClusterType.String(), nil)
 			require.NoError(t, err)
 

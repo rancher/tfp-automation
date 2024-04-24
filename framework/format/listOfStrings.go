@@ -1,4 +1,4 @@
-package framework
+package format
 
 import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"

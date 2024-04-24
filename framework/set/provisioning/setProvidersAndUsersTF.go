@@ -9,6 +9,7 @@ import (
 	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
+	blocks "github.com/rancher/tfp-automation/defaults/resourceblocks/providersUsers"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -17,54 +18,54 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
 
 	source := "rancher/rancher2"
-	if strings.Contains(providerVersion, "-rc") {
+	if strings.Contains(providerVersion, blocks.RC) {
 		source = "terraform.local/local/rancher2"
 	}
 
 	newFile := hclwrite.NewEmptyFile()
 	rootBody := newFile.Body()
 
-	tfBlock := rootBody.AppendNewBlock("terraform", nil)
+	tfBlock := rootBody.AppendNewBlock(blocks.Terraform, nil)
 	tfBlockBody := tfBlock.Body()
 
-	reqProvsBlock := tfBlockBody.AppendNewBlock("required_providers", nil)
+	reqProvsBlock := tfBlockBody.AppendNewBlock(blocks.RequiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
-	reqProvsBlockBody.SetAttributeValue("rancher2", cty.ObjectVal(map[string]cty.Value{
-		"source":  cty.StringVal(source),
-		"version": cty.StringVal(providerVersion),
+	reqProvsBlockBody.SetAttributeValue(blocks.Rancher, cty.ObjectVal(map[string]cty.Value{
+		blocks.Source:  cty.StringVal(source),
+		blocks.Version: cty.StringVal(providerVersion),
 	}))
 
 	rootBody.AppendNewline()
 
-	provBlock := rootBody.AppendNewBlock("provider", []string{"rancher2"})
+	provBlock := rootBody.AppendNewBlock(blocks.Provider, []string{blocks.Rancher})
 	provBlockBody := provBlock.Body()
 
-	provBlockBody.SetAttributeValue("api_url", cty.StringVal(`https://`+rancherConfig.Host))
-	provBlockBody.SetAttributeValue("token_key", cty.StringVal(rancherConfig.AdminToken))
-	provBlockBody.SetAttributeValue("insecure", cty.BoolVal(*rancherConfig.Insecure))
+	provBlockBody.SetAttributeValue(blocks.ApiURL, cty.StringVal(`https://`+rancherConfig.Host))
+	provBlockBody.SetAttributeValue(blocks.TokenKey, cty.StringVal(rancherConfig.AdminToken))
+	provBlockBody.SetAttributeValue(blocks.Insecure, cty.BoolVal(*rancherConfig.Insecure))
 
 	rootBody.AppendNewline()
 
 	var testuser = namegen.AppendRandomString("testuser")
 	var testpassword = password.GenerateUserPassword("testpass")
 
-	userBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_user", "rancher2_user"})
+	userBlock := rootBody.AppendNewBlock(blocks.Resource, []string{blocks.RancherUser, blocks.RancherUser})
 	userBlockBody := userBlock.Body()
 
-	userBlockBody.SetAttributeValue("name", cty.StringVal(testuser))
-	userBlockBody.SetAttributeValue("username", cty.StringVal(testuser))
-	userBlockBody.SetAttributeValue("password", cty.StringVal(testpassword))
-	userBlockBody.SetAttributeValue("enabled", cty.BoolVal(true))
+	userBlockBody.SetAttributeValue(blocks.Name, cty.StringVal(testuser))
+	userBlockBody.SetAttributeValue(blocks.Username, cty.StringVal(testuser))
+	userBlockBody.SetAttributeValue(blocks.Password, cty.StringVal(testpassword))
+	userBlockBody.SetAttributeValue(blocks.Enabled, cty.BoolVal(true))
 
 	rootBody.AppendNewline()
 
-	globalRoleBindingBlock := rootBody.AppendNewBlock("resource", []string{"rancher2_global_role_binding", "rancher2_global_role_binding"})
+	globalRoleBindingBlock := rootBody.AppendNewBlock(blocks.Resource, []string{blocks.GlobalRoleBinding, blocks.GlobalRoleBinding})
 	globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
 
-	globalRoleBindingBlockBody.SetAttributeValue("name", cty.StringVal(testuser))
-	globalRoleBindingBlockBody.SetAttributeValue("global_role_id", cty.StringVal("user"))
-	globalRoleBindingBlockBody.SetAttributeValue("user_id", cty.StringVal("rancher2_user.rancher2_user.id"))
+	globalRoleBindingBlockBody.SetAttributeValue(blocks.Name, cty.StringVal(testuser))
+	globalRoleBindingBlockBody.SetAttributeValue(blocks.GlobalRoleID, cty.StringVal(blocks.User))
+	globalRoleBindingBlockBody.SetAttributeValue(blocks.UserID, cty.StringVal(blocks.Rancher+blocks.Rancher+".id"))
 
 	return newFile, rootBody
 }

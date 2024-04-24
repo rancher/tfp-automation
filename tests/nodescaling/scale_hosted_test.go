@@ -9,6 +9,7 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -60,8 +61,8 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 	for _, tt := range tests {
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
 
-		clusterName := namegen.AppendRandomString(provisioning.TFP)
-		poolName := namegen.AppendRandomString(provisioning.TFP)
+		clusterName := namegen.AppendRandomString(configs.TFP)
+		poolName := namegen.AppendRandomString(configs.TFP)
 
 		s.Run((tt.name), func() {
 			defer cleanup.Cleanup(s.T(), s.terraformOptions)

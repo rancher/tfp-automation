@@ -1,4 +1,4 @@
-package main
+package testrun
 
 import (
 	"context"
@@ -7,20 +7,10 @@ import (
 	"log"
 	"os"
 
-	qasedefaults "github.com/rancher/tfp-automation/pipeline/qase"
+	defaults "github.com/rancher/tfp-automation/defaults/qase"
 	"github.com/sirupsen/logrus"
 	qase "go.qase.io/client"
 	"gopkg.in/yaml.v2"
-)
-
-const (
-	runSourceID    = 16
-	recurringRunID = 1
-)
-
-var (
-	testRunName = os.Getenv(qasedefaults.TestRunNAMEEnvVar)
-	qaseToken   = os.Getenv(qasedefaults.QaseTokenEnvVar)
 )
 
 type RecurringTestRun struct {
@@ -32,13 +22,17 @@ func main() {
 	startRun := flag.Bool("startRun", false, "commandline flag that determines when to start a run, and conversely when to end it.")
 	flag.Parse()
 
+	qaseToken := os.Getenv(defaults.QaseTokenEnvVar)
+
 	cfg := qase.NewConfiguration()
 	cfg.AddDefaultHeader("Token", qaseToken)
 	client := qase.NewAPIClient(cfg)
 
 	if *startRun {
 		// create test run
-		resp, err := createTestRun(client, testRunName)
+		runIDEnvVar := os.Getenv(defaults.TestRunNAMEEnvVar)
+
+		resp, err := createTestRun(client, runIDEnvVar)
 		if err != nil {
 			logrus.Error("error creating test run: ", err)
 		}
@@ -57,7 +51,7 @@ func main() {
 			logrus.Fatalf("error reporting converting string to int32: %v", err)
 		}
 		// complete test run
-		_, _, err = client.RunsApi.CompleteRun(context.TODO(), qasedefaults.RancherManagerProjectID, int32(testRunConfig.ID))
+		_, _, err = client.RunsApi.CompleteRun(context.TODO(), defaults.RancherManagerProjectID, int32(testRunConfig.ID))
 		if err != nil {
 			log.Fatalf("error completing test run: %v", err)
 		}
@@ -69,11 +63,11 @@ func createTestRun(client *qase.APIClient, testRunName string) (*qase.IdResponse
 	runCreateBody := qase.RunCreate{
 		Title: testRunName,
 		CustomField: map[string]string{
-			fmt.Sprintf("%d", runSourceID): fmt.Sprintf("%d", recurringRunID),
+			fmt.Sprintf("%d", defaults.RunSourceID): fmt.Sprintf("%d", defaults.RecurringRunID),
 		},
 	}
 
-	idResponse, _, err := client.RunsApi.CreateRun(context.TODO(), runCreateBody, qasedefaults.RancherManagerProjectID)
+	idResponse, _, err := client.RunsApi.CreateRun(context.TODO(), runCreateBody, defaults.RancherManagerProjectID)
 	if err != nil {
 		return nil, err
 	}
