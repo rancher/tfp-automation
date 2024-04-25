@@ -15,7 +15,6 @@ import (
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/kubernetes"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	set "github.com/rancher/tfp-automation/framework/set/provisioning"
 	"github.com/sirupsen/logrus"
@@ -25,6 +24,22 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	all                    = "all"
+	containerImage         = "nginx"
+	containerName          = "nginx"
+	defaultNamespace       = "default"
+	isCattleLabeled        = true
+	ingressPath            = "/index.html"
+	initialIngressName     = "ingress-before-restore"
+	initialWorkloadName    = "wload-before-restore"
+	kubernetesVersion      = "kubernetesVersion"
+	namespace              = "fleet-default"
+	port                   = "port"
+	serviceAppendName      = "service-"
+	workloadNamePostBackup = "wload-after-backup"
 )
 
 type initialSnapshotConfig struct {
@@ -44,20 +59,20 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 	localClusterID, err := clusters.GetClusterIDByName(client, clustertypes.Local)
 	require.NoError(t, err)
 
-	containerTemplate := workloads.NewContainer(kubernetes.ContainerName, kubernetes.ContainerImage, corev1.PullAlways, []corev1.VolumeMount{}, []corev1.EnvFromSource{}, nil, nil, nil)
+	containerTemplate := workloads.NewContainer(containerName, containerImage, corev1.PullAlways, []corev1.VolumeMount{}, []corev1.EnvFromSource{}, nil, nil, nil)
 	podTemplate := workloads.NewPodTemplate([]corev1.Container{containerTemplate}, []corev1.Volume{}, []corev1.LocalObjectReference{}, nil)
-	deployment := workloads.NewDeploymentTemplate(kubernetes.InitialWorkloadName, kubernetes.DefaultNamespace, podTemplate, kubernetes.IsCattleLabeled, nil)
+	deployment := workloads.NewDeploymentTemplate(initialWorkloadName, defaultNamespace, podTemplate, isCattleLabeled, nil)
 
 	service := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      kubernetes.ServiceAppendName + kubernetes.InitialWorkloadName,
-			Namespace: kubernetes.DefaultNamespace,
+			Name:      serviceAppendName + initialWorkloadName,
+			Namespace: defaultNamespace,
 		},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeClusterIP,
 			Ports: []corev1.ServicePort{
 				{
-					Name: kubernetes.Port,
+					Name: port,
 					Port: 80,
 				},
 			},
@@ -65,31 +80,31 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 		},
 	}
 
-	deploymentResp, serviceResp, err := workloads.CreateDeploymentWithService(steveclient, kubernetes.InitialWorkloadName, deployment, service)
+	deploymentResp, serviceResp, err := workloads.CreateDeploymentWithService(steveclient, initialWorkloadName, deployment, service)
 	require.NoError(t, err)
 
 	err = workloads.VerifyDeployment(steveclient, deploymentResp)
 	require.NoError(t, err)
-	require.Equal(t, kubernetes.InitialWorkloadName, deploymentResp.ObjectMeta.Name)
+	require.Equal(t, initialWorkloadName, deploymentResp.ObjectMeta.Name)
 
-	path := ingresses.NewIngressPathTemplate(networking.PathTypeExact, kubernetes.IngressPath, kubernetes.ServiceAppendName+kubernetes.InitialWorkloadName, 80)
-	ingressTemplate := ingresses.NewIngressTemplate(kubernetes.InitialIngressName, kubernetes.DefaultNamespace, "", []networking.HTTPIngressPath{path})
+	path := ingresses.NewIngressPathTemplate(networking.PathTypeExact, ingressPath, serviceAppendName+initialWorkloadName, 80)
+	ingressTemplate := ingresses.NewIngressTemplate(initialIngressName, defaultNamespace, "", []networking.HTTPIngressPath{path})
 
-	ingressResp, err := ingresses.CreateIngress(steveclient, kubernetes.InitialIngressName, ingressTemplate)
+	ingressResp, err := ingresses.CreateIngress(steveclient, initialIngressName, ingressTemplate)
 	require.NoError(t, err)
-	require.Equal(t, kubernetes.InitialIngressName, ingressResp.ObjectMeta.Name)
+	require.Equal(t, initialIngressName, ingressResp.ObjectMeta.Name)
 
 	initialSnapshotValues := snapshotV2Prov(t, client, podTemplate, deployment, clusterName, poolName, clusterID, localClusterID, clusterConfig, false, terraformOptions)
 	restoreV2Prov(t, client, initialSnapshotValues, clusterConfig, clusterName, poolName, clusterID, terraformOptions)
 
 	logrus.Infof("Deleting created workloads...")
-	err = steveclient.SteveType(stevetypes.DeploymentSteveType).Delete(deploymentResp)
+	err = steveclient.SteveType(stevetypes.Deployment).Delete(deploymentResp)
 	require.NoError(t, err)
 
-	err = steveclient.SteveType(stevetypes.ServiceType).Delete(serviceResp)
+	err = steveclient.SteveType(stevetypes.Service).Delete(serviceResp)
 	require.NoError(t, err)
 
-	err = steveclient.SteveType(stevetypes.IngressSteveType).Delete(ingressResp)
+	err = steveclient.SteveType(stevetypes.Ingress).Delete(ingressResp)
 	require.NoError(t, err)
 }
 
@@ -107,7 +122,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 	err = clusters.WaitClusterToBeUpgraded(client, clusterID)
 	require.NoError(t, err)
 
-	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, kubernetes.Namespace)
+	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 	require.NoError(t, err)
 
 	podErrors := pods.StatusPods(client, clusterID)
@@ -128,8 +143,8 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 	snapshotToRestore, err := provisioning.VerifySnapshots(client, localClusterID, clusterName, etcdNodeCount+len(existingSnapshots), isRKE1)
 	require.NoError(t, err)
 
-	if clusterConfig.SnapshotInput.SnapshotRestore == kubernetes.KubernetesVersion || clusterConfig.SnapshotInput.SnapshotRestore == kubernetes.All {
-		clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, kubernetes.Namespace)
+	if clusterConfig.SnapshotInput.SnapshotRestore == kubernetesVersion || clusterConfig.SnapshotInput.SnapshotRestore == all {
+		clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 		require.NoError(t, err)
 
 		initialKubernetesVersion := clusterObject.Spec.KubernetesVersion
@@ -195,7 +210,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotC
 	err = clusters.WaitClusterToBeUpgraded(client, clusterID)
 	require.NoError(t, err)
 
-	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, kubernetes.Namespace)
+	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 	require.NoError(t, err)
 
 	logrus.Infof("Cluster version is restored to: %s", clusterObject.Spec.KubernetesVersion)
@@ -207,13 +222,13 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotC
 	steveclient, err := client.Steve.ProxyDownstream(clusterID)
 	require.NoError(t, err)
 
-	deploymentList, err := steveclient.SteveType(workloads.DeploymentSteveType).NamespacedSteveClient(kubernetes.DefaultNamespace).List(nil)
+	deploymentList, err := steveclient.SteveType(workloads.DeploymentSteveType).NamespacedSteveClient(defaultNamespace).List(nil)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(deploymentList.Data))
-	require.Equal(t, kubernetes.InitialWorkloadName, deploymentList.Data[0].ObjectMeta.Name)
+	require.Equal(t, initialWorkloadName, deploymentList.Data[0].ObjectMeta.Name)
 
-	if clusterConfig.SnapshotInput.SnapshotRestore == kubernetes.KubernetesVersion || clusterConfig.SnapshotInput.SnapshotRestore == kubernetes.All {
-		clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, kubernetes.Namespace)
+	if clusterConfig.SnapshotInput.SnapshotRestore == kubernetesVersion || clusterConfig.SnapshotInput.SnapshotRestore == all {
+		clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 		require.NoError(t, err)
 		require.Equal(t, v2prov.kubernetesVersion, clusterObject.Spec.KubernetesVersion)
 
@@ -229,17 +244,17 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotC
 }
 
 func createPostBackupWorkloads(t *testing.T, client *rancher.Client, clusterID string, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment) {
-	postBackupDeployment := workloads.NewDeploymentTemplate(kubernetes.WorkloadNamePostBackup, kubernetes.DefaultNamespace, podTemplate, kubernetes.IsCattleLabeled, nil)
+	postBackupDeployment := workloads.NewDeploymentTemplate(workloadNamePostBackup, defaultNamespace, podTemplate, isCattleLabeled, nil)
 	postBackupService := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      kubernetes.ServiceAppendName + kubernetes.WorkloadNamePostBackup,
-			Namespace: kubernetes.DefaultNamespace,
+			Name:      serviceAppendName + workloadNamePostBackup,
+			Namespace: defaultNamespace,
 		},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeClusterIP,
 			Ports: []corev1.ServicePort{
 				{
-					Name: kubernetes.Port,
+					Name: port,
 					Port: 80,
 				},
 			},
@@ -250,10 +265,10 @@ func createPostBackupWorkloads(t *testing.T, client *rancher.Client, clusterID s
 	steveclient, err := client.Steve.ProxyDownstream(clusterID)
 	require.NoError(t, err)
 
-	postDeploymentResp, _, err := workloads.CreateDeploymentWithService(steveclient, kubernetes.WorkloadNamePostBackup, postBackupDeployment, postBackupService)
+	postDeploymentResp, _, err := workloads.CreateDeploymentWithService(steveclient, workloadNamePostBackup, postBackupDeployment, postBackupService)
 	require.NoError(t, err)
 
 	err = workloads.VerifyDeployment(steveclient, postDeploymentResp)
 	require.NoError(t, err)
-	require.Equal(t, kubernetes.WorkloadNamePostBackup, postDeploymentResp.ObjectMeta.Name)
+	require.Equal(t, workloadNamePostBackup, postDeploymentResp.ObjectMeta.Name)
 }

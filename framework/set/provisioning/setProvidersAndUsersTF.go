@@ -9,8 +9,28 @@ import (
 	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
-	blocks "github.com/rancher/tfp-automation/defaults/resourceblocks/providersUsers"
 	"github.com/zclconf/go-cty/cty"
+)
+
+const (
+	apiURL            = "api_url"
+	globalRoleBinding = "rancher2_global_role_binding"
+	globalRoleID      = "global_role_id"
+	insecure          = "insecure"
+	name              = "name"
+	provider          = "provider"
+	rancher2          = "rancher2"
+	rancherSource     = "source"
+	rancherUser       = "rancher2_user"
+	rc                = "-rc"
+	requiredProviders = "required_providers"
+	terraform         = "terraform"
+	testPassword      = "password"
+	tokenKey          = "token_key"
+	version           = "version"
+	user              = "user"
+	userID            = "user_id"
+	username          = "username"
 )
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
@@ -18,54 +38,54 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
 
 	source := "rancher/rancher2"
-	if strings.Contains(providerVersion, blocks.RC) {
+	if strings.Contains(providerVersion, rc) {
 		source = "terraform.local/local/rancher2"
 	}
 
 	newFile := hclwrite.NewEmptyFile()
 	rootBody := newFile.Body()
 
-	tfBlock := rootBody.AppendNewBlock(blocks.Terraform, nil)
+	tfBlock := rootBody.AppendNewBlock(terraform, nil)
 	tfBlockBody := tfBlock.Body()
 
-	reqProvsBlock := tfBlockBody.AppendNewBlock(blocks.RequiredProviders, nil)
+	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
-	reqProvsBlockBody.SetAttributeValue(blocks.Rancher, cty.ObjectVal(map[string]cty.Value{
-		blocks.Source:  cty.StringVal(source),
-		blocks.Version: cty.StringVal(providerVersion),
+	reqProvsBlockBody.SetAttributeValue(rancher2, cty.ObjectVal(map[string]cty.Value{
+		rancherSource: cty.StringVal(source),
+		version:       cty.StringVal(providerVersion),
 	}))
 
 	rootBody.AppendNewline()
 
-	provBlock := rootBody.AppendNewBlock(blocks.Provider, []string{blocks.Rancher})
+	provBlock := rootBody.AppendNewBlock(provider, []string{rancher2})
 	provBlockBody := provBlock.Body()
 
-	provBlockBody.SetAttributeValue(blocks.ApiURL, cty.StringVal(`https://`+rancherConfig.Host))
-	provBlockBody.SetAttributeValue(blocks.TokenKey, cty.StringVal(rancherConfig.AdminToken))
-	provBlockBody.SetAttributeValue(blocks.Insecure, cty.BoolVal(*rancherConfig.Insecure))
+	provBlockBody.SetAttributeValue(apiURL, cty.StringVal(`https://`+rancherConfig.Host))
+	provBlockBody.SetAttributeValue(tokenKey, cty.StringVal(rancherConfig.AdminToken))
+	provBlockBody.SetAttributeValue(insecure, cty.BoolVal(*rancherConfig.Insecure))
 
 	rootBody.AppendNewline()
 
 	var testuser = namegen.AppendRandomString("testuser")
 	var testpassword = password.GenerateUserPassword("testpass")
 
-	userBlock := rootBody.AppendNewBlock(blocks.Resource, []string{blocks.RancherUser, blocks.RancherUser})
+	userBlock := rootBody.AppendNewBlock(resource, []string{rancherUser, rancherUser})
 	userBlockBody := userBlock.Body()
 
-	userBlockBody.SetAttributeValue(blocks.Name, cty.StringVal(testuser))
-	userBlockBody.SetAttributeValue(blocks.Username, cty.StringVal(testuser))
-	userBlockBody.SetAttributeValue(blocks.Password, cty.StringVal(testpassword))
-	userBlockBody.SetAttributeValue(blocks.Enabled, cty.BoolVal(true))
+	userBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
+	userBlockBody.SetAttributeValue(username, cty.StringVal(testuser))
+	userBlockBody.SetAttributeValue(testPassword, cty.StringVal(testpassword))
+	userBlockBody.SetAttributeValue(enabled, cty.BoolVal(true))
 
 	rootBody.AppendNewline()
 
-	globalRoleBindingBlock := rootBody.AppendNewBlock(blocks.Resource, []string{blocks.GlobalRoleBinding, blocks.GlobalRoleBinding})
+	globalRoleBindingBlock := rootBody.AppendNewBlock(resource, []string{globalRoleBinding, globalRoleBinding})
 	globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
 
-	globalRoleBindingBlockBody.SetAttributeValue(blocks.Name, cty.StringVal(testuser))
-	globalRoleBindingBlockBody.SetAttributeValue(blocks.GlobalRoleID, cty.StringVal(blocks.User))
-	globalRoleBindingBlockBody.SetAttributeValue(blocks.UserID, cty.StringVal(blocks.Rancher+blocks.Rancher+".id"))
+	globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
+	globalRoleBindingBlockBody.SetAttributeValue(globalRoleID, cty.StringVal(user))
+	globalRoleBindingBlockBody.SetAttributeValue(userID, cty.StringVal(rancher2+rancher2+".id"))
 
 	return newFile, rootBody
 }

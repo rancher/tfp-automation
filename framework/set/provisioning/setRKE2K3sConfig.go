@@ -12,15 +12,35 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	blocks "github.com/rancher/tfp-automation/defaults/resourceblocks"
-	psactBlock "github.com/rancher/tfp-automation/defaults/resourceblocks/psact"
-	v2Block "github.com/rancher/tfp-automation/defaults/resourceblocks/rke2k3s"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
+)
+
+const (
+	clusterV2       = "rancher2_cluster_v2"
+	machineConfigV2 = "rancher2_machine_config_v2"
+
+	cloudCredentialName       = "cloud_credential_name"
+	cloudCredentialSecretName = "cloud_credential_secret_name"
+	controlPlaneRole          = "control_plane_role"
+	etcdRole                  = "etcd_role"
+	workerRole                = "worker_role"
+
+	upgradeStrategy         = "upgrade_strategy"
+	controlPlaneConcurrency = "control_plane_concurrency"
+	workerConcurrency       = "worker_concurrency"
+
+	disableSnapshots     = "disable_snapshots"
+	snapshotScheduleCron = "snapshot_schedule_cron"
+	snapshotRetention    = "snapshot_retention"
+	s3Config             = "s3_config"
+	bucket               = "bucket"
+	endpointCA           = "endpoint_ca"
+	skipSSLVerify        = "skip_ssl_verify"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
@@ -51,25 +71,25 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 
 	rootBody.AppendNewline()
 
-	if strings.Contains(psact, psactBlock.RancherBaseline) {
+	if strings.Contains(psact, rancherBaseline) {
 		newFile, rootBody = SetBaselinePSACT(newFile, rootBody)
 
 		rootBody.AppendNewline()
 	}
 
-	machineConfigBlock := rootBody.AppendNewBlock(blocks.Resource, []string{v2Block.MachineConfigV2, v2Block.MachineConfigV2})
+	machineConfigBlock := rootBody.AppendNewBlock(resource, []string{machineConfigV2, machineConfigV2})
 	machineConfigBlockBody := machineConfigBlock.Body()
 
-	if psact == psactBlock.RancherBaseline {
+	if psact == rancherBaseline {
 		dependsOnTemp := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + blocks.PodSecurityAdmission + "." +
-				blocks.PodSecurityAdmission + "]")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + podSecurityAdmission + "." +
+				podSecurityAdmission + "]")},
 		}
 
-		machineConfigBlockBody.SetAttributeRaw(blocks.DependsOn, dependsOnTemp)
+		machineConfigBlockBody.SetAttributeRaw(dependsOn, dependsOnTemp)
 	}
 
-	machineConfigBlockBody.SetAttributeValue(blocks.GenerateName, cty.StringVal(terraformConfig.MachineConfigName))
+	machineConfigBlockBody.SetAttributeValue(generateName, cty.StringVal(terraformConfig.MachineConfigName))
 
 	switch {
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
@@ -84,16 +104,16 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(blocks.Resource, []string{v2Block.ClusterV2, v2Block.ClusterV2})
+	clusterBlock := rootBody.AppendNewBlock(resource, []string{clusterV2, clusterV2})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(clusterName))
-	clusterBlockBody.SetAttributeValue(blocks.KubernetesVersion, cty.StringVal(k8sVersion))
-	clusterBlockBody.SetAttributeValue(blocks.EnableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))
-	clusterBlockBody.SetAttributeValue(blocks.DefaultPodSecurityAdmission, cty.StringVal(psact))
-	clusterBlockBody.SetAttributeValue(blocks.DefaultClusterRoleForProjectMembers, cty.StringVal(terraformConfig.DefaultClusterRoleForProjectMembers))
+	clusterBlockBody.SetAttributeValue(resourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(kubernetesVersion, cty.StringVal(k8sVersion))
+	clusterBlockBody.SetAttributeValue(enableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))
+	clusterBlockBody.SetAttributeValue(defaultPodSecurityAdmission, cty.StringVal(psact))
+	clusterBlockBody.SetAttributeValue(defaultClusterRoleForProjectMembers, cty.StringVal(terraformConfig.DefaultClusterRoleForProjectMembers))
 
-	rkeConfigBlock := clusterBlockBody.AppendNewBlock(blocks.RKEConfig, nil)
+	rkeConfigBlock := clusterBlockBody.AppendNewBlock(rkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
 
 	for count, pool := range nodePools {
@@ -104,66 +124,66 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 			return err
 		}
 
-		machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock(blocks.MachinePools, nil)
+		machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock(machinePools, nil)
 		machinePoolsBlockBody := machinePoolsBlock.Body()
 
-		machinePoolsBlockBody.SetAttributeValue(blocks.ResourceName, cty.StringVal(poolName+poolNum))
+		machinePoolsBlockBody.SetAttributeValue(resourceName, cty.StringVal(poolName+poolNum))
 
 		cloudCredSecretName := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(blocks.CloudCredential + "." + blocks.CloudCredential + ".id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(cloudCredential + "." + cloudCredential + ".id")},
 		}
 
-		machinePoolsBlockBody.SetAttributeRaw(v2Block.CloudCredentialSecretName, cloudCredSecretName)
-		machinePoolsBlockBody.SetAttributeValue(v2Block.ControlPlaneRole, cty.BoolVal(pool.Controlplane))
-		machinePoolsBlockBody.SetAttributeValue(v2Block.EtcdRole, cty.BoolVal(pool.Etcd))
-		machinePoolsBlockBody.SetAttributeValue(v2Block.WorkerRole, cty.BoolVal(pool.Worker))
-		machinePoolsBlockBody.SetAttributeValue(blocks.Quantity, cty.NumberIntVal(pool.Quantity))
+		machinePoolsBlockBody.SetAttributeRaw(cloudCredentialSecretName, cloudCredSecretName)
+		machinePoolsBlockBody.SetAttributeValue(controlPlaneRole, cty.BoolVal(pool.Controlplane))
+		machinePoolsBlockBody.SetAttributeValue(etcdRole, cty.BoolVal(pool.Etcd))
+		machinePoolsBlockBody.SetAttributeValue(workerRole, cty.BoolVal(pool.Worker))
+		machinePoolsBlockBody.SetAttributeValue(quantity, cty.NumberIntVal(pool.Quantity))
 
-		machineConfigBlock := machinePoolsBlockBody.AppendNewBlock(blocks.MachineConfig, nil)
+		machineConfigBlock := machinePoolsBlockBody.AppendNewBlock(machineConfig, nil)
 		machineConfigBlockBody := machineConfigBlock.Body()
 
 		kind := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(v2Block.MachineConfigV2 + "." + v2Block.MachineConfigV2 + ".kind")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + machineConfigV2 + ".kind")},
 		}
 
-		machineConfigBlockBody.SetAttributeRaw(blocks.ResourceKind, kind)
+		machineConfigBlockBody.SetAttributeRaw(resourceKind, kind)
 
 		name := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(v2Block.MachineConfigV2 + "." + v2Block.MachineConfigV2 + ".name")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + machineConfigV2 + ".name")},
 		}
 
-		machineConfigBlockBody.SetAttributeRaw(blocks.ResourceName, name)
+		machineConfigBlockBody.SetAttributeRaw(resourceName, name)
 	}
 
-	upgradeStrategyBlock := rkeConfigBlockBody.AppendNewBlock(v2Block.UpgradeStrategy, nil)
+	upgradeStrategyBlock := rkeConfigBlockBody.AppendNewBlock(upgradeStrategy, nil)
 	upgradeStrategyBlockBody := upgradeStrategyBlock.Body()
 
-	upgradeStrategyBlockBody.SetAttributeValue(v2Block.ControlPlaneConcurrency, cty.StringVal(("10%")))
-	upgradeStrategyBlockBody.SetAttributeValue(v2Block.WorkerConcurrency, cty.StringVal(("10%")))
+	upgradeStrategyBlockBody.SetAttributeValue(controlPlaneConcurrency, cty.StringVal(("10%")))
+	upgradeStrategyBlockBody.SetAttributeValue(workerConcurrency, cty.StringVal(("10%")))
 
 	if terraformConfig.ETCD != nil {
-		snapshotBlock := rkeConfigBlockBody.AppendNewBlock(blocks.Etcd, nil)
+		snapshotBlock := rkeConfigBlockBody.AppendNewBlock(etcd, nil)
 		snapshotBlockBody := snapshotBlock.Body()
 
-		snapshotBlockBody.SetAttributeValue(v2Block.DisableSnapshots, cty.BoolVal(terraformConfig.ETCD.DisableSnapshots))
-		snapshotBlockBody.SetAttributeValue(v2Block.SnapshotScheduleCron, cty.StringVal(terraformConfig.ETCD.SnapshotScheduleCron))
-		snapshotBlockBody.SetAttributeValue(v2Block.SnapshotRetention, cty.NumberIntVal(int64(terraformConfig.ETCD.SnapshotRetention)))
+		snapshotBlockBody.SetAttributeValue(disableSnapshots, cty.BoolVal(terraformConfig.ETCD.DisableSnapshots))
+		snapshotBlockBody.SetAttributeValue(snapshotScheduleCron, cty.StringVal(terraformConfig.ETCD.SnapshotScheduleCron))
+		snapshotBlockBody.SetAttributeValue(snapshotRetention, cty.NumberIntVal(int64(terraformConfig.ETCD.SnapshotRetention)))
 
 		if strings.Contains(terraformConfig.Module, modules.EC2) && terraformConfig.ETCD.S3 != nil {
-			s3ConfigBlock := snapshotBlockBody.AppendNewBlock(v2Block.S3Config, nil)
+			s3ConfigBlock := snapshotBlockBody.AppendNewBlock(s3Config, nil)
 			s3ConfigBlockBody := s3ConfigBlock.Body()
 
 			cloudCredSecretName := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(blocks.CloudCredential + "." + blocks.CloudCredential + ".id")},
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(cloudCredential + "." + cloudCredential + ".id")},
 			}
 
-			s3ConfigBlockBody.SetAttributeValue(v2Block.Bucket, cty.StringVal(terraformConfig.ETCD.S3.Bucket))
-			s3ConfigBlockBody.SetAttributeValue(blocks.Endpoint, cty.StringVal(terraformConfig.ETCD.S3.Endpoint))
-			s3ConfigBlockBody.SetAttributeRaw(v2Block.CloudCredentialName, cloudCredSecretName)
-			s3ConfigBlockBody.SetAttributeValue(v2Block.EndpointCA, cty.StringVal(terraformConfig.ETCD.S3.EndpointCA))
-			s3ConfigBlockBody.SetAttributeValue(blocks.Folder, cty.StringVal(terraformConfig.ETCD.S3.Folder))
-			s3ConfigBlockBody.SetAttributeValue(blocks.Region, cty.StringVal(terraformConfig.ETCD.S3.Region))
-			s3ConfigBlockBody.SetAttributeValue(v2Block.SkipSSLVerify, cty.BoolVal(terraformConfig.ETCD.S3.SkipSSLVerify))
+			s3ConfigBlockBody.SetAttributeValue(bucket, cty.StringVal(terraformConfig.ETCD.S3.Bucket))
+			s3ConfigBlockBody.SetAttributeValue(endpoint, cty.StringVal(terraformConfig.ETCD.S3.Endpoint))
+			s3ConfigBlockBody.SetAttributeRaw(cloudCredentialName, cloudCredSecretName)
+			s3ConfigBlockBody.SetAttributeValue(endpointCA, cty.StringVal(terraformConfig.ETCD.S3.EndpointCA))
+			s3ConfigBlockBody.SetAttributeValue(folder, cty.StringVal(terraformConfig.ETCD.S3.Folder))
+			s3ConfigBlockBody.SetAttributeValue(region, cty.StringVal(terraformConfig.ETCD.S3.Region))
+			s3ConfigBlockBody.SetAttributeValue(skipSSLVerify, cty.BoolVal(terraformConfig.ETCD.S3.SkipSSLVerify))
 		}
 	}
 
