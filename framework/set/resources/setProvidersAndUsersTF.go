@@ -1,4 +1,4 @@
-package provisioning
+package resources
 
 import (
 	"os"
@@ -9,6 +9,7 @@ import (
 	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -70,17 +71,17 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 	var testuser = namegen.AppendRandomString("testuser")
 	var testpassword = password.GenerateUserPassword("testpass")
 
-	userBlock := rootBody.AppendNewBlock(resource, []string{rancherUser, rancherUser})
+	userBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherUser, rancherUser})
 	userBlockBody := userBlock.Body()
 
 	userBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
 	userBlockBody.SetAttributeValue(username, cty.StringVal(testuser))
 	userBlockBody.SetAttributeValue(testPassword, cty.StringVal(testpassword))
-	userBlockBody.SetAttributeValue(enabled, cty.BoolVal(true))
+	userBlockBody.SetAttributeValue(defaults.Enabled, cty.BoolVal(true))
 
 	rootBody.AppendNewline()
 
-	globalRoleBindingBlock := rootBody.AppendNewBlock(resource, []string{globalRoleBinding, globalRoleBinding})
+	globalRoleBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{globalRoleBinding, globalRoleBinding})
 	globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
 
 	globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
