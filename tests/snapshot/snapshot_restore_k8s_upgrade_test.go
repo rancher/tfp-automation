@@ -48,7 +48,7 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) SetupSuite() {
 	terraformOptions := framework.Setup(s.T())
 	s.terraformOptions = terraformOptions
 
-	provisioning.DefaultK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig)
+	provisioning.GetK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig, configs.DefaultK8sVersion)
 }
 
 func (s *SnapshotRestoreK8sUpgradeTestSuite) TestTfpSnapshotRestoreK8sUpgrade() {

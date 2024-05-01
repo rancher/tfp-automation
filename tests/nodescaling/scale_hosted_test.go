@@ -47,8 +47,6 @@ func (s *ScaleHostedTestSuite) SetupSuite() {
 
 	terraformOptions := framework.Setup(s.T())
 	s.terraformOptions = terraformOptions
-
-	provisioning.DefaultK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig)
 }
 
 func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
