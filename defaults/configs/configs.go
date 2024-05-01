@@ -6,6 +6,9 @@ const (
 	Terratest = "terratest"
 	TFP       = "tfp"
 
+	DefaultK8sVersion    = "default"
+	SecondHighestVersion = "second"
+
 	MainTF          = "/main.tf"
 	TerraformFolder = "/.terraform"
 	TFState         = "/terraform.tfstate"

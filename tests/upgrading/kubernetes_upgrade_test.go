@@ -47,6 +47,8 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 
 	terraformOptions := framework.Setup(k.T())
 	k.terraformOptions = terraformOptions
+
+	provisioning.GetK8sVersion(k.T(), k.client, k.clusterConfig, k.terraformConfig, configs.SecondHighestVersion)
 }
 
 func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {

@@ -48,7 +48,7 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 	terraformOptions := framework.Setup(s.T())
 	s.terraformOptions = terraformOptions
 
-	provisioning.DefaultK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig)
+	provisioning.GetK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig, configs.DefaultK8sVersion)
 }
 
 func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {

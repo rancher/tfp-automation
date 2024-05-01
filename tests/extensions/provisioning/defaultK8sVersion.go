@@ -9,27 +9,55 @@ import (
 	"github.com/rancher/shepherd/extensions/clusters/kubernetesversions"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
-// DefaultK8sVersion is a function that will set the default Kubernetes version if the user has not specified one.
-func DefaultK8sVersion(t *testing.T, client *rancher.Client, clusterConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig) {
+// GetK8sVersion is a function that will set the Kubernetes version if the user has not specified one. It
+// will get the latest version or the second latest version based on the versionType.
+func GetK8sVersion(t *testing.T, client *rancher.Client, clusterConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig, versionType string) {
+	var defaultVersion []string
+	var err error
+
 	if clusterConfig.KubernetesVersion == "" {
-		if strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
-			defaultVersion, err := kubernetesversions.Default(client, clusters.RKE1ClusterType.String(), nil)
-			require.NoError(t, err)
+		switch versionType {
+		case configs.DefaultK8sVersion:
+			if strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+				defaultVersion, err = kubernetesversions.Default(client, clusters.RKE1ClusterType.String(), nil)
+				require.NoError(t, err)
 
-			clusterConfig.KubernetesVersion = defaultVersion[0]
-		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
-			defaultVersion, err := kubernetesversions.Default(client, clusters.RKE2ClusterType.String(), nil)
-			require.NoError(t, err)
+				clusterConfig.KubernetesVersion = defaultVersion[0]
+			} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
+				defaultVersion, err = kubernetesversions.Default(client, clusters.RKE2ClusterType.String(), nil)
+				require.NoError(t, err)
 
-			clusterConfig.KubernetesVersion = defaultVersion[0]
-		} else if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
-			defaultVersion, err := kubernetesversions.Default(client, clusters.K3SClusterType.String(), nil)
-			require.NoError(t, err)
+				clusterConfig.KubernetesVersion = defaultVersion[0]
+			} else if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
+				defaultVersion, err = kubernetesversions.Default(client, clusters.K3SClusterType.String(), nil)
+				require.NoError(t, err)
 
-			clusterConfig.KubernetesVersion = defaultVersion[0]
+				clusterConfig.KubernetesVersion = defaultVersion[0]
+			}
+		case configs.SecondHighestVersion:
+			if strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+				defaultVersion, err = kubernetesversions.ListRKE1AllVersions(client)
+				require.NoError(t, err)
+
+				clusterConfig.KubernetesVersion = defaultVersion[2]
+			} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
+				defaultVersion, err = kubernetesversions.ListRKE2AllVersions(client)
+				require.NoError(t, err)
+
+				clusterConfig.KubernetesVersion = defaultVersion[2]
+			} else if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
+				defaultVersion, err = kubernetesversions.ListK3SAllVersions(client)
+				require.NoError(t, err)
+
+				clusterConfig.KubernetesVersion = defaultVersion[2]
+			}
+		default:
+			logrus.Errorf("Invalid version type: %s", versionType)
 		}
 	}
 }
