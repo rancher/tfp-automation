@@ -4,13 +4,13 @@ import (
 	"os"
 
 	"github.com/rancher/tfp-automation/defaults/configs"
-	set "github.com/rancher/tfp-automation/framework/set/provisioning"
+	"github.com/rancher/tfp-automation/framework/set/resources"
 	"github.com/sirupsen/logrus"
 )
 
 // CleanupConfigTF is a function that will cleanup the main.tf file and terraform.tfstate files.
 func CleanupConfigTF() error {
-	keyPath := set.SetKeyPath()
+	keyPath := resources.SetKeyPath()
 
 	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {

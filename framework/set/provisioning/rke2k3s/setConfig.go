@@ -1,8 +1,7 @@
-package provisioning
+package rke2k3s
 
 import (
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -12,10 +11,12 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/resources"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -54,7 +55,7 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 	terratestConfig := new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
 
-	newFile, rootBody := SetProvidersAndUsersTF(rancherConfig, terraformConfig)
+	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig)
 
 	rootBody.AppendNewline()
 
@@ -71,25 +72,25 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 
 	rootBody.AppendNewline()
 
-	if strings.Contains(psact, rancherBaseline) {
-		newFile, rootBody = SetBaselinePSACT(newFile, rootBody)
+	if strings.Contains(psact, defaults.RancherBaseline) {
+		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody)
 
 		rootBody.AppendNewline()
 	}
 
-	machineConfigBlock := rootBody.AppendNewBlock(resource, []string{machineConfigV2, machineConfigV2})
+	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, machineConfigV2})
 	machineConfigBlockBody := machineConfigBlock.Body()
 
-	if psact == rancherBaseline {
+	if psact == defaults.RancherBaseline {
 		dependsOnTemp := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + podSecurityAdmission + "." +
-				podSecurityAdmission + "]")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.PodSecurityAdmission + "." +
+				defaults.PodSecurityAdmission + "]")},
 		}
 
-		machineConfigBlockBody.SetAttributeRaw(dependsOn, dependsOnTemp)
+		machineConfigBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnTemp)
 	}
 
-	machineConfigBlockBody.SetAttributeValue(generateName, cty.StringVal(terraformConfig.MachineConfigName))
+	machineConfigBlockBody.SetAttributeValue(defaults.GenerateName, cty.StringVal(terraformConfig.MachineConfigName))
 
 	switch {
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
@@ -104,55 +105,20 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(resource, []string{clusterV2, clusterV2})
+	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, clusterV2})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(resourceName, cty.StringVal(clusterName))
-	clusterBlockBody.SetAttributeValue(kubernetesVersion, cty.StringVal(k8sVersion))
-	clusterBlockBody.SetAttributeValue(enableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))
-	clusterBlockBody.SetAttributeValue(defaultPodSecurityAdmission, cty.StringVal(psact))
-	clusterBlockBody.SetAttributeValue(defaultClusterRoleForProjectMembers, cty.StringVal(terraformConfig.DefaultClusterRoleForProjectMembers))
+	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
+	clusterBlockBody.SetAttributeValue(defaults.EnableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))
+	clusterBlockBody.SetAttributeValue(defaults.DefaultPodSecurityAdmission, cty.StringVal(psact))
+	clusterBlockBody.SetAttributeValue(defaults.DefaultClusterRoleForProjectMembers, cty.StringVal(terraformConfig.DefaultClusterRoleForProjectMembers))
 
-	rkeConfigBlock := clusterBlockBody.AppendNewBlock(rkeConfig, nil)
+	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
 
 	for count, pool := range nodePools {
-		poolNum := strconv.Itoa(count)
-
-		_, err := SetResourceNodepoolValidation(pool, poolNum)
-		if err != nil {
-			return err
-		}
-
-		machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock(machinePools, nil)
-		machinePoolsBlockBody := machinePoolsBlock.Body()
-
-		machinePoolsBlockBody.SetAttributeValue(resourceName, cty.StringVal(poolName+poolNum))
-
-		cloudCredSecretName := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(cloudCredential + "." + cloudCredential + ".id")},
-		}
-
-		machinePoolsBlockBody.SetAttributeRaw(cloudCredentialSecretName, cloudCredSecretName)
-		machinePoolsBlockBody.SetAttributeValue(controlPlaneRole, cty.BoolVal(pool.Controlplane))
-		machinePoolsBlockBody.SetAttributeValue(etcdRole, cty.BoolVal(pool.Etcd))
-		machinePoolsBlockBody.SetAttributeValue(workerRole, cty.BoolVal(pool.Worker))
-		machinePoolsBlockBody.SetAttributeValue(quantity, cty.NumberIntVal(pool.Quantity))
-
-		machineConfigBlock := machinePoolsBlockBody.AppendNewBlock(machineConfig, nil)
-		machineConfigBlockBody := machineConfigBlock.Body()
-
-		kind := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + machineConfigV2 + ".kind")},
-		}
-
-		machineConfigBlockBody.SetAttributeRaw(resourceKind, kind)
-
-		name := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + machineConfigV2 + ".name")},
-		}
-
-		machineConfigBlockBody.SetAttributeRaw(resourceName, name)
+		setMachinePool(nodePools, count, pool, rkeConfigBlockBody, poolName)
 	}
 
 	upgradeStrategyBlock := rkeConfigBlockBody.AppendNewBlock(upgradeStrategy, nil)
@@ -162,37 +128,15 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 	upgradeStrategyBlockBody.SetAttributeValue(workerConcurrency, cty.StringVal(("10%")))
 
 	if terraformConfig.ETCD != nil {
-		snapshotBlock := rkeConfigBlockBody.AppendNewBlock(etcd, nil)
-		snapshotBlockBody := snapshotBlock.Body()
-
-		snapshotBlockBody.SetAttributeValue(disableSnapshots, cty.BoolVal(terraformConfig.ETCD.DisableSnapshots))
-		snapshotBlockBody.SetAttributeValue(snapshotScheduleCron, cty.StringVal(terraformConfig.ETCD.SnapshotScheduleCron))
-		snapshotBlockBody.SetAttributeValue(snapshotRetention, cty.NumberIntVal(int64(terraformConfig.ETCD.SnapshotRetention)))
-
-		if strings.Contains(terraformConfig.Module, modules.EC2) && terraformConfig.ETCD.S3 != nil {
-			s3ConfigBlock := snapshotBlockBody.AppendNewBlock(s3Config, nil)
-			s3ConfigBlockBody := s3ConfigBlock.Body()
-
-			cloudCredSecretName := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(cloudCredential + "." + cloudCredential + ".id")},
-			}
-
-			s3ConfigBlockBody.SetAttributeValue(bucket, cty.StringVal(terraformConfig.ETCD.S3.Bucket))
-			s3ConfigBlockBody.SetAttributeValue(endpoint, cty.StringVal(terraformConfig.ETCD.S3.Endpoint))
-			s3ConfigBlockBody.SetAttributeRaw(cloudCredentialName, cloudCredSecretName)
-			s3ConfigBlockBody.SetAttributeValue(endpointCA, cty.StringVal(terraformConfig.ETCD.S3.EndpointCA))
-			s3ConfigBlockBody.SetAttributeValue(folder, cty.StringVal(terraformConfig.ETCD.S3.Folder))
-			s3ConfigBlockBody.SetAttributeValue(region, cty.StringVal(terraformConfig.ETCD.S3.Region))
-			s3ConfigBlockBody.SetAttributeValue(skipSSLVerify, cty.BoolVal(terraformConfig.ETCD.S3.SkipSSLVerify))
-		}
+		setEtcdConfig(rkeConfigBlockBody, terraformConfig)
 	}
 
 	if snapshots.CreateSnapshot {
-		setCreateRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody)
+		SetCreateRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody)
 	}
 
 	if snapshots.RestoreSnapshot {
-		setRestoreRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody, snapshots)
+		SetRestoreRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody, snapshots)
 	}
 
 	_, err := file.Write(newFile.Bytes())

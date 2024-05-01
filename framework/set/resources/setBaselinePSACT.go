@@ -1,27 +1,26 @@
-package provisioning
+package resources
 
 import (
 	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
 )
 
 const (
-	audit           = "audit"
-	auditVersion    = "audit_version"
-	baseline        = "baseline"
-	defaults        = "defaults"
-	description     = "description"
-	enforce         = "enforce"
-	enforceVersion  = "enforce_version"
-	exemptions      = "exemptions"
-	latest          = "latest"
-	namespace       = "namespaces"
-	rancherBaseline = "rancher-baseline"
-	warn            = "warn"
-	warnVersion     = "warn_version"
+	audit          = "audit"
+	auditVersion   = "audit_version"
+	baseline       = "baseline"
+	description    = "description"
+	enforce        = "enforce"
+	enforceVersion = "enforce_version"
+	exemptions     = "exemptions"
+	latest         = "latest"
+	namespace      = "namespaces"
+	warn           = "warn"
+	warnVersion    = "warn_version"
 
 	baselineDescription = "This is a custom baseline Pod Security Admission Configuration Template." +
 		"It defines a minimally restrictive policy which prevents known privilege escalations. " +
@@ -53,13 +52,13 @@ func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body) (*hclwrit
 		"tigera-operator",
 	}
 
-	psactBlock := rootBody.AppendNewBlock(resourceName, []string{podSecurityAdmission, podSecurityAdmission})
+	psactBlock := rootBody.AppendNewBlock(defaults.ResourceName, []string{defaults.PodSecurityAdmission, defaults.PodSecurityAdmission})
 	psactBlockBody := psactBlock.Body()
 
-	psactBlockBody.SetAttributeValue(resourceName, cty.StringVal(rancherBaseline))
+	psactBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(defaults.RancherBaseline))
 	psactBlockBody.SetAttributeValue(description, cty.StringVal(baselineDescription))
 
-	defaultsBlock := psactBlockBody.AppendNewBlock(defaults, nil)
+	defaultsBlock := psactBlockBody.AppendNewBlock(defaults.Defaults, nil)
 	defaultsBlockBody := defaultsBlock.Body()
 
 	defaultsBlockBody.SetAttributeValue(audit, cty.StringVal(baseline))

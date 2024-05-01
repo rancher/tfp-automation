@@ -5,12 +5,12 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
-	set "github.com/rancher/tfp-automation/framework/set/provisioning"
+	"github.com/rancher/tfp-automation/framework/set/resources"
 )
 
 // ForceCleanup is a function that will forcibly run terraform destroy and cleanup Terraform resources.
 func ForceCleanup(t *testing.T) {
-	keyPath := set.SetKeyPath()
+	keyPath := resources.SetKeyPath()
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: keyPath,

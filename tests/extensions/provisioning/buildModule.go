@@ -7,7 +7,8 @@ import (
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
-	set "github.com/rancher/tfp-automation/framework/set/provisioning"
+	"github.com/rancher/tfp-automation/framework/set/provisioning"
+	"github.com/rancher/tfp-automation/framework/set/resources"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,9 +17,9 @@ func BuildModule(t *testing.T) error {
 	clusterConfig := new(config.TerratestConfig)
 	ranchFrame.LoadConfig(configs.Terratest, clusterConfig)
 
-	keyPath := set.SetKeyPath()
+	keyPath := resources.SetKeyPath()
 
-	err := set.SetConfigTF(clusterConfig, "", "")
+	err := provisioning.SetConfigTF(clusterConfig, "", "")
 	if err != nil {
 		return err
 	}
