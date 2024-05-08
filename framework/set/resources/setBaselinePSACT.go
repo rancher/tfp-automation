@@ -52,7 +52,7 @@ func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body) (*hclwrit
 		"tigera-operator",
 	}
 
-	psactBlock := rootBody.AppendNewBlock(defaults.ResourceName, []string{defaults.PodSecurityAdmission, defaults.PodSecurityAdmission})
+	psactBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.PodSecurityAdmission, defaults.PodSecurityAdmission})
 	psactBlockBody := psactBlock.Body()
 
 	psactBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(defaults.RancherBaseline))
