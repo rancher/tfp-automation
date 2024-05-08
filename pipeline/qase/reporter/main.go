@@ -1,4 +1,4 @@
-package reporter
+package main
 
 import (
 	"bufio"
@@ -17,10 +17,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func main() {
-	qaseToken := os.Getenv(defaults.QaseTokenEnvVar)
-	runIDEnvVar := os.Getenv(defaults.TestRunNAMEEnvVar)
+var (
+	multiSubTestReg = regexp.MustCompile(defaults.MultiSubTestPattern)
+	subTestReg      = regexp.MustCompile(defaults.SubtestPattern)
+	qaseToken       = os.Getenv(defaults.QaseTokenEnvVar)
+	runIDEnvVar     = os.Getenv(defaults.TestRunEnvVar)
+)
 
+func main() {
 	if runIDEnvVar != "" {
 		cfg := qase.NewConfiguration()
 		cfg.AddDefaultHeader("Token", qaseToken)
@@ -94,6 +98,7 @@ func readTestCase() ([]testcase.GoTestOutput, error) {
 func parseCorrectTestCases(testCases []testcase.GoTestOutput) map[string]*testcase.GoTestCase {
 	finalTestCases := map[string]*testcase.GoTestCase{}
 	var deletedTest string
+	var timeoutFailure bool
 	for _, testCase := range testCases {
 		if testCase.Action == "run" && strings.Contains(testCase.Test, "/") {
 			newTestCase := &testcase.GoTestCase{Name: testCase.Test}
@@ -107,9 +112,6 @@ func parseCorrectTestCases(testCases []testcase.GoTestOutput) map[string]*testca
 			goTestCase := finalTestCases[testCase.Test]
 
 			if goTestCase != nil {
-				multiSubTestReg := regexp.MustCompile(defaults.MultiSubTestPattern)
-				subTestReg := regexp.MustCompile(defaults.SubtestPattern)
-
 				substring := subTestReg.FindString(goTestCase.Name)
 				goTestCase.StackTrace += testCase.Output
 				goTestCase.Status = testCase.Action
@@ -121,6 +123,8 @@ func parseCorrectTestCases(testCases []testcase.GoTestOutput) map[string]*testca
 				}
 
 			}
+		} else if testCase.Action == defaults.FailStatus && testCase.Test == "" {
+			timeoutFailure = true
 		}
 	}
 
@@ -129,6 +133,9 @@ func parseCorrectTestCases(testCases []testcase.GoTestOutput) map[string]*testca
 		testName := testSuite[len(testSuite)-1]
 		testCase.Name = testName
 		testCase.TestSuite = testSuite[0 : len(testSuite)-1]
+		if timeoutFailure && testCase.Status == "" {
+			testCase.Status = defaults.FailStatus
+		}
 	}
 
 	return finalTestCases
@@ -197,10 +204,10 @@ func writeTestSuiteToQase(client *qase.APIClient, testCase testcase.GoTestCase) 
 				ParentId: int64(parentSuite),
 			}
 			idResponse, _, err := client.SuitesApi.CreateSuite(context.TODO(), suiteBody, defaults.RancherManagerProjectID)
-			id = idResponse.Result.Id
 			if err != nil {
 				return nil, err
 			}
+			id = idResponse.Result.Id
 			parentSuite = id
 		} else {
 			id = qaseSuiteFound.Id
