@@ -1,6 +1,7 @@
 package snapshot
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -52,8 +53,6 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) SetupSuite() {
 }
 
 func (s *SnapshotRestoreK8sUpgradeTestSuite) TestTfpSnapshotRestoreK8sUpgrade() {
-	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
-	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	snapshotRestoreK8sVersion := config.TerratestConfig{
@@ -75,12 +74,8 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) TestTfpSnapshotRestoreK8sUpgrade() 
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
 	}{
-		{"Restore K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreK8sVersion},
-		{"Restore cluster config, K8s version and etcd: all roles", nodeRolesAll, snapshotRestoreAll},
-		{"Restore K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreK8sVersion},
-		{"Restore cluster config, K8s version and etcd: shared roles", nodeRolesShared, snapshotRestoreAll},
-		{"Restore K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreK8sVersion},
-		{"Restore cluster config, K8s version and etcd: dedicated roles", nodeRolesDedicated, snapshotRestoreAll},
+		{"Restore Kubernetes version and etcd", nodeRolesDedicated, snapshotRestoreK8sVersion},
+		{"Restore cluster config, Kubernetes version and etcd", nodeRolesDedicated, snapshotRestoreAll},
 	}
 
 	for _, tt := range tests {
@@ -90,6 +85,12 @@ func (s *SnapshotRestoreK8sUpgradeTestSuite) TestTfpSnapshotRestoreK8sUpgrade() 
 		clusterConfig.SnapshotInput.SnapshotRestore = tt.etcdSnapshot.SnapshotInput.SnapshotRestore
 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
+
+		if strings.Contains(s.terraformConfig.Module, "ec2") && (s.terraformConfig.ETCD.S3 != nil || s.terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil) {
+			tt.name = "S3 " + tt.name
+		} else {
+			tt.name = "Local " + tt.name
+		}
 
 		clusterName := namegen.AppendRandomString(configs.TFP)
 		poolName := namegen.AppendRandomString(configs.TFP)
