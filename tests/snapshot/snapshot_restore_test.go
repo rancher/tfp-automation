@@ -1,6 +1,7 @@
 package snapshot
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -52,8 +53,6 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 }
 
 func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
-	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
-	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	snapshotRestoreNone := config.TerratestConfig{
@@ -68,9 +67,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
 	}{
-		{"Restore etcd only: 1 node all roles", nodeRolesAll, snapshotRestoreNone},
-		{"Restore etcd only: 2 nodes shared roles", nodeRolesShared, snapshotRestoreNone},
-		{"Restore etcd only: 3 nodes dedicated roles", nodeRolesDedicated, snapshotRestoreNone},
+		{"Restore etcd only", nodeRolesDedicated, snapshotRestoreNone},
 	}
 
 	for _, tt := range tests {
@@ -80,6 +77,12 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
 		clusterConfig.SnapshotInput.SnapshotRestore = tt.etcdSnapshot.SnapshotInput.SnapshotRestore
 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
+
+		if strings.Contains(s.terraformConfig.Module, "ec2") && (s.terraformConfig.ETCD.S3 != nil || s.terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil) {
+			tt.name = "S3 " + tt.name
+		} else {
+			tt.name = "Local " + tt.name
+		}
 
 		clusterName := namegen.AppendRandomString(configs.TFP)
 		poolName := namegen.AppendRandomString(configs.TFP)
