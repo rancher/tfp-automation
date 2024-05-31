@@ -49,16 +49,18 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 	terraformOptions := framework.Setup(s.T())
 	s.terraformOptions = terraformOptions
 
-	provisioning.GetK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig, configs.DefaultK8sVersion)
+	provisioning.GetK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig, configs.SecondHighestVersion)
 }
 
-func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
+func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
-	snapshotRestoreNone := config.TerratestConfig{
+	snapshotRestoreAll := config.TerratestConfig{
 		SnapshotInput: config.Snapshots{
-			UpgradeKubernetesVersion: "",
-			SnapshotRestore:          "none",
+			UpgradeKubernetesVersion:     "",
+			SnapshotRestore:              "all",
+			ControlPlaneConcurrencyValue: "15%",
+			WorkerConcurrencyValue:       "20%",
 		},
 	}
 
@@ -67,7 +69,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
 	}{
-		{"Restore etcd only", nodeRolesDedicated, snapshotRestoreNone},
+		{"Restore cluster config, K8s version and etcd", nodeRolesDedicated, snapshotRestoreAll},
 	}
 
 	for _, tt := range tests {
@@ -75,6 +77,8 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
 		clusterConfig.Nodepools = tt.nodeRoles
 		clusterConfig.SnapshotInput.UpgradeKubernetesVersion = tt.etcdSnapshot.SnapshotInput.UpgradeKubernetesVersion
 		clusterConfig.SnapshotInput.SnapshotRestore = tt.etcdSnapshot.SnapshotInput.SnapshotRestore
+		clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue = tt.etcdSnapshot.SnapshotInput.ControlPlaneConcurrencyValue
+		clusterConfig.SnapshotInput.WorkerConcurrencyValue = tt.etcdSnapshot.SnapshotInput.WorkerConcurrencyValue
 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
 
@@ -88,7 +92,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		s.Run(tt.name, func() {
-			defer cleanup.Cleanup(s.T(), s.terraformOptions)
+			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
 			provisioning.Provision(s.T(), clusterName, poolName, &clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
@@ -98,7 +102,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnly() {
 	}
 }
 
-func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnlyDynamicInput() {
+func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 	if s.clusterConfig.SnapshotInput == (config.Snapshots{}) {
 		s.T().Skip()
 	}
@@ -116,7 +120,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreETCDOnlyDynamicInput() 
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		s.Run((tt.name), func() {
-			defer cleanup.Cleanup(s.T(), s.terraformOptions)
+			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
 			provisioning.Provision(s.T(), clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)

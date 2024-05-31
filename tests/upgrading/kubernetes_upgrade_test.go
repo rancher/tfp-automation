@@ -75,7 +75,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		k.Run((tt.name), func() {
-			defer cleanup.Cleanup(k.T(), k.terraformOptions)
+			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
 			provisioning.Provision(k.T(), clusterName, poolName, &clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
@@ -102,7 +102,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		k.Run((tt.name), func() {
-			defer cleanup.Cleanup(k.T(), k.terraformOptions)
+			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
 			provisioning.Provision(k.T(), clusterName, poolName, k.clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)

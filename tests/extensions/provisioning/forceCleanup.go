@@ -18,5 +18,5 @@ func ForceCleanup(t *testing.T) {
 	})
 
 	terraform.Destroy(t, terraformOptions)
-	cleanup.CleanupConfigTF()
+	cleanup.ConfigCleanupTF()
 }

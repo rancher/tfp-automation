@@ -63,7 +63,7 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		k.Run((tt.name), func() {
-			defer cleanup.Cleanup(k.T(), k.terraformOptions)
+			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
 			provisioning.Provision(k.T(), clusterName, poolName, k.clusterConfig, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
@@ -76,5 +76,6 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 }
 
 func TestTfpKubernetesUpgradeHostedTestSuite(t *testing.T) {
+	t.Skip("This test has been deprecated.")
 	suite.Run(t, new(KubernetesUpgradeHostedTestSuite))
 }

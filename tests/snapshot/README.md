@@ -59,15 +59,7 @@ terratest:
 See the below examples on how to run the tests:
 
 ### Snapshot restore
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestoreETCDOnly$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestoreETCDOnlyDynamicInput$"`
-
-### Snapshot restore with K8s upgrade
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreK8sUpgradeTestSuite/TestTfpSnapshotRestoreK8sUpgrade$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreK8sUpgradeTestSuite/TestTfpSnapshotRestoreK8sUpgradeDynamicInput$"`
-
-### Sanpshot restore with upgrade strategy
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreUpgradeStrategyTestSuite/TestTfpSnapshotRestoreUpgradeStrategy$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreUpgradeStrategyTestSuite/TestTfpSnapshotRestoreUpgradeStrategyDynamicInput$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestore$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/snapshot --junitfile results.xml -- -timeout=60m -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestoreDynamicInput$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
