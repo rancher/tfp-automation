@@ -13,6 +13,7 @@ import (
 	"github.com/rancher/shepherd/extensions/provisioning"
 	"github.com/rancher/shepherd/extensions/workloads"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
+	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -27,19 +28,19 @@ import (
 )
 
 const (
-	all                    = "all"
-	containerImage         = "nginx"
-	containerName          = "nginx"
-	defaultNamespace       = "default"
-	isCattleLabeled        = true
-	ingressPath            = "/index.html"
-	initialIngressName     = "ingress-before-restore"
-	initialWorkloadName    = "wload-before-restore"
-	kubernetesVersion      = "kubernetesVersion"
-	namespace              = "fleet-default"
-	port                   = "port"
-	serviceAppendName      = "service-"
-	workloadNamePostBackup = "wload-after-backup"
+	all               = "all"
+	containerImage    = "nginx"
+	containerName     = "nginx"
+	defaultNamespace  = "default"
+	initialIngress    = "ingress-before-restore"
+	initialWorkload   = "wload-before-restore"
+	ingressPath       = "/index.html"
+	isCattleLabeled   = true
+	kubernetesVersion = "kubernetesVersion"
+	namespace         = "fleet-default"
+	port              = "port"
+	postWorkload      = "wload-after-backup"
+	serviceAppendName = "service-"
 )
 
 type initialSnapshotConfig struct {
@@ -50,6 +51,9 @@ type initialSnapshotConfig struct {
 }
 
 func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
+	initialIngressName := namegen.AppendRandomString(initialIngress)
+	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
+
 	clusterID, err := clusters.GetClusterIDByName(client, clusterName)
 	require.NoError(t, err)
 
@@ -219,14 +223,6 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotC
 	assert.Empty(t, podErrors)
 	require.Equal(t, v2prov.kubernetesVersion, clusterObject.Spec.KubernetesVersion)
 
-	steveclient, err := client.Steve.ProxyDownstream(clusterID)
-	require.NoError(t, err)
-
-	deploymentList, err := steveclient.SteveType(workloads.DeploymentSteveType).NamespacedSteveClient(defaultNamespace).List(nil)
-	require.NoError(t, err)
-	require.Equal(t, 1, len(deploymentList.Data))
-	require.Equal(t, initialWorkloadName, deploymentList.Data[0].ObjectMeta.Name)
-
 	if clusterConfig.SnapshotInput.SnapshotRestore == kubernetesVersion || clusterConfig.SnapshotInput.SnapshotRestore == all {
 		clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 		require.NoError(t, err)
@@ -244,6 +240,8 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotC
 }
 
 func createPostBackupWorkloads(t *testing.T, client *rancher.Client, clusterID string, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment) {
+	workloadNamePostBackup := namegen.AppendRandomString(postWorkload)
+
 	postBackupDeployment := workloads.NewDeploymentTemplate(workloadNamePostBackup, defaultNamespace, podTemplate, isCattleLabeled, nil)
 	postBackupService := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

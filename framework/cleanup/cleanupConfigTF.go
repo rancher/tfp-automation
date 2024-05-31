@@ -8,8 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CleanupConfigTF is a function that will cleanup the main.tf file and terraform.tfstate files.
-func CleanupConfigTF() error {
+// ConfigCleanupTF is a function that will cleanup the main.tf file and terraform.tfstate files.
+func ConfigCleanupTF() error {
 	keyPath := resources.SetKeyPath()
 
 	file, err := os.Create(keyPath + configs.MainTF)

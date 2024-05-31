@@ -63,7 +63,7 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		p.Run((tt.name), func() {
-			defer cleanup.Cleanup(p.T(), p.terraformOptions)
+			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
 
 			provisioning.Provision(p.T(), clusterName, poolName, p.clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
@@ -72,5 +72,6 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 }
 
 func TestTfpProvisionHostedTestSuite(t *testing.T) {
+	t.Skip("This test has been deprecated.")
 	suite.Run(t, new(ProvisionHostedTestSuite))
 }

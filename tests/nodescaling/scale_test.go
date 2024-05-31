@@ -113,7 +113,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledDownCount)
 
-			cleanup.Cleanup(s.T(), s.terraformOptions)
+			cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 		})
 	}
 }
@@ -132,7 +132,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		s.Run((tt.name), func() {
-			defer cleanup.Cleanup(s.T(), s.terraformOptions)
+			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
 			provisioning.Provision(s.T(), clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)

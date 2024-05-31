@@ -9,13 +9,13 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 )
 
-// Cleanup is a function that will run terraform destroy and cleanup Terraform resources.
-func Cleanup(t *testing.T, terraformOptions *terraform.Options) {
+// ConfigCleanup is a function that will run terraform destroy and cleanup Terraform resources.
+func ConfigCleanup(t *testing.T, terraformOptions *terraform.Options) {
 	rancherConfig := new(rancher.Config)
 	config.LoadConfig(configs.Rancher, rancherConfig)
 
 	if *rancherConfig.Cleanup {
 		terraform.Destroy(t, terraformOptions)
-		CleanupConfigTF()
+		ConfigCleanupTF()
 	}
 }

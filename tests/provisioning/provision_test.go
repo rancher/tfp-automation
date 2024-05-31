@@ -76,7 +76,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		p.Run((tt.name), func() {
-			defer cleanup.Cleanup(p.T(), p.terraformOptions)
+			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
 
 			provisioning.Provision(p.T(), clusterName, poolName, &clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
@@ -98,7 +98,7 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 		poolName := namegen.AppendRandomString(configs.TFP)
 
 		p.Run((tt.name), func() {
-			defer cleanup.Cleanup(p.T(), p.terraformOptions)
+			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
 
 			provisioning.Provision(p.T(), clusterName, poolName, p.clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)

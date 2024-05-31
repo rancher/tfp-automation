@@ -14,7 +14,7 @@ type BuildModuleTestSuite struct {
 }
 
 func (r *BuildModuleTestSuite) TestBuildModule() {
-	defer cleanup.CleanupConfigTF()
+	defer cleanup.ConfigCleanupTF()
 
 	err := provisioning.BuildModule(r.T())
 	require.NoError(r.T(), err)
