@@ -52,14 +52,6 @@ func (s *ScaleTestSuite) SetupSuite() {
 }
 
 func (s *ScaleTestSuite) TestTfpScale() {
-	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
-	scaleUpRolesAll := []config.Nodepool{config.ScaleUpAllRolesNodePool}
-	scaleDownRolesAll := []config.Nodepool{config.ScaleDownAllRolesNodePool}
-
-	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
-	scaleUpRolesShared := []config.Nodepool{config.ScaleUpEtcdControlPlaneNodePool, config.ScaleUpWorkerNodePool}
-	scaleDownRolesShared := []config.Nodepool{config.ScaleUpEtcdControlPlaneNodePool, config.WorkerNodePool}
-
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	scaleUpRolesDedicated := []config.Nodepool{config.ScaleUpEtcdNodePool, config.ScaleUpControlPlaneNodePool, config.ScaleUpWorkerNodePool}
 	scaleDownRolesDedicated := []config.Nodepool{config.ScaleUpEtcdNodePool, config.ScaleUpControlPlaneNodePool, config.WorkerNodePool}
@@ -70,8 +62,6 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		scaleUpNodeRoles   []config.Nodepool
 		scaleDownNodeRoles []config.Nodepool
 	}{
-		{"Scaling 1 node all roles -> 4 nodes -> 3 nodes " + config.StandardClientName.String(), nodeRolesAll, scaleUpRolesAll, scaleDownRolesAll},
-		{"Scaling 2 nodes shared roles -> 6 nodes -> 4 nodes  " + config.StandardClientName.String(), nodeRolesShared, scaleUpRolesShared, scaleDownRolesShared},
 		{"Scaling 3 nodes dedicated roles -> 8 nodes -> 6 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
 	}
 

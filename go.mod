@@ -5,6 +5,7 @@ go 1.22
 replace (
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20240529155832-64dbde013b4c
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20240529155832-64dbde013b4c
+
 	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20240308221502-c3b2635212be
 	k8s.io/api => k8s.io/api v0.29.3
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.29.3
@@ -25,7 +26,7 @@ require (
 	github.com/gruntwork-io/terratest v0.42.0
 	github.com/rancher/norman v0.0.0-20240503193601-9f5f6586bb5b
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20240530155239-a3783b7c7f54
+	github.com/rancher/shepherd v0.0.0-20240618185935-9f1ffea0abab
 	github.com/sirupsen/logrus v1.9.3
 )
 

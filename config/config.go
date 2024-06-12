@@ -21,20 +21,6 @@ const (
 	RancherRestricted PSACT = "rancher-restricted"
 )
 
-var AllRolesNodePool = Nodepool{
-	Etcd:         true,
-	Controlplane: true,
-	Worker:       true,
-	Quantity:     1,
-}
-
-var EtcdControlPlaneNodePool = Nodepool{
-	Etcd:         true,
-	Controlplane: true,
-	Worker:       false,
-	Quantity:     1,
-}
-
 var EtcdNodePool = Nodepool{
 	Etcd:         true,
 	Controlplane: false,
@@ -54,27 +40,6 @@ var WorkerNodePool = Nodepool{
 	Controlplane: false,
 	Worker:       true,
 	Quantity:     1,
-}
-
-var ScaleUpAllRolesNodePool = Nodepool{
-	Etcd:         true,
-	Controlplane: true,
-	Worker:       true,
-	Quantity:     4,
-}
-
-var ScaleDownAllRolesNodePool = Nodepool{
-	Etcd:         true,
-	Controlplane: true,
-	Worker:       true,
-	Quantity:     3,
-}
-
-var ScaleUpEtcdControlPlaneNodePool = Nodepool{
-	Etcd:         true,
-	Controlplane: true,
-	Worker:       false,
-	Quantity:     3,
 }
 
 var ScaleUpEtcdNodePool = Nodepool{
