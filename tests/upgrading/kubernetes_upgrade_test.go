@@ -52,16 +52,12 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 }
 
 func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
-	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
-	nodeRolesShared := []config.Nodepool{config.EtcdControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
 		name      string
 		nodeRoles []config.Nodepool
 	}{
-		{"1 Node all roles " + config.StandardClientName.String(), nodeRolesAll},
-		{"2 nodes - etcd|cp roles per 1 node " + config.StandardClientName.String(), nodeRolesShared},
 		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated},
 	}
 

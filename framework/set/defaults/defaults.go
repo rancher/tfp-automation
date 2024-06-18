@@ -29,7 +29,7 @@ const (
 
 	MachineConfig    = "machine_config"
 	MachinePools     = "machine_pools"
-	NodePool         = "pool"
+	NodePool         = "auto-tfp-pool"
 	Etcd             = "etcd"
 	Enabled          = "enabled"
 	RancherClusterID = "cluster_id"

@@ -5,13 +5,17 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
 	"github.com/rancher/shepherd/clients/rancher"
+	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/clusters/kubernetesversions"
 	"github.com/rancher/shepherd/extensions/etcdsnapshot"
 	"github.com/rancher/shepherd/extensions/ingresses"
 	"github.com/rancher/shepherd/extensions/provisioning"
+	"github.com/rancher/shepherd/extensions/services"
 	"github.com/rancher/shepherd/extensions/workloads"
+	deploy "github.com/rancher/shepherd/extensions/workloads/deployment"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
@@ -28,27 +32,22 @@ import (
 )
 
 const (
-	all               = "all"
-	containerImage    = "nginx"
-	containerName     = "nginx"
-	defaultNamespace  = "default"
-	initialIngress    = "ingress-before-restore"
-	initialWorkload   = "wload-before-restore"
-	ingressPath       = "/index.html"
-	isCattleLabeled   = true
-	kubernetesVersion = "kubernetesVersion"
-	namespace         = "fleet-default"
-	port              = "port"
-	postWorkload      = "wload-after-backup"
-	serviceAppendName = "service-"
+	all                 = "all"
+	containerImage      = "nginx"
+	containerName       = "nginx"
+	defaultNamespace    = "default"
+	DeploymentSteveType = "apps.deployment"
+	initialIngress      = "ingress-before-restore"
+	initialWorkload     = "wload-before-restore"
+	ingressPath         = "/index.html"
+	isCattleLabeled     = true
+	kubernetesVersion   = "kubernetesVersion"
+	namespace           = "fleet-default"
+	port                = "port"
+	postWorkload        = "wload-after-backup"
+	serviceAppendName   = "service-"
+	serviceType         = "service"
 )
-
-type initialSnapshotConfig struct {
-	kubernetesVersion              string
-	initialControlPlaneUnavailable string
-	initialWorkerUnavailable       string
-	snapshot                       string
-}
 
 func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
 	initialIngressName := namegen.AppendRandomString(initialIngress)
@@ -84,22 +83,38 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 		},
 	}
 
-	deploymentResp, serviceResp, err := workloads.CreateDeploymentWithService(steveclient, initialWorkloadName, deployment, service)
+	deploymentResp, err := deploy.CreateDeployment(steveclient, initialWorkloadName, deployment)
 	require.NoError(t, err)
 
-	err = workloads.VerifyDeployment(steveclient, deploymentResp)
+	err = deploy.VerifyDeployment(steveclient, deploymentResp)
 	require.NoError(t, err)
 	require.Equal(t, initialWorkloadName, deploymentResp.ObjectMeta.Name)
+
+	serviceResp, err := services.CreateService(steveclient, service)
+	require.NoError(t, err)
+
+	err = services.VerifyService(steveclient, serviceResp)
+	require.NoError(t, err)
+	require.Equal(t, serviceAppendName+initialWorkloadName, serviceResp.ObjectMeta.Name)
 
 	path := ingresses.NewIngressPathTemplate(networking.PathTypeExact, ingressPath, serviceAppendName+initialWorkloadName, 80)
 	ingressTemplate := ingresses.NewIngressTemplate(initialIngressName, defaultNamespace, "", []networking.HTTPIngressPath{path})
 
 	ingressResp, err := ingresses.CreateIngress(steveclient, initialIngressName, ingressTemplate)
 	require.NoError(t, err)
+
+	err = ingresses.VerifyIngress(steveclient, ingressResp, initialIngressName)
+	require.NoError(t, err)
 	require.Equal(t, initialIngressName, ingressResp.ObjectMeta.Name)
 
-	initialSnapshotValues := snapshotV2Prov(t, client, podTemplate, deployment, clusterName, poolName, clusterID, localClusterID, clusterConfig, false, terraformOptions)
-	restoreV2Prov(t, client, initialSnapshotValues, clusterConfig, clusterName, poolName, clusterID, terraformOptions)
+	cluster, snapshotName, postDeploymentResp, postServiceResp := snapshotV2Prov(t, client, podTemplate, deployment, clusterName, poolName, clusterID, localClusterID, clusterConfig, false, terraformOptions)
+	restoreV2Prov(t, client, clusterConfig, snapshotName, clusterName, poolName, cluster, clusterID, terraformOptions)
+
+	_, err = steveclient.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
+	require.Error(t, err)
+
+	_, err = steveclient.SteveType(serviceType).ByID(postServiceResp.ID)
+	require.Error(t, err)
 
 	logrus.Infof("Deleting created workloads...")
 	err = steveclient.SteveType(stevetypes.Deployment).Delete(deploymentResp)
@@ -112,8 +127,9 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 	require.NoError(t, err)
 }
 
-func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, poolName, clusterID, localClusterID string, clusterConfig *config.TerratestConfig, isRKE1 bool, terraformOptions *terraform.Options) initialSnapshotConfig {
-	existingSnapshots, err := etcdsnapshot.GetRKE2K3SSnapshots(client, localClusterID, clusterName)
+func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, poolName, clusterID, localClusterID string,
+	clusterConfig *config.TerratestConfig, isRKE1 bool, terraformOptions *terraform.Options) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject) {
+	existingSnapshots, err := etcdsnapshot.GetRKE2K3SSnapshots(client, clusterName)
 	require.NoError(t, err)
 
 	clusterConfig.SnapshotInput.CreateSnapshot = true
@@ -126,25 +142,16 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 	err = clusters.WaitClusterToBeUpgraded(client, clusterID)
 	require.NoError(t, err)
 
-	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
+	cluster, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 	require.NoError(t, err)
 
 	podErrors := pods.StatusPods(client, clusterID)
 	assert.Empty(t, podErrors)
 
-	initialKubernetesVersion := clusterObject.Spec.KubernetesVersion
-	require.Equal(t, initialKubernetesVersion, clusterObject.Spec.KubernetesVersion)
-
-	initialControlPlaneConcurrencyValue := clusterObject.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency
-	require.Equal(t, initialControlPlaneConcurrencyValue, clusterObject.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency)
-
-	initialWorkerConcurrencyValue := clusterObject.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency
-	require.Equal(t, initialWorkerConcurrencyValue, clusterObject.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency)
-
-	createPostBackupWorkloads(t, client, clusterID, podTemplate, deployment)
+	postDeploymentResp, postServiceResp := createPostBackupWorkloads(t, client, clusterID, podTemplate, deployment)
 
 	etcdNodeCount, _ := etcdsnapshot.MatchNodeToAnyEtcdRole(client, clusterID)
-	snapshotToRestore, err := provisioning.VerifySnapshots(client, localClusterID, clusterName, etcdNodeCount+len(existingSnapshots), isRKE1)
+	snapshotToRestore, err := provisioning.VerifySnapshots(client, clusterName, etcdNodeCount+len(existingSnapshots), isRKE1)
 	require.NoError(t, err)
 
 	if clusterConfig.SnapshotInput.SnapshotRestore == kubernetesVersion || clusterConfig.SnapshotInput.SnapshotRestore == all {
@@ -167,7 +174,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 
 		clusterObject.Spec.KubernetesVersion = clusterConfig.SnapshotInput.UpgradeKubernetesVersion
 
-		if clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue != "" && clusterConfig.SnapshotInput.WorkerConcurrencyValue != "" {
+		if clusterConfig.SnapshotInput.SnapshotRestore == all && clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue != "" && clusterConfig.SnapshotInput.WorkerConcurrencyValue != "" {
 			clusterObject.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency = clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue
 			clusterObject.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency = clusterConfig.SnapshotInput.WorkerConcurrencyValue
 		}
@@ -189,7 +196,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 		assert.Empty(t, podErrors)
 		require.Equal(t, clusterConfig.SnapshotInput.UpgradeKubernetesVersion, clusterObject.Spec.KubernetesVersion)
 
-		if clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue != "" && clusterConfig.SnapshotInput.WorkerConcurrencyValue != "" {
+		if clusterConfig.SnapshotInput.SnapshotRestore == all && clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue != "" && clusterConfig.SnapshotInput.WorkerConcurrencyValue != "" {
 			logrus.Infof("Control plane concurrency value is set to: %s", clusterObject.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency)
 			logrus.Infof("Worker concurrency value is set to: %s", clusterObject.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency)
 
@@ -198,13 +205,13 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 		}
 	}
 
-	return initialSnapshotConfig{initialKubernetesVersion, initialControlPlaneConcurrencyValue, initialWorkerConcurrencyValue, snapshotToRestore}
+	return cluster, snapshotToRestore, postDeploymentResp, postServiceResp
 }
 
-func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotConfig, clusterConfig *config.TerratestConfig, clusterName, poolName, clusterID string, terraformOptions *terraform.Options) {
+func restoreV2Prov(t *testing.T, client *rancher.Client, clusterConfig *config.TerratestConfig, snapshotName, clusterName, poolName string, cluster *apisV1.Cluster, clusterID string, terraformOptions *terraform.Options) {
 	clusterConfig.SnapshotInput.CreateSnapshot = false
 	clusterConfig.SnapshotInput.RestoreSnapshot = true
-	clusterConfig.SnapshotInput.SnapshotName = v2prov.snapshot
+	clusterConfig.SnapshotInput.SnapshotName = snapshotName
 
 	err := set.SetConfigTF(clusterConfig, clusterName, poolName)
 	require.NoError(t, err)
@@ -221,25 +228,24 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, v2prov initialSnapshotC
 
 	podErrors := pods.StatusPods(client, clusterID)
 	assert.Empty(t, podErrors)
-	require.Equal(t, v2prov.kubernetesVersion, clusterObject.Spec.KubernetesVersion)
 
 	if clusterConfig.SnapshotInput.SnapshotRestore == kubernetesVersion || clusterConfig.SnapshotInput.SnapshotRestore == all {
 		clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 		require.NoError(t, err)
-		require.Equal(t, v2prov.kubernetesVersion, clusterObject.Spec.KubernetesVersion)
+		require.Equal(t, cluster.Spec.KubernetesVersion, clusterObject.Spec.KubernetesVersion)
 
 		if clusterConfig.SnapshotInput.ControlPlaneConcurrencyValue != "" && clusterConfig.SnapshotInput.WorkerConcurrencyValue != "" {
 			logrus.Infof("Control plane concurrency value is restored to: %s", clusterObject.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency)
 			logrus.Infof("Worker concurrency value is restored to: %s", clusterObject.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency)
 
-			require.Equal(t, v2prov.initialControlPlaneUnavailable, clusterObject.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency)
-			require.Equal(t, v2prov.initialWorkerUnavailable, clusterObject.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency)
+			require.Equal(t, cluster.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency, clusterObject.Spec.RKEConfig.UpgradeStrategy.ControlPlaneConcurrency)
+			require.Equal(t, cluster.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency, clusterObject.Spec.RKEConfig.UpgradeStrategy.WorkerConcurrency)
 		}
 	}
 
 }
 
-func createPostBackupWorkloads(t *testing.T, client *rancher.Client, clusterID string, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment) {
+func createPostBackupWorkloads(t *testing.T, client *rancher.Client, clusterID string, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment) (*steveV1.SteveAPIObject, *steveV1.SteveAPIObject) {
 	workloadNamePostBackup := namegen.AppendRandomString(postWorkload)
 
 	postBackupDeployment := workloads.NewDeploymentTemplate(workloadNamePostBackup, defaultNamespace, podTemplate, isCattleLabeled, nil)
@@ -263,10 +269,19 @@ func createPostBackupWorkloads(t *testing.T, client *rancher.Client, clusterID s
 	steveclient, err := client.Steve.ProxyDownstream(clusterID)
 	require.NoError(t, err)
 
-	postDeploymentResp, _, err := workloads.CreateDeploymentWithService(steveclient, workloadNamePostBackup, postBackupDeployment, postBackupService)
+	postDeploymentResp, err := deploy.CreateDeployment(steveclient, workloadNamePostBackup, postBackupDeployment)
 	require.NoError(t, err)
 
-	err = workloads.VerifyDeployment(steveclient, postDeploymentResp)
+	err = deploy.VerifyDeployment(steveclient, postDeploymentResp)
 	require.NoError(t, err)
 	require.Equal(t, workloadNamePostBackup, postDeploymentResp.ObjectMeta.Name)
+
+	postServiceResp, err := services.CreateService(steveclient, postBackupService)
+	require.NoError(t, err)
+
+	err = services.VerifyService(steveclient, postServiceResp)
+	require.NoError(t, err)
+	require.Equal(t, serviceAppendName+workloadNamePostBackup, postServiceResp.ObjectMeta.Name)
+
+	return postDeploymentResp, postServiceResp
 }
