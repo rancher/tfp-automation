@@ -50,26 +50,26 @@ node {
             sh "mkdir -p ${testResultsDir}"
             def dockerImage = docker.image('tfp-automation')
             if (rancher2ProviderVersion.contains("rc")) {
-               try {
-                 dockerImage.inside("-u root -v ${testResultsDir}:/results") {
-                   sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
-                   sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
-                   sh "${rootPath}reporter"
-                  } 
+              dockerImage.inside("-u root -v ${testResultsDir}:/results") {
+                try { 
+                    sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
                  } catch(err) {
-                  echo 'Test run had failures. Collecting results...'
+                   echo 'Test run had failures. Collecting results...'
                  }
-               }
+                 sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
+                 sh "${rootPath}reporter"
+                }
+              }
             else {
-                 try {
-                   dockerImage.inside("-u jenkins -v ${testResultsDir}:/results") {
-                     sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
-                     sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
-                     sh "${rootPath}reporter"
-                   }
-                  } catch(err) {
-                    echo 'Test run had failures. Collecting results...'
-                  }
+              dockerImage.inside("-u jenkins -v ${testResultsDir}:/results") {
+                try {
+                    sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
+                } catch(err) {
+                  echo 'Test run had failures. Collecting results...'
+                }
+                sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
+                sh "${rootPath}reporter"       
+              }
             }
             step([$class: 'JUnitResultArchiver', testResults: "**/results/${testResultsOut}"])
       }
