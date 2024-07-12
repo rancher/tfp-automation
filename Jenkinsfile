@@ -57,7 +57,9 @@ node {
                    echo 'Test run had failures. Collecting results...'
                  }
                  sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
-                 sh "${rootPath}reporter"
+                 if (fileExists("${rootPath}reporter")) {
+                   sh "${rootPath}reporter"
+                 } 
                 }
               }
             else {
@@ -68,7 +70,9 @@ node {
                   echo 'Test run had failures. Collecting results...'
                 }
                 sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
-                sh "${rootPath}reporter"       
+                if (fileExists("${rootPath}reporter")) {
+                  sh "${rootPath}reporter"
+                }       
               }
             }
             step([$class: 'JUnitResultArchiver', testResults: "**/results/${testResultsOut}"])

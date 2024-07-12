@@ -11,6 +11,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+// setEtcdConfig is a function that will set the etcd configurations in the main.tf file.
 func setEtcdConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
 	snapshotBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Etcd, nil)
 	snapshotBlockBody := snapshotBlock.Body()

@@ -58,10 +58,12 @@ node {
             dockerImage.inside("-u root --privileged") {
               try {
                 sh "${runArgs} gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
-                sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
-                sh "${rootPath}reporter"
               } catch(err) {
                 echo 'Test run had failures. Collecting results...'
+              }
+              sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
+              if (fileExists("${rootPath}reporter")) {
+                sh "${rootPath}reporter"
               }
             }
             step([$class: 'JUnitResultArchiver', testResults: "**/results/${testResultsOut}"])

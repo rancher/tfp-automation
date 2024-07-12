@@ -13,6 +13,7 @@ const (
 
 	accessKey    = "access_key"
 	secretKey    = "secret_key"
+	region       = "region"
 	resource     = "resource"
 	resourceName = "name"
 )

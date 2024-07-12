@@ -93,6 +93,18 @@ type Nodepool struct {
 	MaxPodsContraint int64  `json:"maxPodsContraint,omitempty" yaml:"maxPodsContraint,omitempty"`
 }
 
+type PrivateRegistries struct {
+	EngineInsecureRegistry string `json:"engineInsecureRegistry,omitempty" yaml:"engineInsecureRegistry,omitempty"`
+	Password               string `json:"password,omitempty" yaml:"password,omitempty"`
+	URL                    string `json:"url,omitempty" yaml:"url,omitempty"`
+	Username               string `json:"username,omitempty" yaml:"username,omitempty"`
+	AuthConfigSecretName   string `json:"authConfigSecretName,omitempty" yaml:"authConfigSecretName,omitempty"`
+	TLSSecretName          string `json:"tlsSecretName,omitempty" yaml:"tlsSecretName,omitempty"`
+	CABundle               string `json:"caBundle,omitempty" yaml:"caBundle,omitempty"`
+	Insecure               bool   `json:"insecure,omitempty" yaml:"insecure,omitempty"`
+	SystemDefaultRegistry  string `json:"systemDefaultRegistry,omitempty" yaml:"systemDefaultRegistry,omitempty"`
+}
+
 type TerraformConfig struct {
 	AWSConfig                           nodeproviders.AWSConfig     `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
 	AzureConfig                         nodeproviders.AzureConfig   `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
@@ -109,6 +121,7 @@ type TerraformConfig struct {
 	Module                              string                      `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                      `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
 	NodeTemplateName                    string                      `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
+	PrivateRegistries                   *PrivateRegistries          `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
 }
 
 type Scaling struct {

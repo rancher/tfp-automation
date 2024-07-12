@@ -26,14 +26,17 @@ const (
 	nodeTemplate    = "rancher2_node_template"
 	rancherNodePool = "rancher2_node_pool"
 
-	backupConfig   = "backup_config"
-	intervalHours  = "interval_hours"
-	safeTimestamp  = "safe_timestamp"
-	timeout        = "timeout"
-	retention      = "retention"
-	snapshot       = "snapshot"
-	s3BackupConfig = "s3_backup_config"
-	bucketName     = "bucket_name"
+	backupConfig            = "backup_config"
+	intervalHours           = "interval_hours"
+	safeTimestamp           = "safe_timestamp"
+	timeout                 = "timeout"
+	retention               = "retention"
+	snapshot                = "snapshot"
+	s3BackupConfig          = "s3_backup_config"
+	bucketName              = "bucket_name"
+	privateRegistryURL      = "url"
+	privateRegistryUsername = "user"
+	privateRegistryPassword = "password"
 
 	hostnamePrefix     = "hostname_prefix"
 	nodeTemplateID     = "node_template_id"
@@ -62,6 +65,12 @@ func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
 
 	nodeTemplateBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.NodeTemplateName))
+
+	if terraformConfig.PrivateRegistries != nil {
+		nodeTemplateBlockBody.SetAttributeValue(defaults.EngineInsecureRegistry, cty.ListVal([]cty.Value{
+			cty.StringVal(terraformConfig.PrivateRegistries.URL),
+		}))
+	}
 
 	switch {
 	case terraformConfig.Module == modules.AzureRKE1:
@@ -112,14 +121,23 @@ func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config
 
 	rootBody.AppendNewline()
 
-	servicesBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Services, nil)
-	servicesBlockBody := servicesBlock.Body()
+	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
+		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.RKE1PrivateRegistries, nil)
+		registryBlockBody := registryBlock.Body()
 
-	if terraformConfig.ETCDRKE1 != nil {
-		setEtcdConfig(servicesBlockBody, terraformConfig)
+		setRKE1PrivateRegistryConfig(registryBlockBody, terraformConfig)
+
+		rootBody.AppendNewline()
 	}
 
-	rootBody.AppendNewline()
+	if terraformConfig.ETCDRKE1 != nil {
+		servicesBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Services, nil)
+		servicesBlockBody := servicesBlock.Body()
+
+		setEtcdConfig(servicesBlockBody, terraformConfig)
+
+		rootBody.AppendNewline()
+	}
 
 	clusterSyncNodePoolIDs := ""
 

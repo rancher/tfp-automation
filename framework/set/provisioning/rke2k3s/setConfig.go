@@ -42,6 +42,13 @@ const (
 	bucket               = "bucket"
 	endpointCA           = "endpoint_ca"
 	skipSSLVerify        = "skip_ssl_verify"
+
+	hostname              = "hostname"
+	authConfigSecretName  = "auth_config_secret_name"
+	tlsSecretName         = "tls_secret_name"
+	caBundleName          = "ca_bundle"
+	insecure              = "insecure"
+	systemDefaultRegistry = "system-default-registry"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
@@ -119,6 +126,15 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 
 	for count, pool := range nodePools {
 		setMachinePool(nodePools, count, pool, rkeConfigBlockBody, poolName)
+	}
+
+	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
+		setMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
+
+		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)
+		registryBlockBody := registryBlock.Body()
+
+		setPrivateRegistryConfig(registryBlockBody, terraformConfig)
 	}
 
 	upgradeStrategyBlock := rkeConfigBlockBody.AppendNewBlock(upgradeStrategy, nil)
