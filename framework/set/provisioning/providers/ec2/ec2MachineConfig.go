@@ -8,10 +8,6 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-const (
-	region = "region"
-)
-
 // SetEC2RKE2K3SMachineConfig is a helper function that will set the EC2 RKE2/K3S
 // Terraform machine configurations in the main.tf file.
 func SetEC2RKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {

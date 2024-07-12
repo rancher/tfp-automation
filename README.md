@@ -45,7 +45,7 @@
 
 ##### When testing locally, it is required to set the `RANCHER2_PROVIDER_VERSION`, as type `string`, and formatted without a leading `v`.
 
-##### Example: `export RANCHER2_PROVIDER_VERSION="3.2.0"` or `export RANCHER2_PROVIDER_VERSION="4.0.0-rc6"`
+##### Example: `export RANCHER2_PROVIDER_VERSION="4.2.0"` or `export RANCHER2_PROVIDER_VERSION="4.2.0-rc3"`
 
 ##### These tests require an accurately configured `cattle-config.yaml` to successfully run.
 
@@ -119,7 +119,59 @@ rancher:
 <a name="configurations-terraform"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-The `terraform` configurations in the `cattle-config.yaml` are module specific.  Fields to configure vary per module.  Module specific fields to configure in this section are as follows:
+The `terraform` configurations in the `cattle-config.yaml` are module specific.  Fields to configure vary per module. Below are generic fields that are applicable regardless of module. See them below:
+
+##### Example:
+
+```yaml
+terraform:
+  etcd:                                       # This is an optional block.
+    disableSnapshot: false
+    snapshotCron: "0 */5 * * *"
+    snapshotRetention: 6
+    s3:
+      bucket: ""
+      cloudCredentialName: ""
+      endpoint: ""
+      endpointCA: ""
+      folder: ""
+      region: ""
+      skipSSLVerify: true
+  etcdRKE1:                                   # This is an optional block
+    backupConfig:
+      enabled: true
+      intervalHours: 12
+      safeTimestamp: true
+      timeout: 120
+      s3BackupConfig:
+        accessKey: ""
+        bucketName: ""
+        endpoint: ""
+        folder: ""
+        region: ""
+        secretKey: ""
+    retention: "72h"
+    snapshot: false
+  cloudCredentialName: ""
+  defaultClusterRoleForProjectMembers: "true" # Can be "true" or "false"
+  enableNetworkPolicy: false                  # Can be true or false
+  hostnamePrefix: ""   
+  machineConfigName: ""                       # RKE2/K3S specific
+  networkPlugin: ""                           # RKE1 specific
+  nodeTemplateName: ""                        # RKE1 specific
+  privateRegistries:                          # This is an optional block. You must already have a private registry stood up
+    engineInsecureRegistry: ""                # RKE1 specific
+    url: ""
+    systemDefaultRegistry: ""                 # RKE2/K3S specific
+    username: ""                              # RKE1 specific
+    password: ""                              # RKE1 specific
+    insecure: true
+    authConfigSecretName: ""                  # RKE2/K3S specific. Secret must be created in the fleet-default namespace already
+```
+
+Note: At this time, private registries for RKE2/K3s MUST be used with provider version 3.1.1. This is due to issue https://github.com/rancher/terraform-provider-rancher2/issues/1305.
+
+Module specific fields to configure in the terraform section are as follows:
 
 <a name="configurations-terraform-aks"></a>
 #### :small_red_triangle: [Back to top](#top)

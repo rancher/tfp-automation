@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
@@ -86,7 +87,12 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 
 	globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
 	globalRoleBindingBlockBody.SetAttributeValue(globalRoleID, cty.StringVal(user))
-	globalRoleBindingBlockBody.SetAttributeValue(userID, cty.StringVal(rancher2+rancher2+".id"))
+
+	standardUser := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancherUser + "." + rancherUser + ".id")},
+	}
+
+	globalRoleBindingBlockBody.SetAttributeRaw(userID, standardUser)
 
 	return newFile, rootBody
 }
