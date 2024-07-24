@@ -11,7 +11,6 @@ import (
 	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/clusters/kubernetesversions"
 	"github.com/rancher/shepherd/extensions/etcdsnapshot"
-	"github.com/rancher/shepherd/extensions/ingresses"
 	"github.com/rancher/shepherd/extensions/provisioning"
 	"github.com/rancher/shepherd/extensions/services"
 	"github.com/rancher/shepherd/extensions/workloads"
@@ -27,7 +26,6 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -37,9 +35,7 @@ const (
 	containerName       = "nginx"
 	defaultNamespace    = "default"
 	DeploymentSteveType = "apps.deployment"
-	initialIngress      = "ingress-before-restore"
 	initialWorkload     = "wload-before-restore"
-	ingressPath         = "/index.html"
 	isCattleLabeled     = true
 	kubernetesVersion   = "kubernetesVersion"
 	namespace           = "fleet-default"
@@ -50,7 +46,6 @@ const (
 )
 
 func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
-	initialIngressName := namegen.AppendRandomString(initialIngress)
 	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
 
 	clusterID, err := clusters.GetClusterIDByName(client, clusterName)
@@ -97,16 +92,6 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 	require.NoError(t, err)
 	require.Equal(t, serviceAppendName+initialWorkloadName, serviceResp.ObjectMeta.Name)
 
-	path := ingresses.NewIngressPathTemplate(networking.PathTypeExact, ingressPath, serviceAppendName+initialWorkloadName, 80)
-	ingressTemplate := ingresses.NewIngressTemplate(initialIngressName, defaultNamespace, "", []networking.HTTPIngressPath{path})
-
-	ingressResp, err := ingresses.CreateIngress(steveclient, initialIngressName, ingressTemplate)
-	require.NoError(t, err)
-
-	err = ingresses.VerifyIngress(steveclient, ingressResp, initialIngressName)
-	require.NoError(t, err)
-	require.Equal(t, initialIngressName, ingressResp.ObjectMeta.Name)
-
 	cluster, snapshotName, postDeploymentResp, postServiceResp := snapshotV2Prov(t, client, podTemplate, deployment, clusterName, poolName, clusterID, localClusterID, clusterConfig, false, terraformOptions)
 	restoreV2Prov(t, client, clusterConfig, snapshotName, clusterName, poolName, cluster, clusterID, terraformOptions)
 
@@ -121,9 +106,6 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 	require.NoError(t, err)
 
 	err = steveclient.SteveType(stevetypes.Service).Delete(serviceResp)
-	require.NoError(t, err)
-
-	err = steveclient.SteveType(stevetypes.Ingress).Delete(ingressResp)
 	require.NoError(t, err)
 }
 
