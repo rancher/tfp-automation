@@ -41,7 +41,7 @@ node {
                     userRemoteConfigs: repo
                   ])
         }
-    stage('Build Docker image') {
+    stage('Build') {
             writeFile file: 'config.yml', text: env.CONFIG
             env.CATTLE_TEST_CONFIG='/home/jenkins/workspace/rancher_qa/tfp-automation-vsphere/config.yml'
             sh "echo ${env.EXTERNAL_ENCODED_VPN} | base64 -d > external.ovpn"
@@ -53,7 +53,7 @@ node {
     if (env.EXTERNAL_ENCODED_VPN) {
       runArgs = runArgs + "openvpn --daemon --config external.ovpn && sleep 10 && "
     }
-    stage('Run Module Test') {
+    stage('Run Validation Test') {
             def dockerImage = docker.image('tfp-automation')
             dockerImage.inside("-u root --privileged") {
               try {

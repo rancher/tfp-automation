@@ -63,7 +63,7 @@ node {
                 }
               }
             else {
-              dockerImage.inside("-u jenkins -v ${testResultsDir}:/results") {
+              dockerImage.inside("-v ${testResultsDir}:/results") {
                 try {
                     sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
                 } catch(err) {

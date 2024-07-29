@@ -23,14 +23,13 @@ require (
 )
 
 require (
+	github.com/antihax/optional v1.0.0
 	github.com/gruntwork-io/terratest v0.42.0
 	github.com/rancher/norman v0.0.0-20240503193601-9f5f6586bb5b
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/shepherd v0.0.0-20240618185935-9f1ffea0abab
 	github.com/sirupsen/logrus v1.9.3
 )
-
-require github.com/antihax/optional v1.0.0
 
 require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
