@@ -1,6 +1,6 @@
 #!groovy
 node {
-  def rootPath = "/home/jenkins/workspace/rancher_qa/tfp-automation/"
+  def rootPath = pwd()
   def testsDir = "./tests/${env.TEST_PACKAGE}"
   def job_name = "${JOB_NAME}"
   if (job_name.contains('/')) { 
