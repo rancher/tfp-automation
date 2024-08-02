@@ -4,7 +4,7 @@ In the provisioning tests, the following workflow is followed:
 
 1. Provision a downstream cluster
 2. Perform post-cluster provisioning checks
-7. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
+3. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 
 Please see below for more details for your config. Please note that the config can be in either JSON or YAML (all examples are illustrated in YAML).
 

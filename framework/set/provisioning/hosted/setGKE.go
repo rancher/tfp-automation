@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/rancher/shepherd/clients/rancher"
 	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -18,16 +17,9 @@ import (
 )
 
 // SetGKE is a function that will set the GKE configurations in the main.tf file.
-func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, file *os.File) error {
-	rancherConfig := new(rancher.Config)
-	framework.LoadConfig(configs.Rancher, rancherConfig)
-
+func SetGKE(clusterName, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
 	terraformConfig := new(config.TerraformConfig)
 	framework.LoadConfig(configs.Terraform, terraformConfig)
-
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig)
-
-	rootBody.AppendNewline()
 
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()

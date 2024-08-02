@@ -7,7 +7,7 @@ import (
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
-	"github.com/rancher/tfp-automation/framework/set/provisioning"
+	framework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/rancher/tfp-automation/framework/set/resources"
 	"github.com/sirupsen/logrus"
 )
@@ -19,7 +19,7 @@ func BuildModule(t *testing.T) error {
 
 	keyPath := resources.SetKeyPath()
 
-	err := provisioning.SetConfigTF(clusterConfig, "", "")
+	err := framework.SetConfigTF(nil, clusterConfig, "", "", "")
 	if err != nil {
 		return err
 	}

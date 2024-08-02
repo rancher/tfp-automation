@@ -20,7 +20,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
-	set "github.com/rancher/tfp-automation/framework/set/provisioning"
+	framework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -116,7 +116,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 
 	clusterConfig.SnapshotInput.CreateSnapshot = true
 
-	err = set.SetConfigTF(clusterConfig, clusterName, poolName)
+	err = framework.SetConfigTF(nil, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -164,7 +164,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 		clusterConfig.KubernetesVersion = clusterObject.Spec.KubernetesVersion
 		clusterConfig.SnapshotInput.CreateSnapshot = false
 
-		err = set.SetConfigTF(clusterConfig, clusterName, poolName)
+		err = framework.SetConfigTF(nil, clusterConfig, clusterName, poolName, "")
 		require.NoError(t, err)
 
 		terraform.Apply(t, terraformOptions)
@@ -195,7 +195,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, clusterConfig *config.T
 	clusterConfig.SnapshotInput.RestoreSnapshot = true
 	clusterConfig.SnapshotInput.SnapshotName = snapshotName
 
-	err := set.SetConfigTF(clusterConfig, clusterName, poolName)
+	err := framework.SetConfigTF(nil, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

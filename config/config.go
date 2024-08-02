@@ -6,8 +6,8 @@ import (
 	"github.com/rancher/tfp-automation/config/nodeproviders"
 )
 
-// TestClientName is string enum for client/user names used in provisioning tests.
 type TestClientName string
+type Role string
 type PSACT string
 
 const (
@@ -16,6 +16,9 @@ const (
 
 	AdminClientName    TestClientName = "Admin User"
 	StandardClientName TestClientName = "Standard User"
+
+	ClusterOwner Role = "cluster-owner"
+	ProjectOwner Role = "project-owner"
 
 	RancherPrivileged PSACT = "rancher-privileged"
 	RancherRestricted PSACT = "rancher-restricted"

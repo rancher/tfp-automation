@@ -7,7 +7,7 @@ import (
 	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
-	"github.com/rancher/tfp-automation/framework/set/provisioning"
+	setFramework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/rancher/tfp-automation/framework/set/resources"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +19,7 @@ func Setup(t *testing.T) *terraform.Options {
 
 	keyPath := resources.SetKeyPath()
 
-	err := provisioning.SetConfigTF(clusterConfig, "", "")
+	err := setFramework.SetConfigTF(nil, clusterConfig, "", "", "")
 	require.NoError(t, err)
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
