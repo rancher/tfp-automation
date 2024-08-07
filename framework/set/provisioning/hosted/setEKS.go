@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -19,16 +18,9 @@ import (
 )
 
 // SetEKS is a function that will set the EKS configurations in the main.tf file.
-func SetEKS(clusterName, k8sVersion string, nodePools []config.Nodepool, file *os.File) error {
-	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
-
+func SetEKS(clusterName, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(configs.Terraform, terraformConfig)
-
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig)
-
-	rootBody.AppendNewline()
 
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()

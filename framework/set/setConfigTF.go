@@ -18,7 +18,7 @@ import (
 )
 
 // SetConfigTF is a function that will set the main.tf file based on the module type.
-func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName, poolName string) error {
+func SetConfigTF(client *rancher.Client, clusterConfig *config.TerratestConfig, clusterName, poolName string, rbacRole config.Role) error {
 	rancherConfig := new(rancher.Config)
 	framework.LoadConfig(configs.Rancher, rancherConfig)
 
@@ -38,21 +38,27 @@ func SetConfigTF(clusterConfig *config.TerratestConfig, clusterName, poolName st
 
 	defer file.Close()
 
+	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig)
+
+	rootBody.AppendNewline()
+
 	switch {
 	case module == clustertypes.AKS:
-		err = hosted.SetAKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
+		err = hosted.SetAKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
 		return err
 	case module == clustertypes.EKS:
-		err = hosted.SetEKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
+		err = hosted.SetEKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
 		return err
 	case module == clustertypes.GKE:
-		err = hosted.SetGKE(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, file)
+		err = hosted.SetGKE(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
 		return err
 	case strings.Contains(module, clustertypes.RKE1):
-		err = rke1.SetRKE1(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
+		err = rke1.SetRKE1(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
+			clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 		return err
 	case strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S):
-		err = rke2k3s.SetRKE2K3s(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools, clusterConfig.SnapshotInput, file)
+		err = rke2k3s.SetRKE2K3s(client, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
+			clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 		return err
 	default:
 		logrus.Errorf("Unsupported module: %v", module)

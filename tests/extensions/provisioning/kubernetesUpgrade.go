@@ -6,7 +6,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
-	set "github.com/rancher/tfp-automation/framework/set/provisioning"
+	framework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +16,7 @@ func KubernetesUpgrade(t *testing.T, client *rancher.Client, clusterName, poolNa
 	terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig) {
 	DefaultUpgradedK8sVersion(t, client, clusterConfig, terraformConfig)
 
-	err := set.SetConfigTF(clusterConfig, clusterName, poolName)
+	err := framework.SetConfigTF(nil, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

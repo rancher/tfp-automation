@@ -65,7 +65,7 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 		s.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), clusterName, poolName, s.clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledUpNodepools

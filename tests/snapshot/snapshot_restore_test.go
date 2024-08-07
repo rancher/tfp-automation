@@ -94,7 +94,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		s.Run(tt.name, func() {
 			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), clusterName, poolName, &clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
 			snapshotRestore(s.T(), s.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
@@ -122,7 +122,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 		s.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), clusterName, poolName, s.clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			snapshotRestore(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)

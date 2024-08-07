@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -16,6 +15,7 @@ import (
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/rbac"
 	"github.com/rancher/tfp-automation/framework/set/resources"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -44,22 +44,14 @@ const (
 	worker             = "worker"
 	rancherNodePoolIDs = "node_pool_ids"
 	stateConfirm       = "state_confirm"
+	project            = "project"
 )
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
-func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
-	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
-
+func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) error {
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(configs.Terraform, terraformConfig)
-
-	terratestConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
-
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig)
-
-	rootBody.AppendNewline()
 
 	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, nodeTemplate})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
@@ -146,6 +138,27 @@ func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config
 	}
 
 	setClusterSync(rootBody, clusterSyncNodePoolIDs)
+
+	rootBody.AppendNewline()
+
+	if rbacRole != "" {
+		user, err := rbac.SetUsers(newFile, rootBody, rbacRole)
+		if err != nil {
+			return err
+		}
+
+		rootBody.AppendNewline()
+
+		cluster := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + defaults.Cluster + ".id")},
+		}
+
+		if strings.Contains(string(rbacRole), project) {
+			rbac.AddProjectMember(nil, "", newFile, rootBody, cluster, rbacRole, user, true)
+		} else {
+			rbac.AddClusterRole(nil, "", newFile, rootBody, cluster, rbacRole, user, true)
+		}
+	}
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {

@@ -1,0 +1,88 @@
+package rbac
+
+import (
+	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/shepherd/clients/rancher"
+	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	namegen "github.com/rancher/shepherd/pkg/namegenerator"
+	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/framework"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+)
+
+type RBACTestSuite struct {
+	suite.Suite
+	client           *rancher.Client
+	session          *session.Session
+	terraformConfig  *config.TerraformConfig
+	clusterConfig    *config.TerratestConfig
+	terraformOptions *terraform.Options
+}
+
+func (r *RBACTestSuite) SetupSuite() {
+	testSession := session.NewSession()
+	r.session = testSession
+
+	client, err := rancher.NewClient("", testSession)
+	require.NoError(r.T(), err)
+
+	r.client = client
+
+	terraformConfig := new(config.TerraformConfig)
+	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
+
+	r.terraformConfig = terraformConfig
+
+	clusterConfig := new(config.TerratestConfig)
+	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, clusterConfig)
+
+	r.clusterConfig = clusterConfig
+
+	terraformOptions := framework.Setup(r.T())
+	r.terraformOptions = terraformOptions
+
+	provisioning.GetK8sVersion(r.T(), r.client, r.clusterConfig, r.terraformConfig, configs.DefaultK8sVersion)
+}
+
+func (r *RBACTestSuite) TestTfpRBAC() {
+	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+
+	tests := []struct {
+		name     string
+		rbacRole config.Role
+	}{
+		{"Cluster Owner", config.ClusterOwner},
+		{"Project Owner", config.ProjectOwner},
+	}
+
+	for _, tt := range tests {
+		tt.name = tt.name + " Module: " + r.terraformConfig.Module
+
+		r.Run((tt.name), func() {
+			defer cleanup.ConfigCleanup(r.T(), r.terraformOptions)
+
+			clusterConfig := *r.clusterConfig
+			clusterConfig.Nodepools = nodeRolesDedicated
+
+			clusterName := namegen.AppendRandomString(configs.TFP)
+			poolName := namegen.AppendRandomString(configs.TFP)
+
+			provisioning.Provision(r.T(), r.client, clusterName, poolName, &clusterConfig, r.terraformOptions)
+			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
+
+			rb.RBAC(r.T(), r.client, clusterName, poolName, r.terraformOptions, &clusterConfig, tt.rbacRole)
+		})
+	}
+}
+
+func TestTfpRBACTestSuite(t *testing.T) {
+	suite.Run(t, new(RBACTestSuite))
+}

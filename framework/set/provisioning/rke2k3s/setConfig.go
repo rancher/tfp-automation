@@ -9,13 +9,13 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/rbac"
 	"github.com/rancher/tfp-automation/framework/set/resources"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -49,22 +49,14 @@ const (
 	caBundleName          = "ca_bundle"
 	insecure              = "insecure"
 	systemDefaultRegistry = "system-default-registry"
+	project               = "project"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
-func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots, file *os.File) error {
-	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
-
+func SetRKE2K3s(client *rancher.Client, clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) error {
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
-
-	terratestConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
-
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig)
-
-	rootBody.AppendNewline()
 
 	switch {
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
@@ -153,6 +145,23 @@ func SetRKE2K3s(clusterName, poolName, k8sVersion, psact string, nodePools []con
 
 	if snapshots.RestoreSnapshot {
 		SetRestoreRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody, snapshots)
+	}
+
+	rootBody.AppendNewline()
+
+	if rbacRole != "" {
+		user, err := rbac.SetUsers(newFile, rootBody, rbacRole)
+		if err != nil {
+			return err
+		}
+
+		rootBody.AppendNewline()
+
+		if strings.Contains(string(rbacRole), project) {
+			rbac.AddProjectMember(client, clusterName, newFile, rootBody, nil, rbacRole, user, false)
+		} else {
+			rbac.AddClusterRole(client, clusterName, newFile, rootBody, nil, rbacRole, user, false)
+		}
 	}
 
 	_, err := file.Write(newFile.Bytes())
