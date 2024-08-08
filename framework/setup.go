@@ -19,7 +19,7 @@ func Setup(t *testing.T) *terraform.Options {
 
 	keyPath := resources.SetKeyPath()
 
-	err := setFramework.SetConfigTF(nil, clusterConfig, "", "", "")
+	err := setFramework.ConfigTF(nil, clusterConfig, "", "", "")
 	require.NoError(t, err)
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{

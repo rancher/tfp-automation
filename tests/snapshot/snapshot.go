@@ -116,7 +116,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 
 	clusterConfig.SnapshotInput.CreateSnapshot = true
 
-	err = framework.SetConfigTF(nil, clusterConfig, clusterName, poolName, "")
+	err = framework.ConfigTF(nil, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -164,7 +164,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 		clusterConfig.KubernetesVersion = clusterObject.Spec.KubernetesVersion
 		clusterConfig.SnapshotInput.CreateSnapshot = false
 
-		err = framework.SetConfigTF(nil, clusterConfig, clusterName, poolName, "")
+		err = framework.ConfigTF(nil, clusterConfig, clusterName, poolName, "")
 		require.NoError(t, err)
 
 		terraform.Apply(t, terraformOptions)
@@ -195,7 +195,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, clusterConfig *config.T
 	clusterConfig.SnapshotInput.RestoreSnapshot = true
 	clusterConfig.SnapshotInput.SnapshotName = snapshotName
 
-	err := framework.SetConfigTF(nil, clusterConfig, clusterName, poolName, "")
+	err := framework.ConfigTF(nil, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

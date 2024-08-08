@@ -1,6 +1,6 @@
 # <p align="center">RANCHER :small_blue_diamond: TFP-AUTOMATION</p>
 
-##### Automation to allow rancher2 provider terraform resources to be tested with Terratest + Go
+`tfp-automation` is a framework designed to test various Rancher2 Terraform provider resources to be tested with Terratest + Go. While this is not meant to serve as a 1:1 partiy with the existing test cases in `rancher/rancher`, the overall structure of the tests is. This is to ensure that adoption of the framework is as seamless as possible.
 
 ---
 

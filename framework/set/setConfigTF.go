@@ -1,4 +1,4 @@
-package provisioning
+package set
 
 import (
 	"os"
@@ -17,8 +17,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// SetConfigTF is a function that will set the main.tf file based on the module type.
-func SetConfigTF(client *rancher.Client, clusterConfig *config.TerratestConfig, clusterName, poolName string, rbacRole config.Role) error {
+// ConfigTF is a function that will set the main.tf file based on the module type.
+func ConfigTF(client *rancher.Client, clusterConfig *config.TerratestConfig, clusterName, poolName string, rbacRole config.Role) error {
 	rancherConfig := new(rancher.Config)
 	framework.LoadConfig(configs.Rancher, rancherConfig)
 
@@ -38,7 +38,7 @@ func SetConfigTF(client *rancher.Client, clusterConfig *config.TerratestConfig, 
 
 	defer file.Close()
 
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig)
+	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, false)
 
 	rootBody.AppendNewline()
 

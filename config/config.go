@@ -3,6 +3,7 @@ package config
 import (
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
+	"github.com/rancher/tfp-automation/config/authproviders"
 	"github.com/rancher/tfp-automation/config/nodeproviders"
 )
 
@@ -109,22 +110,28 @@ type PrivateRegistries struct {
 }
 
 type TerraformConfig struct {
-	AWSConfig                           nodeproviders.AWSConfig     `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
-	AzureConfig                         nodeproviders.AzureConfig   `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
-	GoogleConfig                        nodeproviders.GoogleConfig  `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
-	LinodeConfig                        nodeproviders.LinodeConfig  `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
-	VsphereConfig                       nodeproviders.VsphereConfig `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`
-	CloudCredentialName                 string                      `json:"cloudCredentialName,omitempty" yaml:"cloudCredentialName,omitempty"`
-	DefaultClusterRoleForProjectMembers string                      `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
-	EnableNetworkPolicy                 bool                        `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
-	ETCD                                *rkev1.ETCD                 `json:"etcd,omitempty" yaml:"etcd,omitempty"`
-	ETCDRKE1                            *management.ETCDService     `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
-	HostnamePrefix                      string                      `json:"hostnamePrefix,omitempty" yaml:"hostnamePrefix,omitempty"`
-	MachineConfigName                   string                      `json:"machineConfigName,omitempty" yaml:"machineConfigName,omitempty"`
-	Module                              string                      `json:"module,omitempty" yaml:"module,omitempty"`
-	NetworkPlugin                       string                      `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
-	NodeTemplateName                    string                      `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
-	PrivateRegistries                   *PrivateRegistries          `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
+	AWSConfig                           nodeproviders.AWSConfig      `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
+	AzureConfig                         nodeproviders.AzureConfig    `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
+	GoogleConfig                        nodeproviders.GoogleConfig   `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
+	LinodeConfig                        nodeproviders.LinodeConfig   `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
+	VsphereConfig                       nodeproviders.VsphereConfig  `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`
+	ADConfig                            authproviders.ADConfig       `json:"adConfig,omitempty" yaml:"adConfig,omitempty"`
+	AzureADConfig                       authproviders.AzureADConfig  `json:"azureADConfig,omitempty" yaml:"azureADConfig,omitempty"`
+	GithubConfig                        authproviders.GithubConfig   `json:"githubConfig,omitempty" yaml:"githubConfig,omitempty"`
+	OktaConfig                          authproviders.OktaConfig     `json:"oktaConfig,omitempty" yaml:"oktaConfig,omitempty"`
+	OpenLDAPConfig                      authproviders.OpenLDAPConfig `json:"openLDAPConfig,omitempty" yaml:"openLDAPConfig,omitempty"`
+	AuthProvider                        string                       `json:"authProvider,omitempty" yaml:"authProvider,omitempty"`
+	CloudCredentialName                 string                       `json:"cloudCredentialName,omitempty" yaml:"cloudCredentialName,omitempty"`
+	DefaultClusterRoleForProjectMembers string                       `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
+	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
+	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
+	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
+	HostnamePrefix                      string                       `json:"hostnamePrefix,omitempty" yaml:"hostnamePrefix,omitempty"`
+	MachineConfigName                   string                       `json:"machineConfigName,omitempty" yaml:"machineConfigName,omitempty"`
+	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
+	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
+	NodeTemplateName                    string                       `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
+	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
 }
 
 type Scaling struct {

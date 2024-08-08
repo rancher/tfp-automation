@@ -19,7 +19,7 @@ func BuildModule(t *testing.T) error {
 
 	keyPath := resources.SetKeyPath()
 
-	err := framework.SetConfigTF(nil, clusterConfig, "", "", "")
+	err := framework.ConfigTF(nil, clusterConfig, "", "", "")
 	if err != nil {
 		return err
 	}
