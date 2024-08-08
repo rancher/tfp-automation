@@ -36,7 +36,7 @@ const (
 )
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
-func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig) (*hclwrite.File, *hclwrite.Body) {
+func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, authProvider bool) (*hclwrite.File, *hclwrite.Body) {
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
 
 	source := "rancher/rancher2"
@@ -82,17 +82,19 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 
 	rootBody.AppendNewline()
 
-	globalRoleBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{globalRoleBinding, globalRoleBinding})
-	globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
+	if !authProvider {
+		globalRoleBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{globalRoleBinding, globalRoleBinding})
+		globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
 
-	globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
-	globalRoleBindingBlockBody.SetAttributeValue(globalRoleID, cty.StringVal(user))
+		globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
+		globalRoleBindingBlockBody.SetAttributeValue(globalRoleID, cty.StringVal(user))
 
-	standardUser := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancherUser + "." + rancherUser + ".id")},
+		standardUser := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(rancherUser + "." + rancherUser + ".id")},
+		}
+
+		globalRoleBindingBlockBody.SetAttributeRaw(userID, standardUser)
 	}
-
-	globalRoleBindingBlockBody.SetAttributeRaw(userID, standardUser)
 
 	return newFile, rootBody
 }
