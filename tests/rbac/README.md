@@ -2,7 +2,7 @@
 
 ## Table of Contents
 1. [RBAC](#RBAC)
-2. [Authentication Providers](#Auth)
+2. [Authentication Providers](#Authentication-Providers)
 
 ### RBAC
 
