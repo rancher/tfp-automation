@@ -4,7 +4,11 @@ import (
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/tfp-automation/config/authproviders"
-	"github.com/rancher/tfp-automation/config/nodeproviders"
+	aws "github.com/rancher/tfp-automation/config/nodeproviders/aws"
+	azure "github.com/rancher/tfp-automation/config/nodeproviders/azure"
+	google "github.com/rancher/tfp-automation/config/nodeproviders/google"
+	linode "github.com/rancher/tfp-automation/config/nodeproviders/linode"
+	vsphere "github.com/rancher/tfp-automation/config/nodeproviders/vsphere"
 )
 
 type TestClientName string
@@ -72,19 +76,6 @@ func (c TestClientName) String() string {
 	return string(c)
 }
 
-type GoogleAuthEncodedJSON struct {
-	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url,omitempty" yaml:"auth_provider_x509_cert_url,omitempty"`
-	AuthURI                 string `json:"auth_uri,omitempty" yaml:"auth_uri,omitempty"`
-	ClientEmail             string `json:"client_email,omitempty" yaml:"client_email,omitempty"`
-	ClientID                string `json:"client_id,omitempty" yaml:"client_id,omitempty"`
-	ClientX509CertURL       string `json:"client_x509_cert_url,omitempty" yaml:"client_x509_cert_url,omitempty"`
-	PrivateKey              string `json:"private_key,omitempty" yaml:"private_key,omitempty"`
-	PrivateKeyID            string `json:"private_key_id,omitempty" yaml:"private_key_id,omitempty"`
-	ProjectID               string `json:"project_id,omitempty" yaml:"project_id,omitempty"`
-	TokenURI                string `json:"token_uri,omitempty" yaml:"token_uri,omitempty"`
-	Type                    string `json:"type,omitempty" yaml:"type,omitempty"`
-}
-
 type Nodepool struct {
 	Quantity         int64  `json:"quantity,omitempty" yaml:"quantity,omitempty"`
 	Etcd             bool   `json:"etcd,omitempty" yaml:"etcd,omitempty"`
@@ -110,11 +101,16 @@ type PrivateRegistries struct {
 }
 
 type TerraformConfig struct {
-	AWSConfig                           nodeproviders.AWSConfig      `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
-	AzureConfig                         nodeproviders.AzureConfig    `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
-	GoogleConfig                        nodeproviders.GoogleConfig   `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
-	LinodeConfig                        nodeproviders.LinodeConfig   `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
-	VsphereConfig                       nodeproviders.VsphereConfig  `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`
+	AWSConfig                           aws.Config                   `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
+	AWSCredentials                      aws.Credentials              `json:"awsCredentials,omitempty" yaml:"awsCredentials,omitempty"`
+	AzureConfig                         azure.Config                 `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
+	AzureCredentials                    azure.Credentials            `json:"azureCredentials,omitempty" yaml:"azureCredentials,omitempty"`
+	GoogleConfig                        google.Config                `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
+	GoogleCredentials                   google.Credentials           `json:"googleCredentials,omitempty" yaml:"googleCredentials,omitempty"`
+	LinodeConfig                        linode.Config                `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
+	LinodeCredentials                   linode.Credentials           `json:"linodeCredentials,omitempty" yaml:"linodeCredentials,omitempty"`
+	VsphereConfig                       vsphere.Config               `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`
+	VsphereCredentials                  vsphere.Credentials          `json:"vsphereCredentials,omitempty" yaml:"vsphereCredentials,omitempty"`
 	ADConfig                            authproviders.ADConfig       `json:"adConfig,omitempty" yaml:"adConfig,omitempty"`
 	AzureADConfig                       authproviders.AzureADConfig  `json:"azureADConfig,omitempty" yaml:"azureADConfig,omitempty"`
 	GithubConfig                        authproviders.GithubConfig   `json:"githubConfig,omitempty" yaml:"githubConfig,omitempty"`

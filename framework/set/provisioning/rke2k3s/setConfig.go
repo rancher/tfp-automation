@@ -11,8 +11,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
-	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/rbac"
@@ -59,10 +59,10 @@ func SetRKE2K3s(client *rancher.Client, clusterName, poolName, k8sVersion, psact
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
 	switch {
+	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
+		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
 		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig)
-	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
-		ec2.SetEC2RKE2K3SProvider(rootBody, terraformConfig)
 	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
 		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig)
 	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:
@@ -92,10 +92,10 @@ func SetRKE2K3s(client *rancher.Client, clusterName, poolName, k8sVersion, psact
 	machineConfigBlockBody.SetAttributeValue(defaults.GenerateName, cty.StringVal(terraformConfig.MachineConfigName))
 
 	switch {
+	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
+		aws.SetAWSRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
 		azure.SetAzureRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
-		ec2.SetEC2RKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
 		linode.SetLinodeRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:

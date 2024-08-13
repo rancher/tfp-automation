@@ -11,8 +11,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
-	ec2 "github.com/rancher/tfp-automation/framework/set/provisioning/providers/ec2"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/rbac"
@@ -65,10 +65,10 @@ func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config
 	}
 
 	switch {
+	case terraformConfig.Module == modules.EC2RKE1:
+		aws.SetAWSRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.AzureRKE1:
 		azure.SetAzureRKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.EC2RKE1:
-		ec2.SetEC2RKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.LinodeRKE1:
 		linode.SetLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.VsphereRKE1:

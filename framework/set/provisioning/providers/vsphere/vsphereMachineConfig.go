@@ -39,7 +39,6 @@ func SetVsphereRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terra
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.HostSystem, cty.StringVal(terraformConfig.VsphereConfig.HostSystem))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.MemorySize, cty.StringVal(terraformConfig.VsphereConfig.MemorySize))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.Network, cty.ListVal(networks))
-	vsphereConfigBlockBody.SetAttributeValue(vsphere.Password, cty.StringVal(terraformConfig.VsphereConfig.Password))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.Pool, cty.StringVal(terraformConfig.VsphereConfig.Pool))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.SSHPassword, cty.StringVal(terraformConfig.VsphereConfig.SSHPassword))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.SSHPort, cty.StringVal(terraformConfig.VsphereConfig.SSHPort))

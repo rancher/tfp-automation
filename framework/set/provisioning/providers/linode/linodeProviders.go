@@ -13,10 +13,11 @@ func SetLinodeRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig
 	linodeConfigBlock := nodeTemplateBlockBody.AppendNewBlock(linode.LinodeConfig, nil)
 	linodeConfigBlockBody := linodeConfigBlock.Body()
 
+	linodeConfigBlockBody.SetAttributeValue(linode.Token, cty.StringVal(terraformConfig.LinodeCredentials.LinodeToken))
+
 	linodeConfigBlockBody.SetAttributeValue(linode.Image, cty.StringVal(terraformConfig.LinodeConfig.LinodeImage))
 	linodeConfigBlockBody.SetAttributeValue(region, cty.StringVal(terraformConfig.LinodeConfig.Region))
 	linodeConfigBlockBody.SetAttributeValue(linode.RootPass, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
-	linodeConfigBlockBody.SetAttributeValue(linode.Token, cty.StringVal(terraformConfig.LinodeConfig.LinodeToken))
 }
 
 // SetLinodeRKE2K3SProvider is a helper function that will set the Linode RKE2/K3S
@@ -30,5 +31,5 @@ func SetLinodeRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.T
 	linodeCredBlock := cloudCredBlockBody.AppendNewBlock(linode.LinodeCredentialConfig, nil)
 	linodeCredBlockBody := linodeCredBlock.Body()
 
-	linodeCredBlockBody.SetAttributeValue(linode.Token, cty.StringVal(terraformConfig.LinodeConfig.LinodeToken))
+	linodeCredBlockBody.SetAttributeValue(linode.Token, cty.StringVal(terraformConfig.LinodeCredentials.LinodeToken))
 }

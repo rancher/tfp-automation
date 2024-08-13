@@ -33,7 +33,6 @@ func SetAzureRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terrafo
 	azureConfigBlockBody.SetAttributeValue(azure.SSHUser, cty.StringVal(terraformConfig.AzureConfig.SSHUser))
 	azureConfigBlockBody.SetAttributeValue(azure.StaticPublicIP, cty.BoolVal(terraformConfig.AzureConfig.StaticPublicIP))
 	azureConfigBlockBody.SetAttributeValue(azure.StorageType, cty.StringVal(terraformConfig.AzureConfig.StorageType))
-	azureConfigBlockBody.SetAttributeValue(azure.TenantID, cty.StringVal(terraformConfig.AzureConfig.TenantID))
 	azureConfigBlockBody.SetAttributeValue(azure.UpdateDomainCount, cty.StringVal(terraformConfig.AzureConfig.UpdateDomainCount))
 	azureConfigBlockBody.SetAttributeValue(azure.UsePrivateIP, cty.BoolVal(terraformConfig.AzureConfig.UsePrivateIP))
 }

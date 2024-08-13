@@ -47,15 +47,15 @@ func SetVsphereRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfi
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.HostSystem, cty.StringVal(terraformConfig.VsphereConfig.HostSystem))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.MemorySize, cty.StringVal(terraformConfig.VsphereConfig.MemorySize))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.Network, cty.ListVal(networks))
-	vsphereConfigBlockBody.SetAttributeValue(vsphere.Password, cty.StringVal(terraformConfig.VsphereConfig.Password))
+	vsphereConfigBlockBody.SetAttributeValue(vsphere.Password, cty.StringVal(terraformConfig.VsphereCredentials.Password))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.Pool, cty.StringVal(terraformConfig.VsphereConfig.Pool))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.SSHPassword, cty.StringVal(terraformConfig.VsphereConfig.SSHPassword))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.SSHPort, cty.StringVal(terraformConfig.VsphereConfig.SSHPort))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.SSHUser, cty.StringVal(terraformConfig.VsphereConfig.SSHUser))
 	vsphereConfigBlockBody.SetAttributeValue(vsphere.SSHUserGroup, cty.StringVal(terraformConfig.VsphereConfig.SSHUserGroup))
-	vsphereConfigBlockBody.SetAttributeValue(vsphere.Username, cty.StringVal(terraformConfig.VsphereConfig.Username))
-	vsphereConfigBlockBody.SetAttributeValue(vsphere.Vcenter, cty.StringVal(terraformConfig.VsphereConfig.Vcenter))
-	vsphereConfigBlockBody.SetAttributeValue(vsphere.VcenterPort, cty.StringVal(terraformConfig.VsphereConfig.VcenterPort))
+	vsphereConfigBlockBody.SetAttributeValue(vsphere.Username, cty.StringVal(terraformConfig.VsphereCredentials.Username))
+	vsphereConfigBlockBody.SetAttributeValue(vsphere.Vcenter, cty.StringVal(terraformConfig.VsphereCredentials.Vcenter))
+	vsphereConfigBlockBody.SetAttributeValue(vsphere.VcenterPort, cty.StringVal(terraformConfig.VsphereCredentials.VcenterPort))
 }
 
 // SetVsphereRKE2K3SProvider is a helper function that will set the Vsphere RKE2/K3S Terraform provider details in the main.tf file.
@@ -68,8 +68,8 @@ func SetVsphereRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.
 	vsphereCredBlock := cloudCredBlockBody.AppendNewBlock(vsphere.VsphereCredentialConfig, nil)
 	vsphereCredBlockBody := vsphereCredBlock.Body()
 
-	vsphereCredBlockBody.SetAttributeValue(vsphere.Password, cty.StringVal(terraformConfig.VsphereConfig.Password))
-	vsphereCredBlockBody.SetAttributeValue(vsphere.Username, cty.StringVal(terraformConfig.VsphereConfig.Username))
-	vsphereCredBlockBody.SetAttributeValue(vsphere.Vcenter, cty.StringVal(terraformConfig.VsphereConfig.Vcenter))
-	vsphereCredBlockBody.SetAttributeValue(vsphere.VcenterPort, cty.StringVal(terraformConfig.VsphereConfig.VcenterPort))
+	vsphereCredBlockBody.SetAttributeValue(vsphere.Password, cty.StringVal(terraformConfig.VsphereCredentials.Password))
+	vsphereCredBlockBody.SetAttributeValue(vsphere.Username, cty.StringVal(terraformConfig.VsphereCredentials.Username))
+	vsphereCredBlockBody.SetAttributeValue(vsphere.Vcenter, cty.StringVal(terraformConfig.VsphereCredentials.Vcenter))
+	vsphereCredBlockBody.SetAttributeValue(vsphere.VcenterPort, cty.StringVal(terraformConfig.VsphereCredentials.VcenterPort))
 }
