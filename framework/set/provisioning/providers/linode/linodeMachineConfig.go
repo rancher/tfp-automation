@@ -24,5 +24,4 @@ func SetLinodeRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraf
 	linodeConfigBlockBody.SetAttributeValue(linode.Image, cty.StringVal(terraformConfig.LinodeConfig.LinodeImage))
 	linodeConfigBlockBody.SetAttributeValue(region, cty.StringVal(terraformConfig.LinodeConfig.Region))
 	linodeConfigBlockBody.SetAttributeValue(linode.RootPass, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
-	linodeConfigBlockBody.SetAttributeValue(linode.Token, cty.StringVal(terraformConfig.LinodeConfig.LinodeToken))
 }

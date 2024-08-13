@@ -30,9 +30,8 @@ func SetEKS(clusterName, k8sVersion string, nodePools []config.Nodepool, newFile
 	ec2CredConfigBlock := cloudCredBlockBody.AppendNewBlock(amazon.EC2CredentialConfig, nil)
 	ec2CredConfigBlockBody := ec2CredConfigBlock.Body()
 
-	ec2CredConfigBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSConfig.AWSAccessKey))
-	ec2CredConfigBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSConfig.AWSSecretKey))
-	ec2CredConfigBlockBody.SetAttributeValue(amazon.DefaultRegion, cty.StringVal(terraformConfig.AWSConfig.Region))
+	ec2CredConfigBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+	ec2CredConfigBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 
 	rootBody.AppendNewline()
 

@@ -82,6 +82,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
 
+		if strings.Contains(s.terraformConfig.Module, "rke1") {
+			s.T().Skip("RKE1 is not supported")
+		}
+
 		if strings.Contains(s.terraformConfig.Module, "ec2") && (s.terraformConfig.ETCD.S3 != nil || s.terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil) {
 			tt.name = "S3 " + tt.name
 		} else {

@@ -26,10 +26,10 @@ func SetAzureRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig 
 	}
 
 	azureConfigBlockBody.SetAttributeValue(azure.AvailabilitySet, cty.StringVal(terraformConfig.AzureConfig.AvailabilitySet))
-	azureConfigBlockBody.SetAttributeValue(azure.ClientID, cty.StringVal(terraformConfig.AzureConfig.ClientID))
-	azureConfigBlockBody.SetAttributeValue(azure.ClientSecret, cty.StringVal(terraformConfig.AzureConfig.ClientSecret))
-	azureConfigBlockBody.SetAttributeValue(azure.SubscriptionID, cty.StringVal(terraformConfig.AzureConfig.SubscriptionID))
-	azureConfigBlockBody.SetAttributeValue(azure.Environment, cty.StringVal(terraformConfig.AzureConfig.Environment))
+	azureConfigBlockBody.SetAttributeValue(azure.ClientID, cty.StringVal(terraformConfig.AzureCredentials.ClientID))
+	azureConfigBlockBody.SetAttributeValue(azure.ClientSecret, cty.StringVal(terraformConfig.AzureCredentials.ClientSecret))
+	azureConfigBlockBody.SetAttributeValue(azure.SubscriptionID, cty.StringVal(terraformConfig.AzureCredentials.SubscriptionID))
+	azureConfigBlockBody.SetAttributeValue(azure.Environment, cty.StringVal(terraformConfig.AzureCredentials.Environment))
 	azureConfigBlockBody.SetAttributeValue(azure.CustomData, cty.StringVal(terraformConfig.AzureConfig.CustomData))
 	azureConfigBlockBody.SetAttributeValue(azure.DiskSize, cty.StringVal(terraformConfig.AzureConfig.DiskSize))
 	azureConfigBlockBody.SetAttributeValue(azure.FaultDomainCount, cty.StringVal(terraformConfig.AzureConfig.FaultDomainCount))
@@ -58,9 +58,10 @@ func SetAzureRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.Te
 	azureCredBlock := cloudCredBlockBody.AppendNewBlock(azure.AzureCredentialConfig, nil)
 	azureCredBlockBody := azureCredBlock.Body()
 
-	azureCredBlockBody.SetAttributeValue(azure.ClientID, cty.StringVal(terraformConfig.AzureConfig.ClientID))
-	azureCredBlockBody.SetAttributeValue(azure.ClientSecret, cty.StringVal(terraformConfig.AzureConfig.ClientSecret))
-	azureCredBlockBody.SetAttributeValue(azure.SubscriptionID, cty.StringVal(terraformConfig.AzureConfig.SubscriptionID))
-	azureCredBlockBody.SetAttributeValue(azure.Environment, cty.StringVal(terraformConfig.AzureConfig.Environment))
+	azureCredBlockBody.SetAttributeValue(azure.ClientID, cty.StringVal(terraformConfig.AzureCredentials.ClientID))
+	azureCredBlockBody.SetAttributeValue(azure.ClientSecret, cty.StringVal(terraformConfig.AzureCredentials.ClientSecret))
+	azureCredBlockBody.SetAttributeValue(azure.SubscriptionID, cty.StringVal(terraformConfig.AzureCredentials.SubscriptionID))
+	azureCredBlockBody.SetAttributeValue(azure.Environment, cty.StringVal(terraformConfig.AzureCredentials.Environment))
+	azureCredBlockBody.SetAttributeValue(azure.TenantID, cty.StringVal(terraformConfig.AzureCredentials.TenantID))
 
 }

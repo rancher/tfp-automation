@@ -648,15 +648,18 @@ terraform:
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
-  azureConfig:
-    availabilitySet: "docker-machine"
+  azureCredentials:
     clientId: ""
     clientSecret: ""
+    environment: "AzurePublicCloud"
+    subscriptionId: ""
+    tenantId: ""
+  azureConfig:
+    availabilitySet: "docker-machine"
     subscriptionId: ""
     customData: ""
     diskSize: "100"
     dockerPort: "2376"
-    environment: "AzurePublicCloud"
     faultDomainCount: "3"
     image: "Canonical:0001-com-ubuntu-server-jammy:22_04-lts:latest"
     location: "westus2"
@@ -781,9 +784,10 @@ terraform:
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
   awsConfig:
-    awsAccessKey: XXXXXXXXXXXXXXXXXXXX
-    awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ami:
     awsInstanceType: t3.medium
     region: us-east-2
@@ -862,10 +866,11 @@ terraform:
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
+  linodeCredentials:
+    linodeToken: ""
   linodeConfig:
-    linodeToken: XXXXXXXXXXXXXXXXXXXX
     region: us-east
-    linodeRootPass: xxxxxxxxxxxxxxxx
+    linodeRootPass: ""
 ```
 
 ---
@@ -1038,6 +1043,11 @@ terraform:
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
+  vsphereCredentials:
+    password: ""
+    username: ""
+    vcenter: ""
+    vcenterPort: "443"
   vsphereConfig:  
     cfgparam: ["disk.enableUUID=TRUE"]
     cloneFrom: ""
@@ -1053,15 +1063,11 @@ terraform:
     hostsystem: ""
     memorySize: "8192"
     network: [""]
-    password: ""
     pool: ""
     sshPassword: "tcuser"
     sshPort: "22"
     sshUser: "docker"
     sshUserGroup: "staff"
-    username: ""
-    vcenter: ""
-    vcenterPort: "443"
 ```
 
 ---
@@ -1228,15 +1234,17 @@ terraform:
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
-  azureConfig:
-    availabilitySet: "docker-machine"
+  azureCredentials:
     clientId: ""
     clientSecret: ""
+    environment: "AzurePublicCloud"
     subscriptionId: ""
+    tenantId: ""
+  azureConfig:
+    availabilitySet: "docker-machine"
     customData: ""
     diskSize: "100"
     dockerPort: "2376"
-    environment: "AzurePublicCloud"
     faultDomainCount: "3"
     image: "Canonical:0001-com-ubuntu-server-jammy:22_04-lts:latest"
     location: "westus2"
@@ -1249,7 +1257,6 @@ terraform:
     sshUser: ""
     staticPublicIp: false
     storageType: "Standard_LRS"
-    tenantId: ""
     updateDomainCount: "5"
 ```
 
@@ -1357,9 +1364,10 @@ terraform:
   machineConfigName: tf-rke2
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: user
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
   awsConfig:
-    awsAccessKey: XXXXXXXXXXXXXXXXXXXX
-    awsSecretKey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ami:
     region: us-east-2
     awsSecurityGroupNames:
@@ -1450,8 +1458,9 @@ terraform:
   machineConfigName: tf-k3s
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: user
+  linodeCredentials:
+    linodeToken: ""
   linodeConfig:
-    linodeToken: XXXXXXXXXXXXXXXXXXXX
     linodeImage: linode/ubuntu20.04
     region: us-east
     linodeRootPass: xxxxxxxxxxxx
@@ -1627,6 +1636,11 @@ terraform:
   networkPlugin: canal
   nodeTemplateName: tf-rke1-template
   hostnamePrefix: tfp
+  vsphereCredentials:
+    password: ""
+    username: ""
+    vcenter: ""
+    vcenterPort: ""
   vsphereConfig:  
     cfgparam: ["disk.enableUUID=TRUE"]
     cloneFrom: ""
@@ -1642,15 +1656,11 @@ terraform:
     hostsystem: ""
     memorySize: "8192"
     network: [""]
-    password: ""
     pool: ""
     sshPassword: "tcuser"
     sshPort: "22"
     sshUser: "docker"
     sshUserGroup: "staff"
-    username: ""
-    vcenter: ""
-    vcenterPort: "443"
 ```
 
 ---
