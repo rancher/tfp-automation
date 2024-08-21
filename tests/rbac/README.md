@@ -13,7 +13,30 @@ In the RBAC tests, the following workflow is followed:
 3. Add a cluster owner/project member to the cluster
 4. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 
-The config file is going to be the exact same as what is seen when provisioning clusters; there are no additional details that you need to do. For reference, please see the [provisioning README](../provisioning/README.md).
+The config file is going to be the exact same as what is seen when provisioning clusters; there are no additional details that you need to do. For a detailed reference, please see the [provisioning README](../provisioning/README.md). To see a sample Linode K3s config, please see below:
+
+```yaml
+rancher:
+    host: "rancher_server_address"
+    adminToken: "rancher_admin_token"
+    insecure: true
+    cleanup: true
+terraform:
+    cloudCredentialName: ""
+    defaultClusterRoleForProjectMembers: "true"
+    enableNetworkPolicy: false
+    hostnamePrefix: ""
+    machineConfigName: ""
+    module: "linode_k3s"
+    networkPlugin: "canal"
+    nodeTemplateName: ""                # Needed for RKE1 clusters
+    linodeCredentials:
+        linodeToken: ""
+    linodeConfig:
+        linodeImage: "linode/ubuntu22.04"
+        region: "us-east"
+        linodeRootPass: ""
+```
 
 See the below examples on how to run the tests:
 
