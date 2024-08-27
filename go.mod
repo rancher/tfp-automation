@@ -217,3 +217,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+replace github.com/rancher/shepherd => github.com/susesgartner/shepherd v0.0.0-20240827210253-626cbc1d50a9
