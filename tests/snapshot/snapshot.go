@@ -6,17 +6,15 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
-
-	etcdSnapshotActions "github.com/rancher/rancher/tests/v2/actions/etcdsnapshot"
-	"github.com/rancher/rancher/tests/v2/actions/provisioning"
-	"github.com/rancher/rancher/tests/v2/actions/services"
-	deploy "github.com/rancher/rancher/tests/v2/actions/workloads/deployment"
 	"github.com/rancher/shepherd/clients/rancher"
 	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/clusters/kubernetesversions"
-	etcdSnapshotExtensions "github.com/rancher/shepherd/extensions/etcdsnapshot"
+	"github.com/rancher/shepherd/extensions/etcdsnapshot"
+	"github.com/rancher/shepherd/extensions/provisioning"
+	"github.com/rancher/shepherd/extensions/services"
 	"github.com/rancher/shepherd/extensions/workloads"
+	deploy "github.com/rancher/shepherd/extensions/workloads/deployment"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
@@ -113,7 +111,7 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 
 func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, poolName, clusterID, localClusterID string,
 	clusterConfig *config.TerratestConfig, isRKE1 bool, terraformOptions *terraform.Options) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject) {
-	existingSnapshots, err := etcdSnapshotExtensions.GetRKE2K3SSnapshots(client, clusterName)
+	existingSnapshots, err := etcdsnapshot.GetRKE2K3SSnapshots(client, clusterName)
 	require.NoError(t, err)
 
 	clusterConfig.SnapshotInput.CreateSnapshot = true
@@ -134,7 +132,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 
 	postDeploymentResp, postServiceResp := createPostBackupWorkloads(t, client, clusterID, podTemplate, deployment)
 
-	etcdNodeCount, _ := etcdSnapshotActions.MatchNodeToAnyEtcdRole(client, clusterID)
+	etcdNodeCount, _ := etcdsnapshot.MatchNodeToAnyEtcdRole(client, clusterID)
 	snapshotToRestore, err := provisioning.VerifySnapshots(client, clusterName, etcdNodeCount+len(existingSnapshots), isRKE1)
 	require.NoError(t, err)
 

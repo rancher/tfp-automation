@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	clusterActions "github.com/rancher/rancher/tests/v2/actions/clusters"
-	"github.com/rancher/rancher/tests/v2/actions/psact"
 	"github.com/rancher/shepherd/clients/rancher"
-	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
+	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/defaults"
+	"github.com/rancher/shepherd/extensions/psact"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
@@ -34,7 +33,7 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	module := terraformConfig.Module
 	expectedKubernetesVersion = checkExpectedKubernetesVersion(clusterConfig, expectedKubernetesVersion, module)
 
-	clusterID, err := clusterExtensions.GetClusterIDByName(adminClient, clusterName)
+	clusterID, err := clusters.GetClusterIDByName(adminClient, clusterName)
 	require.NoError(t, err)
 
 	if err := waitState.IsActiveCluster(adminClient, clusterID); err != nil {
@@ -56,7 +55,7 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 		assert.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion)
 	}
 
-	clusterToken, err := clusterActions.CheckServiceAccountTokenSecret(adminClient, cluster.Name)
+	clusterToken, err := clusters.CheckServiceAccountTokenSecret(adminClient, cluster.Name)
 	require.NoError(t, err)
 	assert.NotEmpty(t, clusterToken)
 
@@ -80,7 +79,7 @@ func VerifyUpgradedKubernetesVersion(t *testing.T, client *rancher.Client, terra
 	adminClient, err := rancher.NewClient(client.RancherConfig.AdminToken, client.Session)
 	require.NoError(t, err)
 
-	clusterID, err := clusterExtensions.GetClusterIDByName(adminClient, clusterName)
+	clusterID, err := clusters.GetClusterIDByName(adminClient, clusterName)
 	require.NoError(t, err)
 
 	cluster, err := adminClient.Management.Cluster.ByID(clusterID)
@@ -100,7 +99,7 @@ func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, t
 	adminClient, err := rancher.NewClient(client.RancherConfig.AdminToken, client.Session)
 	require.NoError(t, err)
 
-	clusterID, err := clusterExtensions.GetClusterIDByName(adminClient, clusterName)
+	clusterID, err := clusters.GetClusterIDByName(adminClient, clusterName)
 	require.NoError(t, err)
 
 	err = kwait.PollUntilContextTimeout(context.TODO(), 10*time.Second, defaults.FifteenMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
