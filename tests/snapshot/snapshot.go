@@ -1,20 +1,24 @@
 package snapshot
 
 import (
+	"context"
 	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
+
+	etcdSnapshotActions "github.com/rancher/rancher/tests/v2/actions/etcdsnapshot"
+	"github.com/rancher/rancher/tests/v2/actions/provisioning"
+	"github.com/rancher/rancher/tests/v2/actions/services"
+	deploy "github.com/rancher/rancher/tests/v2/actions/workloads/deployment"
 	"github.com/rancher/shepherd/clients/rancher"
 	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/clusters/kubernetesversions"
-	"github.com/rancher/shepherd/extensions/etcdsnapshot"
-	"github.com/rancher/shepherd/extensions/provisioning"
-	"github.com/rancher/shepherd/extensions/services"
+	timeouts "github.com/rancher/shepherd/extensions/defaults"
+	etcdSnapshotExtensions "github.com/rancher/shepherd/extensions/etcdsnapshot"
 	"github.com/rancher/shepherd/extensions/workloads"
-	deploy "github.com/rancher/shepherd/extensions/workloads/deployment"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
@@ -27,6 +31,7 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kwait "k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
@@ -58,7 +63,7 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 	require.NoError(t, err)
 
 	containerTemplate := workloads.NewContainer(containerName, containerImage, corev1.PullAlways, []corev1.VolumeMount{}, []corev1.EnvFromSource{}, nil, nil, nil)
-	podTemplate := workloads.NewPodTemplate([]corev1.Container{containerTemplate}, []corev1.Volume{}, []corev1.LocalObjectReference{}, nil)
+	podTemplate := workloads.NewPodTemplate([]corev1.Container{containerTemplate}, []corev1.Volume{}, []corev1.LocalObjectReference{}, nil, nil)
 	deployment := workloads.NewDeploymentTemplate(initialWorkloadName, defaultNamespace, podTemplate, isCattleLabeled, nil)
 
 	service := corev1.Service{
@@ -78,8 +83,22 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 		},
 	}
 
-	deploymentResp, err := deploy.CreateDeployment(steveclient, initialWorkloadName, deployment)
+	deploymentResp, err := steveclient.SteveType(DeploymentSteveType).Create(deployment)
 	require.NoError(t, err)
+
+	err = kwait.PollUntilContextTimeout(context.TODO(), timeouts.FiveSecondTimeout, timeouts.FiveMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
+		deployment, err := client.Steve.SteveType(DeploymentSteveType).ByID(deploymentResp.ID)
+		if err != nil {
+			return false, err
+		}
+
+		if deployment.State.Name == "active" {
+			logrus.Infof("%s(%s) is active", DeploymentSteveType, deployment.Name)
+			return true, nil
+		}
+
+		return false, nil
+	})
 
 	err = deploy.VerifyDeployment(steveclient, deploymentResp)
 	require.NoError(t, err)
@@ -111,7 +130,7 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 
 func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, poolName, clusterID, localClusterID string,
 	clusterConfig *config.TerratestConfig, isRKE1 bool, terraformOptions *terraform.Options) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject) {
-	existingSnapshots, err := etcdsnapshot.GetRKE2K3SSnapshots(client, clusterName)
+	existingSnapshots, err := etcdSnapshotExtensions.GetRKE2K3SSnapshots(client, clusterName)
 	require.NoError(t, err)
 
 	clusterConfig.SnapshotInput.CreateSnapshot = true
@@ -132,7 +151,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 
 	postDeploymentResp, postServiceResp := createPostBackupWorkloads(t, client, clusterID, podTemplate, deployment)
 
-	etcdNodeCount, _ := etcdsnapshot.MatchNodeToAnyEtcdRole(client, clusterID)
+	etcdNodeCount, _ := etcdSnapshotActions.MatchNodeToAnyEtcdRole(client, clusterID)
 	snapshotToRestore, err := provisioning.VerifySnapshots(client, clusterName, etcdNodeCount+len(existingSnapshots), isRKE1)
 	require.NoError(t, err)
 
@@ -251,8 +270,22 @@ func createPostBackupWorkloads(t *testing.T, client *rancher.Client, clusterID s
 	steveclient, err := client.Steve.ProxyDownstream(clusterID)
 	require.NoError(t, err)
 
-	postDeploymentResp, err := deploy.CreateDeployment(steveclient, workloadNamePostBackup, postBackupDeployment)
+	postDeploymentResp, err := steveclient.SteveType(DeploymentSteveType).Create(postBackupDeployment)
 	require.NoError(t, err)
+
+	err = kwait.PollUntilContextTimeout(context.TODO(), timeouts.FiveSecondTimeout, timeouts.FiveMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
+		deployment, err := client.Steve.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
+		if err != nil {
+			return false, err
+		}
+
+		if deployment.State.Name == "active" {
+			logrus.Infof("%s(%s) is active", DeploymentSteveType, deployment.Name)
+			return true, nil
+		}
+
+		return false, nil
+	})
 
 	err = deploy.VerifyDeployment(steveclient, postDeploymentResp)
 	require.NoError(t, err)
