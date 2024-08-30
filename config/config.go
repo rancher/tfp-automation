@@ -150,7 +150,7 @@ type Snapshots struct {
 type TerratestConfig struct {
 	KubernetesVersion         string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
 	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
-	NodeCount                 int64      `json:"nodeCount,omitempty" yaml:"nodeCoun,omitemptyt"`
+	NodeCount                 int64      `json:"nodeCount,omitempty" yaml:"nodeCount,omitempty"`
 	Nodepools                 []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
 	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
 	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
