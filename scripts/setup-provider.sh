@@ -16,22 +16,28 @@
 set -e 
 
 # Validate user input
-
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <provider> <version>"
   exit 1
 fi
 
-# Set global vars
-
 PROVIDER=$1
 VERSION=$2
 VERSION_TAG=$(echo $2 | cut -c 2-)
 
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+
+if [ "$OS" = "darwin" ] && [ "$ARCH" = "arm64" ]; then
+  PLATFORM="darwin_arm64"
+else
+  PLATFORM="linux_amd64"
+fi
+
 # Download binary
-DIR=~/.terraform.d/plugins/terraform.local/local/${PROVIDER}/${VERSION_TAG}/linux_amd64
+DIR=~/.terraform.d/plugins/terraform.local/local/${PROVIDER}/${VERSION_TAG}/${PLATFORM}
 (umask u=rwx,g=rwx,o=rwx && mkdir -p $DIR)
-curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_linux_amd64.zip | gunzip -c - > ${DIR}/terraform-provider-${PROVIDER}
+curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_${PLATFORM}.zip | gunzip -c - > ${DIR}/terraform-provider-${PROVIDER}
 
 # Mod binary
 chmod +x ${DIR}/terraform-provider-${PROVIDER}
