@@ -86,7 +86,9 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			s.T().Skip("RKE1 is not supported")
 		}
 
-		if strings.Contains(s.terraformConfig.Module, "ec2") && (s.terraformConfig.ETCD.S3 != nil || s.terraformConfig.ETCDRKE1.BackupConfig.S3BackupConfig != nil) {
+		require.NotNil(s.T(), s.terraformConfig.ETCD)
+
+		if strings.Contains(s.terraformConfig.Module, "ec2") && s.terraformConfig.ETCD.S3 != nil {
 			tt.name = "S3 " + tt.name
 		} else {
 			tt.name = "Local " + tt.name
