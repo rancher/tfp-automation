@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -59,21 +60,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		nodeRoles []config.Nodepool
 		psact     config.PSACT
 	}{
-		{
-			name:      "Rancher Privileged " + config.StandardClientName.String(),
-			nodeRoles: nodeRolesDedicated,
-			psact:     "rancher-privileged",
-		},
-		{
-			name:      "Rancher Restricted " + config.StandardClientName.String(),
-			nodeRoles: nodeRolesDedicated,
-			psact:     "rancher-restricted",
-		},
-		{
-			name:      "Rancher Baseline " + config.StandardClientName.String(),
-			nodeRoles: nodeRolesDedicated,
-			psact:     "rancher-baseline",
-		},
+		{"Rancher Privileged " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-privileged"},
+		{"Rancher Restricted " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-restricted"},
+		{"Rancher Baseline " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-baseline"},
 	}
 
 	for _, tt := range tests {
@@ -92,6 +81,10 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			provisioning.Provision(p.T(), p.client, clusterName, poolName, &clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
+	}
+
+	if p.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
 	}
 }
 

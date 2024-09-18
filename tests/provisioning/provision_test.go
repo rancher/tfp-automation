@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -78,6 +79,10 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}
+
+	if p.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
+	}
 }
 
 func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
@@ -99,6 +104,10 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 			provisioning.Provision(p.T(), p.client, clusterName, poolName, p.clusterConfig, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
 		})
+	}
+
+	if p.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
 	}
 }
 

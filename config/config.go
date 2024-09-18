@@ -149,6 +149,7 @@ type Snapshots struct {
 
 type TerratestConfig struct {
 	KubernetesVersion         string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
+	LocalQaseReporting        bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
 	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
 	NodeCount                 int64      `json:"nodeCount,omitempty" yaml:"nodeCount,omitempty"`
 	Nodepools                 []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`

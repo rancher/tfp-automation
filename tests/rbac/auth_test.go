@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/authproviders"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -39,6 +40,11 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 
 	r.terraformConfig = terraformConfig
 
+	clusterConfig := new(config.TerratestConfig)
+	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, clusterConfig)
+
+	r.clusterConfig = clusterConfig
+
 	terraformOptions := framework.Setup(r.T())
 	r.terraformOptions = terraformOptions
 }
@@ -63,6 +69,10 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 			rb.AuthConfig(r.T(), &authConfig, r.terraformOptions)
 		})
 	}
+
+	if r.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
+	}
 }
 
 func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
@@ -82,6 +92,10 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 
 			rb.AuthConfig(r.T(), r.terraformConfig, r.terraformOptions)
 		})
+	}
+
+	if r.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
 	}
 }
 

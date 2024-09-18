@@ -3,6 +3,7 @@
 ## Table of Contents
 1. [RBAC](#RBAC)
 2. [Authentication Providers](#Authentication-Providers)
+3. [Local Qase Reporting](#Local-Qase-Reporting)
 
 ### RBAC
 
@@ -40,7 +41,7 @@ terraform:
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rbac --junitfile results.xml -- -timeout=60m -v -run "TestTfpRBACTestSuite/TestTfpRBAC$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rbac --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpRBACTestSuite/TestTfpRBAC$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -116,6 +117,15 @@ terraform:
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rbac --junitfile results.xml -- -timeout=60m -v -run "TestTfpAuthConfigTestSuite/TestTfpAuthConfig$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rbac --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpAuthConfigTestSuite/TestTfpAuthConfig$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
+
+## Local Qase Reporting
+If you are planning to report to Qase locally, then you will need to have the following done:
+1. The `terratest` block in your config file must have `localQaseReporting: true`.
+2. The working shell session must have the following two environmental variables set:
+     - `QASE_AUTOMATION_TOKEN=""`
+     - `QASE_TEST_RUN_ID=""`
+3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rbac --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpRBACTestSuite/TestTfpRBAC$";/path/to/tfp-automation/reporter`
