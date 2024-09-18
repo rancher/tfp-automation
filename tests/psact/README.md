@@ -17,6 +17,7 @@ Please see below for more details for your config. Please note that the config c
 ## Table of Contents
 1. [Getting Started](#Getting-Started)
 2. [Provisioning Clusters](#Provisioning=Clusters)
+3. [Local Qase Reporting](#Local-Qase-Reporting)
 
 ## Getting Started
 In your config file, set the following:
@@ -52,4 +53,13 @@ terratest:
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/psact --junitfile results.xml -- -timeout=60m -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/psact --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$"`
+
+## Local Qase Reporting
+If you are planning to report to Qase locally, then you will need to have the following done:
+1. The `terratest` block in your config file must have `localQaseReporting: true`.
+2. The working shell session must have the following two environmental variables set:
+     - `QASE_AUTOMATION_TOKEN=""`
+     - `QASE_TEST_RUN_ID=""`
+3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/psact --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$";/path/to/tfp-automation/reporter`

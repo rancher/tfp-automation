@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
 	"github.com/stretchr/testify/require"
@@ -80,6 +81,10 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 			rb.RBAC(r.T(), r.client, clusterName, poolName, r.terraformOptions, &clusterConfig, tt.rbacRole)
 		})
+	}
+
+	if r.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
 	}
 }
 

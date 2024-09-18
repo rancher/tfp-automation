@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -106,6 +107,10 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 		})
 	}
+
+	if s.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
+	}
 }
 
 func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
@@ -139,6 +144,10 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.clusterConfig.ScalingInput.ScaledDownNodeCount)
 		})
+	}
+
+	if s.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
 	}
 }
 

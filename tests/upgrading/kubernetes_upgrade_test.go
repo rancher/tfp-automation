@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -82,6 +83,10 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 				k.clusterConfig.UpgradedKubernetesVersion)
 		})
 	}
+
+	if k.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
+	}
 }
 
 func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
@@ -108,6 +113,10 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
 				k.clusterConfig.UpgradedKubernetesVersion)
 		})
+	}
+
+	if k.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
 	}
 }
 

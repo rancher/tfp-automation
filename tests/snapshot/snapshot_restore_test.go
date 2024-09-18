@@ -13,6 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -104,6 +105,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			snapshotRestore(s.T(), s.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
 		})
 	}
+
+	if s.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
+	}
 }
 
 func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
@@ -131,6 +136,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 
 			snapshotRestore(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
 		})
+	}
+
+	if s.clusterConfig.LocalQaseReporting {
+		qase.ReportTest()
 	}
 }
 
