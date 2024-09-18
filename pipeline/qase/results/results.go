@@ -22,7 +22,7 @@ func ReportTest() error {
 		return err
 	}
 
-	reporterPath := filepath.Join(user.HomeDir, "go/src/github.com/tfp-automation/pipeline/scripts/build_qase_reporter.sh")
+	reporterPath := filepath.Join(user.HomeDir, "go/src/github.com/rancher/tfp-automation/pipeline/scripts/build_qase_reporter.sh")
 
 	cmd := exec.Command(reporterPath)
 	output, err := cmd.Output()
