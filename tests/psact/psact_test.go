@@ -22,6 +22,7 @@ type PSACTTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	clusterConfig    *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -36,6 +37,11 @@ func (p *PSACTTestSuite) SetupSuite() {
 
 	p.client = client
 
+	rancherConfig := new(rancher.Config)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
+
+	p.rancherConfig = rancherConfig
+
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
@@ -46,7 +52,7 @@ func (p *PSACTTestSuite) SetupSuite() {
 
 	p.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(p.T())
+	terraformOptions := framework.Setup(p.T(), p.rancherConfig, p.terraformConfig, p.clusterConfig)
 	p.terraformOptions = terraformOptions
 
 	provisioning.GetK8sVersion(p.T(), p.client, p.clusterConfig, p.terraformConfig, configs.DefaultK8sVersion)
@@ -78,7 +84,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		p.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
 
-			provisioning.Provision(p.T(), p.client, clusterName, poolName, &clusterConfig, p.terraformOptions)
+			provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &clusterConfig, clusterName, poolName, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}

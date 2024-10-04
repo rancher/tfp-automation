@@ -38,7 +38,13 @@ const (
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
 func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, authProvider bool) (*hclwrite.File, *hclwrite.Body) {
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
+	var awsProviderVersion string
+	var localProviderVersion string
 
+	if strings.Contains(terraformConfig.Module, "custom") {
+		awsProviderVersion = os.Getenv("AWS_PROVIDER_VERSION")
+		localProviderVersion = os.Getenv("LOCALS_PROVIDER_VERSION")
+	}
 	source := "rancher/rancher2"
 	if strings.Contains(providerVersion, rc) {
 		source = "terraform.local/local/rancher2"
@@ -53,12 +59,39 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
+	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+		reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
+			defaults.Source:  cty.StringVal(defaults.AwsSource),
+			defaults.Version: cty.StringVal(awsProviderVersion),
+		}))
+
+		reqProvsBlockBody.SetAttributeValue(defaults.Local, cty.ObjectVal(map[string]cty.Value{
+			defaults.Source:  cty.StringVal(defaults.LocalSource),
+			defaults.Version: cty.StringVal(localProviderVersion),
+		}))
+	}
+
 	reqProvsBlockBody.SetAttributeValue(rancher2, cty.ObjectVal(map[string]cty.Value{
 		rancherSource: cty.StringVal(source),
 		version:       cty.StringVal(providerVersion),
 	}))
 
 	rootBody.AppendNewline()
+
+	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+		awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
+		awsProvBlockBody := awsProvBlock.Body()
+
+		awsProvBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
+		awsProvBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+		awsProvBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+
+		rootBody.AppendNewline()
+
+		rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Local})
+
+		rootBody.AppendNewline()
+	}
 
 	provBlock := rootBody.AppendNewBlock(provider, []string{rancher2})
 	provBlockBody := provBlock.Body()

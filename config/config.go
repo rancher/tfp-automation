@@ -118,6 +118,7 @@ type TerraformConfig struct {
 	OpenLDAPConfig                      authproviders.OpenLDAPConfig `json:"openLDAPConfig,omitempty" yaml:"openLDAPConfig,omitempty"`
 	AuthProvider                        string                       `json:"authProvider,omitempty" yaml:"authProvider,omitempty"`
 	CloudCredentialName                 string                       `json:"cloudCredentialName,omitempty" yaml:"cloudCredentialName,omitempty"`
+	CNI                                 string                       `json:"cni,omitempty" yaml:"cni,omitempty"`
 	DefaultClusterRoleForProjectMembers string                       `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
@@ -127,6 +128,7 @@ type TerraformConfig struct {
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
 	NodeTemplateName                    string                       `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
+	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
 	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
 }
 
