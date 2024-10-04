@@ -11,11 +11,11 @@ import (
 )
 
 // Provision is a function that will run terraform init and apply Terraform resources to provision a cluster.
-func Provision(t *testing.T, client *rancher.Client, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
+func Provision(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, clusterName, poolName string, terraformOptions *terraform.Options) {
 	isSupported := SupportedModules(terraformOptions)
 	require.True(t, isSupported)
 
-	err := framework.ConfigTF(client, clusterConfig, clusterName, poolName, "")
+	err := framework.ConfigTF(client, rancherConfig, terraformConfig, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)

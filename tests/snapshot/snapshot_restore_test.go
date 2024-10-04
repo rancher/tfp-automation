@@ -23,6 +23,7 @@ type SnapshotRestoreTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	clusterConfig    *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -37,6 +38,11 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 
 	s.client = client
 
+	rancherConfig := new(rancher.Config)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
+
+	s.rancherConfig = rancherConfig
+
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
@@ -47,7 +53,7 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 
 	s.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(s.T())
+	terraformOptions := framework.Setup(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig)
 	s.terraformOptions = terraformOptions
 
 	provisioning.GetK8sVersion(s.T(), s.client, s.clusterConfig, s.terraformConfig, configs.SecondHighestVersion)
@@ -99,10 +105,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		s.Run(tt.name, func() {
 			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), s.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &clusterConfig, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, &clusterConfig)
 
-			snapshotRestore(s.T(), s.client, clusterName, poolName, &clusterConfig, s.terraformOptions)
+			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, &clusterConfig, clusterName, poolName, s.terraformOptions)
 		})
 	}
 
@@ -131,10 +137,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 		s.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
-			snapshotRestore(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
+			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
 		})
 	}
 

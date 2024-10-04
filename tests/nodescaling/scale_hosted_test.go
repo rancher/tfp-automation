@@ -22,6 +22,7 @@ type ScaleHostedTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	clusterConfig    *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -36,6 +37,11 @@ func (s *ScaleHostedTestSuite) SetupSuite() {
 
 	s.client = client
 
+	rancherConfig := new(rancher.Config)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
+
+	s.rancherConfig = rancherConfig
+
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
@@ -46,7 +52,7 @@ func (s *ScaleHostedTestSuite) SetupSuite() {
 
 	s.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(s.T())
+	terraformOptions := framework.Setup(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig)
 	s.terraformOptions = terraformOptions
 }
 
@@ -66,18 +72,18 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 		s.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), s.client, clusterName, poolName, s.clusterConfig, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledUpNodepools
 
-			provisioning.Scale(s.T(), clusterName, poolName, s.terraformOptions, s.clusterConfig)
+			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.clusterConfig.ScalingInput.ScaledUpNodeCount)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledDownNodepools
 
-			provisioning.Scale(s.T(), clusterName, poolName, s.terraformOptions, s.clusterConfig)
+			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.clusterConfig.ScalingInput.ScaledDownNodeCount)
 		})

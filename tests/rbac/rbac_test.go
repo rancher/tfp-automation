@@ -23,6 +23,7 @@ type RBACTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	clusterConfig    *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -37,6 +38,11 @@ func (r *RBACTestSuite) SetupSuite() {
 
 	r.client = client
 
+	rancherConfig := new(rancher.Config)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
+
+	r.rancherConfig = rancherConfig
+
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
@@ -47,7 +53,7 @@ func (r *RBACTestSuite) SetupSuite() {
 
 	r.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(r.T())
+	terraformOptions := framework.Setup(r.T(), r.rancherConfig, r.terraformConfig, r.clusterConfig)
 	r.terraformOptions = terraformOptions
 
 	provisioning.GetK8sVersion(r.T(), r.client, r.clusterConfig, r.terraformConfig, configs.DefaultK8sVersion)
@@ -76,10 +82,10 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			clusterName := namegen.AppendRandomString(configs.TFP)
 			poolName := namegen.AppendRandomString(configs.TFP)
 
-			provisioning.Provision(r.T(), r.client, clusterName, poolName, &clusterConfig, r.terraformOptions)
+			provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, clusterName, poolName, r.terraformOptions)
 			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
 
-			rb.RBAC(r.T(), r.client, clusterName, poolName, r.terraformOptions, &clusterConfig, tt.rbacRole)
+			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, clusterName, poolName, r.terraformOptions, tt.rbacRole)
 		})
 	}
 
