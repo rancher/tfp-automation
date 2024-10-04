@@ -31,6 +31,9 @@ func SupportedModules(terraformOptions *terraform.Options) bool {
 		modules.VsphereRKE1,
 		modules.VsphereRKE2,
 		modules.VsphereK3s,
+		modules.CustomEC2RKE1,
+		modules.CustomEC2RKE2,
+		modules.CustomEC2K3s,
 	}
 
 	for _, supportedModule := range supportedModules {

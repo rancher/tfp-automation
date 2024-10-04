@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
+	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
@@ -21,6 +22,7 @@ type AuthConfigTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	clusterConfig    *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -35,6 +37,11 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 
 	r.client = client
 
+	rancherConfig := new(rancher.Config)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
+
+	r.rancherConfig = rancherConfig
+
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
@@ -45,7 +52,7 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 
 	r.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(r.T())
+	terraformOptions := framework.Setup(r.T(), r.rancherConfig, r.terraformConfig, r.clusterConfig)
 	r.terraformOptions = terraformOptions
 }
 
