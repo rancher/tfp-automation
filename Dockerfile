@@ -25,6 +25,10 @@ RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform
 ARG CONFIG_FILE
 COPY $CONFIG_FILE /config.yml
 
+ARG PEM_FILE
+COPY $PEM_FILE /key.pem
+RUN echo $PEM_FILE > key.pem && chmod 400 key.pem
+
 RUN if [[ -z '$EXTERNAL_ENCODED_VPN' ]] ; then \
       echo 'no vpn provided' ; \
     else \

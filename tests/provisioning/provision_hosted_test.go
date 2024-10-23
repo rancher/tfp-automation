@@ -22,6 +22,7 @@ type ProvisionHostedTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	clusterConfig    *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -36,6 +37,11 @@ func (p *ProvisionHostedTestSuite) SetupSuite() {
 
 	p.client = client
 
+	rancherConfig := new(rancher.Config)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
+
+	p.rancherConfig = rancherConfig
+
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
@@ -46,7 +52,7 @@ func (p *ProvisionHostedTestSuite) SetupSuite() {
 
 	p.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(p.T())
+	terraformOptions := framework.Setup(p.T(), p.rancherConfig, p.terraformConfig, p.clusterConfig)
 	p.terraformOptions = terraformOptions
 }
 
@@ -66,7 +72,7 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 		p.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
 
-			provisioning.Provision(p.T(), p.client, clusterName, poolName, p.clusterConfig, p.terraformOptions)
+			provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.clusterConfig, clusterName, poolName, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, p.clusterConfig)
 		})
 	}

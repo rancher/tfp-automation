@@ -50,7 +50,7 @@ const (
 	serviceType         = "service"
 )
 
-func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName string, clusterConfig *config.TerratestConfig, terraformOptions *terraform.Options) {
+func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, clusterName, poolName string, terraformOptions *terraform.Options) {
 	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
 
 	clusterID, err := clusters.GetClusterIDByName(client, clusterName)
@@ -111,8 +111,8 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 	require.NoError(t, err)
 	require.Equal(t, serviceAppendName+initialWorkloadName, serviceResp.ObjectMeta.Name)
 
-	cluster, snapshotName, postDeploymentResp, postServiceResp := snapshotV2Prov(t, client, podTemplate, deployment, clusterName, poolName, clusterID, localClusterID, clusterConfig, false, terraformOptions)
-	restoreV2Prov(t, client, clusterConfig, snapshotName, clusterName, poolName, cluster, clusterID, terraformOptions)
+	cluster, snapshotName, postDeploymentResp, postServiceResp := snapshotV2Prov(t, client, rancherConfig, terraformConfig, clusterConfig, podTemplate, deployment, clusterName, poolName, clusterID, localClusterID, false, terraformOptions)
+	restoreV2Prov(t, client, rancherConfig, terraformConfig, clusterConfig, snapshotName, clusterName, poolName, cluster, clusterID, terraformOptions)
 
 	_, err = steveclient.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
 	require.Error(t, err)
@@ -128,14 +128,14 @@ func snapshotRestore(t *testing.T, client *rancher.Client, clusterName, poolName
 	require.NoError(t, err)
 }
 
-func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, poolName, clusterID, localClusterID string,
-	clusterConfig *config.TerratestConfig, isRKE1 bool, terraformOptions *terraform.Options) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject) {
+func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, podTemplate corev1.PodTemplateSpec, deployment *v1.Deployment, clusterName, poolName, clusterID, localClusterID string,
+	isRKE1 bool, terraformOptions *terraform.Options) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject) {
 	existingSnapshots, err := etcdSnapshotExtensions.GetRKE2K3SSnapshots(client, clusterName)
 	require.NoError(t, err)
 
 	clusterConfig.SnapshotInput.CreateSnapshot = true
 
-	err = framework.ConfigTF(nil, clusterConfig, clusterName, poolName, "")
+	err = framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -183,7 +183,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 		clusterConfig.KubernetesVersion = clusterObject.Spec.KubernetesVersion
 		clusterConfig.SnapshotInput.CreateSnapshot = false
 
-		err = framework.ConfigTF(nil, clusterConfig, clusterName, poolName, "")
+		err = framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, clusterName, poolName, "")
 		require.NoError(t, err)
 
 		terraform.Apply(t, terraformOptions)
@@ -209,12 +209,12 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, podTemplate corev1.Pod
 	return cluster, snapshotToRestore, postDeploymentResp, postServiceResp
 }
 
-func restoreV2Prov(t *testing.T, client *rancher.Client, clusterConfig *config.TerratestConfig, snapshotName, clusterName, poolName string, cluster *apisV1.Cluster, clusterID string, terraformOptions *terraform.Options) {
+func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, snapshotName, clusterName, poolName string, cluster *apisV1.Cluster, clusterID string, terraformOptions *terraform.Options) {
 	clusterConfig.SnapshotInput.CreateSnapshot = false
 	clusterConfig.SnapshotInput.RestoreSnapshot = true
 	clusterConfig.SnapshotInput.SnapshotName = snapshotName
 
-	err := framework.ConfigTF(nil, clusterConfig, clusterName, poolName, "")
+	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

@@ -22,6 +22,7 @@ type KubernetesUpgradeHostedTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	clusterConfig    *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -36,6 +37,11 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 
 	k.client = client
 
+	rancherConfig := new(rancher.Config)
+	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
+
+	k.rancherConfig = rancherConfig
+
 	terraformConfig := new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
 
@@ -46,7 +52,7 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 
 	k.clusterConfig = clusterConfig
 
-	terraformOptions := framework.Setup(k.T())
+	terraformOptions := framework.Setup(k.T(), k.rancherConfig, k.terraformConfig, k.clusterConfig)
 	k.terraformOptions = terraformOptions
 }
 
@@ -66,10 +72,10 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		k.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
-			provisioning.Provision(k.T(), k.client, clusterName, poolName, k.clusterConfig, k.terraformOptions)
+			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, clusterName, poolName, k.terraformOptions, k.terraformConfig, k.clusterConfig)
+			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
 		})

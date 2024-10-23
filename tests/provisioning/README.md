@@ -34,6 +34,42 @@ terratest:
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   ```
 
+For provisioning with custom clusters, reference the example `terraform` config block below:
+
+```yaml
+terraform:
+  etcd:
+    disableSnapshot: false
+    snapshotCron: "0 */5 * * *"
+    snapshotRetention: 3
+  module: # select from: ec2_rke1_custom, ec2_rke2_custom or ec2_k3s_custom
+  hostnamePrefix: ""
+  machineConfigName: ""
+  cni: ""
+  cloudCredentialName: ""
+  enableNetworkPolicy: false
+  defaultClusterRoleForProjectMembers: user
+  privateKeyPath: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    awsKeyName: ""
+    ami: ""
+    awsInstanceType: ""
+    region: ""
+    awsSecurityGroups:
+      - ""
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    region: ""
+    awsUser: ""
+    sshConnectionType: "ssh"
+    sshTimeout: "5m"
+```
+
 See the below examples on how to run the tests:
 
 ### RKE1/RKE2/K3S
