@@ -12,8 +12,9 @@ import (
 
 // Scale is a function that will run terraform apply and scale the provisioned
 // cluster, according to user's desired amount.
-func Scale(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, clusterName, poolName string, terraformOptions *terraform.Options) {
-	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, clusterName, poolName, "")
+func Scale(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig,
+	testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options) {
+	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "")
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

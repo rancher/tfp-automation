@@ -36,7 +36,7 @@ func AuthConfig(terraformConfig *config.TerraformConfig) error {
 
 	defer file.Close()
 
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, true)
+	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, "", "", true)
 
 	rootBody.AppendNewline()
 

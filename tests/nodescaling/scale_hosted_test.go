@@ -6,7 +6,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -66,24 +65,23 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 	for _, tt := range tests {
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.clusterConfig.KubernetesVersion
 
-		clusterName := namegen.AppendRandomString(configs.TFP)
-		poolName := namegen.AppendRandomString(configs.TFP)
+		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 
-			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.clusterConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledUpNodepools
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
+			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.clusterConfig.ScalingInput.ScaledUpNodeCount)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledDownNodepools
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig, clusterName, poolName, s.terraformOptions)
+			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.clusterConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), s.client, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.clusterConfig.ScalingInput.ScaledDownNodeCount)
 		})

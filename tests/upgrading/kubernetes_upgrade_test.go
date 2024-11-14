@@ -6,7 +6,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -74,16 +73,15 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
 
-		clusterName := namegen.AppendRandomString(configs.TFP)
-		poolName := namegen.AppendRandomString(configs.TFP)
+		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		k.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
-			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, &clusterConfig, clusterName, poolName, k.terraformOptions)
+			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, &clusterConfig, clusterName, poolName, k.terraformOptions)
+			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
 				k.clusterConfig.UpgradedKubernetesVersion)
@@ -105,16 +103,15 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 	for _, tt := range tests {
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.clusterConfig.KubernetesVersion
 
-		clusterName := namegen.AppendRandomString(configs.TFP)
-		poolName := namegen.AppendRandomString(configs.TFP)
+		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		k.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
-			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, clusterName, poolName, k.terraformOptions)
+			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, clusterName, poolName, k.terraformOptions)
+			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
 				k.clusterConfig.UpgradedKubernetesVersion)

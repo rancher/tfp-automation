@@ -15,7 +15,7 @@ import (
 func Setup(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig) *terraform.Options {
 	keyPath := resources.SetKeyPath()
 
-	err := setFramework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, "", "", "")
+	err := setFramework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, "", "", "", "", "")
 	require.NoError(t, err)
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
