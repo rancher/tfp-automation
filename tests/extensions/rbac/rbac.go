@@ -12,8 +12,9 @@ import (
 
 // RBAC is a function that will run terraform apply to create users.
 func RBAC(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	clusterConfig *config.TerratestConfig, clusterName, poolName string, terraformOptions *terraform.Options, rbacRole config.Role) {
-	err := framework.ConfigTF(client, rancherConfig, terraformConfig, clusterConfig, clusterName, poolName, rbacRole)
+	clusterConfig *config.TerratestConfig, testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options,
+	rbacRole config.Role) {
+	err := framework.ConfigTF(client, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, rbacRole)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

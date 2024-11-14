@@ -20,8 +20,8 @@ import (
 )
 
 // ConfigTF is a function that will set the main.tf file based on the module type.
-func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, clusterName, poolName string, rbacRole config.Role) error {
-
+func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig,
+	testUser, testPassword, clusterName, poolName string, rbacRole config.Role) error {
 	module := terraformConfig.Module
 
 	var file *os.File
@@ -35,7 +35,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 
 	defer file.Close()
 
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, false)
+	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, testUser, testPassword, false)
 
 	rootBody.AppendNewline()
 

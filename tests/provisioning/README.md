@@ -34,7 +34,7 @@ terratest:
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   ```
 
-For provisioning with custom clusters, reference the example `terraform` config block below:
+For provisioning with custom clusters, reference the example config block below:
 
 ```yaml
 terraform:
@@ -68,6 +68,8 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     sshTimeout: "5m"
+terratest:
+  nodeCount: 3
 ```
 
 See the below examples on how to run the tests:

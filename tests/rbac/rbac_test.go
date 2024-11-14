@@ -6,7 +6,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -79,13 +78,12 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			clusterConfig := *r.clusterConfig
 			clusterConfig.Nodepools = nodeRolesDedicated
 
-			clusterName := namegen.AppendRandomString(configs.TFP)
-			poolName := namegen.AppendRandomString(configs.TFP)
+			testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
-			provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, clusterName, poolName, r.terraformOptions)
+			provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions)
 			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
 
-			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, clusterName, poolName, r.terraformOptions, tt.rbacRole)
+			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, tt.rbacRole)
 		})
 	}
 

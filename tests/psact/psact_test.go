@@ -6,7 +6,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -78,13 +77,12 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.clusterConfig.KubernetesVersion
 
-		clusterName := namegen.AppendRandomString(configs.TFP)
-		poolName := namegen.AppendRandomString(configs.TFP)
+		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
 
-			provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &clusterConfig, clusterName, poolName, p.terraformOptions)
+			provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions)
 			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}

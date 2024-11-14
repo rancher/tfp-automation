@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
-	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
@@ -36,23 +34,47 @@ const (
 )
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
-func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, authProvider bool) (*hclwrite.File, *hclwrite.Body) {
+func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, testUser, testPassword string, authProvider bool) (*hclwrite.File, *hclwrite.Body) {
+	providerVersion, awsProviderVersion, localProviderVersion, source := getProviderVersions(terraformConfig)
+
+	newFile := hclwrite.NewEmptyFile()
+	rootBody := newFile.Body()
+
+	createRequiredProviders(rootBody, terraformConfig, awsProviderVersion, localProviderVersion, providerVersion, source)
+
+	rootBody.AppendNewline()
+
+	createProvider(rootBody, rancherConfig)
+
+	createUser(rootBody, testUser, testPassword)
+
+	if !authProvider {
+		createGlobalRoleBinding(rootBody, testUser, userID)
+	}
+
+	return newFile, rootBody
+}
+
+// getProviderVersions returns the versions for the providers based on environment variables.
+func getProviderVersions(terraformConfig *config.TerraformConfig) (string, string, string, string) {
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
-	var awsProviderVersion string
-	var localProviderVersion string
+	var awsProviderVersion, localProviderVersion string
 
 	if strings.Contains(terraformConfig.Module, "custom") {
 		awsProviderVersion = os.Getenv("AWS_PROVIDER_VERSION")
 		localProviderVersion = os.Getenv("LOCALS_PROVIDER_VERSION")
 	}
+
 	source := "rancher/rancher2"
 	if strings.Contains(providerVersion, rc) {
 		source = "terraform.local/local/rancher2"
 	}
 
-	newFile := hclwrite.NewEmptyFile()
-	rootBody := newFile.Body()
+	return providerVersion, awsProviderVersion, localProviderVersion, source
+}
 
+// createRequiredProviders creates the required_providers block.
+func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, awsProviderVersion, localProviderVersion, providerVersion, source string) {
 	tfBlock := rootBody.AppendNewBlock(terraform, nil)
 	tfBlockBody := tfBlock.Body()
 
@@ -76,8 +98,6 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 		version:       cty.StringVal(providerVersion),
 	}))
 
-	rootBody.AppendNewline()
-
 	if strings.Contains(terraformConfig.Module, defaults.Custom) {
 		awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
 		awsProvBlockBody := awsProvBlock.Body()
@@ -87,47 +107,47 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 		awsProvBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 
 		rootBody.AppendNewline()
-
 		rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Local})
-
 		rootBody.AppendNewline()
 	}
+}
 
+// createProvider creates a provider block for the given rancher config.
+func createProvider(rootBody *hclwrite.Body, rancherConfig *rancher.Config) {
 	provBlock := rootBody.AppendNewBlock(provider, []string{rancher2})
 	provBlockBody := provBlock.Body()
 
-	provBlockBody.SetAttributeValue(apiURL, cty.StringVal(`https://`+rancherConfig.Host))
+	provBlockBody.SetAttributeValue(apiURL, cty.StringVal("https://"+rancherConfig.Host))
 	provBlockBody.SetAttributeValue(tokenKey, cty.StringVal(rancherConfig.AdminToken))
 	provBlockBody.SetAttributeValue(insecure, cty.BoolVal(*rancherConfig.Insecure))
 
 	rootBody.AppendNewline()
+}
 
-	var testuser = namegen.AppendRandomString("testuser")
-	var testpassword = password.GenerateUserPassword("testpass")
-
+// createUser creates the user block for a new user.
+func createUser(rootBody *hclwrite.Body, testUser, testpassword string) {
 	userBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherUser, rancherUser})
 	userBlockBody := userBlock.Body()
 
-	userBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
-	userBlockBody.SetAttributeValue(username, cty.StringVal(testuser))
+	userBlockBody.SetAttributeValue(name, cty.StringVal(testUser))
+	userBlockBody.SetAttributeValue(username, cty.StringVal(testUser))
 	userBlockBody.SetAttributeValue(testPassword, cty.StringVal(testpassword))
 	userBlockBody.SetAttributeValue(defaults.Enabled, cty.BoolVal(true))
 
 	rootBody.AppendNewline()
+}
 
-	if !authProvider {
-		globalRoleBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{globalRoleBinding, globalRoleBinding})
-		globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
+// createGlobalRoleBinding creates a global role binding block for the given user.
+func createGlobalRoleBinding(rootBody *hclwrite.Body, testUser string, userID string) {
+	globalRoleBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{globalRoleBinding, globalRoleBinding})
+	globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
 
-		globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
-		globalRoleBindingBlockBody.SetAttributeValue(globalRoleID, cty.StringVal(user))
+	globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testUser))
+	globalRoleBindingBlockBody.SetAttributeValue(globalRoleID, cty.StringVal(user))
 
-		standardUser := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(rancherUser + "." + rancherUser + ".id")},
-		}
-
-		globalRoleBindingBlockBody.SetAttributeRaw(userID, standardUser)
+	standardUser := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancherUser + "." + rancherUser + ".id")},
 	}
 
-	return newFile, rootBody
+	globalRoleBindingBlockBody.SetAttributeRaw(userID, standardUser)
 }
