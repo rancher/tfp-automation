@@ -4,7 +4,7 @@ type Config struct {
 	Boot2dockerURL         string   `json:"boot2dockerURL,omitempty" yaml:"boot2dockerURL,omitempty"`
 	Cfgparam               []string `json:"cfgparam,omitempty" yaml:"cfgparam,omitempty"`
 	CloneFrom              string   `json:"cloneFrom,omitempty" yaml:"cloneFrom,omitempty"`
-	CloudConfig            string   `json:"cloudConfigv" yaml:"cloudConfig,omitempty"`
+	CloudConfig            string   `json:"cloudConfig" yaml:"cloudConfig,omitempty"`
 	Cloudinit              string   `json:"cloudinit,omitempty" yaml:"cloudinit,omitempty"`
 	ContentLibrary         string   `json:"contentLibrary,omitempty" yaml:"contentLibrary,omitempty"`
 	CPUCount               string   `json:"cpuCount,omitempty" yaml:"cpuCount,omitempty"`
