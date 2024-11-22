@@ -100,6 +100,22 @@ type PrivateRegistries struct {
 	SystemDefaultRegistry  string `json:"systemDefaultRegistry,omitempty" yaml:"systemDefaultRegistry,omitempty"`
 }
 
+type Standalone struct {
+	BootstrapPassword        string `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
+	CertManagerVersion       string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
+	RancherChartVersion      string `json:"rancherChartVersion,omitempty" yaml:"rancherChartVersion,omitempty"`
+	RancherChartRepository   string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
+	RancherHostname          string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
+	RancherRepo              string `json:"rancherRepo,omitempty" yaml:"rancherRepo,omitempty"`
+	RancherTagVersion        string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
+	RKE2Group                string `json:"rke2Group,omitempty" yaml:"rke2Group,omitempty"`
+	RKE2User                 string `json:"rke2User,omitempty" yaml:"rke2User,omitempty"`
+	RKE2Version              string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
+	StagingRancherImage      string `json:"stagingRancherImage,omitempty" yaml:"stagingRancherImage,omitempty"`
+	StagingRancherAgentImage string `json:"stagingRancherAgentImage,omitempty" yaml:"stagingRancherAgentImage,omitempty"`
+	Type                     string `json:"type,omitempty" yaml:"type,omitempty"`
+}
+
 type TerraformConfig struct {
 	AWSConfig                           aws.Config                   `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
 	AWSCredentials                      aws.Credentials              `json:"awsCredentials,omitempty" yaml:"awsCredentials,omitempty"`
@@ -130,6 +146,7 @@ type TerraformConfig struct {
 	NodeTemplateName                    string                       `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
 	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
+	Standalone                          *Standalone                  `json:"standalone,omitempty" yaml:"standalone,omitempty"`
 }
 
 type Scaling struct {

@@ -15,7 +15,7 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 	clusterSyncNodePoolIDs, poolName string, terraformConfig *config.TerraformConfig) error {
 	poolNum := strconv.Itoa(count)
 
-	_, err := resources.SetResourceNodepoolValidation(pool, poolNum)
+	_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
 	if err != nil {
 		return err
 	}

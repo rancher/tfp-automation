@@ -41,20 +41,20 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 
 	switch {
 	case module == clustertypes.AKS:
-		err = hosted.SetAKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
+		err = hosted.SetAKS(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
 		return err
 	case module == clustertypes.EKS:
-		err = hosted.SetEKS(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
+		err = hosted.SetEKS(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
 		return err
 	case module == clustertypes.GKE:
-		err = hosted.SetGKE(clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
+		err = hosted.SetGKE(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
 		return err
 	case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom):
-		err = nodedriver.SetRKE1(clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
+		err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
 			clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 		return err
 	case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom):
-		err = nodedriverV2.SetRKE2K3s(client, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
+		err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
 			clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 		return err
 	case module == modules.CustomEC2RKE1:

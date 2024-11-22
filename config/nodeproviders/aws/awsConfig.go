@@ -10,9 +10,11 @@ type Config struct {
 	AWSSubnetID           string   `json:"awsSubnetID,omitempty" yaml:"awsSubnetID,omitempty"`
 	AWSSubnets            []string `json:"awsSubnets,omitempty" yaml:"awsSubnets,omitempty"`
 	AWSVpcID              string   `json:"awsVpcID,omitempty" yaml:"awsVpcID,omitempty"`
+	AWSRoute53Zone        string   `json:"awsRoute53Zone,omitempty" yaml:"awsRoute53Zone,omitempty"`
 	AWSZoneLetter         string   `json:"awsZoneLetter,omitempty" yaml:"awsZoneLetter,omitempty"`
 	PrivateAccess         bool     `json:"privateAccess,omitempty" yaml:"privateAccess,omitempty"`
 	PublicAccess          bool     `json:"publicAccess,omitempty" yaml:"publicAccess,omitempty"`
 	Region                string   `json:"region,omitempty" yaml:"region,omitempty"`
 	AWSUser               string   `json:"awsUser,omitempty" yaml:"awsUser,omitempty"`
+	Timeout               string   `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 }

@@ -6,9 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
@@ -48,11 +46,8 @@ const (
 )
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
-func SetRKE1(clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
+func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) error {
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(configs.Terraform, terraformConfig)
-
 	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, nodeTemplate})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
 

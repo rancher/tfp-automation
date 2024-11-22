@@ -4,17 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/configs"
 )
 
 // SetResourceNodepoolValidation is a function that will validate the nodepool configurations.
-func SetResourceNodepoolValidation(pool config.Nodepool, poolNum string) (bool, error) {
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(configs.Terraform, terraformConfig)
-
+func SetResourceNodepoolValidation(terraformConfig *config.TerraformConfig, pool config.Nodepool, poolNum string) (bool, error) {
 	module := terraformConfig.Module
 
 	switch {

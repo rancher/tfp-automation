@@ -1,12 +1,13 @@
 FROM golang:1.22
 
-RUN mkdir -p /.cache && chmod -R 777 /.cache
+ENV GOPATH /root/go
+ENV PATH ${PATH}:/root/go/bin
 
-WORKDIR /usr/app/src
+ENV WORKSPACE ${GOPATH}/src/github.com/rancher/tfp-automation
 
-COPY [".", "$WORKDIR"]
+WORKDIR $WORKSPACE
 
-ADD ./* ./
+COPY . ./
 SHELL ["/bin/bash", "-c"]
 
 RUN go mod download && \
@@ -16,6 +17,13 @@ ARG TERRAFORM_VERSION
 ARG EXTERNAL_ENCODED_VPN
 ARG VPN_ENCODED_LOGIN
 ARG RANCHER2_PROVIDER_VERSION
+ARG LOCALS_PROVIDER_VERSION
+ARG AWS_PROVIDER_VERSION
+
+ENV TERRAFORM_VERSION=${TERRAFORM_VERSION}
+ENV RANCHER2_PROVIDER_VERSION=${RANCHER2_PROVIDER_VERSION}
+ENV LOCALS_PROVIDER_VERSION=${LOCALS_PROVIDER_VERSION}
+ENV AWS_PROVIDER_VERSION=${AWS_PROVIDER_VERSION}
 
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && apt-get update && apt-get install unzip && \
     unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \ 

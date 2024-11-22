@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
@@ -53,11 +52,8 @@ const (
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
-func SetRKE2K3s(client *rancher.Client, clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) error {
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
-
+func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig, clusterName, poolName, k8sVersion, psact string,
+	nodePools []config.Nodepool, snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) error {
 	switch {
 	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
 		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
@@ -117,7 +113,7 @@ func SetRKE2K3s(client *rancher.Client, clusterName, poolName, k8sVersion, psact
 	rkeConfigBlockBody := rkeConfigBlock.Body()
 
 	for count, pool := range nodePools {
-		setMachinePool(nodePools, count, pool, rkeConfigBlockBody, poolName)
+		setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody, poolName)
 	}
 
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {

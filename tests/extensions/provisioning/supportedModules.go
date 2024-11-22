@@ -2,18 +2,13 @@ package provisioning
 
 import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
 )
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
-func SupportedModules(terraformOptions *terraform.Options) bool {
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(configs.Terraform, terraformConfig)
-
+func SupportedModules(terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options) bool {
 	module := terraformConfig.Module
 	supportedModules := []string{
 		clustertypes.AKS,
