@@ -139,9 +139,11 @@ type TerraformConfig struct {
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
+	ClusterName                         string                       `json:"clusterName,omitempty" yaml:"clusterName,omitempty"`
 	HostnamePrefix                      string                       `json:"hostnamePrefix,omitempty" yaml:"hostnamePrefix,omitempty"`
 	MachineConfigName                   string                       `json:"machineConfigName,omitempty" yaml:"machineConfigName,omitempty"`
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
+	MultiCluster                        bool                         `json:"multiCluster,omitempty" yaml:"multiCluster,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
 	NodeTemplateName                    string                       `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`

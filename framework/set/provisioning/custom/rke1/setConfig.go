@@ -14,23 +14,31 @@ import (
 )
 
 // SetCustomRKE1 is a function that will set the custom RKE1 cluster configurations in the main.tf file.
-func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, clusterName string,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
-	providers.SetCustomProviders(rancherConfig, terraformConfig)
+func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, configMap []map[string]any, clusterName string,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+	if terraformConfig.MultiCluster {
+		instances.SetAwsInstances(rootBody, terraformConfig, clusterConfig, clusterName)
 
-	instances.SetAwsInstances(rootBody, terraformConfig, clusterConfig)
+		setRancher2Cluster(rootBody, terraformConfig, clusterName)
 
-	setRancher2Cluster(rootBody, terraformConfig, clusterName)
+		nullresource.SetNullResource(rootBody, terraformConfig, clusterName)
+	} else {
+		providers.SetCustomProviders(rancherConfig, terraformConfig)
 
-	nullresource.SetNullResource(rootBody, terraformConfig, clusterName)
+		instances.SetAwsInstances(rootBody, terraformConfig, clusterConfig, clusterName)
 
-	locals.SetLocals(rootBody, terraformConfig, clusterName)
+		setRancher2Cluster(rootBody, terraformConfig, clusterName)
+
+		nullresource.SetNullResource(rootBody, terraformConfig, clusterName)
+
+		locals.SetLocals(rootBody, terraformConfig, configMap, clusterName, newFile, file, nil)
+	}
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write custom RKE1 configurations to main.tf file. Error: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return file, nil
 }

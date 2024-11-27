@@ -12,8 +12,8 @@ import (
 )
 
 // SetAwsInstances is a function that will set the AWS instances configurations in the main.tf file.
-func SetAwsInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig) error {
-	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, defaults.AwsInstance})
+func SetAwsInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, clusterName string) error {
+	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, clusterName})
 	configBlockBody := configBlock.Body()
 
 	configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(clusterConfig.NodeCount))

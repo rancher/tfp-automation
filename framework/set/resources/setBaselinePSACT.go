@@ -28,7 +28,7 @@ const (
 )
 
 // SetCustomPSACT is a function that will set the Custom PSACT configurations in the main.tf file.
-func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body) (*hclwrite.File, *hclwrite.Body) {
+func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body, clusterName string) (*hclwrite.File, *hclwrite.Body) {
 	exemptionsNamespaces := []string{
 		"ingress-nginx",
 		"kube-system",
@@ -52,7 +52,7 @@ func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body) (*hclwrit
 		"tigera-operator",
 	}
 
-	psactBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.PodSecurityAdmission, defaults.PodSecurityAdmission})
+	psactBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.PodSecurityAdmission, clusterName})
 	psactBlockBody := psactBlock.Body()
 
 	psactBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(defaults.RancherBaseline))

@@ -13,6 +13,7 @@ import (
 	custom "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
 	customV2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/hosted"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/multiclusters"
 	nodedriver "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke1"
 	nodedriverV2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources"
@@ -21,7 +22,7 @@ import (
 
 // ConfigTF is a function that will set the main.tf file based on the module type.
 func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig,
-	testUser, testPassword, clusterName, poolName string, rbacRole config.Role) error {
+	testUser, testPassword, clusterName, poolName string, rbacRole config.Role, configMap []map[string]any) error {
 	module := terraformConfig.Module
 
 	var file *os.File
@@ -35,37 +36,42 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 
 	defer file.Close()
 
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, testUser, testPassword, false)
+	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, testUser, testPassword, false, configMap)
 
 	rootBody.AppendNewline()
 
-	switch {
-	case module == clustertypes.AKS:
-		err = hosted.SetAKS(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
+	if terraformConfig.MultiCluster {
+		err = multiclusters.SetMultiCluster(client, rancherConfig, configMap, clusterName, newFile, rootBody, file, rbacRole, poolName)
 		return err
-	case module == clustertypes.EKS:
-		err = hosted.SetEKS(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
-		return err
-	case module == clustertypes.GKE:
-		err = hosted.SetGKE(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
-		return err
-	case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom):
-		err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
-			clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
-		return err
-	case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom):
-		err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
-			clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
-		return err
-	case module == modules.CustomEC2RKE1:
-		err = custom.SetCustomRKE1(rancherConfig, terraformConfig, clusterConfig, clusterName, newFile, rootBody, file)
-		return err
-	case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s:
-		err = customV2.SetCustomRKE2K3s(rancherConfig, terraformConfig, clusterConfig, clusterName, newFile, rootBody, file)
-		return err
-	default:
-		logrus.Errorf("Unsupported module: %v", module)
-	}
+	} else {
+		switch {
+		case module == clustertypes.AKS:
+			_, err = hosted.SetAKS(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
+			return err
+		case module == clustertypes.EKS:
+			_, err = hosted.SetEKS(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
+			return err
+		case module == clustertypes.GKE:
+			_, err = hosted.SetGKE(terraformConfig, clusterName, clusterConfig.KubernetesVersion, clusterConfig.Nodepools, newFile, rootBody, file)
+			return err
+		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom):
+			_, err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
+				clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
+			return err
+		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom):
+			_, err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, clusterConfig.KubernetesVersion, clusterConfig.PSACT, clusterConfig.Nodepools,
+				clusterConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
+			return err
+		case module == modules.CustomEC2RKE1:
+			_, err = custom.SetCustomRKE1(rancherConfig, terraformConfig, clusterConfig, nil, clusterName, newFile, rootBody, file)
+			return err
+		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s:
+			_, err = customV2.SetCustomRKE2K3s(rancherConfig, terraformConfig, clusterConfig, nil, clusterName, newFile, rootBody, file)
+			return err
+		default:
+			logrus.Errorf("Unsupported module: %v", module)
+		}
 
-	return nil
+		return nil
+	}
 }

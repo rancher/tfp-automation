@@ -47,8 +47,9 @@ const (
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
 func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) error {
-	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, nodeTemplate})
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*os.File, error) {
+
+	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, clusterName})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
 
 	nodeTemplateBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.NodeTemplateName))
@@ -73,22 +74,22 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	rootBody.AppendNewline()
 
 	if strings.Contains(psact, defaults.RancherBaseline) {
-		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody)
+		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, clusterName)
 
 		rootBody.AppendNewline()
 	}
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, defaults.Cluster})
+	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, clusterName})
 	clusterBlockBody := clusterBlock.Body()
 
 	dependsOnTemp := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + nodeTemplate + "]")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + clusterName + "]")},
 	}
 
 	if psact == defaults.RancherBaseline {
 		dependsOnTemp = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + nodeTemplate + "," +
-				defaults.PodSecurityAdmission + "." + defaults.PodSecurityAdmission + "]")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + clusterName + "," +
+				defaults.PodSecurityAdmission + "." + clusterName + "]")},
 		}
 	}
 
@@ -129,23 +130,23 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	clusterSyncNodePoolIDs := ""
 
 	for count, pool := range nodePools {
-		setNodePool(nodePools, count, pool, rootBody, clusterSyncNodePoolIDs, poolName, terraformConfig)
+		setNodePool(nodePools, count, pool, rootBody, clusterSyncNodePoolIDs, poolName, terraformConfig, clusterName)
 	}
 
-	setClusterSync(rootBody, clusterSyncNodePoolIDs)
+	setClusterSync(rootBody, clusterSyncNodePoolIDs, clusterName)
 
 	rootBody.AppendNewline()
 
 	if rbacRole != "" {
 		user, err := rbac.SetUsers(newFile, rootBody, rbacRole)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		rootBody.AppendNewline()
 
 		cluster := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + defaults.Cluster + ".id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + clusterName + ".id")},
 		}
 
 		if strings.Contains(string(rbacRole), project) {
@@ -158,8 +159,8 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write RKE1 configurations to main.tf file. Error: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return file, nil
 }

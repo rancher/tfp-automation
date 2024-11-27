@@ -12,7 +12,7 @@ import (
 )
 
 func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, rootBody *hclwrite.Body,
-	clusterSyncNodePoolIDs, poolName string, terraformConfig *config.TerraformConfig) error {
+	clusterSyncNodePoolIDs, poolName string, terraformConfig *config.TerraformConfig, clusterName string) error {
 	poolNum := strconv.Itoa(count)
 
 	_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
@@ -20,17 +20,17 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 		return err
 	}
 
-	nodePoolBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherNodePool, defaults.NodePool + poolNum})
+	nodePoolBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherNodePool, clusterName + defaults.NodePool + poolNum})
 	nodePoolBlockBody := nodePoolBlock.Body()
 
 	dependsOnCluster := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.Cluster + "." + defaults.Cluster + "]")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.Cluster + "." + clusterName + "]")},
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnCluster)
 
 	clusterID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + defaults.Cluster + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + clusterName + ".id")},
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(defaults.RancherClusterID, clusterID)
@@ -38,7 +38,7 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 	nodePoolBlockBody.SetAttributeValue(hostnamePrefix, cty.StringVal(terraformConfig.HostnamePrefix+"-"+poolName+poolNum))
 
 	nodeTempID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(nodeTemplate + "." + nodeTemplate + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(nodeTemplate + "." + clusterName + ".id")},
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(nodeTemplateID, nodeTempID)
@@ -50,11 +50,11 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 	rootBody.AppendNewline()
 
 	if count != len(nodePools) {
-		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + defaults.NodePool + poolNum + ".id, "
+		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + clusterName + poolNum + ".id, "
 	}
 
 	if count == len(nodePools) {
-		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + defaults.NodePool + poolNum + ".id"
+		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + clusterName + poolNum + ".id"
 	}
 
 	return nil
