@@ -34,13 +34,13 @@ const (
 )
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
-func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, testUser, testPassword string, authProvider bool) (*hclwrite.File, *hclwrite.Body) {
+func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, testUser, testPassword string, authProvider bool, configMap []map[string]any) (*hclwrite.File, *hclwrite.Body) {
 	providerVersion, awsProviderVersion, localProviderVersion, source := getProviderVersions(terraformConfig)
 
 	newFile := hclwrite.NewEmptyFile()
 	rootBody := newFile.Body()
 
-	createRequiredProviders(rootBody, terraformConfig, awsProviderVersion, localProviderVersion, providerVersion, source)
+	createRequiredProviders(rootBody, terraformConfig, awsProviderVersion, localProviderVersion, providerVersion, source, configMap)
 
 	rootBody.AppendNewline()
 
@@ -60,7 +60,7 @@ func getProviderVersions(terraformConfig *config.TerraformConfig) (string, strin
 	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
 	var awsProviderVersion, localProviderVersion string
 
-	if strings.Contains(terraformConfig.Module, "custom") {
+	if strings.Contains(terraformConfig.Module, "custom") || terraformConfig.MultiCluster {
 		awsProviderVersion = os.Getenv("AWS_PROVIDER_VERSION")
 		localProviderVersion = os.Getenv("LOCALS_PROVIDER_VERSION")
 	}
@@ -74,14 +74,26 @@ func getProviderVersions(terraformConfig *config.TerraformConfig) (string, strin
 }
 
 // createRequiredProviders creates the required_providers block.
-func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, awsProviderVersion, localProviderVersion, providerVersion, source string) {
+func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, awsProviderVersion, localProviderVersion, providerVersion, source string, configMap []map[string]any) {
 	tfBlock := rootBody.AppendNewBlock(terraform, nil)
 	tfBlockBody := tfBlock.Body()
 
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+	customModule := false
+
+	if terraformConfig.MultiCluster {
+		for _, clusterConfig := range configMap {
+			module := clusterConfig["terraform"].(config.TerraformConfig).Module
+
+			if strings.Contains(module, defaults.Custom) {
+				customModule = true
+			}
+		}
+	}
+
+	if strings.Contains(terraformConfig.Module, defaults.Custom) || customModule {
 		reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(defaults.AwsSource),
 			defaults.Version: cty.StringVal(awsProviderVersion),

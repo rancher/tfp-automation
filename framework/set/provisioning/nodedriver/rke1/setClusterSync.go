@@ -7,12 +7,12 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func setClusterSync(rootBody *hclwrite.Body, clusterSyncNodePoolIDs string) error {
-	clusterSyncBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterSync, clusterSync})
+func setClusterSync(rootBody *hclwrite.Body, clusterSyncNodePoolIDs string, clusterName string) error {
+	clusterSyncBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterSync, clusterName})
 	clusterSyncBlockBody := clusterSyncBlock.Body()
 
 	clusterID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + defaults.Cluster + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + clusterName + ".id")},
 	}
 
 	clusterSyncBlockBody.SetAttributeRaw(defaults.RancherClusterID, clusterID)

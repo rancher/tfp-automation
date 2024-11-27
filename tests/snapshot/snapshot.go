@@ -96,7 +96,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	terraformOptions *terraform.Options) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
 	clusterConfig.SnapshotInput.CreateSnapshot = true
 
-	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "")
+	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "", nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -131,7 +131,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 	clusterConfig.SnapshotInput.RestoreSnapshot = true
 	clusterConfig.SnapshotInput.SnapshotName = snapshotName
 
-	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "")
+	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "", nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -192,7 +192,7 @@ func upgradeCluster(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	clusterConfig.KubernetesVersion = clusterObject.Spec.KubernetesVersion
 	clusterConfig.SnapshotInput.CreateSnapshot = false
 
-	err = framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "")
+	err = framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "", nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

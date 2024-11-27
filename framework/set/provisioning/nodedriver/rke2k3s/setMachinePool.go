@@ -11,7 +11,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body, poolName string) error {
+func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body,
+	poolName, clusterName string) error {
 	poolNum := strconv.Itoa(count)
 
 	_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
@@ -22,10 +23,10 @@ func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool con
 	machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock(defaults.MachinePools, nil)
 	machinePoolsBlockBody := machinePoolsBlock.Body()
 
-	machinePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(poolName+poolNum))
+	machinePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName+poolName+poolNum))
 
 	cloudCredSecretName := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + defaults.CloudCredential + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + clusterName + ".id")},
 	}
 
 	machinePoolsBlockBody.SetAttributeRaw(cloudCredentialSecretName, cloudCredSecretName)
@@ -38,13 +39,13 @@ func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool con
 	machineConfigBlockBody := machineConfigBlock.Body()
 
 	kind := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + machineConfigV2 + ".kind")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + clusterName + ".kind")},
 	}
 
 	machineConfigBlockBody.SetAttributeRaw(defaults.ResourceKind, kind)
 
 	name := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + machineConfigV2 + ".name")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + clusterName + ".name")},
 	}
 
 	machineConfigBlockBody.SetAttributeRaw(defaults.ResourceName, name)

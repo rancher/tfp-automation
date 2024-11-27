@@ -59,8 +59,8 @@ func SetVsphereRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfi
 }
 
 // SetVsphereRKE2K3SProvider is a helper function that will set the Vsphere RKE2/K3S Terraform provider details in the main.tf file.
-func SetVsphereRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	cloudCredBlock := rootBody.AppendNewBlock(resource, []string{cloudCredential, cloudCredential})
+func SetVsphereRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) {
+	cloudCredBlock := rootBody.AppendNewBlock(resource, []string{cloudCredential, clusterName})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
 	cloudCredBlockBody.SetAttributeValue(resourceName, cty.StringVal(terraformConfig.CloudCredentialName))

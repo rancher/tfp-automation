@@ -73,7 +73,7 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.clusterConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.clusterConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
 			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, s.clusterConfig)
 
 			s.clusterConfig.Nodepools = s.clusterConfig.ScalingInput.ScaledUpNodepools

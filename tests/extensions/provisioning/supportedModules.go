@@ -8,8 +8,22 @@ import (
 )
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
-func SupportedModules(terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options) bool {
-	module := terraformConfig.Module
+func SupportedModules(terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, configMap []map[string]any) bool {
+	var isSupported bool
+	if configMap != nil {
+		for _, clusterConfig := range configMap {
+			module := clusterConfig["terraform"].(config.TerraformConfig).Module
+			isSupported = verifyModule(module)
+		}
+	} else {
+		module := terraformConfig.Module
+		isSupported = verifyModule(module)
+	}
+
+	return isSupported
+}
+
+func verifyModule(module string) bool {
 	supportedModules := []string{
 		clustertypes.AKS,
 		clustertypes.EKS,

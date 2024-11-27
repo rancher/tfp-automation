@@ -53,33 +53,33 @@ const (
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
 func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig, clusterName, poolName, k8sVersion, psact string,
-	nodePools []config.Nodepool, snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) error {
+	nodePools []config.Nodepool, snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*os.File, error) {
 	switch {
 	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
-		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
+		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig, clusterName)
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
-		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig)
+		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig, clusterName)
 	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
-		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig)
+		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig, clusterName)
 	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:
-		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig)
+		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig, clusterName)
 	}
 
 	rootBody.AppendNewline()
 
 	if strings.Contains(psact, defaults.RancherBaseline) {
-		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody)
+		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, clusterName)
 
 		rootBody.AppendNewline()
 	}
 
-	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, machineConfigV2})
+	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, clusterName})
 	machineConfigBlockBody := machineConfigBlock.Body()
 
 	if psact == defaults.RancherBaseline {
 		dependsOnTemp := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.PodSecurityAdmission + "." +
-				defaults.PodSecurityAdmission + "]")},
+				clusterName + "]")},
 		}
 
 		machineConfigBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnTemp)
@@ -100,7 +100,7 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, clusterV2})
+	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, clusterName})
 	clusterBlockBody := clusterBlock.Body()
 
 	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
@@ -113,7 +113,7 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	rkeConfigBlockBody := rkeConfigBlock.Body()
 
 	for count, pool := range nodePools {
-		setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody, poolName)
+		setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody, poolName, clusterName)
 	}
 
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
@@ -148,7 +148,7 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	if rbacRole != "" {
 		user, err := rbac.SetUsers(newFile, rootBody, rbacRole)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		rootBody.AppendNewline()
@@ -163,8 +163,8 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write RKE2/K3S configurations to main.tf file. Error: %v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return file, nil
 }
