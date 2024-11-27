@@ -1,12 +1,16 @@
 #!groovy
 node {
-  def rootPath = pwd() + "/"
-  def testsDir = "./tests/${env.TEST_PACKAGE}"
+  def homePath = pwd() + "/"
+  def rootPath = "/root/go/src/github.com/rancher/tfp-automation/"
+  def testsDir = "github.com/rancher/tfp-automation/tests/${env.TEST_PACKAGE}"
+  def standaloneTestsDir = "github.com/rancher/tfp-automation/standalone/tests/${env.TEST_PACKAGE}"
   def job_name = "${JOB_NAME}"
   if (job_name.contains('/')) { 
     job_names = job_name.split('/')
     job_name = job_names[job_names.size() - 1] 
   }
+  def testContainer = "${job_name}${env.BUILD_NUMBER}_test"
+  def imageName = "tfp-automation-validation-${job_name}${env.BUILD_NUMBER}"
   def testResultsOut = "results.xml"
   def testResultsJSON = "results.json"
   def branch = "${env.BRANCH}"
@@ -50,43 +54,44 @@ node {
                     userRemoteConfigs: repo
                   ])
         }
-    stage('Configure and Build') {
+        try {
+          stage('Configure and Build') {
             writeFile file: 'config.yml', text: env.CONFIG
             writeFile file: 'key.pem', text: params.PEM_FILE
             env.CATTLE_TEST_CONFIG=rootPath+'config.yml'
-            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PEM_FILE=key.pem --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} --build-arg LOCALS_PROVIDER_VERSION=${localProviderVersion} --build-arg AWS_PROVIDER_VERSION=${awsProviderVersion} -f Dockerfile -t tfp-automation . "
-    }
-    stage('Run Module Test') {
+            sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PEM_FILE=key.pem --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} --build-arg LOCALS_PROVIDER_VERSION=${localProviderVersion} --build-arg AWS_PROVIDER_VERSION=${awsProviderVersion} -f Dockerfile -t ${imageName} . "
+          }
+          stage('Run Module Test') {
+            def testPackage = env.TEST_PACKAGE?.trim()
             def testResultsDir = rootPath+"results"
             sh "mkdir -p ${testResultsDir}"
-            def dockerImage = docker.image('tfp-automation')
-            if (rancher2ProviderVersion.contains("rc")) {
-              dockerImage.inside("-u root -v ${testResultsDir}:/results") {
-                try { 
-                    sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
-                 } catch(err) {
-                   echo 'Test run had failures. Collecting results...'
-                 }
-                 sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
-                 if (fileExists("${rootPath}reporter")) {
-                   sh "${rootPath}reporter"
-                 } 
+            try {
+                if (testPackage?.toLowerCase().contains("sanity")) {
+                  sh "docker run --name ${testContainer} -t -e CATTLE_TEST_CONFIG=${rootPath}config.yml -v ${homePath}key.pem:${rootPath}key.pem " +
+                  "${imageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${standaloneTestsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};" +
+                  "${rootPath}pipeline/scripts/build_qase_reporter.sh;" +
+                  "${rootPath}reporter\""
+                } else {
+                  sh "docker run --name ${testContainer} -t -e CATTLE_TEST_CONFIG=${rootPath}config.yml -v ${homePath}key.pem:${rootPath}key.pem " +
+                  "${imageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};" +
+                  "${rootPath}pipeline/scripts/build_qase_reporter.sh;" +
+                  "${rootPath}reporter\""
                 }
-              }
-            else {
-              dockerImage.inside("-v ${testResultsDir}:/results") {
-                try {
-                    sh "gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE}"
-                } catch(err) {
-                  echo 'Test run had failures. Collecting results...'
-                }
-                sh "${rootPath}pipeline/scripts/build_qase_reporter.sh"
-                if (fileExists("${rootPath}reporter")) {
-                  sh "${rootPath}reporter"
-                }       
-              }
+            } catch(err) {
+                echo 'Test run had failures. Collecting results...'
             }
+          }
+          stage('Test Report') {
+            sh "docker cp ${testContainer}:${rootPath}results/${testResultsOut} ."
             step([$class: 'JUnitResultArchiver', testResults: "**/results/${testResultsOut}"])
-      }
-    }
+            sh "docker stop ${testContainer}"
+            sh "docker rm -v ${testContainer}"
+            sh "docker rmi -f ${imageName}"
+          }
+        } catch(err) {        
+            sh "docker stop ${testContainer}"
+            sh "docker rm -v ${testContainer}"
+            sh "docker rmi -f ${imageName}"
+        }
   }
+}

@@ -70,18 +70,21 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	}
 
 	for _, tt := range tests {
+		clusterConfig := *r.clusterConfig
+		clusterConfig.Nodepools = nodeRolesDedicated
+
 		tt.name = tt.name + " Module: " + r.terraformConfig.Module
+
+		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(r.T(), r.terraformOptions)
 
-			clusterConfig := *r.clusterConfig
-			clusterConfig.Nodepools = nodeRolesDedicated
-
-			testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
+			require.NoError(r.T(), err)
 
 			provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
+			provisioning.VerifyCluster(r.T(), adminClient, clusterName, r.terraformConfig, r.terraformOptions, &clusterConfig)
 
 			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, tt.rbacRole)
 		})

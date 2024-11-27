@@ -16,7 +16,7 @@ Please see below for more details for your config. Please note that the config c
 
 ## Table of Contents
 1. [Getting Started](#Getting-Started)
-2. [Provisioning Clusters](#Provisioning=Clusters)
+2. [Provisioning Clusters](#Provisioning-Clusters)
 3. [Local Qase Reporting](#Local-Qase-Reporting)
 
 ## Getting Started

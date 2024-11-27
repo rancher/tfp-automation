@@ -24,28 +24,22 @@ import (
 
 // VerifyCluster validates that a downstream cluster and its resources are in a good state, matching a given config.
 func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, clusterConfig *config.TerratestConfig) {
-	client, err := client.ReLogin()
-	require.NoError(t, err)
-
-	adminClient, err := rancher.NewClient(client.RancherConfig.AdminToken, client.Session)
-	require.NoError(t, err)
-
 	var expectedKubernetesVersion string
 	module := terraformConfig.Module
 	expectedKubernetesVersion = checkExpectedKubernetesVersion(clusterConfig, expectedKubernetesVersion, module)
 
-	clusterID, err := clusterExtensions.GetClusterIDByName(adminClient, clusterName)
+	clusterID, err := clusterExtensions.GetClusterIDByName(client, clusterName)
 	require.NoError(t, err)
 
-	if err := waitState.IsActiveCluster(adminClient, clusterID); err != nil {
+	if err := waitState.IsActiveCluster(client, clusterID); err != nil {
 		require.NoError(t, err)
 	}
 
-	if err := waitState.AreNodesActive(adminClient, clusterID); err != nil {
+	if err := waitState.AreNodesActive(client, clusterID); err != nil {
 		require.NoError(t, err)
 	}
 
-	cluster, err := adminClient.Management.Cluster.ByID(clusterID)
+	cluster, err := client.Management.Cluster.ByID(clusterID)
 	require.NoError(t, err)
 
 	// EKS is formatted this way due to EKS formatting Kubernetes versions with a
@@ -56,28 +50,25 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 		assert.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion)
 	}
 
-	clusterToken, err := clusterActions.CheckServiceAccountTokenSecret(adminClient, cluster.Name)
+	clusterToken, err := clusterActions.CheckServiceAccountTokenSecret(client, cluster.Name)
 	require.NoError(t, err)
 	assert.NotEmpty(t, clusterToken)
 
 	if clusterConfig.PSACT == string(config.RancherPrivileged) || clusterConfig.PSACT == string(config.RancherRestricted) {
 		require.NotEmpty(t, cluster.DefaultPodSecurityAdmissionConfigurationTemplateName)
 
-		err := psact.CreateNginxDeployment(adminClient, clusterID, clusterConfig.PSACT)
+		err := psact.CreateNginxDeployment(client, clusterID, clusterConfig.PSACT)
 		require.NoError(t, err)
 	}
 
-	podErrors := pods.StatusPods(adminClient, cluster.ID)
+	podErrors := pods.StatusPods(client, cluster.ID)
 	assert.Empty(t, podErrors)
 }
 
 // VerifyUpgradedKubernetesVersion validates that the cluster has the expected
 // upgraded Kubernetes version.
 func VerifyUpgradedKubernetesVersion(t *testing.T, client *rancher.Client, terraformConfig *config.TerraformConfig, clusterName, kubernetesVersion string) {
-	client, err := client.ReLogin()
-	require.NoError(t, err)
-
-	adminClient, err := rancher.NewClient(client.RancherConfig.AdminToken, client.Session)
+	adminClient, err := FetchAdminClient(t, client)
 	require.NoError(t, err)
 
 	clusterID, err := clusterExtensions.GetClusterIDByName(adminClient, clusterName)
@@ -94,10 +85,7 @@ func VerifyUpgradedKubernetesVersion(t *testing.T, client *rancher.Client, terra
 
 // VerifyNodeCount validates that a cluster has the expected number of nodes.
 func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, terraformConfig *config.TerraformConfig, nodeCount int64) {
-	client, err := client.ReLogin()
-	require.NoError(t, err)
-
-	adminClient, err := rancher.NewClient(client.RancherConfig.AdminToken, client.Session)
+	adminClient, err := FetchAdminClient(t, client)
 	require.NoError(t, err)
 
 	clusterID, err := clusterExtensions.GetClusterIDByName(adminClient, clusterName)

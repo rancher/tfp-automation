@@ -78,13 +78,15 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		k.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
+			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
+			require.NoError(k.T(), err)
+
 			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
-			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
+			provisioning.VerifyCluster(k.T(), adminClient, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
 
 			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
-			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
-			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
-				k.clusterConfig.UpgradedKubernetesVersion)
+			provisioning.VerifyCluster(k.T(), adminClient, clusterName, k.terraformConfig, k.terraformOptions, &clusterConfig)
+			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
 		})
 	}
 
@@ -109,12 +111,15 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
 
 			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
-			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
+
+			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
+			require.NoError(k.T(), err)
+
+			provisioning.VerifyCluster(k.T(), adminClient, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
 
 			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.clusterConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyCluster(k.T(), k.client, clusterName, k.terraformConfig, k.terraformOptions, k.clusterConfig)
-			provisioning.VerifyUpgradedKubernetesVersion(k.T(), k.client, k.terraformConfig, clusterName,
-				k.clusterConfig.UpgradedKubernetesVersion)
+			provisioning.VerifyUpgradedKubernetesVersion(k.T(), adminClient, k.terraformConfig, clusterName, k.clusterConfig.UpgradedKubernetesVersion)
 		})
 	}
 

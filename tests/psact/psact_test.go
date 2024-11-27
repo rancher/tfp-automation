@@ -82,8 +82,11 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		p.Run((tt.name), func() {
 			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
 
+			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
+			require.NoError(p.T(), err)
+
 			provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &clusterConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions)
-			provisioning.VerifyCluster(p.T(), p.client, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
+			provisioning.VerifyCluster(p.T(), adminClient, clusterName, p.terraformConfig, p.terraformOptions, &clusterConfig)
 		})
 	}
 

@@ -11,11 +11,10 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func setMachinePool(machinePools []config.Nodepool, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body,
-	poolName string) error {
+func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body, poolName string) error {
 	poolNum := strconv.Itoa(count)
 
-	_, err := resources.SetResourceNodepoolValidation(pool, poolNum)
+	_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 // ForceCleanup is a function that will forcibly run terraform destroy and cleanup Terraform resources.
-func ForceCleanup(t *testing.T) {
+func ForceCleanup(t *testing.T) error {
 	keyPath := resources.SetKeyPath()
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
@@ -19,4 +19,6 @@ func ForceCleanup(t *testing.T) {
 
 	terraform.Destroy(t, terraformOptions)
 	cleanup.ConfigCleanupTF()
+
+	return nil
 }

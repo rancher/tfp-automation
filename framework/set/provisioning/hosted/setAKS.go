@@ -6,9 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/azure"
 	format "github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
@@ -18,10 +16,8 @@ import (
 )
 
 // SetAKS is a function that will set the AKS configurations in the main.tf file.
-func SetAKS(clusterName, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
-	terraformConfig := new(config.TerraformConfig)
-	framework.LoadConfig(configs.Terraform, terraformConfig)
-
+func SetAKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
+	rootBody *hclwrite.Body, file *os.File) error {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
@@ -61,7 +57,7 @@ func SetAKS(clusterName, k8sVersion string, nodePools []config.Nodepool, newFile
 	for count, pool := range nodePools {
 		poolNum := strconv.Itoa(count)
 
-		_, err := resources.SetResourceNodepoolValidation(pool, poolNum)
+		_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
 		if err != nil {
 			return err
 		}
