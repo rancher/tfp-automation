@@ -84,6 +84,5 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 }
 
 func TestTfpProvisionHostedTestSuite(t *testing.T) {
-	t.Skip("This test has been deprecated.")
 	suite.Run(t, new(ProvisionHostedTestSuite))
 }

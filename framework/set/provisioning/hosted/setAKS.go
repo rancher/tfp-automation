@@ -46,11 +46,17 @@ func SetAKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 	}
 
 	aksConfigBlockBody.SetAttributeRaw(defaults.CloudCredentialID, cloudCredID)
+	aksConfigBlockBody.SetAttributeValue(azure.OutboundType, cty.StringVal(terraformConfig.AzureConfig.OutboundType))
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceGroup, cty.StringVal(terraformConfig.AzureConfig.ResourceGroup))
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceLocation, cty.StringVal(terraformConfig.AzureConfig.ResourceLocation))
 	aksConfigBlockBody.SetAttributeValue(azure.DNSPrefix, cty.StringVal(terraformConfig.HostnamePrefix))
 	aksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkPlugin, cty.StringVal(terraformConfig.NetworkPlugin))
+	aksConfigBlockBody.SetAttributeValue(azure.VirtualNetwork, cty.StringVal(terraformConfig.AzureConfig.Vnet))
+	aksConfigBlockBody.SetAttributeValue(azure.Subnet, cty.StringVal(terraformConfig.AzureConfig.Subnet))
+	aksConfigBlockBody.SetAttributeValue(azure.NetworkDNSServiceIP, cty.StringVal(terraformConfig.AzureConfig.NetworkDNSServiceIP))
+	aksConfigBlockBody.SetAttributeValue(azure.NetworkDockerBridgeCIDR, cty.StringVal(terraformConfig.AzureConfig.NetworkDockerBridgeCIDR))
+	aksConfigBlockBody.SetAttributeValue(azure.NetworkServiceCIDR, cty.StringVal(terraformConfig.AzureConfig.NetworkServiceCIDR))
 
 	availabilityZones := format.ListOfStrings(terraformConfig.AzureConfig.AvailabilityZones)
 
@@ -66,11 +72,15 @@ func SetAKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 		nodePoolsBlockBody := nodePoolsBlock.Body()
 
 		nodePoolsBlockBody.SetAttributeRaw(azure.AvailabilityZones, availabilityZones)
-		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(defaults.NodePool+poolNum))
+		nodePoolsBlockBody.SetAttributeValue(azure.NodePoolMode, cty.StringVal(terraformConfig.AzureConfig.Mode))
+		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.AzureConfig.Name))
 		nodePoolsBlockBody.SetAttributeValue(azure.Count, cty.NumberIntVal(pool.Quantity))
 		nodePoolsBlockBody.SetAttributeValue(azure.OrchestratorVersion, cty.StringVal(k8sVersion))
 		nodePoolsBlockBody.SetAttributeValue(azure.OSDiskSizeGB, cty.NumberIntVal(terraformConfig.AzureConfig.OSDiskSizeGB))
 		nodePoolsBlockBody.SetAttributeValue(azure.VMSize, cty.StringVal(terraformConfig.AzureConfig.VMSize))
+
+		taints := format.ListOfStrings(terraformConfig.AzureConfig.Taints)
+		nodePoolsBlockBody.SetAttributeRaw(azure.Taints, taints)
 	}
 
 	_, err := file.Write(newFile.Bytes())
