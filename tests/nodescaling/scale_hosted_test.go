@@ -96,6 +96,5 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 }
 
 func TestTfpScaleHostedTestSuite(t *testing.T) {
-	t.Skip("This test has been deprecated.")
 	suite.Run(t, new(ScaleHostedTestSuite))
 }

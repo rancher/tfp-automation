@@ -12,10 +12,16 @@ const (
 	AzureConfig = "azure_config"
 	NodePools   = "node_pools"
 
-	ResourceGroup    = "resource_group"
-	ResourceLocation = "resource_location"
-	DNSPrefix        = "dns_prefix"
-	NetworkPlugin    = "network_plugin"
+	OutboundType            = "outbound_type"
+	ResourceGroup           = "resource_group"
+	ResourceLocation        = "resource_location"
+	DNSPrefix               = "dns_prefix"
+	NetworkPlugin           = "network_plugin"
+	VirtualNetwork          = "virtual_network"
+	Subnet                  = "subnet"
+	NetworkDNSServiceIP     = "network_dns_service_ip"
+	NetworkDockerBridgeCIDR = "network_docker_bridge_cidr"
+	NetworkServiceCIDR      = "network_service_cidr"
 
 	AvailabilitySet   = "availability_set"
 	CustomData        = "custom_data"
@@ -36,7 +42,9 @@ const (
 
 	AvailabilityZones   = "availability_zones"
 	Count               = "count"
+	NodePoolMode        = "mode"
 	OrchestratorVersion = "orchestrator_version"
 	OSDiskSizeGB        = "os_disk_size_gb"
+	Taints              = "taints"
 	VMSize              = "vm_size"
 )

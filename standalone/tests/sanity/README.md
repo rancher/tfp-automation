@@ -93,6 +93,10 @@ terraform:
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value you wish the local cluster to be
 ```
 
+Before running, be sure to run the following commands:
+
+`export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
+
 See the below examples on how to run the tests:
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/standalone/tests/sanity --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpSanityTestSuite/TestTfpProvisioningSanity$"`

@@ -42,8 +42,7 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	cluster, err := client.Management.Cluster.ByID(clusterID)
 	require.NoError(t, err)
 
-	// EKS is formatted this way due to EKS formatting Kubernetes versions with a
-	// random string of letters after the version.
+	// EKS is formatted this way due to EKS formatting Kubernetes versions with a random string of letters after the version.
 	if module == clustertypes.EKS {
 		assert.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion[1:5])
 	} else {

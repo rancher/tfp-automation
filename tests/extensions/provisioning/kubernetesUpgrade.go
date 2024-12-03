@@ -16,7 +16,7 @@ func KubernetesUpgrade(t *testing.T, client *rancher.Client, rancherConfig *ranc
 	clusterConfig *config.TerratestConfig, testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options) {
 	DefaultUpgradedK8sVersion(t, client, clusterConfig, terraformConfig)
 
-	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "", nil)
+	err := framework.ConfigTF(client, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "", nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
