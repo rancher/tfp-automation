@@ -13,7 +13,7 @@ node {
   def imageName = "tfp-automation-validation-${job_name}${env.BUILD_NUMBER}"
   def testResultsOut = "results.xml"
   def testResultsJSON = "results.json"
-  def testPackage = env.TEST_PACKAGE?.trim()
+  def testPackage = "${env.TEST_PACKAGE}"?.trim()
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
         branch = "${env.BRANCH}"
