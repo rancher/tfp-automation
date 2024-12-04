@@ -13,7 +13,7 @@ node {
   def imageName = "tfp-automation-validation-${job_name}${env.BUILD_NUMBER}"
   def testResultsOut = "results.xml"
   def testResultsJSON = "results.json"
-  def testPackage = "${env.TEST_PACKAGE}"?.trim()
+  def testPackage = env.TEST_PACKAGE?.trim()
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
         branch = "${env.BRANCH}"
@@ -74,7 +74,6 @@ node {
       sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PEM_FILE=key.pem --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} --build-arg LOCALS_PROVIDER_VERSION=${localProviderVersion} --build-arg AWS_PROVIDER_VERSION=${awsProviderVersion} -f Dockerfile -t ${imageName} . "
     }
     stage('Run Module Test') {
-      def testPackage = env.TEST_PACKAGE?.trim()
       def testResultsDir = rootPath+"results"
       sh "mkdir -p ${testResultsDir}"
       try {
