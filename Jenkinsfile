@@ -13,6 +13,7 @@ node {
   def imageName = "tfp-automation-validation-${job_name}${env.BUILD_NUMBER}"
   def testResultsOut = "results.xml"
   def testResultsJSON = "results.json"
+  def testPackage = env.TEST_PACKAGE?.trim()
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
         branch = "${env.BRANCH}"
@@ -43,7 +44,10 @@ node {
   }
   withCredentials([ string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+                    string(credentialsId: 'RANCHER_LINODE_ACCESSKEY', variable: 'RANCHER_LINODE_ACCESSKEY'),
                     string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
+                    string(credentialsId: 'AWS_SSH_KEY_NAME', variable: 'AWS_SSH_KEY_NAME'),
+                    string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
                     string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
   stage('Checkout') {
           deleteDir()
@@ -55,8 +59,17 @@ node {
                   ])
         }
     stage('Configure and Build') {
+      env.CONFIG = env.CONFIG.replace('${AWS_ACCESS_KEY_ID}', env.AWS_ACCESS_KEY_ID)
+      env.CONFIG = env.CONFIG.replace('${AWS_SECRET_ACCESS_KEY}', env.AWS_SECRET_ACCESS_KEY)
+      env.CONFIG = env.CONFIG.replace('${RANCHER_LINODE_ACCESSKEY}', env.RANCHER_LINODE_ACCESSKEY)
+      env.CONFIG = env.CONFIG.replace('${AWS_SSH_PEM_KEY}', env.AWS_SSH_PEM_KEY)
+      env.CONFIG = env.CONFIG.replace('${ADMIN_PASSWORD}', env.ADMIN_PASSWORD)
+    
       writeFile file: 'config.yml', text: env.CONFIG
-      writeFile file: 'key.pem', text: params.PEM_FILE
+
+      def decoded = new String(env.AWS_SSH_PEM_KEY.decodeBase64())
+      writeFile file: 'key.pem', text: decoded
+      
       env.CATTLE_TEST_CONFIG=rootPath+'config.yml'
       sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PEM_FILE=key.pem --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} --build-arg LOCALS_PROVIDER_VERSION=${localProviderVersion} --build-arg AWS_PROVIDER_VERSION=${awsProviderVersion} -f Dockerfile -t ${imageName} . "
     }
@@ -82,10 +95,13 @@ node {
     }
     stage('Test Report') {
       sh "docker cp ${testContainer}:${rootPath}results/${testResultsOut} ."
-      step([$class: 'JUnitResultArchiver', testResults: "**/results/${testResultsOut}"])
+      step([$class: 'JUnitResultArchiver', testResults: "**/${testResultsOut}"])
       sh "docker stop ${testContainer}"
       sh "docker rm -v ${testContainer}"
       sh "docker rmi -f ${imageName}"
+      if (testPackage?.toLowerCase().contains("sanity")) {
+        slackSend(channel: "${SLACK_CHANNEL}", message: "${env.JOB_NAME} Build #${env.BUILD_NUMBER} finished. More details: ${env.BUILD_URL}")
+      }
     }
   }
 }
