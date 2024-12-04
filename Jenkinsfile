@@ -80,13 +80,17 @@ node {
           if (testPackage?.toLowerCase().contains("sanity")) {
             sh "docker run --name ${testContainer} -t -e CATTLE_TEST_CONFIG=${rootPath}config.yml -v ${homePath}key.pem:${rootPath}key.pem " +
             "${imageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${standaloneTestsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};" +
-            "${rootPath}pipeline/scripts/build_qase_reporter.sh;" +
-            "${rootPath}reporter\""
+            "${rootPath}pipeline/scripts/build_qase_reporter.sh\""
+            if (fileExists("${rootPath}reporter")) {
+              sh "${rootPath}reporter"
+            }
           } else {
             sh "docker run --name ${testContainer} -t -e CATTLE_TEST_CONFIG=${rootPath}config.yml -v ${homePath}key.pem:${rootPath}key.pem " +
             "${imageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};" +
-            "${rootPath}pipeline/scripts/build_qase_reporter.sh;" +
-            "${rootPath}reporter\""
+            "${rootPath}pipeline/scripts/build_qase_reporter.sh\""
+            if (fileExists("${rootPath}reporter")) {
+              sh "${rootPath}reporter"
+            } 
           }
       } catch(err) {
           echo 'Test run had failures. Collecting results...'
