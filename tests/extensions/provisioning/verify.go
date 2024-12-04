@@ -155,13 +155,16 @@ func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, t
 	switch module {
 	case clustertypes.AKS:
 		var aksConfig = cluster.AKSConfig
-		require.Equal(t, *aksConfig.NodePools[0].Count, cluster.NodeCount)
+		nodePools := *aksConfig.NodePools
+		require.Equal(t, nodePools[0].Count, cluster.NodeCount)
 	case clustertypes.EKS:
 		var eksConfig = cluster.EKSConfig
-		require.Equal(t, *eksConfig.NodeGroups[0].DesiredSize, cluster.NodeCount)
+		nodeGroups := *eksConfig.NodeGroups
+		require.Equal(t, nodeGroups[0].DesiredSize, cluster.NodeCount)
 	case clustertypes.GKE:
 		var gkeConfig = cluster.GKEConfig
-		require.Equal(t, *gkeConfig.NodePools[0].InitialNodeCount, cluster.NodeCount)
+		nodePools := *gkeConfig.NodePools
+		require.Equal(t, nodePools[0].InitialNodeCount, cluster.NodeCount)
 	case clustertypes.RKE1, clustertypes.RKE2, clustertypes.K3S:
 		require.Equal(t, nodeCount, cluster.NodeCount)
 	default:
