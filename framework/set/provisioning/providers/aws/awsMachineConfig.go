@@ -19,7 +19,7 @@ func SetAWSRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraform
 	awsConfigBlockBody.SetAttributeValue(amazon.AMI, cty.StringVal(terraformConfig.AWSConfig.AMI))
 	awsConfigBlockBody.SetAttributeValue(region, cty.StringVal(terraformConfig.AWSConfig.Region))
 
-	awsSecGroupsExpression := fmt.Sprintf(`"%s"`, terraformConfig.AWSConfig.AWSSecurityGroupNames[0])
+	awsSecGroupsExpression := fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroupNames[0])
 	awsSecGroupsList := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(awsSecGroupsExpression)},
 	}

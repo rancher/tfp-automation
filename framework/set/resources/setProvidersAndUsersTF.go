@@ -9,28 +9,32 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
 const (
-	apiURL            = "api_url"
-	globalRoleBinding = "rancher2_global_role_binding"
-	globalRoleID      = "global_role_id"
-	insecure          = "insecure"
-	name              = "name"
-	provider          = "provider"
-	rancher2          = "rancher2"
-	rancherSource     = "source"
-	rancherUser       = "rancher2_user"
-	rc                = "-rc"
-	requiredProviders = "required_providers"
-	terraform         = "terraform"
-	testPassword      = "password"
-	tokenKey          = "token_key"
-	version           = "version"
-	user              = "user"
-	userID            = "user_id"
-	username          = "username"
+	apiURL              = "api_url"
+	globalRoleBinding   = "rancher2_global_role_binding"
+	globalRoleID        = "global_role_id"
+	insecure            = "insecure"
+	name                = "name"
+	provider            = "provider"
+	rancher2            = "rancher2"
+	rancherSource       = "source"
+	rancherUser         = "rancher2_user"
+	rc                  = "-rc"
+	requiredProviders   = "required_providers"
+	terraform           = "terraform"
+	testPassword        = "password"
+	tokenKey            = "token_key"
+	version             = "version"
+	user                = "user"
+	userID              = "user_id"
+	username            = "username"
+	providerEnvVar      = "RANCHER2_PROVIDER_VERSION"
+	awsProviderEnvVar   = "AWS_PROVIDER_VERSION"
+	localProviderEnvVar = "LOCALS_PROVIDER_VERSION"
 )
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
@@ -57,12 +61,23 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 
 // getProviderVersions returns the versions for the providers based on environment variables.
 func getProviderVersions(terraformConfig *config.TerraformConfig) (string, string, string, string) {
-	providerVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
+	providerVersion := os.Getenv(providerEnvVar)
+	if providerVersion == "" {
+		logrus.Fatalf("Expected env var not set %s", providerEnvVar)
+	}
+
 	var awsProviderVersion, localProviderVersion string
 
 	if strings.Contains(terraformConfig.Module, "custom") || terraformConfig.MultiCluster {
-		awsProviderVersion = os.Getenv("AWS_PROVIDER_VERSION")
-		localProviderVersion = os.Getenv("LOCALS_PROVIDER_VERSION")
+		awsProviderVersion = os.Getenv(awsProviderEnvVar)
+		if awsProviderVersion == "" {
+			logrus.Fatalf("Expected env var not set %s", awsProviderEnvVar)
+		}
+
+		localProviderVersion = os.Getenv(localProviderEnvVar)
+		if providerVersion == "" {
+			logrus.Fatalf("Expected env var not set %s", localProviderEnvVar)
+		}
 	}
 
 	source := "rancher/rancher2"
