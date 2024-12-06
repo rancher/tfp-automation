@@ -11,8 +11,8 @@ import (
 func SupportedModules(terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, configMap []map[string]any) bool {
 	var isSupported bool
 	if configMap != nil {
-		for _, clusterConfig := range configMap {
-			module := clusterConfig["terraform"].(config.TerraformConfig).Module
+		for _, terratestConfig := range configMap {
+			module := terratestConfig["terraform"].(config.TerraformConfig).Module
 			isSupported = verifyModule(module)
 		}
 	} else {

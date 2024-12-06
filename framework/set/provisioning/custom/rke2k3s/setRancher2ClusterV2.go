@@ -9,12 +9,12 @@ import (
 )
 
 // setRancher2ClusterV2 is a function that will set the rancher2_cluster_v2 configurations in the main.tf file.
-func setRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, clusterName string) error {
+func setRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, clusterName string) error {
 	rancher2ClusterV2Block := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.ClusterV2, clusterName})
 	rancher2ClusterV2BlockBody := rancher2ClusterV2Block.Body()
 
 	rancher2ClusterV2BlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
-	rancher2ClusterV2BlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(clusterConfig.KubernetesVersion))
+	rancher2ClusterV2BlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 
 	rkeConfigBlock := rancher2ClusterV2BlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()

@@ -13,10 +13,10 @@ import (
 // KubernetesUpgrade is a function that will run terraform apply and uprade the
 // Kubernetes version of the provisioned cluster.
 func KubernetesUpgrade(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	clusterConfig *config.TerratestConfig, testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options) {
-	DefaultUpgradedK8sVersion(t, client, clusterConfig, terraformConfig)
+	terratestConfig *config.TerratestConfig, testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options) {
+	DefaultUpgradedK8sVersion(t, client, terratestConfig, terraformConfig)
 
-	err := framework.ConfigTF(client, rancherConfig, terraformConfig, clusterConfig, testUser, testPassword, clusterName, poolName, "", nil)
+	err := framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

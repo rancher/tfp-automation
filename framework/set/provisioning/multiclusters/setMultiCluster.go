@@ -18,7 +18,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/hosted"
 	nodedriver "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke1"
 	nodedriverV2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
-	"github.com/rancher/tfp-automation/framework/set/resources"
+	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,10 +28,10 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 	var err error
 	customClusterNames := []string{}
 
-	for i, clusterConfig := range configMap {
+	for i, terratestConfig := range configMap {
 
-		terraformConfig := clusterConfig["terraform"].(configuration.TerraformConfig)
-		terratestConfig := clusterConfig["terratest"].(configuration.TerratestConfig)
+		terraformConfig := terratestConfig["terraform"].(configuration.TerraformConfig)
+		terratestConfig := terratestConfig["terratest"].(configuration.TerratestConfig)
 
 		kubernetesVersion := terratestConfig.KubernetesVersion
 		nodePools := terratestConfig.Nodepools
