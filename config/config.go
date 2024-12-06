@@ -177,4 +177,5 @@ type TerratestConfig struct {
 	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
 	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
 	SnapshotInput             Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
+	TFLogging                 bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
 }

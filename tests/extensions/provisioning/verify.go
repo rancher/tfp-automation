@@ -31,6 +31,7 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	clusterID, err := clusterExtensions.GetClusterIDByName(client, clusterName)
 	require.NoError(t, err)
 
+	logrus.Infof("Waiting for cluster %v to be in an active state...", clusterName)
 	if err := waitState.IsActiveCluster(client, clusterID); err != nil {
 		require.NoError(t, err)
 	}

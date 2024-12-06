@@ -3,6 +3,12 @@ package resources
 import (
 	"os"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
+)
+
+const (
+	mainTfKeyPath = "TFFILE_KEY_PATH"
 )
 
 // SetKeyPath is a function that will set the path to the key file.
@@ -13,7 +19,12 @@ func SetKeyPath() string {
 		return ""
 	}
 
-	keyPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/modules/rancher")
+	mainTfDirPath := os.Getenv(mainTfKeyPath)
+	if mainTfDirPath == "" {
+		logrus.Fatalf("Expected env var not set %s", mainTfKeyPath)
+	}
+
+	keyPath = filepath.Join(userDir, mainTfDirPath)
 
 	return keyPath
 }
