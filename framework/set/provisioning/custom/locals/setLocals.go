@@ -50,14 +50,14 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 				{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpressionClusterV2)},
 			}
 
-			localsBlockBody.SetAttributeRaw(defaults.OriginalNodeCommand, originalNodeCommand)
+			localsBlockBody.SetAttributeRaw(clusterName+"_"+defaults.OriginalNodeCommand, originalNodeCommand)
 
 			insecureNodeCommandExpressionClusterV2 := fmt.Sprintf(`"curl --insecure ${substr(local.%s_original_node_command, 4, length(local.%s_original_node_command) - 4)}"`, clusterName, clusterName)
 			insecureNodeCommand := hclwrite.Tokens{
 				{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpressionClusterV2)},
 			}
 
-			localsBlockBody.SetAttributeRaw(defaults.InsecureNodeCommand, insecureNodeCommand)
+			localsBlockBody.SetAttributeRaw(clusterName+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
 		}
 	}
 
