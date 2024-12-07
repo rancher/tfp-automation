@@ -2,6 +2,8 @@
 
 `tfp-automation` is a framework designed to test various Rancher2 Terraform provider resources to be tested with Terratest + Go. While this is not meant to serve as a 1:1 partiy with the existing test cases in `rancher/rancher`, the overall structure of the tests is. This is to ensure that adoption of the framework is as seamless as possible.
 
+In addition to the main purpose of testing the Rancher2 provider, `tfp-automation` also supports testing the RKE Terraform provider and supports AWS infrastructure creation. The latter allows for functionality such as automated daily sanity testing of the Rancher2 provider.
+
 ---
 
 <a name="top"></a>

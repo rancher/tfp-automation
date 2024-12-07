@@ -13,7 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/authproviders/github"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/ldap"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/okta"
-	"github.com/rancher/tfp-automation/framework/set/resources"
+	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 
 	"github.com/sirupsen/logrus"
 )

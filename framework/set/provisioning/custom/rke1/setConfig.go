@@ -14,10 +14,10 @@ import (
 )
 
 // SetCustomRKE1 is a function that will set the custom RKE1 cluster configurations in the main.tf file.
-func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, clusterConfig *config.TerratestConfig, configMap []map[string]any, clusterName string,
+func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any, clusterName string,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
 	if terraformConfig.MultiCluster {
-		instances.SetAwsInstances(rootBody, terraformConfig, clusterConfig, clusterName)
+		instances.SetAwsInstances(rootBody, terraformConfig, terratestConfig, clusterName)
 
 		setRancher2Cluster(rootBody, terraformConfig, clusterName)
 
@@ -25,7 +25,7 @@ func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 	} else {
 		providers.SetCustomProviders(rancherConfig, terraformConfig)
 
-		instances.SetAwsInstances(rootBody, terraformConfig, clusterConfig, clusterName)
+		instances.SetAwsInstances(rootBody, terraformConfig, terratestConfig, clusterName)
 
 		setRancher2Cluster(rootBody, terraformConfig, clusterName)
 
