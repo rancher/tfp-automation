@@ -3,7 +3,6 @@ node {
   def homePath = pwd() + "/"
   def rootPath = "/root/go/src/github.com/rancher/tfp-automation/"
   def testsDir = "github.com/rancher/tfp-automation/tests/${env.TEST_PACKAGE}"
-  def standaloneTestsDir = "github.com/rancher/tfp-automation/standalone/tests/${env.TEST_PACKAGE}"
   def job_name = "${JOB_NAME}"
   if (job_name.contains('/')) { 
     job_names = job_name.split('/')
@@ -13,6 +12,7 @@ node {
   def imageName = "tfp-automation-validation-${job_name}${env.BUILD_NUMBER}"
   def testResultsOut = "results.xml"
   def testResultsJSON = "results.json"
+  def envFile = ".env"
   def testPackage = env.TEST_PACKAGE?.trim()
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
@@ -26,32 +26,12 @@ node {
   if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
         timeout = "${env.TIMEOUT}" 
   }
-  def terraformVersion = "${env.TERRAFORM_VERSION}"
-  if ("${env.TERRAFORM_VERSION}" != "null" && "${env.TERRAFORM_VERSION}" != "") {
-        terraformVersion = "${env.TERRAFORM_VERSION}" 
-  }
-  def rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}"
-  if ("${env.RANCHER2_PROVIDER_VERSION}" != "null" && "${env.RANCHER2_PROVIDER_VERSION}" != "") {
-        rancher2ProviderVersion = "${env.RANCHER2_PROVIDER_VERSION}" 
-  }
-  def localProviderVersion = "${env.LOCALS_PROVIDER_VERSION}"
-  if ("${env.LOCALS_PROVIDER_VERSION}" != "null" && "${env.LOCALS_PROVIDER_VERSION}" != "") {
-        localProviderVersion = "${env.LOCALS_PROVIDER_VERSION}" 
-  }
-  def awsProviderVersion = "${env.AWS_PROVIDER_VERSION}"
-  if ("${env.AWS_PROVIDER_VERSION}" != "null" && "${env.AWS_PROVIDER_VERSION}" != "") {
-        awsProviderVersion = "${env.AWS_PROVIDER_VERSION}" 
-  }
-  def tfFileKeyPath = "${env.TFFILE_KEY_PATH}"
-  if ("${env.TFFILE_KEY_PATH}" != "null" && "${env.TFFILE_KEY_PATH}" != "") {
-        tfFileKeyPath = "${env.TFFILE_KEY_PATH}" 
-  }
+
   withCredentials([ string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
                     string(credentialsId: 'RANCHER_LINODE_ACCESSKEY', variable: 'RANCHER_LINODE_ACCESSKEY'),
                     string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
                     string(credentialsId: 'AWS_SSH_KEY_NAME', variable: 'AWS_SSH_KEY_NAME'),
-                    string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
                     string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
   stage('Checkout') {
           deleteDir()
@@ -62,40 +42,27 @@ node {
                     userRemoteConfigs: repo
                   ])
         }
-    stage('Configure and Build') {
-      env.CONFIG = env.CONFIG.replace('${AWS_ACCESS_KEY_ID}', env.AWS_ACCESS_KEY_ID)
-      env.CONFIG = env.CONFIG.replace('${AWS_SECRET_ACCESS_KEY}', env.AWS_SECRET_ACCESS_KEY)
-      env.CONFIG = env.CONFIG.replace('${RANCHER_LINODE_ACCESSKEY}', env.RANCHER_LINODE_ACCESSKEY)
-      env.CONFIG = env.CONFIG.replace('${AWS_SSH_PEM_KEY}', env.AWS_SSH_PEM_KEY)
-      env.CONFIG = env.CONFIG.replace('${ADMIN_PASSWORD}', env.ADMIN_PASSWORD)
-    
+    stage('Configure and Build') {  
       writeFile file: 'config.yml', text: env.CONFIG
 
       def decoded = new String(env.AWS_SSH_PEM_KEY.decodeBase64())
       writeFile file: 'key.pem', text: decoded
       
       env.CATTLE_TEST_CONFIG=rootPath+'config.yml'
-      sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PEM_FILE=key.pem --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} --build-arg LOCALS_PROVIDER_VERSION=${localProviderVersion} --build-arg AWS_PROVIDER_VERSION=${awsProviderVersion} --build-arg TFFILE_KEY_PATH=${tfFileKeyPath} -f Dockerfile -t ${imageName} . "
+
+      sh "./configure.sh"
+      sh "./build.sh"
     }
     stage('Run Module Test') {
       def testResultsDir = rootPath+"results"
       sh "mkdir -p ${testResultsDir}"
       try {
-          if (testPackage?.toLowerCase().contains("sanity")) {
-            sh "docker run --name ${testContainer} -t -e CATTLE_TEST_CONFIG=${rootPath}config.yml -v ${homePath}key.pem:${rootPath}key.pem " +
-            "${imageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${standaloneTestsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};" +
-            "${rootPath}pipeline/scripts/build_qase_reporter.sh\""
-            if (fileExists("${rootPath}reporter")) {
-              sh "${rootPath}reporter"
-            }
-          } else {
-            sh "docker run --name ${testContainer} -t -e CATTLE_TEST_CONFIG=${rootPath}config.yml -v ${homePath}key.pem:${rootPath}key.pem " +
+            sh "docker run --name ${testContainer} -t -v ${homePath}key.pem:${rootPath}key.pem --env-file ${envFile} " +
             "${imageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};" +
             "${rootPath}pipeline/scripts/build_qase_reporter.sh\""
             if (fileExists("${rootPath}reporter")) {
               sh "${rootPath}reporter"
             } 
-          }
       } catch(err) {
           echo 'Test run had failures. Collecting results...'
       }

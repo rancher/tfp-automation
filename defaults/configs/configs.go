@@ -15,6 +15,7 @@ const (
 	SecondHighestVersion = "second"
 
 	MainTF          = "/main.tf"
+	RKEDebugLog     = "/rke_debug.log"
 	TerraformFolder = "/.terraform"
 	TFState         = "/terraform.tfstate"
 	TFStateBackup   = "/terraform.tfstate.backup"

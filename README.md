@@ -2,6 +2,8 @@
 
 `tfp-automation` is a framework designed to test various Rancher2 Terraform provider resources to be tested with Terratest + Go. While this is not meant to serve as a 1:1 partiy with the existing test cases in `rancher/rancher`, the overall structure of the tests is. This is to ensure that adoption of the framework is as seamless as possible.
 
+In addition to the main purpose of testing the Rancher2 provider, `tfp-automation` also supports testing the RKE Terraform provider and supports AWS infrastructure creation. The latter allows for functionality such as automated daily sanity testing of the Rancher2 provider.
+
 ---
 
 <a name="top"></a>
@@ -43,7 +45,7 @@
 
 ##### When testing locally, the following environment variables should be exported:
 ```yaml
-export TFFILE_KEY_PATH="<tfp-automation repo path>/modules/rancher"    #Required 
+export RANCHER2_KEY_PATH="<tfp-automation repo path>/modules/rancher"  #Required 
 export RANCHER2_PROVIDER_VERSION=""                                    #Required
 export AWS_PROVIDER_VERSION=""                                         #Required for custom cluster provisioning
 export LOCALS_PROVIDER_VERSION=""                                      #Required for custom cluster provisioning

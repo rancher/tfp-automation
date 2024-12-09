@@ -108,6 +108,7 @@ type Standalone struct {
 	RancherHostname          string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
 	RancherRepo              string `json:"rancherRepo,omitempty" yaml:"rancherRepo,omitempty"`
 	RancherTagVersion        string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
+	RKE1User                 string `json:"rke1User,omitempty" yaml:"rke1User,omitempty"`
 	RKE2Group                string `json:"rke2Group,omitempty" yaml:"rke2Group,omitempty"`
 	RKE2User                 string `json:"rke2User,omitempty" yaml:"rke2User,omitempty"`
 	RKE2Version              string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`

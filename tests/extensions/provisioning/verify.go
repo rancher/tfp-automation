@@ -23,10 +23,10 @@ import (
 )
 
 // VerifyCluster validates that a downstream cluster and its resources are in a good state, matching a given config.
-func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, clusterConfig *config.TerratestConfig) {
+func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, terratestConfig *config.TerratestConfig) {
 	var expectedKubernetesVersion string
 	module := terraformConfig.Module
-	expectedKubernetesVersion = checkExpectedKubernetesVersion(clusterConfig, expectedKubernetesVersion, module)
+	expectedKubernetesVersion = checkExpectedKubernetesVersion(terratestConfig, expectedKubernetesVersion, module)
 
 	clusterID, err := clusterExtensions.GetClusterIDByName(client, clusterName)
 	require.NoError(t, err)
@@ -54,10 +54,10 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 	require.NoError(t, err)
 	assert.NotEmpty(t, clusterToken)
 
-	if clusterConfig.PSACT == string(config.RancherPrivileged) || clusterConfig.PSACT == string(config.RancherRestricted) {
+	if terratestConfig.PSACT == string(config.RancherPrivileged) || terratestConfig.PSACT == string(config.RancherRestricted) {
 		require.NotEmpty(t, cluster.DefaultPodSecurityAdmissionConfigurationTemplateName)
 
-		err := psact.CreateNginxDeployment(client, clusterID, clusterConfig.PSACT)
+		err := psact.CreateNginxDeployment(client, clusterID, terratestConfig.PSACT)
 		require.NoError(t, err)
 	}
 
@@ -141,15 +141,15 @@ func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, t
 }
 
 // checkExpectedKubernetesVersion is a helper function that verifies the expected Kubernetes version.
-func checkExpectedKubernetesVersion(clusterConfig *config.TerratestConfig, expectedKubernetesVersion, module string) string {
+func checkExpectedKubernetesVersion(terratestConfig *config.TerratestConfig, expectedKubernetesVersion, module string) string {
 	switch {
 	case module == clustertypes.AKS || module == clustertypes.GKE:
-		expectedKubernetesVersion = `v` + clusterConfig.KubernetesVersion
+		expectedKubernetesVersion = `v` + terratestConfig.KubernetesVersion
 	// Terraform requires that we input the entire RKE1 version. However, Rancher client clips the `-rancher` suffix.
 	case strings.Contains(module, clustertypes.RKE1):
-		expectedKubernetesVersion = clusterConfig.KubernetesVersion[:len(clusterConfig.KubernetesVersion)-11]
+		expectedKubernetesVersion = terratestConfig.KubernetesVersion[:len(terratestConfig.KubernetesVersion)-11]
 	case strings.Contains(module, clustertypes.EKS) || strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S):
-		expectedKubernetesVersion = clusterConfig.KubernetesVersion
+		expectedKubernetesVersion = terratestConfig.KubernetesVersion
 	default:
 		logrus.Errorf("Invalid module provided")
 	}
