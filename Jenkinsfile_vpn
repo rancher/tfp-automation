@@ -13,6 +13,7 @@ node {
   def testResultsOut = "results.xml"
   def testResultsJSON = "results.json"
   def envFile = ".env"
+  def config = env.CONFIG
   def testPackage = env.TEST_PACKAGE?.trim()
   def branch = "${env.BRANCH}"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
@@ -43,8 +44,12 @@ node {
                     userRemoteConfigs: repo
                   ])
         }
-    stage('Configure and Build') {    
-      writeFile file: 'config.yml', text: env.CONFIG
+    stage('Configure and Build') {   
+      config = config.replace('${AWS_SECRET_ACCESS_KEY}', env.AWS_SECRET_ACCESS_KEY)
+      config = config.replace('${AWS_ACCESS_KEY_ID}', env.AWS_ACCESS_KEY_ID)
+      config = config.replace('${RANCHER_LINODE_ACCESSKEY}', env.RANCHER_LINODE_ACCESSKEY)
+       
+      writeFile file: 'config.yml', text: config
 
       def decoded = new String(env.AWS_SSH_PEM_KEY.decodeBase64())
       writeFile file: 'key.pem', text: decoded
