@@ -42,6 +42,10 @@ node {
   if ("${env.AWS_PROVIDER_VERSION}" != "null" && "${env.AWS_PROVIDER_VERSION}" != "") {
         awsProviderVersion = "${env.AWS_PROVIDER_VERSION}" 
   }
+  def tfFileKeyPath = "${env.TFFILE_KEY_PATH}"
+  if ("${env.TFFILE_KEY_PATH}" != "null" && "${env.TFFILE_KEY_PATH}" != "") {
+        tfFileKeyPath = "${env.TFFILE_KEY_PATH}" 
+  }
   withCredentials([ string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
                     string(credentialsId: 'RANCHER_LINODE_ACCESSKEY', variable: 'RANCHER_LINODE_ACCESSKEY'),
@@ -71,7 +75,7 @@ node {
       writeFile file: 'key.pem', text: decoded
       
       env.CATTLE_TEST_CONFIG=rootPath+'config.yml'
-      sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PEM_FILE=key.pem --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} --build-arg LOCALS_PROVIDER_VERSION=${localProviderVersion} --build-arg AWS_PROVIDER_VERSION=${awsProviderVersion} -f Dockerfile -t ${imageName} . "
+      sh "docker build --build-arg CONFIG_FILE=config.yml --build-arg PEM_FILE=key.pem --build-arg TERRAFORM_VERSION=${terraformVersion} --build-arg RANCHER2_PROVIDER_VERSION=${rancher2ProviderVersion} --build-arg LOCALS_PROVIDER_VERSION=${localProviderVersion} --build-arg AWS_PROVIDER_VERSION=${awsProviderVersion} --build-arg TFFILE_KEY_PATH=${tfFileKeyPath} -f Dockerfile -t ${imageName} . "
     }
     stage('Run Module Test') {
       def testResultsDir = rootPath+"results"

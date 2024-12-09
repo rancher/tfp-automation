@@ -41,12 +41,16 @@
 
 ### <p align="center"> Configurations </p>
 
-###### The Rancher2 provider version is determined via the `RANCHER2_PROVIDER_VERSION` environment variable.
+##### When testing locally, the following environment variables should be exported:
+```yaml
+export TFFILE_KEY_PATH="<tfp-automation repo path>/modules/rancher"    #Required 
+export RANCHER2_PROVIDER_VERSION=""                                    #Required
+export AWS_PROVIDER_VERSION=""                                         #Required for custom cluster provisioning
+export LOCALS_PROVIDER_VERSION=""                                      #Required for custom cluster provisioning
 
-##### When testing locally, it is required to set the `RANCHER2_PROVIDER_VERSION`, as type `string`, and formatted without a leading `v`.
-
-##### Example: `export RANCHER2_PROVIDER_VERSION="4.2.0"` or `export RANCHER2_PROVIDER_VERSION="4.2.0-rc3"`
-
+export QASE_AUTOMATION_TOKEN=""                                        #Required for local Qase reporting
+export QASE_TEST_RUN_ID=""                                             #Required for local Qase reporting
+```
 ##### These tests require an accurately configured `cattle-config.yaml` to successfully run.
 
 ##### Each `cattle-config.yaml` must include the following configurations:
@@ -173,6 +177,7 @@ terraform:
     taints: ["none:PreferNoSchedule"]
     vmSize: Standard_DS2_v2
     vnet: ""
+    tfLogging: false
 ```
 
 ---
