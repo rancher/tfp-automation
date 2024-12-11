@@ -105,13 +105,13 @@ func (s *ScaleTestSuite) TestTfpScale() {
 
 			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, &terratestConfig)
-			provisioning.VerifyNodeCount(s.T(), adminClient, clusterName, s.terraformConfig, scaledUpCount)
+			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledUpCount)
 
 			terratestConfig.Nodepools = terratestConfig.ScalingInput.ScaledDownNodepools
 
 			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
 			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, &terratestConfig)
-			provisioning.VerifyNodeCount(s.T(), adminClient, clusterName, s.terraformConfig, scaledDownCount)
+			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledDownCount)
 
 			cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 		})
