@@ -12,7 +12,7 @@ const (
 	RunSourceID             = 16
 	SkipStatus              = "skip"
 	SubtestPattern          = `(\w+/\w+){1,1}`
-	TestResultsJSON         = "results/results.json"
+	TestResultsJSON         = "results.json"
 	TestRunEnvVar           = "QASE_TEST_RUN_ID"
 	TestRunNAMEEnvVar       = "TEST_RUN_NAME"
 	TestSource              = "GoValidation"

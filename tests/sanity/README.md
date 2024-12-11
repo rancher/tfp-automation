@@ -98,7 +98,7 @@ Before running, be sure to run the following commands:
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results/results.xml --jsonfile results/results.json -- -timeout=120m -v -run "TestTfpSanityTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpSanityTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -109,4 +109,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity  --junitfile results/results.xml --jsonfile results/results.json -- -timeout=120m -v -run TestTfpSanityTestSuite$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity  --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run TestTfpSanityTestSuite$";/path/to/tfp-automation/reporter`

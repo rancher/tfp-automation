@@ -59,21 +59,19 @@ node {
       sh "./build.sh"
     }
     stage('Run Module Test') {
-      def testResultsDir = rootPath+"results"
-      sh "mkdir -p ${testResultsDir}"
       try {
-            sh "docker run --name ${testContainer} -t -v ${homePath}key.pem:${rootPath}key.pem --env-file ${envFile} " +
-            "${imageName} sh -c \"/root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile results/${testResultsOut} --jsonfile results/${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};" +
-            "${rootPath}pipeline/scripts/build_qase_reporter.sh\""
-            if (fileExists("${rootPath}reporter")) {
-              sh "${rootPath}reporter"
-            } 
+        sh """
+          docker run --name ${testContainer} -t -v ${homePath}key.pem:${rootPath}key.pem --env-file ${envFile} ${imageName} sh -c "
+          /root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile ${testResultsOut} --jsonfile ${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};
+          ${rootPath}pipeline/scripts/build_qase_reporter.sh;
+          if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"
+        """
       } catch(err) {
           echo 'Test run had failures. Collecting results...'
       }
     }
     stage('Test Report') {
-      sh "docker cp ${testContainer}:${rootPath}results/${testResultsOut} ."
+      sh "docker cp ${testContainer}:${rootPath}${testResultsOut} ."
       step([$class: 'JUnitResultArchiver', testResults: "**/${testResultsOut}"])
       sh "docker stop ${testContainer}"
       sh "docker rm -v ${testContainer}"
