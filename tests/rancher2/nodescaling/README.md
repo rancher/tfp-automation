@@ -150,12 +150,12 @@ See the below examples on how to run the tests:
 
 ### RKE1/RKE2/K3S
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScale$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScaleDynamicInput$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScale$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScaleDynamicInput$"`
 
 ### Hosted
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpScaleHostedTestSuite/TestTfpScaleHosted$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpScaleHostedTestSuite/TestTfpScaleHosted$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -166,4 +166,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScale$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/nodescaling --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpScaleTestSuite/TestTfpScale$";/path/to/tfp-automation/reporter`
