@@ -84,7 +84,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			require.NoError(r.T(), err)
 
 			provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
-			provisioning.VerifyCluster(r.T(), adminClient, clusterName, r.terraformConfig, r.terraformOptions, &terratestConfig)
+			provisioning.VerifyCluster(r.T(), adminClient, clusterName, r.terraformConfig, &terratestConfig)
 
 			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, tt.rbacRole)
 		})

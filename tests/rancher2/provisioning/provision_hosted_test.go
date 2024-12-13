@@ -74,7 +74,7 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 			require.NoError(p.T(), err)
 
 			provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
-			provisioning.VerifyCluster(p.T(), adminClient, clusterName, p.terraformConfig, p.terraformOptions, p.terratestConfig)
+			provisioning.VerifyCluster(p.T(), adminClient, clusterName, p.terraformConfig, p.terratestConfig)
 		})
 	}
 

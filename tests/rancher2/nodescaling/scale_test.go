@@ -74,8 +74,6 @@ func (s *ScaleTestSuite) TestTfpScale() {
 	for _, tt := range tests {
 		terratestConfig := *s.terratestConfig
 		terratestConfig.Nodepools = tt.nodeRoles
-		terratestConfig.ScalingInput.ScaledUpNodepools = tt.scaleUpNodeRoles
-		terratestConfig.ScalingInput.ScaledDownNodepools = tt.scaleDownNodeRoles
 
 		var scaledUpCount, scaledDownCount int64
 
@@ -87,8 +85,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			scaledDownCount += scaleDownNodepool.Quantity
 		}
 
-		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " +
-			s.terratestConfig.KubernetesVersion
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.terratestConfig.KubernetesVersion
 
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
@@ -99,21 +96,19 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			require.NoError(s.T(), err)
 
 			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, &terratestConfig)
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, &terratestConfig)
 
-			terratestConfig.Nodepools = terratestConfig.ScalingInput.ScaledUpNodepools
+			terratestConfig.Nodepools = tt.scaleUpNodeRoles
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, &terratestConfig)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, &terratestConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledUpCount)
 
-			terratestConfig.Nodepools = terratestConfig.ScalingInput.ScaledDownNodepools
+			terratestConfig.Nodepools = tt.scaleDownNodeRoles
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, &terratestConfig)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, &terratestConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledDownCount)
-
-			cleanup.ConfigCleanup(s.T(), s.terraformOptions)
 		})
 	}
 
@@ -141,19 +136,19 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			require.NoError(s.T(), err)
 
 			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, s.terratestConfig)
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
 
 			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledUpNodepools
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, s.terratestConfig)
-			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
+			provisioning.VerifyNodeCount(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
 
 			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledDownNodepools
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, s.terratestConfig)
-			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledDownNodeCount)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
+			provisioning.VerifyNodeCount(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledDownNodeCount)
 		})
 	}
 
