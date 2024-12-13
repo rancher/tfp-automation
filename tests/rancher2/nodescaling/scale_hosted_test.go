@@ -2,6 +2,7 @@ package nodescaling
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
@@ -74,18 +75,24 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 			require.NoError(s.T(), err)
 
 			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, s.terratestConfig)
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
 
 			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledUpNodepools
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, s.terratestConfig)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+
+			time.Sleep(4 * time.Minute)
+
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
 
 			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledDownNodepools
 
-			provisioning.Scale(s.T(), s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terraformOptions, s.terratestConfig)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+
+			time.Sleep(4 * time.Minute)
+
+			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledDownNodeCount)
 		})
 	}

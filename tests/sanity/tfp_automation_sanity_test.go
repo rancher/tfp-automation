@@ -110,7 +110,7 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 			defer cleanup.ConfigCleanup(t.T(), t.terraformOptions)
 
 			provisioning.Provision(t.T(), t.client, t.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, t.terraformOptions, nil)
-			provisioning.VerifyCluster(t.T(), t.client, clusterName, &terraformConfig, t.terraformOptions, &terratestConfig)
+			provisioning.VerifyCluster(t.T(), t.client, clusterName, &terraformConfig, &terratestConfig)
 		})
 	}
 
