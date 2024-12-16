@@ -50,6 +50,7 @@ const (
 	Enabled               = "enabled"
 	RancherClusterID      = "cluster_id"
 	Quantity              = "quantity"
+	ChartValues           = "chart_values"
 
 	Endpoint = "endpoint"
 	Folder   = "folder"

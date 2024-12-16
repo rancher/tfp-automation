@@ -138,6 +138,13 @@ terraform:
     password: ""                              # RKE1 specific
     insecure: true
     authConfigSecretName: ""                  # RKE2/K3S specific. Secret must be created in the fleet-default namespace already
+  chartValues: |-			      # Provided as a multiline string
+    rke2-cilium:                              # RKE2/Cilium specific example of how to do a Kube-proxy Replacement deployment
+      k8sServiceHost: 127.0.0.1               
+      k8sServicePort: 6443
+      kubeProxyReplacement: true
+  cni: cilium				      # RKE2 specific
+  disable-kube-proxy: true		      # Can be "true" or "false"
 ```
 
 Note: At this time, private registries for RKE2/K3s MUST be used with provider version 3.1.1. This is due to issue https://github.com/rancher/terraform-provider-rancher2/issues/1305.
