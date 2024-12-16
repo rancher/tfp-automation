@@ -136,6 +136,8 @@ type TerraformConfig struct {
 	AuthProvider                        string                       `json:"authProvider,omitempty" yaml:"authProvider,omitempty"`
 	CloudCredentialName                 string                       `json:"cloudCredentialName,omitempty" yaml:"cloudCredentialName,omitempty"`
 	CNI                                 string                       `json:"cni,omitempty" yaml:"cni,omitempty"`
+	ChartValues                         string                       `json:"chartValues,omitempty" yaml:"chartValues,omitempty"`
+	DisableKubeProxy                    string                       `json:"disable-kube-proxy,omitempty" yaml:"disable-kube-proxy,omitempty"`
 	DefaultClusterRoleForProjectMembers string                       `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`

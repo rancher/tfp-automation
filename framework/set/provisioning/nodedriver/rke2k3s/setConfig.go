@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
@@ -111,6 +112,20 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 
 	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
+
+	if terraformConfig.ChartValues != "" {
+		chartValues := hclwrite.TokensForTraversal(hcl.Traversal{
+			hcl.TraverseRoot{Name: "<<EOF\n" + terraformConfig.ChartValues + "\nEOF"},
+		})
+
+		rkeConfigBlockBody.SetAttributeRaw(defaults.ChartValues, chartValues)
+	}
+
+	machineGlobalConfigValue := hclwrite.TokensForTraversal(hcl.Traversal{
+		hcl.TraverseRoot{Name: "<<EOF\ncni: " + terraformConfig.CNI + "\ndisable-kube-proxy: " + terraformConfig.DisableKubeProxy + "\nEOF"},
+	})
+
+	rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, machineGlobalConfigValue)
 
 	for count, pool := range nodePools {
 		setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody, poolName, clusterName)
