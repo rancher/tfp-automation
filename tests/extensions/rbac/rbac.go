@@ -14,7 +14,7 @@ import (
 func RBAC(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options,
 	rbacRole config.Role) {
-	err := framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, rbacRole, nil)
+	_, err := framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, rbacRole, nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

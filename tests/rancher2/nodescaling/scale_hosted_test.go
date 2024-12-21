@@ -77,8 +77,9 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
+			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
+			provisioning.VerifyWorkloads(s.T(), adminClient, clusterIDs)
 
 			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledUpNodepools
 
@@ -86,7 +87,7 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 
 			time.Sleep(4 * time.Minute)
 
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
+			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
 
 			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledDownNodepools
@@ -95,7 +96,7 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 
 			time.Sleep(4 * time.Minute)
 
-			provisioning.VerifyCluster(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig)
+			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledDownNodeCount)
 		})
 	}

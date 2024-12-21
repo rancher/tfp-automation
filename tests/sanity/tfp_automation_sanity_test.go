@@ -114,8 +114,9 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 			keyPath := rancher2.SetKeyPath()
 			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
-			provisioning.Provision(t.T(), t.client, t.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, t.terraformOptions, nil)
-			provisioning.VerifyCluster(t.T(), t.client, clusterName, &terraformConfig, &terratestConfig)
+			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, t.terraformOptions, nil)
+			provisioning.VerifyWorkloads(t.T(), t.client, clusterIDs)
+			provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
 		})
 	}
 

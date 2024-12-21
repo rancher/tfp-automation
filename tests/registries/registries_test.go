@@ -128,8 +128,10 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 			keyPath := rancher2.SetKeyPath()
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, &terraformConfig, &terratestConfig)
+			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], &terraformConfig)
+			provisioning.VerifyWorkloads(r.T(), r.client, clusterIDs)
 		})
 	}
 
@@ -173,8 +175,10 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 			keyPath := rancher2.SetKeyPath()
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, &terraformConfig, &terratestConfig)
+			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], &terraformConfig)
+			provisioning.VerifyWorkloads(r.T(), r.client, clusterIDs)
 		})
 	}
 
@@ -220,8 +224,10 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 			keyPath := rancher2.SetKeyPath()
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
-			provisioning.VerifyCluster(r.T(), r.client, clusterName, &terraformConfig, &terratestConfig)
+			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], &terraformConfig)
+			provisioning.VerifyWorkloads(r.T(), r.client, clusterIDs)
 		})
 	}
 

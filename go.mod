@@ -1,8 +1,8 @@
 module github.com/rancher/tfp-automation
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.3
+toolchain go1.23.4
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.27 // for compatibilty with docker 20.10.x
@@ -29,10 +29,10 @@ require (
 require (
 	github.com/antihax/optional v1.0.0
 	github.com/gruntwork-io/terratest v0.42.0
-	github.com/rancher/norman v0.0.0-20241001183610-78a520c160ab
-	github.com/rancher/rancher v0.0.0-20241111070012-ce59843e7b2b
+	github.com/rancher/norman v0.5.1
+	github.com/rancher/rancher v0.0.0-20250122213954-464e5c27fe8d
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20241111160715-689bb4ad6d39
+	github.com/rancher/shepherd v0.0.0-20250106223550-9350f4861af3
 	github.com/sirupsen/logrus v1.9.3
 )
 
@@ -92,11 +92,11 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/zclconf/go-cty v1.14.1
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.28.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/api v0.201.0 // indirect
 	google.golang.org/genproto v0.0.0-20241007155032-5fefd90f89a9 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
@@ -152,9 +152,9 @@ require (
 	github.com/rancher/aks-operator v1.10.0 // indirect
 	github.com/rancher/apiserver v0.0.0-20241009200134-5a4ecca7b988 // indirect
 	github.com/rancher/eks-operator v1.10.0 // indirect
-	github.com/rancher/fleet/pkg/apis v0.11.0 // indirect
+	github.com/rancher/fleet/pkg/apis v0.12.0-alpha.2 // indirect
 	github.com/rancher/gke-operator v1.10.0 // indirect
-	github.com/rancher/lasso v0.0.0-20240924233157-8f384efc8813 // indirect
+	github.com/rancher/lasso v0.0.0-20241202185148-04649f379358 // indirect
 	github.com/rancher/rke v1.7.0-rc.5 // indirect
 	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20240301001845-4eacc2dabbde // indirect
 	github.com/rancher/wrangler v1.1.2 // indirect
@@ -164,8 +164,8 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.qase.io/client v0.0.0-20231114201952-65195ec001fa
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/term v0.25.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240930140551-af27646dc61f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241007155032-5fefd90f89a9 // indirect
