@@ -18,8 +18,8 @@ const (
 	zoneID      = "zone_id"
 )
 
-// createRoute53Record is a function that will set the AWS Route 53 record configuration in the main.tf file.
-func createRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+// CreateRoute53Record is a function that will set the AWS Route 53 record configuration in the main.tf file.
+func CreateRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
 	routeRecordBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Route53Record, defaults.Route53Record})
 	routeRecordBlockBody := routeRecordBlock.Body()
 
@@ -47,4 +47,27 @@ func createRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 
 	zoneBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.AWSConfig.AWSRoute53Zone))
 	zoneBlockBody.SetAttributeValue(privateZone, cty.BoolVal(false))
+}
+
+// CreateRoute53InternalRecord is a function that will set the AWS Route 53 record configuration in the main.tf file.
+func CreateRoute53InternalRecord(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+	routeRecordBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Route53Record, defaults.Route53InternalRecord})
+	routeRecordBlockBody := routeRecordBlock.Body()
+
+	zoneIDExpression := defaults.Data + "." + defaults.Route53Zone + "." + selected + "." + zoneID
+	values := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(zoneIDExpression)},
+	}
+
+	routeRecordBlockBody.SetAttributeRaw(zoneID, values)
+	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.HostnamePrefix+"-internal"))
+	routeRecordBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(CNAME))
+	routeRecordBlockBody.SetAttributeValue(ttl, cty.NumberIntVal(300))
+
+	loadBalancerExpression := "[" + defaults.LoadBalancer + "." + defaults.InternalLoadBalancer + "." + dnsName + "]"
+	values = hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(loadBalancerExpression)},
+	}
+
+	routeRecordBlockBody.SetAttributeRaw(records, values)
 }

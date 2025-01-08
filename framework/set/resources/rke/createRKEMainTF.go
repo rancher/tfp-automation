@@ -22,9 +22,8 @@ const (
 )
 
 // CreateRKEMainTF is a helper function that will create the main.tf file for creating an RKE1 cluster
-func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, terraformConfig *config.TerraformConfig) error {
-	keyPath := KeyPath()
-
+func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig) error {
 	var file *os.File
 	file = resources.OpenFile(file, keyPath)
 	defer file.Close()
@@ -35,7 +34,7 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, terrafor
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig)
+	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return err
 	}

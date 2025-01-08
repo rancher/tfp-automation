@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap"
 	custom "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
 	customV2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/hosted"
@@ -58,7 +59,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 			_, err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, terratestConfig.KubernetesVersion, terratestConfig.PSACT, terratestConfig.Nodepools,
 				terratestConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 			return err
-		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom):
+		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
 			_, err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, terratestConfig.KubernetesVersion, terratestConfig.PSACT, terratestConfig.Nodepools,
 				terratestConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 			return err
@@ -67,6 +68,9 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 			return err
 		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s:
 			_, err = customV2.SetCustomRKE2K3s(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
+			return err
+		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
+			_, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
 			return err
 		default:
 			logrus.Errorf("Unsupported module: %v", module)

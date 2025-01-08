@@ -36,10 +36,10 @@ func (t *RKEProviderTestSuite) TestCreateRKECluster() {
 	t.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, t.terratestConfig)
 
-	terraformOptions := framework.RKESetup(t.T(), t.terraformConfig, t.terratestConfig)
+	terraformOptions, keyPath := framework.RKESetup(t.T(), t.terraformConfig, t.terratestConfig)
 	t.terraformOptions = terraformOptions
 
-	rke.CreateRKEMainTF(t.T(), t.terraformOptions, t.terraformConfig)
+	rke.CreateRKEMainTF(t.T(), t.terraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
 
 	if t.terratestConfig.LocalQaseReporting {
 		qase.ReportTest()

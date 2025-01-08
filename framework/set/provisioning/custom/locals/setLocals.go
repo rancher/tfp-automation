@@ -41,10 +41,10 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 			localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
 
 		}
-
 	} else {
 		//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
-		if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s {
+		if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s ||
+			terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapK3S {
 			originalNodeCommandExpressionClusterV2 := defaults.ClusterV2 + "." + clusterName + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
 			originalNodeCommand := hclwrite.Tokens{
 				{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpressionClusterV2)},

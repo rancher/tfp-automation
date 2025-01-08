@@ -132,12 +132,12 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	}
 
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
-		setMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
+		SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
 
 		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)
 		registryBlockBody := registryBlock.Body()
 
-		setPrivateRegistryConfig(registryBlockBody, terraformConfig)
+		SetPrivateRegistryConfig(registryBlockBody, terraformConfig)
 	}
 
 	upgradeStrategyBlock := rkeConfigBlockBody.AppendNewBlock(upgradeStrategy, nil)

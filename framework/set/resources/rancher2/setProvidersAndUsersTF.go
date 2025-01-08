@@ -68,7 +68,7 @@ func getProviderVersions(terraformConfig *config.TerraformConfig) (string, strin
 
 	var awsProviderVersion, localProviderVersion string
 
-	if strings.Contains(terraformConfig.Module, "custom") || terraformConfig.MultiCluster {
+	if strings.Contains(terraformConfig.Module, "custom") || strings.Contains(terraformConfig.Module, "airgap") || terraformConfig.MultiCluster {
 		awsProviderVersion = os.Getenv(awsProviderEnvVar)
 		if awsProviderVersion == "" {
 			logrus.Fatalf("Expected env var not set %s", awsProviderEnvVar)
@@ -108,7 +108,7 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 		}
 	}
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) || customModule {
+	if strings.Contains(terraformConfig.Module, defaults.Custom) || strings.Contains(terraformConfig.Module, defaults.Airgap) || customModule {
 		reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(defaults.AwsSource),
 			defaults.Version: cty.StringVal(awsProviderVersion),
@@ -125,7 +125,7 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 		version:       cty.StringVal(providerVersion),
 	}))
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+	if strings.Contains(terraformConfig.Module, defaults.Custom) || strings.Contains(terraformConfig.Module, defaults.Airgap) {
 		awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
 		awsProvBlockBody := awsProvBlock.Body()
 

@@ -18,8 +18,8 @@ const (
 	rke2ServerThree   = "rke2_server3"
 )
 
-// createTerraformProviderBlock will up the terraform block with the required aws provider.
-func createTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
+// CreateTerraformProviderBlock will up the terraform block with the required aws provider.
+func CreateTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
 	awsProviderVersion := os.Getenv("AWS_PROVIDER_VERSION")
 
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
@@ -41,8 +41,8 @@ func CreateAWSProviderBlock(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	awsProvBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 }
 
-// createLocalBlock will set up the local block. Returns the local block.
-func createLocalBlock(rootBody *hclwrite.Body) {
+// CreateLocalBlock will set up the local block. Returns the local block.
+func CreateLocalBlock(rootBody *hclwrite.Body) {
 	localBlock := rootBody.AppendNewBlock(locals, nil)
 	localBlockBody := localBlock.Body()
 

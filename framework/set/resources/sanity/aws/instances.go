@@ -11,9 +11,14 @@ import (
 )
 
 // CreateAWSInstances is a function that will set the AWS instances configurations in the main.tf file.
-func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, hostnamePrefix string) {
+func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+	hostnamePrefix string) {
 	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, hostnamePrefix})
 	configBlockBody := configBlock.Body()
+
+	if terraformConfig.Standalone == nil {
+		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
+	}
 
 	configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))
 	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
@@ -38,12 +43,21 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	tagsBlock := configBlockBody.AppendNewBlock(defaults.Tags+" =", nil)
 	tagsBlockBody := tagsBlock.Body()
 
-	expression := fmt.Sprintf(`"%s`, terraformConfig.HostnamePrefix+"-"+hostnamePrefix+`"`)
-	tags := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
-	}
+	if terraformConfig.Standalone == nil {
+		expression := fmt.Sprintf(`"%s-${`+defaults.Count+`.`+defaults.Index+`}"`, terraformConfig.HostnamePrefix)
+		tags := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
+		}
 
-	tagsBlockBody.SetAttributeRaw(defaults.Name, tags)
+		tagsBlockBody.SetAttributeRaw(defaults.Name, tags)
+	} else {
+		expression := fmt.Sprintf(`"%s`, terraformConfig.HostnamePrefix+"-"+hostnamePrefix+`"`)
+		tags := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
+		}
+
+		tagsBlockBody.SetAttributeRaw(defaults.Name, tags)
+	}
 
 	configBlockBody.AppendNewline()
 

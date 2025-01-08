@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/instances"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/providers"
+	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ import (
 func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any, clusterName string,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
 	if terraformConfig.MultiCluster {
-		instances.SetAwsInstances(rootBody, terraformConfig, terratestConfig, clusterName)
+		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, clusterName)
 
 		setRancher2Cluster(rootBody, terraformConfig, clusterName)
 
@@ -25,7 +25,7 @@ func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 	} else {
 		providers.SetCustomProviders(rancherConfig, terraformConfig)
 
-		instances.SetAwsInstances(rootBody, terraformConfig, terratestConfig, clusterName)
+		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, clusterName)
 
 		setRancher2Cluster(rootBody, terraformConfig, clusterName)
 

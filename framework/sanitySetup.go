@@ -10,7 +10,7 @@ import (
 )
 
 // SanitySetup is a function that will set the Terraform configuration and return the Terraform options.
-func SanitySetup(t *testing.T, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) *terraform.Options {
+func SanitySetup(t *testing.T, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (*terraform.Options, string) {
 	keyPath := resources.KeyPath()
 
 	var terratestLogger logger.Logger
@@ -26,5 +26,5 @@ func SanitySetup(t *testing.T, terraformConfig *config.TerraformConfig, terrates
 		Logger:       &terratestLogger,
 	})
 
-	return terraformOptions
+	return terraformOptions, keyPath
 }

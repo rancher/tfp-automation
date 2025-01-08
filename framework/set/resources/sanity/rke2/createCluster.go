@@ -84,7 +84,7 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 // createRKE2Server is a helper function that will create the RKE2 server.
 func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP,
-	rke2Token string, script []byte) error {
+	rke2Token string, script []byte) {
 	_, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOne)
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
@@ -93,8 +93,6 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 		cty.StringVal("bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.RKE2User + " " + terraformConfig.Standalone.RKE2Group + " " +
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + "'"),
 	}))
-
-	return nil
 }
 
 // addRKE2ServerNodes is a helper function that will add additional RKE2 server nodes to the initial RKE2 server.
