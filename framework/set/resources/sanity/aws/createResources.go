@@ -10,8 +10,9 @@ import (
 )
 
 // CreateAWSResources is a helper function that will create the AWS resources needed for the RKE2 cluster.
-func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) (*os.File, error) {
-	createTerraformProviderBlock(tfBlockBody)
+func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig) (*os.File, error) {
+	CreateTerraformProviderBlock(tfBlockBody)
 	rootBody.AppendNewline()
 
 	CreateAWSProviderBlock(rootBody, terraformConfig)
@@ -19,31 +20,31 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 	for _, instance := range instances {
-		CreateAWSInstances(rootBody, terraformConfig, instance)
+		CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 		rootBody.AppendNewline()
 	}
 
-	createLocalBlock(rootBody)
+	CreateLocalBlock(rootBody)
 	rootBody.AppendNewline()
 
 	ports := []int64{80, 443, 6443, 9345}
 	for _, port := range ports {
-		createTargetGroupAttachments(rootBody, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port), port)
+		CreateTargetGroupAttachments(rootBody, defaults.LoadBalancerTargetGroupAttachment, GetTargetGroupAttachment(port), port)
 		rootBody.AppendNewline()
 	}
 
-	createLoadBalancer(rootBody, terraformConfig)
+	CreateLoadBalancer(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
 	for _, port := range ports {
-		createTargetGroups(rootBody, terraformConfig, port)
+		CreateTargetGroups(rootBody, terraformConfig, port)
 		rootBody.AppendNewline()
 
-		createLoadBalancerListeners(rootBody, port)
+		CreateLoadBalancerListeners(rootBody, port)
 		rootBody.AppendNewline()
 	}
 
-	createRoute53Record(rootBody, terraformConfig)
+	CreateRoute53Record(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
 	_, err := file.Write(newFile.Bytes())
@@ -55,8 +56,8 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	return file, err
 }
 
-// getTargetGroupAttachment gets the target group attachment based on the port
-func getTargetGroupAttachment(port int64) string {
+// GetTargetGroupAttachment gets the target group attachment based on the port
+func GetTargetGroupAttachment(port int64) string {
 	switch port {
 	case 80:
 		return defaults.TargetGroup80Attachment

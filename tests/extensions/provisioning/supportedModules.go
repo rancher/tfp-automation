@@ -43,6 +43,8 @@ func verifyModule(module string) bool {
 		modules.CustomEC2RKE1,
 		modules.CustomEC2RKE2,
 		modules.CustomEC2K3s,
+		modules.AirgapRKE2,
+		modules.AirgapK3S,
 	}
 
 	for _, supportedModule := range supportedModules {

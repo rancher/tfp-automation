@@ -14,6 +14,7 @@ AWS_PROVIDER_VERSION="${AWS_PROVIDER_VERSION:-}"
 RANCHER2_KEY_PATH="${RANCHER2_KEY_PATH:-}"
 RKE_KEY_PATH="${RKE_KEY_PATH:-}"
 SANITY_KEY_PATH="${SANITY_KEY_PATH:-}"
+AIRGAP_KEY_PATH="${AIRGAP_KEY_PATH:-}"
 
 TRIM_JOB_NAME=$(basename "$JOB_NAME")
 
@@ -33,6 +34,7 @@ while [[ 3 -gt $count ]]; do
                                                                     --build-arg RANCHER2_KEY_PATH="$RANCHER2_KEY_PATH" \
                                                                     --build-arg RKE_KEY_PATH="$RKE_KEY_PATH" \
                                                                     --build-arg SANITY_KEY_PATH="$SANITY_KEY_PATH" \
+                                                                    --build-arg AIRGAP_KEY_PATH="$AIRGAP_KEY_PATH" \
                                                                     --build-arg EXTERNAL_ENCODED_VPN="$EXTERNAL_ENCODED_VPN" \
                                                                     --build-arg VPN_ENCODED_LOGIN="$VPN_ENCODED_LOGIN" \
                                                                     -t tfp-automation-validation-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"

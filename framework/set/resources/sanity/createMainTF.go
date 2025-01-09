@@ -26,9 +26,8 @@ const (
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server.
-func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, terraformConfig *config.TerraformConfig) error {
-	keyPath := KeyPath()
-
+func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig) error {
 	var file *os.File
 	file = OpenFile(file, keyPath)
 	defer file.Close()
@@ -39,7 +38,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, terraformCo
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig)
+	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return err
 	}

@@ -21,7 +21,8 @@ const (
 )
 
 // CreateAWSResources is a helper function that will create the AWS resources needed for the RKE1 cluster.
-func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) (*os.File, error) {
+func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig) (*os.File, error) {
 	createTerraformProviderBlock(tfBlockBody)
 	rootBody.AppendNewline()
 
@@ -33,7 +34,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 
 	instances := []string{rkeServerOne, rkeServerTwo, rkeServerThree}
 	for _, instance := range instances {
-		aws.CreateAWSInstances(rootBody, terraformConfig, instance)
+		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 		rootBody.AppendNewline()
 	}
 

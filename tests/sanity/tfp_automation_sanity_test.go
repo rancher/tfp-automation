@@ -44,10 +44,10 @@ func (t *TfpSanityTestSuite) SetupSuite() {
 	t.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, t.terratestConfig)
 
-	standaloneTerraformOptions := framework.SanitySetup(t.T(), t.terraformConfig, t.terratestConfig)
+	standaloneTerraformOptions, keyPath := framework.SanitySetup(t.T(), t.terraformConfig, t.terratestConfig)
 	t.standaloneTerraformOptions = standaloneTerraformOptions
 
-	resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, t.terraformConfig)
+	resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
 }
 
 func (t *TfpSanityTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig) {

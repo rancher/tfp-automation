@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	custom "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
 	customV2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
@@ -86,6 +87,9 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 			if err != nil {
 				return err
 			}
+		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
+			file, err = airgap.SetAirgapRKE2K3s(rancherConfig, &terraformConfig, &terratestConfig, nil, clusterName, newFile, rootBody, file)
+			return err
 		default:
 			logrus.Errorf("Unsupported module: %v", module)
 		}

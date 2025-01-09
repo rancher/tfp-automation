@@ -14,8 +14,8 @@ const (
 	network  = "network"
 )
 
-// createLoadBalancer is a function that will set the load balancer configurations in the main.tf file.
-func createLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+// CreateLoadBalancer is a function that will set the load balancer configurations in the main.tf file.
+func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
 	loadBalancerGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancer, defaults.LoadBalancer})
 	loadBalancerGroupBodyBlockBody := loadBalancerGroupBlock.Body()
 
@@ -25,4 +25,17 @@ func createLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	subnetList := format.ListOfStrings([]string{terraformConfig.AWSConfig.AWSSubnetID})
 	loadBalancerGroupBodyBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)
 	loadBalancerGroupBodyBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.HostnamePrefix))
+}
+
+// CreateInternalLoadBalancer is a function that will set the internal load balancer configurations in the main.tf file.
+func CreateInternalLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+	loadBalancerGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancer, defaults.InternalLoadBalancer})
+	loadBalancerGroupBodyBlockBody := loadBalancerGroupBlock.Body()
+
+	loadBalancerGroupBodyBlockBody.SetAttributeValue(internal, cty.BoolVal(true))
+	loadBalancerGroupBodyBlockBody.SetAttributeValue(defaults.LoadBalancerType, cty.StringVal(network))
+
+	subnetList := format.ListOfStrings([]string{terraformConfig.AWSConfig.AWSSubnetID})
+	loadBalancerGroupBodyBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)
+	loadBalancerGroupBodyBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.HostnamePrefix+"-"+internal))
 }

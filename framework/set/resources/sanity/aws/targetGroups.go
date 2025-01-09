@@ -23,8 +23,8 @@ const (
 	unhealthyThreshold = "unhealthy_threshold"
 )
 
-// createTargetGroups is a function that will set the target group configurations in the main.tf file.
-func createTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
+// CreateTargetGroups is a function that will set the target group configurations in the main.tf file.
+func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
 	targetGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancerTargetGroup, defaults.TargetGroupPrefix + strconv.FormatInt(port, 10)})
 	targetGroupBlockBody := targetGroupBlock.Body()
 
@@ -32,6 +32,29 @@ func createTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	targetGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(TCP))
 	targetGroupBlockBody.SetAttributeValue(defaults.VpcId, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
 	targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.HostnamePrefix+"-tg-"+strconv.FormatInt(port, 10)))
+
+	healthCheckGroupBlock := targetGroupBlockBody.AppendNewBlock(defaults.HealthCheck, nil)
+	healthCheckGroupBlockBody := healthCheckGroupBlock.Body()
+
+	healthCheckGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(HTTP))
+	healthCheckGroupBlockBody.SetAttributeValue(defaults.Port, cty.StringVal(trafficPort))
+	healthCheckGroupBlockBody.SetAttributeValue(path, cty.StringVal(ping))
+	healthCheckGroupBlockBody.SetAttributeValue(interval, cty.NumberIntVal(10))
+	healthCheckGroupBlockBody.SetAttributeValue(timeout, cty.NumberIntVal(6))
+	healthCheckGroupBlockBody.SetAttributeValue(healthyThreshold, cty.NumberIntVal(3))
+	healthCheckGroupBlockBody.SetAttributeValue(unhealthyThreshold, cty.NumberIntVal(3))
+	healthCheckGroupBlockBody.SetAttributeValue(matcher, cty.StringVal("200-399"))
+}
+
+// CreateInternalTargetGroups is a function that will set the internal target group configurations in the main.tf file.
+func CreateInternalTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
+	targetGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancerTargetGroup, defaults.TargetGroupInternalPrefix + strconv.FormatInt(port, 10)})
+	targetGroupBlockBody := targetGroupBlock.Body()
+
+	targetGroupBlockBody.SetAttributeValue(defaults.Port, cty.NumberIntVal(port))
+	targetGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(TCP))
+	targetGroupBlockBody.SetAttributeValue(defaults.VpcId, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
+	targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.HostnamePrefix+"-internal-tg-"+strconv.FormatInt(port, 10)))
 
 	healthCheckGroupBlock := targetGroupBlockBody.AppendNewBlock(defaults.HealthCheck, nil)
 	healthCheckGroupBlockBody := healthCheckGroupBlock.Body()
