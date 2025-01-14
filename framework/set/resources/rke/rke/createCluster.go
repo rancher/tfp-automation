@@ -40,7 +40,7 @@ func CreateRKECluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 		}
 
 		nodesBlockBody.SetAttributeRaw(address, values)
-		nodesBlockBody.SetAttributeValue(user, cty.StringVal(terraformConfig.Standalone.RKE1User))
+		nodesBlockBody.SetAttributeValue(user, cty.StringVal(terraformConfig.Standalone.OSUser))
 
 		rolesExpression := fmt.Sprintf(`["controlplane", "etcd", "worker"]`)
 		values = hclwrite.Tokens{

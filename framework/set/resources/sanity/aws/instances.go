@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -36,7 +37,12 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	rootBlockDevice := configBlockBody.AppendNewBlock(defaults.RootBlockDevice, nil)
 	rootBlockDeviceBody := rootBlockDevice.Body()
-	rootBlockDeviceBody.SetAttributeValue(defaults.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))
+
+	if strings.Contains(hostnamePrefix, "registry") {
+		rootBlockDeviceBody.SetAttributeValue(defaults.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.RegistryRootSize))
+	} else {
+		rootBlockDeviceBody.SetAttributeValue(defaults.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))
+	}
 
 	configBlockBody.AppendNewline()
 

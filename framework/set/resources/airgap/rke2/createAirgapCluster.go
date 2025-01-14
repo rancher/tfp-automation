@@ -63,7 +63,7 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
 		cty.StringVal("bash -c '/tmp/bastion.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
-			rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.RKE2User + " " + encodedPEMFile + "'"),
+			rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile + "'"),
 	}))
 
 	rke2Token := namegen.AppendRandomString(token)
@@ -115,7 +115,7 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
-		cty.StringVal("bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.RKE2User + " " + terraformConfig.Standalone.RKE2Group + " " +
+		cty.StringVal("bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			rke2ServerOnePrivateIP + " " + rke2Token + " " + terraformConfig.PrivateRegistries.URL + " " +
 			terraformConfig.PrivateRegistries.Username + " " + terraformConfig.PrivateRegistries.Password + "'"),
 	}))
@@ -141,7 +141,7 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
-			cty.StringVal("bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.RKE2User + " " + terraformConfig.Standalone.RKE2Group + " " +
+			cty.StringVal("bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 				rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + terraformConfig.PrivateRegistries.URL + " " +
 				terraformConfig.PrivateRegistries.Username + " " + terraformConfig.PrivateRegistries.Password + "'"),
 		}))

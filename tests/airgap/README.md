@@ -16,6 +16,7 @@ Please see below for more details for your config. Please note that the config c
 ## Getting Started
 The config is split up into multiple parts. Think of the parts as follows:
 - Standalone config for setting up Rancher
+- Standalone config for setting up private registry
 - Custom cluster config for provisioning downstream clusters
 - Rancher config
 
@@ -44,12 +45,12 @@ terraform:
   nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   privateRegistries:
-    authConfigSecretName: ""                      # REQUIRED - specify the name of the secret you wanted created
+    authConfigSecretName: ""                      # REQUIRED (authenticated registry only) - specify the name of the secret you wanted created
     insecure: true
-    url: ""                                       # REQUIRED - name of the private registry that is already created
-    systemDefaultRegistry: ""                     # REQUIRED - name of the private registry that is already created
-    username: ""                                  # REQUIRED - username of the private registry
-    password: ""                                  # REQUIRED - password of the private registry
+    url: ""                                       # LEAVE BLANK - will be set during the test
+    systemDefaultRegistry: ""                     # LEAVE BLANK - will be set during the test
+    username: ""                                  # REQUIRED (authenticated registry only) - username of the private registry
+    password: ""                                  # REQUIRED (authenticated registry only) - password of the private registry
   ##########################################
   # INFRASTRUCTURE / CUSTOM CLUSTER SETUP
   ##########################################
@@ -68,6 +69,7 @@ terraform:
     awsRoute53Zone: ""
     region: ""
     awsUser: ""
+    registryRootSize: 500
     sshConnectionType: "ssh"
     timeout: "5m"
   ###################################
@@ -77,17 +79,26 @@ terraform:
     airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherRepo: ""                               # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
-    rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     type: ""                                      # REQUIRED - fill with desired value
-    rke2User: ""                                  # REQUIRED - fill with username of the instance created
     stagingRancherImage: ""                       # OPTIONAL - fill out only if you are using staging registry
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
+  ####################################
+  # STANDALONE CONFIG - REGISTRY SETUP
+  ####################################
+  standaloneRegistry:
+    assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
+    authenticated: true                           # REQUIRED - true if you want an authenticated registry, false for a non-authenticated registry
+    registryName: ""                              # REQUIRED (authenticated registry only)
+    registryPassword: ""                          # REQUIRED (authenticated registry only)
+    registryUsername: ""                          # REQUIRED (authenticated registry only)
 ```
 
 Before running, be sure to run the following commands:

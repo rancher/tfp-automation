@@ -31,8 +31,10 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 	v2.SetRancher2ClusterV2(rootBody, terraformConfig, terratestConfig, clusterName)
 	rootBody.AppendNewline()
 
-	createRegistrySecret(terraformConfig, clusterName, rootBody)
-	rootBody.AppendNewline()
+	if terraformConfig.StandaloneRegistry.Authenticated {
+		createRegistrySecret(terraformConfig, clusterName, rootBody)
+		rootBody.AppendNewline()
+	}
 
 	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, bastion)
 	rootBody.AppendNewline()

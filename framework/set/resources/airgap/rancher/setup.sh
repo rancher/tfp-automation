@@ -8,9 +8,8 @@ HOSTNAME=$5
 INTERNAL_FQDN=$6
 RANCHER_TAG_VERSION=$7
 BOOTSTRAP_PASSWORD=$8
-REGISTRY=$9
-STAGING_RANCHER_IMAGE=${10}
-STAGING_RANCHER_AGENT_IMAGE=${11}
+STAGING_RANCHER_IMAGE=${9}
+STAGING_RANCHER_AGENT_IMAGE=${10}
 
 set -ex
 
@@ -39,15 +38,14 @@ if [ -z "$STAGING_RANCHER_IMAGE" ]; then
     helm upgrade --install rancher ${RANCHER_REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                 --set systemDefaultRegistry=${REGISTRY}
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
+
 else
     helm upgrade --install rancher ${RANCHER_REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set rancherImage=${STAGING_RANCHER_IMAGE} \
-                                                                                 --set systemDefaultRegistry=${REGISTRY} \
-                                                                                 --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
+                                                                                 --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \                                                                                --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                  --set "extraEnv[0].value=${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 fi
