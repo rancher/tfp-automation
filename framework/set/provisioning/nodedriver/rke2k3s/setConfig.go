@@ -148,7 +148,7 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	upgradeStrategyBlockBody.SetAttributeValue(workerConcurrency, cty.StringVal(("10%")))
 
 	if terraformConfig.ETCD != nil {
-		setEtcdConfig(rkeConfigBlockBody, terraformConfig)
+		setEtcdConfig(rkeConfigBlockBody, terraformConfig, clusterName)
 	}
 
 	if snapshots.CreateSnapshot {
