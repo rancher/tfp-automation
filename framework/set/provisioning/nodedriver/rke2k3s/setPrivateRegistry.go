@@ -1,9 +1,7 @@
 package rke2k3s
 
 import (
-	"fmt"
-
-	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
@@ -15,14 +13,11 @@ func SetMachineSelectorConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig
 	machineSelectorBlock := rkeConfigBlockBody.AppendNewBlock(defaults.MachineSelectorConfig, nil)
 	machineSelectorBlockBody := machineSelectorBlock.Body()
 
-	configBlock := machineSelectorBlockBody.AppendNewBlock(defaults.Config+" =", nil)
-	configBlockBody := configBlock.Body()
-
-	registryURL := fmt.Sprintf(`"%s"`, terraformConfig.PrivateRegistries.URL)
-
-	configBlockBody.SetAttributeRaw("system-default-registry", hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(registryURL)},
+	registryValue := hclwrite.TokensForTraversal(hcl.Traversal{
+		hcl.TraverseRoot{Name: "<<EOF\n" + systemDefaultRegistry + ": " + terraformConfig.PrivateRegistries.SystemDefaultRegistry + "\nEOF"},
 	})
+
+	machineSelectorBlockBody.SetAttributeRaw(defaults.Config, registryValue)
 
 	return nil
 }
@@ -33,10 +28,23 @@ func SetPrivateRegistryConfig(registryBlockBody *hclwrite.Body, terraformConfig 
 	configBlockBody := configBlock.Body()
 
 	configBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.URL))
-	configBlockBody.SetAttributeValue(authConfigSecretName, cty.StringVal(terraformConfig.PrivateRegistries.AuthConfigSecretName))
+
+	if terraformConfig.StandaloneRegistry.Authenticated {
+		configBlockBody.SetAttributeValue(authConfigSecretName, cty.StringVal(terraformConfig.PrivateRegistries.AuthConfigSecretName))
+	}
+
 	configBlockBody.SetAttributeValue(tlsSecretName, cty.StringVal(terraformConfig.PrivateRegistries.TLSSecretName))
 	configBlockBody.SetAttributeValue(caBundleName, cty.StringVal(terraformConfig.PrivateRegistries.CABundle))
 	configBlockBody.SetAttributeValue(insecure, cty.BoolVal(terraformConfig.PrivateRegistries.Insecure))
+
+	mirrorsBlock := registryBlockBody.AppendNewBlock(defaults.Mirrors, nil)
+	mirrorsBlockBody := mirrorsBlock.Body()
+
+	mirrorsBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.URL))
+
+	if !terraformConfig.StandaloneRegistry.Authenticated {
+		mirrorsBlockBody.SetAttributeValue(endpoints, cty.ListVal([]cty.Value{cty.StringVal("http://" + terraformConfig.PrivateRegistries.URL + ":5000")}))
+	}
 
 	return nil
 }

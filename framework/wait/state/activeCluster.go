@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/extensions/defaults"
 	"github.com/rancher/tfp-automation/defaults/clusterstate"
 	"github.com/sirupsen/logrus"
 	kwait "k8s.io/apimachinery/pkg/util/wait"
@@ -13,7 +12,7 @@ import (
 
 // IsActiveCluster is a function that will wait for the cluster to be in an active state.
 func IsActiveCluster(client *rancher.Client, clusterID string) error {
-	err := kwait.PollUntilContextTimeout(context.TODO(), 10*time.Second, defaults.ThirtyMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
+	err := kwait.PollUntilContextTimeout(context.TODO(), 10*time.Second, 60*time.Minute, true, func(ctx context.Context) (done bool, err error) {
 		cluster, err := client.Management.Cluster.ByID(clusterID)
 		if err != nil {
 			return false, err

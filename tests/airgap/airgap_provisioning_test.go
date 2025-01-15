@@ -31,6 +31,7 @@ type TfpAirgapProvisioningTestSuite struct {
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
 	adminUser                  *management.User
+	registry                   string
 }
 
 func (a *TfpAirgapProvisioningTestSuite) TearDownSuite() {
@@ -47,7 +48,10 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	standaloneTerraformOptions, keyPath := framework.AirgapSetup(a.T(), a.terraformConfig, a.terratestConfig)
 	a.standaloneTerraformOptions = standaloneTerraformOptions
 
-	resources.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig)
+	registry, err := resources.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig)
+	require.NoError(a.T(), err)
+
+	a.registry = registry
 }
 
 func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig) {
@@ -94,6 +98,9 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		terraformConfig := *a.terraformConfig
 		terraformConfig.Module = tt.module
 
+		terraformConfig.PrivateRegistries.SystemDefaultRegistry = a.registry
+		terraformConfig.PrivateRegistries.URL = a.registry
+
 		a.TfpSetupSuite(&terratestConfig, &terraformConfig)
 
 		provisioning.GetK8sVersion(a.T(), a.client, &terratestConfig, &terraformConfig, configs.DefaultK8sVersion)
@@ -127,6 +134,9 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 		terratestConfig := *a.terratestConfig
 		terraformConfig := *a.terraformConfig
 		terraformConfig.Module = tt.module
+
+		terraformConfig.PrivateRegistries.SystemDefaultRegistry = a.registry
+		terraformConfig.PrivateRegistries.URL = a.registry
 
 		a.TfpSetupSuite(&terratestConfig, &terraformConfig)
 

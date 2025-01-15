@@ -14,6 +14,7 @@ type Config struct {
 	AWSZoneLetter         string   `json:"awsZoneLetter,omitempty" yaml:"awsZoneLetter,omitempty"`
 	PrivateAccess         bool     `json:"privateAccess,omitempty" yaml:"privateAccess,omitempty"`
 	PublicAccess          bool     `json:"publicAccess,omitempty" yaml:"publicAccess,omitempty"`
+	RegistryRootSize      int64    `json:"registryRootSize,omitempty" yaml:"registryRootSize,omitempty"`
 	Region                string   `json:"region,omitempty" yaml:"region,omitempty"`
 	AWSUser               string   `json:"awsUser,omitempty" yaml:"awsUser,omitempty"`
 	Timeout               string   `json:"timeout,omitempty" yaml:"timeout,omitempty"`

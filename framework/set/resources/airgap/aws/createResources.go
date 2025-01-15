@@ -13,6 +13,7 @@ import (
 const (
 	locals            = "locals"
 	requiredProviders = "required_providers"
+	registry          = "registry"
 	rke2Bastion       = "rke2_bastion"
 	rke2ServerOne     = "rke2_server1"
 	rke2ServerTwo     = "rke2_server2"
@@ -28,10 +29,13 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	sanity.CreateAWSProviderBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	sanity.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, rke2Bastion)
-	rootBody.AppendNewline()
+	instances := []string{rke2Bastion, registry}
+	for _, instance := range instances {
+		sanity.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
+		rootBody.AppendNewline()
+	}
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances = []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 	for _, instance := range instances {
 		CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
 		rootBody.AppendNewline()

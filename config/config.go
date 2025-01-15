@@ -89,15 +89,15 @@ type Nodepool struct {
 }
 
 type PrivateRegistries struct {
+	AuthConfigSecretName   string `json:"authConfigSecretName,omitempty" yaml:"authConfigSecretName,omitempty"`
+	CABundle               string `json:"caBundle,omitempty" yaml:"caBundle,omitempty"`
 	EngineInsecureRegistry string `json:"engineInsecureRegistry,omitempty" yaml:"engineInsecureRegistry,omitempty"`
+	Insecure               bool   `json:"insecure,omitempty" yaml:"insecure,omitempty"`
 	Password               string `json:"password,omitempty" yaml:"password,omitempty"`
+	SystemDefaultRegistry  string `json:"systemDefaultRegistry,omitempty" yaml:"systemDefaultRegistry,omitempty"`
+	TLSSecretName          string `json:"tlsSecretName,omitempty" yaml:"tlsSecretName,omitempty"`
 	URL                    string `json:"url,omitempty" yaml:"url,omitempty"`
 	Username               string `json:"username,omitempty" yaml:"username,omitempty"`
-	AuthConfigSecretName   string `json:"authConfigSecretName,omitempty" yaml:"authConfigSecretName,omitempty"`
-	TLSSecretName          string `json:"tlsSecretName,omitempty" yaml:"tlsSecretName,omitempty"`
-	CABundle               string `json:"caBundle,omitempty" yaml:"caBundle,omitempty"`
-	Insecure               bool   `json:"insecure,omitempty" yaml:"insecure,omitempty"`
-	SystemDefaultRegistry  string `json:"systemDefaultRegistry,omitempty" yaml:"systemDefaultRegistry,omitempty"`
 }
 
 type Standalone struct {
@@ -109,13 +109,20 @@ type Standalone struct {
 	RancherHostname          string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
 	RancherRepo              string `json:"rancherRepo,omitempty" yaml:"rancherRepo,omitempty"`
 	RancherTagVersion        string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
-	RKE1User                 string `json:"rke1User,omitempty" yaml:"rke1User,omitempty"`
-	RKE2Group                string `json:"rke2Group,omitempty" yaml:"rke2Group,omitempty"`
-	RKE2User                 string `json:"rke2User,omitempty" yaml:"rke2User,omitempty"`
+	OSUser                   string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
+	OSGroup                  string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
 	RKE2Version              string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
 	StagingRancherImage      string `json:"stagingRancherImage,omitempty" yaml:"stagingRancherImage,omitempty"`
 	StagingRancherAgentImage string `json:"stagingRancherAgentImage,omitempty" yaml:"stagingRancherAgentImage,omitempty"`
 	Type                     string `json:"type,omitempty" yaml:"type,omitempty"`
+}
+
+type StandaloneRegistry struct {
+	AssetsPath       string `json:"assetsPath,omitempty" yaml:"assetsPath,omitempty"`
+	Authenticated    bool   `json:"authenticated,omitempty" yaml:"authenticated,omitempty"`
+	RegistryName     string `json:"registryName,omitempty" yaml:"registryName,omitempty"`
+	RegistryPassword string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
+	RegistryUsername string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
 }
 
 type TerraformConfig struct {
@@ -153,6 +160,7 @@ type TerraformConfig struct {
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
 	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
 	Standalone                          *Standalone                  `json:"standalone,omitempty" yaml:"standalone,omitempty"`
+	StandaloneRegistry                  *StandaloneRegistry          `json:"standaloneRegistry,omitempty" yaml:"standaloneRegistry,omitempty"`
 }
 
 type Scaling struct {

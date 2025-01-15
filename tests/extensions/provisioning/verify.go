@@ -6,6 +6,7 @@ import (
 
 	clusterActions "github.com/rancher/rancher/tests/v2/actions/clusters"
 	"github.com/rancher/rancher/tests/v2/actions/psact"
+	"github.com/rancher/rancher/tests/v2/actions/registries"
 	"github.com/rancher/shepherd/clients/rancher"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
@@ -58,6 +59,11 @@ func VerifyCluster(t *testing.T, client *rancher.Client, clusterName string, ter
 
 	podErrors := pods.StatusPods(client, cluster.ID)
 	assert.Empty(t, podErrors)
+
+	if terraformConfig.PrivateRegistries != nil {
+		_, err := registries.CheckAllClusterPodsForRegistryPrefix(client, clusterID, terraformConfig.PrivateRegistries.URL)
+		require.NoError(t, err)
+	}
 }
 
 // VerifyNodeCount validates that a cluster has the expected number of nodes.

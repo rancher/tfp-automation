@@ -50,6 +50,7 @@ const (
 	insecure              = "insecure"
 	systemDefaultRegistry = "system-default-registry"
 	project               = "project"
+	endpoints             = "endpoints"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.

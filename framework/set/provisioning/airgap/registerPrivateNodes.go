@@ -25,7 +25,7 @@ func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 		{Type: hclsyntax.TokenStringLit, Bytes: []byte("/tmp/register-nodes.sh " + encodedPEMFile + " " +
-			terraformConfig.Standalone.RKE2User + " " + terraformConfig.Standalone.RKE2Group + " " + bastionPublicIP + " " +
+			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " + bastionPublicIP + " " +
 			nodePrivateIP + " " + newCommand)},
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
