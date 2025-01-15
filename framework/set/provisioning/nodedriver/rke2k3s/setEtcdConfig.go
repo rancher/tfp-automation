@@ -12,7 +12,7 @@ import (
 )
 
 // setEtcdConfig is a function that will set the etcd configurations in the main.tf file.
-func setEtcdConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
+func setEtcdConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) error {
 	snapshotBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Etcd, nil)
 	snapshotBlockBody := snapshotBlock.Body()
 
@@ -25,7 +25,7 @@ func setEtcdConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.Te
 		s3ConfigBlockBody := s3ConfigBlock.Body()
 
 		cloudCredSecretName := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + defaults.CloudCredential + ".id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + clusterName + ".id")},
 		}
 
 		s3ConfigBlockBody.SetAttributeValue(bucket, cty.StringVal(terraformConfig.ETCD.S3.Bucket))

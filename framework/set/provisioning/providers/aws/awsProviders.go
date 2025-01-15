@@ -53,7 +53,7 @@ func SetAWSRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.Terr
 	cloudCredBlock := rootBody.AppendNewBlock(resource, []string{cloudCredential, clusterName})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(resourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(resourceName, cty.StringVal(clusterName))
 
 	awsCredBlock := cloudCredBlockBody.AppendNewBlock(amazon.EC2CredentialConfig, nil)
 	awsCredBlockBody := awsCredBlock.Body()
