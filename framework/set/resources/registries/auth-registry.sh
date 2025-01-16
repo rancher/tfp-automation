@@ -29,7 +29,7 @@ sudo mkdir -p /etc/docker/certs.d/${HOST}
 sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
 
 echo "Creating a private registry..."
-sudo docker run -d --restart=always --name "${REGISTRY_NAME}" -v /home/${USER}/auth:/auth -v /home/${USER}/certs:/certs -v /home/${USER}/certs:/certs \
+sudo docker run -d --restart=always --name "${REGISTRY_NAME}" -v /home/${USER}/auth:/auth -v /home/${USER}/certs:/certs \
                                                                                                   -e REGISTRY_AUTH=htpasswd \
                                                                                                   -e REGISTRY_AUTH_HTPASSWD_REALM="Registry Realm" \
                                                                                                   -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
