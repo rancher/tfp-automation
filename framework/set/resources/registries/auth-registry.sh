@@ -50,6 +50,7 @@ sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-load-images.sh -O /home/${USER}
 sudo chmod +x /home/${USER}/rancher-save-images.sh && sudo chmod +x /home/${USER}/rancher-load-images.sh
 sudo sed -i "s/docker save/# docker save /g" /home/${USER}/rancher-save-images.sh
 sudo sed -i "s/docker load/# docker load /g" /home/${USER}/rancher-load-images.sh
+sudo sed -i '/mirrored-prometheus-windows-exporter/d' /home/${USER}/rancher-images.txt
     
 echo "Saving the images..."
 sudo /home/${USER}/rancher-save-images.sh --image-list /home/${USER}/rancher-images.txt
