@@ -38,7 +38,8 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
+	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return err
 	}

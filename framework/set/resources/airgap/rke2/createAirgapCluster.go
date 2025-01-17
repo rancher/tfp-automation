@@ -25,7 +25,7 @@ const (
 
 // CreateAirgapRKE2Cluster is a helper function that will create the RKE2 cluster.
 func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
+	rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -68,8 +68,8 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 
 	rke2Token := namegen.AppendRandomString(token)
 
-	createAirgappedRKE2Server(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2Token, serverOneScriptContent)
-	addAirgappedRKE2ServerNodes(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP, rke2Token, newServersScriptContent)
+	createAirgappedRKE2Server(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2Token, registryPublicDNS, serverOneScriptContent)
+	addAirgappedRKE2ServerNodes(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP, rke2Token, registryPublicDNS, newServersScriptContent)
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
@@ -109,15 +109,27 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 // createAirgappedRKE2Server is a helper function that will create the RKE2 server.
 func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP,
-	rke2Token string, script []byte) {
+	rke2Token, registryPublicDNS string, script []byte) {
 	nullResourceBlockBody, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
+
+	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " + terraformConfig.Standalone.RancherImage + " " +
+		terraformConfig.Standalone.RancherTagVersion
+
+	if terraformConfig.PrivateRegistries.Username != "" {
+		command += " " + terraformConfig.PrivateRegistries.Username + " " + terraformConfig.PrivateRegistries.Password
+	}
+
+	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	}
+
+	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
-		cty.StringVal("bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			rke2ServerOnePrivateIP + " " + rke2Token + " " + terraformConfig.PrivateRegistries.URL + " " +
-			terraformConfig.PrivateRegistries.Username + " " + terraformConfig.PrivateRegistries.Password + "'"),
+		cty.StringVal(command),
 	}))
 
 	dependsOnServer := `[` + defaults.NullResource + `.` + rke2Bastion + `]`
@@ -130,7 +142,7 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 
 // addAirgappedRKE2ServerNodes is a helper function that will add additional RKE2 server nodes to the initial RKE2 airgapped server.
 func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS,
-	rke2ServerThreePublicDNS, rke2Token string, script []byte) {
+	rke2ServerThreePublicDNS, rke2Token, registryPublicDNS string, script []byte) {
 	instances := []string{rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS}
 	hosts := []string{rke2ServerTwo, rke2ServerThree}
 
@@ -138,12 +150,24 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 		host := hosts[i]
 		nullResourceBlockBody, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
+		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " +
+			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion
+
+		if terraformConfig.PrivateRegistries.Username != "" {
+			command += " " + terraformConfig.PrivateRegistries.Username + " " + terraformConfig.PrivateRegistries.Password
+		}
+
+		if terraformConfig.Standalone.StagingRancherAgentImage != "" {
+			command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+		}
+
+		command += "'"
+
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
-			cty.StringVal("bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-				rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + terraformConfig.PrivateRegistries.URL + " " +
-				terraformConfig.PrivateRegistries.Username + " " + terraformConfig.PrivateRegistries.Password + "'"),
+			cty.StringVal(command),
 		}))
 
 		dependsOnServer := `[` + defaults.NullResource + `.` + rke2ServerOne + `]`

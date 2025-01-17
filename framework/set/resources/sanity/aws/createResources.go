@@ -11,14 +11,13 @@ import (
 
 // CreateAWSResources is a helper function that will create the AWS resources needed for the RKE2 cluster.
 func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig) (*os.File, error) {
+	terratestConfig *config.TerratestConfig, instances []string) (*os.File, error) {
 	CreateTerraformProviderBlock(tfBlockBody)
 	rootBody.AppendNewline()
 
 	CreateAWSProviderBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 	for _, instance := range instances {
 		CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 		rootBody.AppendNewline()

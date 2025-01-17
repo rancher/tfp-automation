@@ -107,12 +107,12 @@ type Standalone struct {
 	RancherChartVersion      string `json:"rancherChartVersion,omitempty" yaml:"rancherChartVersion,omitempty"`
 	RancherChartRepository   string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
 	RancherHostname          string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
+	RancherImage             string `json:"rancherImage,omitempty" yaml:"rancherImage,omitempty"`
 	RancherRepo              string `json:"rancherRepo,omitempty" yaml:"rancherRepo,omitempty"`
 	RancherTagVersion        string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
 	OSUser                   string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
 	OSGroup                  string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
 	RKE2Version              string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
-	StagingRancherImage      string `json:"stagingRancherImage,omitempty" yaml:"stagingRancherImage,omitempty"`
 	StagingRancherAgentImage string `json:"stagingRancherAgentImage,omitempty" yaml:"stagingRancherAgentImage,omitempty"`
 	Type                     string `json:"type,omitempty" yaml:"type,omitempty"`
 }

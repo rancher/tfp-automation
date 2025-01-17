@@ -81,13 +81,12 @@ terraform:
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
-    rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
     rancherRepo: ""                               # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     type: ""                                      # REQUIRED - fill with desired value
-    stagingRancherImage: ""                       # OPTIONAL - fill out only if you are using staging registry
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
   ####################################

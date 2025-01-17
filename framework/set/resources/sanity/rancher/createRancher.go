@@ -35,10 +35,10 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherRepo + " " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Type + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.Standalone.BootstrapPassword
+		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage
 
-	if terraformConfig.Standalone.StagingRancherImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherImage + " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
+		command += terraformConfig.Standalone.StagingRancherAgentImage
 	}
 
 	command += "'"

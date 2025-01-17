@@ -82,12 +82,12 @@ terraform:
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
     rancherRepo: ""                               # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     type: ""                                      # REQUIRED - fill with desired value
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
-    stagingRancherImage: ""                       # OPTIONAL - fill out only if you are using staging registry
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value you wish the local cluster to be
 ```

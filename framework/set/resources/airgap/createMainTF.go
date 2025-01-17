@@ -71,7 +71,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = OpenFile(file, keyPath)
-	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", err
 	}
@@ -79,7 +79,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = OpenFile(file, keyPath)
-	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS)
+	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS)
 	if err != nil {
 		return "", err
 	}

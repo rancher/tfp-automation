@@ -8,8 +8,9 @@ HOSTNAME=$5
 INTERNAL_FQDN=$6
 RANCHER_TAG_VERSION=$7
 BOOTSTRAP_PASSWORD=$8
-STAGING_RANCHER_IMAGE=${9}
+RANCHER_IMAGE=$9
 STAGING_RANCHER_AGENT_IMAGE=${10}
+REGISTRY=${11}
 
 set -ex
 
@@ -34,20 +35,21 @@ echo "Waiting 1 minute for Rancher"
 sleep 60
 
 echo "Installing Rancher"
-if [ -z "$STAGING_RANCHER_IMAGE" ]; then
+if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
     helm upgrade --install rancher ${RANCHER_REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
+                                                                                 --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
+                                                                                 --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
+                                                                                 --set "extraEnv[0].value=${REGISTRY}/${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 
 else
     helm upgrade --install rancher ${RANCHER_REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
+                                                                                 --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                 --set rancherImage=${STAGING_RANCHER_IMAGE} \
-                                                                                 --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \                                                                                --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                 --set "extraEnv[0].value=${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
 fi
 
 echo "Waiting for Rancher to be rolled out"
