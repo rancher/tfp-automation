@@ -42,7 +42,6 @@ terraform:
     awsKeyName: ""
     awsInstanceType: ""
     region: "us-east-2"
-    awsSecurityGroupNames: [""]
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
@@ -52,9 +51,10 @@ terraform:
     prefix: ""
     awsUser: ""
     sshConnectionType: "ssh"
+    standaloneSecurityGroupNames: [""]
     timeout: "5m"
   standalone:
-    rke1User: ""
+    osUser: ""
 ```
 
 Before running, be sure to run the following commands:

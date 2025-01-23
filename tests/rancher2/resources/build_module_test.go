@@ -3,7 +3,8 @@ package tests
 import (
 	"testing"
 
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
+	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -14,7 +15,8 @@ type BuildModuleTestSuite struct {
 }
 
 func (r *BuildModuleTestSuite) TestBuildModule() {
-	defer cleanup.ConfigCleanupTF()
+	keyPath := rancher2.SetKeyPath()
+	defer cleanup.TFFilesCleanup(keyPath)
 
 	err := provisioning.BuildModule(r.T())
 	require.NoError(r.T(), err)

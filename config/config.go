@@ -50,6 +50,13 @@ var WorkerNodePool = Nodepool{
 	Quantity:     1,
 }
 
+var AllRolesNodePool = Nodepool{
+	Etcd:         true,
+	Controlplane: true,
+	Worker:       true,
+	Quantity:     1,
+}
+
 var ScaleUpEtcdNodePool = Nodepool{
 	Etcd:         true,
 	Controlplane: false,

@@ -25,7 +25,14 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
 	configBlockBody.SetAttributeValue(defaults.SubnetId, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))
 
-	awsSecGroupsExpression := fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroupNames[0])
+	var awsSecGroupsExpression string
+
+	if terraformConfig.Standalone != nil {
+		awsSecGroupsExpression = fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.StandaloneSecurityGroupNames[0])
+	} else {
+		awsSecGroupsExpression = fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroupNames[0])
+	}
+
 	awsSecGroupsList := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(awsSecGroupsExpression)},
 	}

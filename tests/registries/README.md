@@ -1,9 +1,9 @@
-# Airgap Provisioning Tests
+# Private Registry Tests
 
-In the tfp-automation airgap provisioning test, the following workflow is followed:
+In the tfp-automation private registries test, the following workflow is followed:
 
-1. Setup airgapped-Rancher HA utilizing Terraform resources + specified provider infrastructure
-2. Provision downstream RKE1 / RKE2 / K3S clusters.
+1. Setup Rancher HA utilizing Terraform resources + specified provider infrastructure. A global registry is set as the system default registry while an authenticated and non-authenticated registry are created.
+2. Provision downstream RKE1 / RKE2 / K3S clusters - done using the global registry, authenticated registry and non-authenticated registry.
 3. Perform post-cluster provisioning checks
 4. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 
@@ -51,9 +51,9 @@ terraform:
     systemDefaultRegistry: ""                     # LEAVE BLANK - will be set during the test
     username: ""                                  # REQUIRED (authenticated registry only) - username of the private registry
     password: ""                                  # REQUIRED (authenticated registry only) - password of the private registry
-  ##########################################
-  # INFRASTRUCTURE / CUSTOM CLUSTER SETUP
-  ##########################################
+  ########################
+  # INFRASTRUCTURE SETUP
+  ########################
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -77,7 +77,6 @@ terraform:
   # STANDALONE CONFIG - RANCHER SETUP
   ###################################
   standalone:
-    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
@@ -89,13 +88,12 @@ terraform:
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     type: ""                                      # REQUIRED - fill with desired value
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
   ####################################
   # STANDALONE CONFIG - REGISTRY SETUP
   ####################################
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
-    authenticated: true                           # REQUIRED - true if you want an authenticated registry, false for a non-authenticated registry
     registryName: ""                              # REQUIRED (authenticated registry only)
     registryPassword: ""                          # REQUIRED (authenticated registry only)
     registryUsername: ""                          # REQUIRED (authenticated registry only)
@@ -103,11 +101,11 @@ terraform:
 
 Before running, be sure to run the following commands:
 
-`export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"; export AIRGAP_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/airgap"; export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
+`export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"; export REGISTRY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/registries"; export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpAirgapProvisioningTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/registries --junitfile results.xml --jsonfile results.json -- -timeout=600m -v -run "TestTfpRegistriesTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 

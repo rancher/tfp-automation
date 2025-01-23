@@ -11,7 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2"
-	"github.com/rancher/tfp-automation/framework/set/resources/registries"
+	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,6 +19,8 @@ const (
 	rke2ServerOne   = "rke2_server1"
 	rke2ServerTwo   = "rke2_server2"
 	rke2ServerThree = "rke2_server3"
+
+	nonAuthRegistry = "non_auth_registry"
 
 	registryPublicDNS        = "registry_public_dns"
 	rke2BastionPublicDNS     = "rke2_bastion_public_dns"
@@ -57,12 +59,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = OpenFile(file, keyPath)
 	if terraformConfig.StandaloneRegistry.Authenticated {
-		file, err = registries.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS)
+		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS)
 		if err != nil {
 			return "", err
 		}
 	} else {
-		file, err = registries.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS)
+		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS, nonAuthRegistry)
 		if err != nil {
 			return "", err
 		}

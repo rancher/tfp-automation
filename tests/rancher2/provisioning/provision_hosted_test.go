@@ -10,7 +10,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
@@ -51,7 +52,8 @@ func (p *ProvisionHostedTestSuite) SetupSuite() {
 
 	p.terratestConfig = terratestConfig
 
-	terraformOptions := framework.Rancher2Setup(p.T(), p.rancherConfig, p.terraformConfig, p.terratestConfig)
+	keyPath := rancher2.SetKeyPath()
+	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
 }
 
@@ -68,7 +70,8 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
-			defer cleanup.ConfigCleanup(p.T(), p.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)

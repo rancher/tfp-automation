@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 )
 
@@ -18,7 +18,7 @@ func ForceCleanup(t *testing.T) error {
 	})
 
 	terraform.Destroy(t, terraformOptions)
-	cleanup.ConfigCleanupTF()
+	cleanup.TFFilesCleanup(keyPath)
 
 	return nil
 }

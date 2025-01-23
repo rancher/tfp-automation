@@ -62,7 +62,6 @@ terraform:
     ami: ""
     awsKeyName: ""
     awsInstanceType: ""
-    awsSecurityGroupNames: [""]
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
@@ -72,6 +71,7 @@ terraform:
     prefix: ""
     awsUser: ""
     sshConnectionType: "ssh"
+    standaloneSecurityGroupNames: [""]
     timeout: "5m"
   ###################################
   # STANDALONE CONFIG - RANCHER SETUP
@@ -89,7 +89,7 @@ terraform:
     type: ""                                      # REQUIRED - fill with desired value
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
-    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value you wish the local cluster to be
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
 ```
 
 Before running, be sure to run the following commands:

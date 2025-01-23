@@ -10,7 +10,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
@@ -52,7 +53,8 @@ func (r *RBACTestSuite) SetupSuite() {
 
 	r.terratestConfig = terratestConfig
 
-	terraformOptions := framework.Rancher2Setup(r.T(), r.rancherConfig, r.terraformConfig, r.terratestConfig)
+	keyPath := rancher2.SetKeyPath()
+	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 
 	provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion)
@@ -78,7 +80,8 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
-			defer cleanup.ConfigCleanup(r.T(), r.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
 			require.NoError(r.T(), err)

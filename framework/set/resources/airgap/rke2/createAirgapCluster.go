@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2"
+	sanity "github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -80,37 +81,10 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 	return file, nil
 }
 
-// CreateNullResource is a helper function that will create the null_resource for the RKE2 cluster.
-func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, instance, host string) (*hclwrite.Body, *hclwrite.Body) {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, host})
-	nullResourceBlockBody := nullResourceBlock.Body()
-
-	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
-	provisionerBlockBody := provisionerBlock.Body()
-
-	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
-	connectionBlockBody := connectionBlock.Body()
-
-	connectionBlockBody.SetAttributeValue(defaults.Host, cty.StringVal(instance))
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
-
-	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
-	keyPath := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
-	}
-
-	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-
-	rootBody.AppendNewline()
-
-	return nullResourceBlockBody, provisionerBlockBody
-}
-
 // createAirgappedRKE2Server is a helper function that will create the RKE2 server.
 func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP,
 	rke2Token, registryPublicDNS string, script []byte) {
-	nullResourceBlockBody, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
+	nullResourceBlockBody, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " + terraformConfig.Standalone.RancherImage + " " +
@@ -148,7 +122,7 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
+		nullResourceBlockBody, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " +

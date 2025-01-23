@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
+	rke2k3s "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	airgap "github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
 	"github.com/sirupsen/logrus"
@@ -32,7 +33,7 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 	rootBody.AppendNewline()
 
 	if terraformConfig.StandaloneRegistry.Authenticated {
-		createRegistrySecret(terraformConfig, clusterName, rootBody)
+		rke2k3s.CreateRegistrySecret(terraformConfig, clusterName, rootBody)
 		rootBody.AppendNewline()
 	}
 
