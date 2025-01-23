@@ -34,13 +34,22 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2AuthRegistryPublicDNS, authRegistry)
 
+	command := "bash -c '/tmp/auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
+		terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.StandaloneRegistry.RegistryName + " " +
+		rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
+		terraformConfig.Standalone.RancherImage
+
+	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	}
+
+	command += "'"
+
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/auth-registry.sh"),
 		cty.StringVal("chmod +x /tmp/auth-registry.sh"),
-		cty.StringVal("bash -c '/tmp/auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
-			terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.StandaloneRegistry.RegistryName + " " +
-			rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + "'"),
+		cty.StringVal(command),
 	}))
 
 	_, err = file.Write(newFile.Bytes())
@@ -69,12 +78,21 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2NonAuthRegistryPublicDNS, nonAuthRegistry)
 
+	command := "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " +
+		rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
+		terraformConfig.Standalone.RancherImage
+
+	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	}
+
+	command += "'"
+
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/non-auth-registry.sh"),
 		cty.StringVal("chmod +x /tmp/non-auth-registry.sh"),
-		cty.StringVal("bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " +
-			rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + "'"),
+		cty.StringVal(command),
 	}))
 
 	_, err = file.Write(newFile.Bytes())

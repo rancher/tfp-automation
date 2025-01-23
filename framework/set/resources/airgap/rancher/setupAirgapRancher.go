@@ -18,7 +18,7 @@ const (
 
 // CreateAirgapRancher is a function that will set the airgap Rancher configurations in the main.tf file.
 func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2BastionPublicDNS string) (*os.File, error) {
+	rke2BastionPublicDNS, registryPublicDNS string) (*os.File, error) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -36,10 +36,11 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherRepo + " " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Type + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.RancherHostname + " " + " " + terraformConfig.Standalone.AirgapInternalFQDN + " " +
-		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.BootstrapPassword
+		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
+		terraformConfig.Standalone.RancherImage
 
-	if terraformConfig.Standalone.StagingRancherImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherImage + " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.StagingRancherAgentImage + " " + registryPublicDNS
 	}
 
 	command += "'"

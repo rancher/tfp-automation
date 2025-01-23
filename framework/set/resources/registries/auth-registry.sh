@@ -7,6 +7,8 @@ HOST=$4
 RANCHER_VERSION=$5
 ASSET_DIR=$6
 USER=$7
+RANCHER_IMAGE=$8
+STAGING_RANCHER_AGENT_IMAGE=${9}
 
 set -e
 
@@ -51,6 +53,11 @@ sudo chmod +x /home/${USER}/rancher-save-images.sh && sudo chmod +x /home/${USER
 sudo sed -i "s/docker save/# docker save /g" /home/${USER}/rancher-save-images.sh
 sudo sed -i "s/docker load/# docker load /g" /home/${USER}/rancher-load-images.sh
 sudo sed -i '/mirrored-prometheus-windows-exporter/d' /home/${USER}/rancher-images.txt
+
+if [ ! -z "${STAGING_RANCHER_AGENT_IMAGE}" ]; then
+    sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
+    sudo sed -i "s|rancher/rancher-agent:|${STAGING_RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
+fi
     
 echo "Saving the images..."
 sudo /home/${USER}/rancher-save-images.sh --image-list /home/${USER}/rancher-images.txt
