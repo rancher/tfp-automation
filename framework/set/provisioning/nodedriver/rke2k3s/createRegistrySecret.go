@@ -1,4 +1,4 @@
-package airgap
+package rke2k3s
 
 import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -16,8 +16,8 @@ const (
 	username     = "username"
 )
 
-// createRegistrySecret is a function that will set the airgap RKE2/K3s cluster configurations in the main.tf file.
-func createRegistrySecret(terraformConfig *config.TerraformConfig, clusterName string, rootBody *hclwrite.Body) {
+// CreateRegistrySecret is a function that will set the airgap RKE2/K3s cluster configurations in the main.tf file.
+func CreateRegistrySecret(terraformConfig *config.TerraformConfig, clusterName string, rootBody *hclwrite.Body) {
 	secretBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.SecretV2, clusterName})
 	secretBlockBody := secretBlock.Body()
 

@@ -1,17 +1,14 @@
-package sanity
+package cleanup
 
 import (
 	"os"
 
 	"github.com/rancher/tfp-automation/defaults/configs"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/sirupsen/logrus"
 )
 
-// StandaloneConfigCleanupTF is a function that will cleanup the main.tf file and terraform.tfstate files.
-func StandaloneConfigCleanupTF() error {
-	keyPath := resources.KeyPath()
-
+// TFFilesCleanup is a function that will cleanup the main.tf file and terraform.tfstate files.
+func TFFilesCleanup(keyPath string) error {
 	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		logrus.Errorf("Failed to overwrite main.tf file. Error: %v", err)

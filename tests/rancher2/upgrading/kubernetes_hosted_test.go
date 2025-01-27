@@ -11,7 +11,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
@@ -52,7 +53,8 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 
 	k.terratestConfig = terratestConfig
 
-	terraformOptions := framework.Rancher2Setup(k.T(), k.rancherConfig, k.terraformConfig, k.terratestConfig)
+	keyPath := rancher2.SetKeyPath()
+	terraformOptions := framework.Setup(k.T(), k.terraformConfig, k.terratestConfig, keyPath)
 	k.terraformOptions = terraformOptions
 }
 
@@ -69,7 +71,8 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		k.Run((tt.name), func() {
-			defer cleanup.ConfigCleanup(k.T(), k.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
 			require.NoError(k.T(), err)

@@ -12,8 +12,9 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
-	standaloneCleanup "github.com/rancher/tfp-automation/framework/cleanup/sanity"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -34,7 +35,8 @@ type TfpSanityTestSuite struct {
 }
 
 func (t *TfpSanityTestSuite) TearDownSuite() {
-	standaloneCleanup.StandaloneConfigCleanup(t.T(), t.standaloneTerraformOptions)
+	keyPath := sanity.KeyPath()
+	cleanup.Cleanup(t.T(), t.standaloneTerraformOptions, keyPath)
 }
 
 func (t *TfpSanityTestSuite) SetupSuite() {
@@ -44,7 +46,8 @@ func (t *TfpSanityTestSuite) SetupSuite() {
 	t.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, t.terratestConfig)
 
-	standaloneTerraformOptions, keyPath := framework.SanitySetup(t.T(), t.terraformConfig, t.terratestConfig)
+	keyPath := sanity.KeyPath()
+	standaloneTerraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.standaloneTerraformOptions = standaloneTerraformOptions
 
 	resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
@@ -76,7 +79,8 @@ func (t *TfpSanityTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConf
 
 	rancherConfig.AdminToken = userToken.Token
 
-	terraformOptions := framework.Rancher2Setup(t.T(), t.rancherConfig, terraformConfig, terratestConfig)
+	keyPath := rancher2.SetKeyPath()
+	terraformOptions := framework.Setup(t.T(), terraformConfig, terratestConfig, keyPath)
 	t.terraformOptions = terraformOptions
 
 	provisioning.GetK8sVersion(t.T(), t.client, terratestConfig, terraformConfig, configs.DefaultK8sVersion)
@@ -107,7 +111,8 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		t.Run((tt.name), func() {
-			defer cleanup.ConfigCleanup(t.T(), t.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
 			provisioning.Provision(t.T(), t.client, t.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, t.terraformOptions, nil)
 			provisioning.VerifyCluster(t.T(), t.client, clusterName, &terraformConfig, &terratestConfig)

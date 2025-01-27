@@ -11,7 +11,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
@@ -52,7 +53,8 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 
 	s.terratestConfig = terratestConfig
 
-	terraformOptions := framework.Rancher2Setup(s.T(), s.rancherConfig, s.terraformConfig, s.terratestConfig)
+	keyPath := rancher2.SetKeyPath()
+	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.terraformOptions = terraformOptions
 
 	provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion)
@@ -89,7 +91,8 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		s.Run(tt.name, func() {
-			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
@@ -123,7 +126,8 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
-			defer cleanup.ConfigCleanup(s.T(), s.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)

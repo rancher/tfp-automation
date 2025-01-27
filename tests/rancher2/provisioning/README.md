@@ -58,7 +58,7 @@ terraform:
     ami: ""
     awsInstanceType: ""
     region: ""
-    awsSecurityGroups:
+    awsSecurityGroupNames:
       - ""
     awsSubnetID: ""
     awsVpcID: ""

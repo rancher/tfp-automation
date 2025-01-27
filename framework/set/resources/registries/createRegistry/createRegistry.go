@@ -1,4 +1,4 @@
-package registries
+package createRegistry
 
 import (
 	"os"
@@ -12,6 +12,11 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+const (
+	authRegistry    = "auth_registry"
+	nonAuthRegistry = "non_auth_registry"
+)
+
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
 func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2AuthRegistryPublicDNS string) (*os.File, error) {
@@ -20,7 +25,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		return nil, err
 	}
 
-	registryScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/auth-registry.sh")
+	registryScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/auth-registry.sh")
 
 	registryScriptContent, err := os.ReadFile(registryScriptPath)
 	if err != nil {
@@ -64,7 +69,7 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 		return nil, err
 	}
 
-	registryScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/non-auth-registry.sh")
+	registryScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/non-auth-registry.sh")
 
 	registryScriptContent, err := os.ReadFile(registryScriptPath)
 	if err != nil {

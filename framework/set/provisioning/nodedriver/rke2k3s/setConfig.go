@@ -133,6 +133,11 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	}
 
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
+		if terraformConfig.PrivateRegistries.Username != "" {
+			rootBody.AppendNewline()
+			CreateRegistrySecret(terraformConfig, clusterName, rootBody)
+		}
+
 		SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
 
 		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)

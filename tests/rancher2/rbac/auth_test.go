@@ -11,7 +11,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/authproviders"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup/rancher2"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
 	"github.com/stretchr/testify/require"
@@ -52,7 +53,8 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 
 	r.terratestConfig = terratestConfig
 
-	terraformOptions := framework.Rancher2Setup(r.T(), r.rancherConfig, r.terraformConfig, r.terratestConfig)
+	keyPath := rancher2.SetKeyPath()
+	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 }
 
@@ -71,7 +73,8 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		authConfig := *r.terraformConfig
 		authConfig.AuthProvider = tt.authProvider
 		r.Run((tt.name), func() {
-			defer cleanup.ConfigCleanup(r.T(), r.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			rb.AuthConfig(r.T(), &authConfig, r.terraformOptions)
 		})
@@ -95,7 +98,8 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 
 	for _, tt := range tests {
 		r.Run((tt.name), func() {
-			defer cleanup.ConfigCleanup(r.T(), r.terraformOptions)
+			keyPath := rancher2.SetKeyPath()
+			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			rb.AuthConfig(r.T(), r.terraformConfig, r.terraformOptions)
 		})

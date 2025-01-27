@@ -30,6 +30,11 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 	}
 
 	if terraformConfig.PrivateRegistries != nil {
+		if terraformConfig.PrivateRegistries.Username != "" {
+			rootBody.AppendNewline()
+			v2.CreateRegistrySecret(terraformConfig, clusterName, rootBody)
+		}
+
 		v2.SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
 
 		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)

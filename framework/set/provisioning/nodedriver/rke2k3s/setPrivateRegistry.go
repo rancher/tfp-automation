@@ -29,7 +29,7 @@ func SetPrivateRegistryConfig(registryBlockBody *hclwrite.Body, terraformConfig 
 
 	configBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.URL))
 
-	if terraformConfig.StandaloneRegistry.Authenticated {
+	if terraformConfig.PrivateRegistries.Username != "" {
 		configBlockBody.SetAttributeValue(authConfigSecretName, cty.StringVal(terraformConfig.PrivateRegistries.AuthConfigSecretName))
 	}
 
@@ -41,10 +41,6 @@ func SetPrivateRegistryConfig(registryBlockBody *hclwrite.Body, terraformConfig 
 	mirrorsBlockBody := mirrorsBlock.Body()
 
 	mirrorsBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.URL))
-
-	if !terraformConfig.StandaloneRegistry.Authenticated {
-		mirrorsBlockBody.SetAttributeValue(endpoints, cty.ListVal([]cty.Value{cty.StringVal("http://" + terraformConfig.PrivateRegistries.URL + ":5000")}))
-	}
 
 	return nil
 }
