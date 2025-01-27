@@ -7,6 +7,7 @@ const (
 	ResourceName = "name"
 	Namespace    = "namespace"
 	Triggers     = "triggers"
+	Value        = "value"
 
 	DependsOn    = "depends_on"
 	GenerateName = "generate_name"
@@ -26,6 +27,7 @@ const (
 	ClusterV2                   = "rancher2_cluster_v2"
 	SecretV2                    = "rancher2_secret_v2"
 
+	AgentEnvVars                        = "agent_env_vars"
 	RkeConfig                           = "rke_config"
 	KubernetesVersion                   = "kubernetes_version"
 	Network                             = "network"

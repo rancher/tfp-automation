@@ -76,12 +76,13 @@ func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.T
 	userToken, err := token.GenerateUserToken(adminUser, a.rancherConfig.Host)
 	require.NoError(a.T(), err)
 
-	client, err := rancher.NewClient(userToken.Token, testSession)
+	rancherConfig.AdminToken = userToken.Token
+
+	client, err := rancher.NewClient(rancherConfig.AdminToken, testSession)
 	require.NoError(a.T(), err)
 
 	a.client = client
-
-	rancherConfig.AdminToken = userToken.Token
+	a.client.RancherConfig.AdminToken = rancherConfig.AdminToken
 
 	keyPath := rancher2.SetKeyPath()
 	terraformOptions := framework.Setup(a.T(), terraformConfig, terratestConfig, keyPath)
@@ -118,6 +119,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, nil)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+			provisioning.VerifyWorkloads(a.T(), a.client, clusterIDs)
 		})
 	}
 
@@ -156,9 +158,11 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, nil)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+			provisioning.VerifyWorkloads(a.T(), a.client, clusterIDs)
 
 			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+			provisioning.VerifyWorkloads(a.T(), a.client, clusterIDs)
 		})
 	}
 

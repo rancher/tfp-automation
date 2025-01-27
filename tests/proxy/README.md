@@ -1,9 +1,9 @@
-# Airgap Provisioning Tests
+# Proxy Provisioning Tests
 
-In the tfp-automation airgap provisioning test, the following workflow is followed:
+In the tfp-automation proxy provisioning test, the following workflow is followed:
 
-1. Setup airgapped-Rancher HA utilizing Terraform resources + specified provider infrastructure
-2. Provision downstream RKE1 / RKE2 / K3S clusters.
+1. Setup proxy Rancher HA utilizing Terraform resources + specified provider infrastructure
+2. Provision downstream RKE1 / RKE2 / K3S clusters - with the proxy and without the proxy
 3. Perform post-cluster provisioning checks
 4. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 
@@ -44,16 +44,11 @@ terraform:
   networkPlugin: ""                               # REQUIRED - fill with desired value
   nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  privateRegistries:
-    authConfigSecretName: ""                      # REQUIRED (authenticated registry only) - specify the name of the secret you wanted created
-    insecure: true
-    url: ""                                       # LEAVE BLANK - will be set during the test
-    systemDefaultRegistry: ""                     # LEAVE BLANK - will be set during the test
-    username: ""                                  # REQUIRED (authenticated registry only) - username of the private registry
-    password: ""                                  # REQUIRED (authenticated registry only) - password of the private registry
-  ##########################################
-  # INFRASTRUCTURE / CUSTOM CLUSTER SETUP
-  ##########################################
+  proxy:
+    proxyBastion: ""                              # REQUIRED - this will be set/unset during testing
+  ########################
+  # INFRASTRUCTURE SETUP
+  ########################
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -77,36 +72,28 @@ terraform:
   # STANDALONE CONFIG - RANCHER SETUP
   ###################################
   standalone:
-    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    osGroup: ""                                   # REQUIRED - fill with group of the instance created
-    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
+    rke2Group: ""                                 # REQUIRED - fill with group of the instance created
+    rke2User: ""                                  # REQUIRED - fill with username of the instance created
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
-  ####################################
-  # STANDALONE CONFIG - REGISTRY SETUP
-  ####################################
-  standaloneRegistry:
-    assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
-    authenticated: true                           # REQUIRED - true if you want an authenticated registry, false for a non-authenticated registry
-    registryName: ""                              # REQUIRED (authenticated registry only)
-    registryPassword: ""                          # REQUIRED (authenticated registry only)
-    registryUsername: ""                          # REQUIRED (authenticated registry only)
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
 ```
 
 Before running, be sure to run the following commands:
 
-`export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"; export AIRGAP_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/airgap"; export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
+`export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"; export PROXY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/proxy"; export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpAirgapProvisioningTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpProxyProvisioningTestSuite$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpProxyUpgradeRancherTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -117,4 +104,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap  --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run TestTfpAirgapProvisioningTestSuite$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy  --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run TestTfpProxyProvisioningTestSuite$";/path/to/tfp-automation/reporter`

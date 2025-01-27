@@ -75,7 +75,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		terratestConfig := *r.terratestConfig
 		terratestConfig.Nodepools = nodeRolesDedicated
 
-		tt.name = tt.name + " Module:" + r.terraformConfig.Module
+		tt.name = tt.name + " Module: " + r.terraformConfig.Module
 
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 

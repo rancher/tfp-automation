@@ -16,6 +16,8 @@ RKE_KEY_PATH="${RKE_KEY_PATH:-}"
 SANITY_KEY_PATH="${SANITY_KEY_PATH:-}"
 AIRGAP_KEY_PATH="${AIRGAP_KEY_PATH:-}"
 REGISTRY_KEY_PATH="${REGISTRY_KEY_PATH:-}"
+PROXY_KEY_PATH="${PROXY_KEY_PATH:-}"
+UPGRADE_KEY_PATH="${UPGRADE_KEY_PATH:-}"
 
 TRIM_JOB_NAME=$(basename "$JOB_NAME")
 
@@ -37,6 +39,8 @@ while [[ 3 -gt $count ]]; do
                                                                     --build-arg SANITY_KEY_PATH="$SANITY_KEY_PATH" \
                                                                     --build-arg AIRGAP_KEY_PATH="$AIRGAP_KEY_PATH" \
                                                                     --build-arg REGISTRY_KEY_PATH="$REGISTRY_KEY_PATH" \
+                                                                    --build-arg PROXY_KEY_PATH="$PROXY_KEY_PATH" \
+                                                                    --build-arg UPGRADE_KEY_PATH="$UPGRADE_KEY_PATH" \
                                                                     --build-arg EXTERNAL_ENCODED_VPN="$EXTERNAL_ENCODED_VPN" \
                                                                     --build-arg VPN_ENCODED_LOGIN="$VPN_ENCODED_LOGIN" \
                                                                     -t tfp-automation-validation-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"

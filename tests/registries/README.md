@@ -84,9 +84,8 @@ terraform:
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
-    rancherRepo: ""                               # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
-    type: ""                                      # REQUIRED - fill with desired value
+    repo: ""                                      # REQUIRED - fill with desired value
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
   ####################################

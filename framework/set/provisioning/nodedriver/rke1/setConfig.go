@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
@@ -96,6 +97,10 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	clusterBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnTemp)
 	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
 	clusterBlockBody.SetAttributeValue(defaults.DefaultPodSecurityAdmission, cty.StringVal(psact))
+
+	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
+		v2.SetProxyConfig(clusterBlockBody, terraformConfig)
+	}
 
 	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()

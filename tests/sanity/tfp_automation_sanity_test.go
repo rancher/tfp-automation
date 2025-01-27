@@ -72,18 +72,17 @@ func (t *TfpSanityTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConf
 	userToken, err := token.GenerateUserToken(adminUser, t.rancherConfig.Host)
 	require.NoError(t.T(), err)
 
-	client, err := rancher.NewClient(userToken.Token, testSession)
+	rancherConfig.AdminToken = userToken.Token
+
+	client, err := rancher.NewClient(rancherConfig.AdminToken, testSession)
 	require.NoError(t.T(), err)
 
 	t.client = client
-
-	rancherConfig.AdminToken = userToken.Token
+	t.client.RancherConfig.AdminToken = rancherConfig.AdminToken
 
 	keyPath := rancher2.SetKeyPath()
 	terraformOptions := framework.Setup(t.T(), terraformConfig, terratestConfig, keyPath)
 	t.terraformOptions = terraformOptions
-
-	provisioning.GetK8sVersion(t.T(), t.client, terratestConfig, terraformConfig, configs.DefaultK8sVersion)
 }
 
 func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
@@ -107,6 +106,8 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 
 		t.TfpSetupSuite(&terratestConfig, &terraformConfig)
 
+		provisioning.GetK8sVersion(t.T(), t.client, &terratestConfig, &terraformConfig, configs.DefaultK8sVersion)
+
 		tt.name = tt.name + " Kubernetes version: " + terratestConfig.KubernetesVersion
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
@@ -115,8 +116,8 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, t.terraformOptions, nil)
-			provisioning.VerifyWorkloads(t.T(), t.client, clusterIDs)
 			provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
+			provisioning.VerifyWorkloads(t.T(), t.client, clusterIDs)
 		})
 	}
 

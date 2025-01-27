@@ -51,6 +51,11 @@ const (
 	systemDefaultRegistry = "system-default-registry"
 	project               = "project"
 	endpoints             = "endpoints"
+
+	httpProxy    = "HTTP_PROXY"
+	httpsProxy   = "HTTPS_PROXY"
+	noProxy      = "NO_PROXY"
+	noProxyValue = "localhost,127.0.0.0/8,10.0.0.0/8,172.0.0.0/8,192.168.0.0/16,.svc,.cluster.local,cattle-system.svc,169.254.169.254"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
@@ -110,6 +115,10 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	clusterBlockBody.SetAttributeValue(defaults.EnableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))
 	clusterBlockBody.SetAttributeValue(defaults.DefaultPodSecurityAdmission, cty.StringVal(psact))
 	clusterBlockBody.SetAttributeValue(defaults.DefaultClusterRoleForProjectMembers, cty.StringVal(terraformConfig.DefaultClusterRoleForProjectMembers))
+
+	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
+		SetProxyConfig(clusterBlockBody, terraformConfig)
+	}
 
 	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()

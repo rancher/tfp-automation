@@ -95,6 +95,10 @@ type Nodepool struct {
 	MaxPodsContraint int64  `json:"maxPodsContraint,omitempty" yaml:"maxPodsContraint,omitempty"`
 }
 
+type Proxy struct {
+	ProxyBastion string `json:"proxyBastion,omitempty" yaml:"proxyBastion,omitempty"`
+}
+
 type PrivateRegistries struct {
 	AuthConfigSecretName   string `json:"authConfigSecretName,omitempty" yaml:"authConfigSecretName,omitempty"`
 	CABundle               string `json:"caBundle,omitempty" yaml:"caBundle,omitempty"`
@@ -108,20 +112,24 @@ type PrivateRegistries struct {
 }
 
 type Standalone struct {
-	AirgapInternalFQDN       string `json:"airgapInternalFQDN,omitempty" yaml:"airgapInternalFQDN,omitempty"`
-	BootstrapPassword        string `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
-	CertManagerVersion       string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
-	RancherChartVersion      string `json:"rancherChartVersion,omitempty" yaml:"rancherChartVersion,omitempty"`
-	RancherChartRepository   string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
-	RancherHostname          string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
-	RancherImage             string `json:"rancherImage,omitempty" yaml:"rancherImage,omitempty"`
-	RancherRepo              string `json:"rancherRepo,omitempty" yaml:"rancherRepo,omitempty"`
-	RancherTagVersion        string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
-	OSUser                   string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
-	OSGroup                  string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
-	RKE2Version              string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
-	StagingRancherAgentImage string `json:"stagingRancherAgentImage,omitempty" yaml:"stagingRancherAgentImage,omitempty"`
-	Type                     string `json:"type,omitempty" yaml:"type,omitempty"`
+	AirgapInternalFQDN             string `json:"airgapInternalFQDN,omitempty" yaml:"airgapInternalFQDN,omitempty"`
+	BootstrapPassword              string `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
+	CertManagerVersion             string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
+	ProxyRancher                   bool   `json:"proxyRancher,omitempty" yaml:"proxyRancher,omitempty"`
+	RancherChartRepository         string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
+	RancherHostname                string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
+	RancherImage                   string `json:"rancherImage,omitempty" yaml:"rancherImage,omitempty"`
+	RancherTagVersion              string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
+	Repo                           string `json:"repo,omitempty" yaml:"repo,omitempty"`
+	OSUser                         string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
+	OSGroup                        string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
+	RKE2Version                    string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
+	StagingRancherAgentImage       string `json:"stagingRancherAgentImage,omitempty" yaml:"stagingRancherAgentImage,omitempty"`
+	UpgradedRancherChartRepository string `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`
+	UpgradedRancherImage           string `json:"upgradedRancherImage,omitempty" yaml:"upgradedRancherImage,omitempty"`
+	UpgradedRancherStagingImage    string `json:"upgradedRancherStagingImage,omitempty" yaml:"upgradedRancherStagingImage,omitempty"`
+	UpgradedRancherRepo            string `json:"upgradedRancherRepo,omitempty" yaml:"upgradedRancherRepo,omitempty"`
+	UpgradedRancherTagVersion      string `json:"upgradedRancherTagVersion,omitempty" yaml:"upgradedRancherTagVersion,omitempty"`
 }
 
 type StandaloneRegistry struct {
@@ -166,6 +174,7 @@ type TerraformConfig struct {
 	NodeTemplateName                    string                       `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
 	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
+	Proxy                               *Proxy                       `json:"proxy,omitempty" yaml:"proxy,omitempty"`
 	Standalone                          *Standalone                  `json:"standalone,omitempty" yaml:"standalone,omitempty"`
 	StandaloneRegistry                  *StandaloneRegistry          `json:"standaloneRegistry,omitempty" yaml:"standaloneRegistry,omitempty"`
 }
