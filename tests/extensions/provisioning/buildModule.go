@@ -26,7 +26,7 @@ func BuildModule(t *testing.T) error {
 
 	keyPath := resources.SetKeyPath()
 
-	err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, "", "", "", "", "", nil)
+	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, "", "", "", "", "", nil)
 	if err != nil {
 		return err
 	}

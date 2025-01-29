@@ -77,14 +77,16 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
 			require.NoError(k.T(), err)
 
-			provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions, nil)
-			provisioning.VerifyCluster(k.T(), adminClient, clusterName, k.terraformConfig, k.terratestConfig)
+			clusterIDs := provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions, nil)
+			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
+			provisioning.VerifyWorkloads(k.T(), adminClient, clusterIDs)
 
 			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 
 			time.Sleep(4 * time.Minute)
 
-			provisioning.VerifyCluster(k.T(), adminClient, clusterName, k.terraformConfig, k.terratestConfig)
+			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
+			provisioning.VerifyKubernetesVersion(k.T(), k.client, clusterIDs[0], k.terratestConfig.KubernetesVersion, k.terraformConfig.Module)
 		})
 	}
 

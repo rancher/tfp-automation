@@ -14,7 +14,7 @@ import (
 // cluster, according to user's desired amount.
 func Scale(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options) {
-	err := framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", nil)
+	_, err := framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

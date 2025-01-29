@@ -88,8 +88,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
-			provisioning.VerifyCluster(p.T(), adminClient, clusterName, p.terraformConfig, &terratestConfig)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
+			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
+			provisioning.VerifyClusterPSACT(p.T(), p.client, clusterIDs)
 		})
 	}
 

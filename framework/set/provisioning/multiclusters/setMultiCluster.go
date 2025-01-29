@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	configuration "github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
@@ -24,15 +25,17 @@ import (
 )
 
 // SetMultiCluster is a function that will set multiple cluster configurations in the main.tf file.
-func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, configMap []map[string]any, clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole configuration.Role, poolName string) error {
+func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, configMap []map[string]any, clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole configuration.Role, poolName string) ([]string, error) {
 
 	var err error
+	clusterNames := []string{}
 	customClusterNames := []string{}
 
-	for i, terratestConfig := range configMap {
-
-		terraformConfig := terratestConfig["terraform"].(configuration.TerraformConfig)
-		terratestConfig := terratestConfig["terratest"].(configuration.TerratestConfig)
+	for i, config := range configMap {
+		terraformConfig := new(configuration.TerraformConfig)
+		operations.LoadObjectFromMap(configuration.TerraformConfigurationFileKey, config, terraformConfig)
+		terratestConfig := new(configuration.TerratestConfig)
+		operations.LoadObjectFromMap(configuration.TerratestConfigurationFileKey, config, terratestConfig)
 
 		kubernetesVersion := terratestConfig.KubernetesVersion
 		nodePools := terratestConfig.Nodepools
@@ -45,57 +48,61 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 		terraformConfig.ClusterName = clusterName
 		poolName = namegen.AppendRandomString(configs.TFP)
 
+		clusterNames = append(clusterNames, clusterName)
+
 		if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s {
 			customClusterNames = append(customClusterNames, clusterName)
 		}
 
 		switch {
 		case module == clustertypes.AKS:
-			file, err = hosted.SetAKS(&terraformConfig, clusterName, kubernetesVersion, nodePools, newFile, rootBody, file)
+			file, err = hosted.SetAKS(terraformConfig, clusterName, kubernetesVersion, nodePools, newFile, rootBody, file)
 			if err != nil {
-				return err
+				return clusterNames, err
 			}
 		case module == clustertypes.EKS:
-			file, err = hosted.SetEKS(&terraformConfig, clusterName, kubernetesVersion, nodePools, newFile, rootBody, file)
+			file, err = hosted.SetEKS(terraformConfig, clusterName, kubernetesVersion, nodePools, newFile, rootBody, file)
 			if err != nil {
-				return err
+				return clusterNames, err
 			}
 		case module == clustertypes.GKE:
-			file, err = hosted.SetGKE(&terraformConfig, clusterName, kubernetesVersion, nodePools, newFile, rootBody, file)
+			file, err = hosted.SetGKE(terraformConfig, clusterName, kubernetesVersion, nodePools, newFile, rootBody, file)
 			if err != nil {
-				return err
+				return clusterNames, err
 			}
 		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom):
-			file, err = nodedriver.SetRKE1(&terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
+			file, err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
 				snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
-				return err
+				return clusterNames, err
 			}
 		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom):
-			file, err = nodedriverV2.SetRKE2K3s(client, &terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
+			file, err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
 				snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
-				return err
+				return clusterNames, err
 			}
 		case module == modules.CustomEC2RKE1:
-			file, err = custom.SetCustomRKE1(rancherConfig, &terraformConfig, &terratestConfig, configMap, clusterName, newFile, rootBody, file)
+			file, err = custom.SetCustomRKE1(rancherConfig, terraformConfig, terratestConfig, configMap, clusterName, newFile, rootBody, file)
 			if err != nil {
-				return err
+				return clusterNames, err
 			}
 		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s:
-			file, err = customV2.SetCustomRKE2K3s(rancherConfig, &terraformConfig, &terratestConfig, configMap, clusterName, newFile, rootBody, file)
+			file, err = customV2.SetCustomRKE2K3s(rancherConfig, terraformConfig, terratestConfig, configMap, clusterName, newFile, rootBody, file)
 			if err != nil {
-				return err
+				return clusterNames, err
 			}
 		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
-			file, err = airgap.SetAirgapRKE2K3s(rancherConfig, &terraformConfig, &terratestConfig, nil, clusterName, newFile, rootBody, file)
-			return err
+			file, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
+			if err != nil {
+				return clusterNames, err
+			}
 		default:
 			logrus.Errorf("Unsupported module: %v", module)
 		}
 
 		if i == len(configMap)-1 {
-			file, err = locals.SetLocals(rootBody, &terraformConfig, configMap, clusterName, newFile, file, customClusterNames)
+			file, err = locals.SetLocals(rootBody, terraformConfig, configMap, clusterName, newFile, file, customClusterNames)
 		}
 	}
 
@@ -103,14 +110,14 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 	file, err = os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)
-		return err
+		return clusterNames, err
 	}
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write RKE2/K3S configurations to main.tf file. Error: %v", err)
-		return err
+		return clusterNames, err
 	}
 
-	return nil
+	return clusterNames, nil
 }
