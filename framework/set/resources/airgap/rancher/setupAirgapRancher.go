@@ -33,8 +33,8 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installRancher)
 
-	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherRepo + " " + terraformConfig.Standalone.RancherChartRepository + " " +
-		terraformConfig.Standalone.Type + " " + terraformConfig.Standalone.CertManagerVersion + " " +
+	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
+		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.RancherHostname + " " + " " + terraformConfig.Standalone.AirgapInternalFQDN + " " +
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
 		terraformConfig.Standalone.RancherImage

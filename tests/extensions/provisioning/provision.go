@@ -17,6 +17,7 @@ func Provision(t *testing.T, client *rancher.Client, rancherConfig *rancher.Conf
 	var err error
 	var clusterNames []string
 	var clusterIDs []string
+
 	if !terraformConfig.MultiCluster {
 		isSupported := SupportedModules(terraformConfig, terraformOptions, nil)
 		require.True(t, isSupported)

@@ -7,8 +7,10 @@ HOSTNAME=$4
 RANCHER_TAG_VERSION=$5
 BOOTSTRAP_PASSWORD=$6
 RANCHER_IMAGE=$7
-REGISTRY=$8
+BASTION=$8
 STAGING_RANCHER_AGENT_IMAGE=${9}
+PROXY_PORT="3128"
+NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,.svc\\,.cluster.local\\,cattle-system.svc\\,169.254.169.254"
 
 set -ex
 
@@ -32,7 +34,12 @@ kubectl create ns cattle-system
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
+helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
+                                                                                   --version ${CERT_MANAGER_VERSION} \
+                                                                                   --set http_proxy="http://${BASTION}:${PROXY_PORT}" \
+                                                                                   --set https_proxy="http://${BASTION}:${PROXY_PORT}" \
+                                                                                   --set no_proxy="${NO_PROXY}"
+
 kubectl get pods --namespace cert-manager
 
 echo "Waiting 1 minute for Rancher"
@@ -43,17 +50,20 @@ if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                 --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
+                                                                                 --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                  --set "extraEnv[0].value=${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                 --set systemDefaultRegistry=${REGISTRY} \
+                                                                                 --set proxy="http://${BASTION}:${PROXY_PORT}" \
+                                                                                 --set noProxy="${NO_PROXY}" \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
+
 else
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
-                                                                                 --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
+                                                                                 --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                 --set systemDefaultRegistry=${REGISTRY} \
+                                                                                 --set proxy="http://${BASTION}:${PROXY_PORT}" \
+                                                                                 --set noProxy="${NO_PROXY}" \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
 fi
 

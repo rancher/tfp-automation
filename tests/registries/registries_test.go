@@ -79,12 +79,13 @@ func (r *TfpRegistriesTestSuite) TfpSetupSuite(terratestConfig *config.Terratest
 	userToken, err := token.GenerateUserToken(adminUser, r.rancherConfig.Host)
 	require.NoError(r.T(), err)
 
-	client, err := rancher.NewClient(userToken.Token, testSession)
+	rancherConfig.AdminToken = userToken.Token
+
+	client, err := rancher.NewClient(rancherConfig.AdminToken, testSession)
 	require.NoError(r.T(), err)
 
 	r.client = client
-
-	rancherConfig.AdminToken = userToken.Token
+	r.client.RancherConfig.AdminToken = rancherConfig.AdminToken
 
 	keyPath := rancher2.SetKeyPath()
 	terraformOptions := framework.Setup(r.T(), terraformConfig, terratestConfig, keyPath)

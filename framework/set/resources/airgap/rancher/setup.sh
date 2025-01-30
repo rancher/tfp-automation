@@ -1,16 +1,15 @@
 #!/bin/bash
 
-RANCHER_REPO=$1
-RANCHER_CHART_REPO=$2
-TYPE=$3
-CERT_MANAGER_VERSION=$4
-HOSTNAME=$5
-INTERNAL_FQDN=$6
-RANCHER_TAG_VERSION=$7
-BOOTSTRAP_PASSWORD=$8
-RANCHER_IMAGE=$9
-STAGING_RANCHER_AGENT_IMAGE=${10}
-REGISTRY=${11}
+RANCHER_CHART_REPO=$1
+REPO=$2
+CERT_MANAGER_VERSION=$3
+HOSTNAME=$4
+INTERNAL_FQDN=$5
+RANCHER_TAG_VERSION=$6
+BOOTSTRAP_PASSWORD=$7
+RANCHER_IMAGE=$8
+STAGING_RANCHER_AGENT_IMAGE=${9}
+REGISTRY=${10}
 
 set -ex
 
@@ -21,7 +20,7 @@ chmod +x get_helm.sh
 rm get_helm.sh
 
 echo "Adding Helm chart repo"
-helm repo add ${RANCHER_REPO} ${RANCHER_CHART_REPO}${TYPE}
+helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
 
 echo "Installing cert manager"
 kubectl create ns cattle-system
@@ -36,7 +35,7 @@ sleep 60
 
 echo "Installing Rancher"
 if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
-    helm upgrade --install rancher ${RANCHER_REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+    helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
@@ -45,7 +44,7 @@ if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 
 else
-    helm upgrade --install rancher ${RANCHER_REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+    helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
