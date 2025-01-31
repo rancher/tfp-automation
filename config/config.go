@@ -123,6 +123,7 @@ type Standalone struct {
 	Repo                           string `json:"repo,omitempty" yaml:"repo,omitempty"`
 	OSUser                         string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
 	OSGroup                        string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
+	PrimeRancherAgentImage         string `json:"primeRancherAgentImage,omitempty" yaml:"primeRancherAgentImage,omitempty"`
 	RKE2Version                    string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
 	StagingRancherAgentImage       string `json:"stagingRancherAgentImage,omitempty" yaml:"stagingRancherAgentImage,omitempty"`
 	UpgradedRancherChartRepository string `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`

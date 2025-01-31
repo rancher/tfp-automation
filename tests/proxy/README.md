@@ -64,7 +64,6 @@ terraform:
     awsRoute53Zone: ""
     region: ""
     awsUser: ""
-    registryRootSize: 500
     sshConnectionType: "ssh"
     standaloneSecurityGroupNames: [""]
     timeout: "5m"
@@ -88,12 +87,20 @@ terraform:
 
 Before running, be sure to run the following commands:
 
-`export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"; export PROXY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/proxy"; export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
+```yaml
+export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"
+export PROXY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/proxy"
+export UPGRADE_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/upgrade"
+export RANCHER2_PROVIDER_VERSION=""
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export LOCALS_PROVIDER_VERSION=""
+export AWS_PROVIDER_VERSION=""
+```
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpProxyProvisioningTestSuite$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpProxyUpgradeRancherTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestTfpProxyProvisioningTestSuite$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestTfpProxyUpgradeRancherTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -104,4 +111,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy  --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run TestTfpProxyProvisioningTestSuite$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy  --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run TestTfpProxyProvisioningTestSuite$";/path/to/tfp-automation/reporter`

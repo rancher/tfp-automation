@@ -23,7 +23,7 @@ const (
 
 // CreateRKEMainTF is a helper function that will create the main.tf file for creating an RKE1 cluster
 func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig) error {
+	terratestConfig *config.TerratestConfig) (string, error) {
 	var file *os.File
 	file = resources.OpenFile(file, keyPath)
 	defer file.Close()
@@ -36,7 +36,7 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -46,12 +46,12 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 	file = resources.OpenFile(file, keyPath)
 	file, err = rke.CreateRKECluster(file, newFile, rootBody, terraformConfig)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = appendKubeConfig(keyPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -61,17 +61,17 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 	file = resources.OpenFile(file, keyPath)
 	file, err = rke.CheckClusterStatus(file, newFile, rootBody, terraformConfig, rkeServerOnePublicIP, kubeConfigContent)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
 
 	err = removeKubeConfig(keyPath)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return rkeServerOnePublicIP, nil
 }
 
 // appendKubeConfig is a helper function that will append the kube_config output to the outputs.tf file

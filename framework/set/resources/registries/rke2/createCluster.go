@@ -70,6 +70,10 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
 	}
 
+	if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
+	}
+
 	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
@@ -95,6 +99,10 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 		if terraformConfig.Standalone.StagingRancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+		}
+
+		if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
+			command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
 		}
 
 		command += "'"

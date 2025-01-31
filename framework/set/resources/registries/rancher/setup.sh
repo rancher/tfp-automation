@@ -48,6 +48,7 @@ if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
                                                                                  --set "extraEnv[0].value=${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                  --set systemDefaultRegistry=${REGISTRY} \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
+
 else
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \

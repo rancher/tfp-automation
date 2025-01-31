@@ -44,6 +44,10 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
 	}
 
+	if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
+	}
+
 	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
@@ -85,6 +89,10 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 
 	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	}
+
+	if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
 	}
 
 	command += "'"

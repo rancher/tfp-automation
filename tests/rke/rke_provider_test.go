@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	rke "github.com/rancher/tfp-automation/framework/set/resources/rke"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -19,7 +20,6 @@ type RKEProviderTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
-	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -41,7 +41,8 @@ func (t *RKEProviderTestSuite) TestCreateRKECluster() {
 	terraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.terraformOptions = terraformOptions
 
-	rke.CreateRKEMainTF(t.T(), t.terraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	_, err := rke.CreateRKEMainTF(t.T(), t.terraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	require.NoError(t.T(), err)
 
 	if t.terratestConfig.LocalQaseReporting {
 		qase.ReportTest()
