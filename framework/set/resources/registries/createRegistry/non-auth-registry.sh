@@ -6,7 +6,8 @@ RANCHER_VERSION=$3
 ASSET_DIR=$4
 USER=$5
 RANCHER_IMAGE=$6
-STAGING_RANCHER_AGENT_IMAGE=${7}
+STAGING_RANCHER_AGENT_IMAGE=${7:-""}
+PRIME_RANCHER_AGENT_IMAGE=${8}
 
 set -e
 
@@ -38,6 +39,11 @@ sudo sed -i '/mirrored-prometheus-windows-exporter/d' /home/${USER}/rancher-imag
 if [ ! -z "${STAGING_RANCHER_AGENT_IMAGE}" ]; then
     sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
     sudo sed -i "s|rancher/rancher-agent:|${STAGING_RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
+fi
+
+if [[ ! -z "${PRIME_RANCHER_AGENT_IMAGE}" ]]; then
+    sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
+    sudo sed -i "s|rancher/rancher-agent:|${PRIME_RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
 fi
     
 echo "Saving the images..."

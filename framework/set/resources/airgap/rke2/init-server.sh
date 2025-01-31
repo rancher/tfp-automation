@@ -7,9 +7,8 @@ RKE2_TOKEN=$4
 REGISTRY=$5
 RANCHER_IMAGE=$6
 RANCHER_TAG_VERSION=$7
-REGISTRY_USERNAME=${8:-}
-REGISTRY_PASSWORD=${9:-}
-STAGING_RANCHER_AGENT_IMAGE=${10}
+STAGING_RANCHER_AGENT_IMAGE=${8:-""}
+PRIME_RANCHER_AGENT_IMAGE=${9}
 PEM_FILE=/home/$USER/airgap.pem
 
 set -e
@@ -39,23 +38,7 @@ EOF
 
 setupRegistry() {
   sudo mkdir -p /etc/rancher/rke2
-
-  if [ -n "${REGISTRY_USERNAME}" ]; then
-    sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
-mirrors:
-  docker.io:
-    endpoint:
-      - "https://${REGISTRY}"
-configs:
-  "${REGISTRY}":
-    auth:
-      username: "${REGISTRY_USERNAME}"
-      password: "${REGISTRY_PASSWORD}"
-    tls:
-      insecure_skip_verify: true
-EOF
-  else
-    sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+  sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
     endpoint:
@@ -65,7 +48,6 @@ configs:
     tls:
       insecure_skip_verify: true
 EOF
-  fi
 }
 
 setupDockerDaemon() {
@@ -88,17 +70,21 @@ runSSH "${RKE2_SERVER_ONE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh
 runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl enable rke2-server"
 runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl start rke2-server"
 
-if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
+if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ] || [ -n "$PRIME_RANCHER_AGENT_IMAGE" ]; then
   setupDaemonFunction=$(declare -f setupDockerDaemon)
   runSSH "${RKE2_SERVER_ONE_IP}" "${setupDaemonFunction}; setupDockerDaemon"
   runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl restart docker && sudo systemctl daemon-reload"
-  
-  if [ -n "$REGISTRY_USERNAME" ]; then
-    runSSH "${RKE2_SERVER_ONE_IP}" "sudo docker login https://${REGISTRY} -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}"
-  fi
 
   runSSH "${RKE2_SERVER_ONE_IP}" "sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}"
-  runSSH "${RKE2_SERVER_ONE_IP}" "sudo docker pull ${REGISTRY}/${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}"
+
+  if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
+    runSSH "${RKE2_SERVER_ONE_IP}" "sudo docker pull ${REGISTRY}/${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}"
+  fi
+
+  if [ -n "$PRIME_RANCHER_AGENT_IMAGE" ]; then
+    runSSH "${RKE2_SERVER_ONE_IP}" "sudo docker pull ${REGISTRY}/${PRIME_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}"
+  fi
+  
   runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl restart rke2-server"
 fi
 

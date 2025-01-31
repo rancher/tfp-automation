@@ -45,12 +45,9 @@ terraform:
   nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   privateRegistries:
-    authConfigSecretName: ""                      # REQUIRED (authenticated registry only) - specify the name of the secret you wanted created
     insecure: true
     url: ""                                       # LEAVE BLANK - will be set during the test
     systemDefaultRegistry: ""                     # LEAVE BLANK - will be set during the test
-    username: ""                                  # REQUIRED (authenticated registry only) - username of the private registry
-    password: ""                                  # REQUIRED (authenticated registry only) - password of the private registry
   ##########################################
   # INFRASTRUCTURE / CUSTOM CLUSTER SETUP
   ##########################################
@@ -82,6 +79,7 @@ terraform:
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
+    primeRancherAgentImage: ""                    # OPTIONAL - fill out only if you are using Rancher Prime
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
@@ -94,19 +92,23 @@ terraform:
   ####################################
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
-    authenticated: true                           # REQUIRED - true if you want an authenticated registry, false for a non-authenticated registry
-    registryName: ""                              # REQUIRED (authenticated registry only)
-    registryPassword: ""                          # REQUIRED (authenticated registry only)
-    registryUsername: ""                          # REQUIRED (authenticated registry only)
+    registryName: ""                              # REQUIRED - fill with desired value
 ```
 
 Before running, be sure to run the following commands:
 
-`export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"; export AIRGAP_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/airgap"; export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
+```yaml
+export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"
+export AIRGAP_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/airgap"
+export RANCHER2_PROVIDER_VERSION=""
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export LOCALS_PROVIDER_VERSION=""
+export AWS_PROVIDER_VERSION=""
+```
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run "TestTfpAirgapProvisioningTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap --junitfile results.xml --jsonfile results.json -- -timeout=9h -v -run "TestTfpAirgapProvisioningTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -117,4 +119,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap  --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run TestTfpAirgapProvisioningTestSuite$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap  --junitfile results.xml --jsonfile results.json -- -timeout=9h -v -run TestTfpAirgapProvisioningTestSuite$";/path/to/tfp-automation/reporter`

@@ -67,10 +67,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	// Will create the authenticated registry, unauthenticated registry, and global registry in parallel using goroutines.
 	var wg sync.WaitGroup
+	var mutex sync.Mutex
 	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
+		mutex.Lock()
+		defer mutex.Unlock()
+
 		file = sanity.OpenFile(file, keyPath)
 		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, authRegistryPublicDNS)
 		if err != nil {
@@ -80,6 +84,9 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	go func() {
 		defer wg.Done()
+		mutex.Lock()
+		defer mutex.Unlock()
+
 		file = sanity.OpenFile(file, keyPath)
 		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, nonAuthRegistryPublicDNS, nonAuthRegistry)
 		if err != nil {
@@ -89,14 +96,17 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	go func() {
 		defer wg.Done()
+		mutex.Lock()
+		defer mutex.Unlock()
+
 		file = sanity.OpenFile(file, keyPath)
 		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, globalRegistryPublicDNS, globalRegistry)
 		if err != nil {
 			logrus.Fatalf("Error creating global registry: %v", err)
 		}
-
-		terraform.InitAndApply(t, terraformOptions)
 	}()
+
+	terraform.InitAndApply(t, terraformOptions)
 
 	wg.Wait()
 

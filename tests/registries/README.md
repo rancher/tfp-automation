@@ -81,6 +81,7 @@ terraform:
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
+    primeRancherAgentImage: ""                    # OPTIONAL - fill out only if you are using Rancher Prime
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
@@ -104,7 +105,7 @@ Before running, be sure to run the following commands:
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/registries --junitfile results.xml --jsonfile results.json -- -timeout=600m -v -run "TestTfpRegistriesTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/registries --junitfile results.xml --jsonfile results.json -- -timeout=8h -v -run "TestTfpRegistriesTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -115,4 +116,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap  --junitfile results.xml --jsonfile results.json -- -timeout=120m -v -run TestTfpAirgapProvisioningTestSuite$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap  --junitfile results.xml --jsonfile results.json -- -timeout=8h -v -run TestTfpAirgapProvisioningTestSuite$";/path/to/tfp-automation/reporter`

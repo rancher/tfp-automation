@@ -33,7 +33,7 @@ const (
 
 // CreateMainTF is a helper function that will create the main.tf file for creating an Airgapped-Rancher server.
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratest *config.TerratestConfig) (string, error) {
+	terratestConfig *config.TerratestConfig) (string, error) {
 	var file *os.File
 	file = OpenFile(file, keyPath)
 	defer file.Close()
@@ -44,7 +44,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratest)
+	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return "", err
 	}
@@ -58,16 +58,9 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	rke2ServerThreePrivateIP := terraform.Output(t, terraformOptions, rke2ServerThreePrivateIP)
 
 	file = OpenFile(file, keyPath)
-	if terraformConfig.StandaloneRegistry.Authenticated {
-		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS)
-		if err != nil {
-			return "", err
-		}
-	} else {
-		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS, nonAuthRegistry)
-		if err != nil {
-			return "", err
-		}
+	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS, nonAuthRegistry)
+	if err != nil {
+		return "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
