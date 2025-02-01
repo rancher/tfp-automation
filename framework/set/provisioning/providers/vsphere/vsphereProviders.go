@@ -4,15 +4,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
-)
-
-const (
-	cloudCredential = "rancher2_cloud_credential"
-
-	region       = "region"
-	resource     = "resource"
-	resourceName = "name"
 )
 
 // SetVsphereRKE1Provider is a helper function that will set the Vsphere RKE1
@@ -60,10 +53,10 @@ func SetVsphereRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfi
 
 // SetVsphereRKE2K3SProvider is a helper function that will set the Vsphere RKE2/K3S Terraform provider details in the main.tf file.
 func SetVsphereRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) {
-	cloudCredBlock := rootBody.AppendNewBlock(resource, []string{cloudCredential, clusterName})
+	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, clusterName})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(resourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.CloudCredentialName))
 
 	vsphereCredBlock := cloudCredBlockBody.AppendNewBlock(vsphere.VsphereCredentialConfig, nil)
 	vsphereCredBlockBody := vsphereCredBlock.Body()

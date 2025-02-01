@@ -7,6 +7,7 @@ import (
 	aws "github.com/rancher/tfp-automation/config/nodeproviders/aws"
 	azure "github.com/rancher/tfp-automation/config/nodeproviders/azure"
 	google "github.com/rancher/tfp-automation/config/nodeproviders/google"
+	harvester "github.com/rancher/tfp-automation/config/nodeproviders/harvester"
 	linode "github.com/rancher/tfp-automation/config/nodeproviders/linode"
 	vsphere "github.com/rancher/tfp-automation/config/nodeproviders/vsphere"
 )
@@ -139,6 +140,8 @@ type TerraformConfig struct {
 	AzureCredentials                    azure.Credentials            `json:"azureCredentials,omitempty" yaml:"azureCredentials,omitempty"`
 	GoogleConfig                        google.Config                `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
 	GoogleCredentials                   google.Credentials           `json:"googleCredentials,omitempty" yaml:"googleCredentials,omitempty"`
+	HarvesterConfig                     harvester.Config             `json:"harvesterConfig,omitempty" yaml:"harvesterConfig,omitempty"`
+	HarvesterCredentials                harvester.Credentials        `json:"harvesterCredentials,omitempty" yaml:"harvesterCredentials,omitempty"`
 	LinodeConfig                        linode.Config                `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
 	LinodeCredentials                   linode.Credentials           `json:"linodeCredentials,omitempty" yaml:"linodeCredentials,omitempty"`
 	VsphereConfig                       vsphere.Config               `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`

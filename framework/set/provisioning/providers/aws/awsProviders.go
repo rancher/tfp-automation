@@ -7,17 +7,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/amazon"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
-)
-
-const (
-	cloudCredential = "rancher2_cloud_credential"
-
-	accessKey    = "access_key"
-	secretKey    = "secret_key"
-	region       = "region"
-	resource     = "resource"
-	resourceName = "name"
 )
 
 // SetAWSRKE1Provider is a helper function that will set the AWS RKE1
@@ -26,13 +17,13 @@ func SetAWSRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *c
 	awsConfigBlock := nodeTemplateBlockBody.AppendNewBlock(amazon.EC2Config, nil)
 	awsConfigBlockBody := awsConfigBlock.Body()
 
-	awsConfigBlockBody.SetAttributeValue(accessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
-	awsConfigBlockBody.SetAttributeValue(secretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+	awsConfigBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+	awsConfigBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 
-	awsConfigBlockBody.SetAttributeValue(accessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
-	awsConfigBlockBody.SetAttributeValue(secretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+	awsConfigBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+	awsConfigBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 	awsConfigBlockBody.SetAttributeValue(amazon.AMI, cty.StringVal(terraformConfig.AWSConfig.AMI))
-	awsConfigBlockBody.SetAttributeValue(region, cty.StringVal(terraformConfig.AWSConfig.Region))
+	awsConfigBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
 
 	awsSecGroupsExpression := fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroupNames[0])
 	awsSecGroupsList := hclwrite.Tokens{
@@ -50,14 +41,14 @@ func SetAWSRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *c
 // SetAWSRKE2K3SProvider is a helper function that will set the AWS RKE2/K3S
 // Terraform provider details in the main.tf file.
 func SetAWSRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) {
-	cloudCredBlock := rootBody.AppendNewBlock(resource, []string{cloudCredential, clusterName})
+	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, clusterName})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(resourceName, cty.StringVal(clusterName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
 
 	awsCredBlock := cloudCredBlockBody.AppendNewBlock(amazon.EC2CredentialConfig, nil)
 	awsCredBlockBody := awsCredBlock.Body()
 
-	awsCredBlockBody.SetAttributeValue(accessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
-	awsCredBlockBody.SetAttributeValue(secretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+	awsCredBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+	awsCredBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 }

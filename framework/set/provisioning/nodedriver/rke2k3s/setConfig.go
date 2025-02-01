@@ -13,6 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/rbac"
@@ -61,6 +62,8 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig, clusterName)
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
 		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig, clusterName)
+	case terraformConfig.Module == modules.HarvesterRKE2 || terraformConfig.Module == modules.HarvesterK3s:
+		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig, clusterName)
 	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
 		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig, clusterName)
 	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:
@@ -94,6 +97,8 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 		aws.SetAWSRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
 		azure.SetAzureRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
+	case terraformConfig.Module == modules.HarvesterRKE2 || terraformConfig.Module == modules.HarvesterK3s:
+		harvester.SetHarvesterRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
 		linode.SetLinodeRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:
