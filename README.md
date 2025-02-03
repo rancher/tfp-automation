@@ -339,6 +339,34 @@ terraform:
 
 ---
 
+<a name="configurations-terraform-harvester_rke1"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+###### HARVESTER_RKE1
+
+```yaml
+terraform:
+  module: harvester_rke1
+  networkPlugin: canal
+  nodeTemplateName: tf-rke1-template
+  hostnamePrefix: tfp
+  harvesterCredentials:
+    clusterId: "c-m-clusterID"
+    clusterType: "imported"
+    kubeconfigContent: |
+      kubeconfig-content
+  harvesterConfig:
+    diskSize: "30"
+    cpuCount: "4"
+    memorySize: "8"
+    networkNames: ["default/net-name"]
+    imageName: "default/image-name"
+    vmNamespace: "default"
+    sshUser: "ubuntu"
+```
+
+---
+
 <a name="configurations-terraform-vsphere_rke1"></a>
 #### :small_red_triangle: [Back to top](#top)
 
@@ -467,6 +495,35 @@ terraform:
 ```
 
 ---
+
+
+<a name="configurations-terraform-rke2_k3s_harvester"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+###### HARVESTER_RKE2 + HARVESTER_K3S
+
+```yaml
+terraform:
+  module: harvester_rke2
+  hostnamePrefix: tfp
+  machineConfigName: tf-hvst
+  harvesterCredentials:
+    clusterId: "c-m-clusterID"
+    clusterType: "imported"
+    kubeconfigContent: |
+      kubeconfig-content
+  harvesterConfig:
+    diskSize: "30"
+    cpuCount: "4"
+    memorySize: "8"
+    networkNames: ["default/net-name"]
+    imageName: "default/image-name"
+    vmNamespace: "default"
+    sshUser: "ubuntu"
+```
+
+---
+
 
 <a name="configurations-terraform-rke2_k3s_vsphere"></a>
 #### :small_red_triangle: [Back to top](#top)

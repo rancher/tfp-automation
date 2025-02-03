@@ -12,6 +12,7 @@ import (
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
+	harvester "github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/rbac"
@@ -68,6 +69,9 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 		azure.SetAzureRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.LinodeRKE1:
 		linode.SetLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
+	case terraformConfig.Module == modules.HarvesterRKE1:
+		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig, clusterName)
+		harvester.SetHarvesterRKE1Provider(nodeTemplateBlockBody, terraformConfig, clusterName)
 	case terraformConfig.Module == modules.VsphereRKE1:
 		vsphere.SetVsphereRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	}
