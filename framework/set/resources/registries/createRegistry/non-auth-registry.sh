@@ -11,6 +11,35 @@ PRIME_RANCHER_AGENT_IMAGE=${8}
 
 set -e
 
+manageImages() {
+    ACTION=$1
+    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
+    PARALLEL_ACTIONS=10
+
+    COUNTER=0
+    for IMAGE in "${IMAGES[@]}"; do
+        action "${ACTION}" "${IMAGE}"
+        COUNTER=$((COUNTER+1))
+        
+        if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
+            wait
+        fi
+    done
+
+    wait
+}
+
+action() {
+    ACTION=$1
+    IMAGE=$2
+    
+    if [ "$ACTION" == "pull" ]; then
+        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${HOST}/${IMAGE} &
+    elif [ "$ACTION" == "push" ]; then
+        sudo docker push ${HOST}/${IMAGE} &
+    fi
+}
+
 echo "Creating a self-signed certificate..."
 sudo mkdir -p /home/${USER}/certs
 sudo openssl req -newkey rsa:4096 -nodes -sha256 -keyout /home/${USER}/certs/domain.key -addext "subjectAltName = DNS:${HOST}" -x509 -days 365 -out /home/${USER}/certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
@@ -46,15 +75,8 @@ if [[ ! -z "${PRIME_RANCHER_AGENT_IMAGE}" ]]; then
     sudo sed -i "s|rancher/rancher-agent:|${PRIME_RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
 fi
     
-echo "Saving the images..."
-sudo /home/${USER}/rancher-save-images.sh --image-list /home/${USER}/rancher-images.txt
-
-echo "Tagging the images..."
-for IMAGE in $(cat /home/$USER/rancher-images.txt); do
-    sudo docker tag ${IMAGE} ${HOST}/${IMAGE}
-done
+echo "Pulling the images..."
+manageImages "pull"
 
 echo "Pushing the newly tagged images..."
-for IMAGE in $(cat /home/$USER/rancher-images.txt); do
-    sudo docker push ${HOST}/${IMAGE}
-done
+manageImages "push"

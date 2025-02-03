@@ -70,13 +70,13 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 			if err != nil {
 				return clusterNames, err
 			}
-		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom):
+		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
 			file, err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
 				snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
 				return clusterNames, err
 			}
-		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom):
+		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
 			file, err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
 				snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
@@ -89,6 +89,11 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 			}
 		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s:
 			file, err = customV2.SetCustomRKE2K3s(rancherConfig, terraformConfig, terratestConfig, configMap, clusterName, newFile, rootBody, file)
+			if err != nil {
+				return clusterNames, err
+			}
+		case module == modules.AirgapRKE1:
+			file, err = airgap.SetAirgapRKE1(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, err
 			}

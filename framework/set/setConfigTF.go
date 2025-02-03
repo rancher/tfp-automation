@@ -56,7 +56,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 		case module == clustertypes.GKE:
 			_, err = hosted.SetGKE(terraformConfig, clusterName, terratestConfig.KubernetesVersion, terratestConfig.Nodepools, newFile, rootBody, file)
 			return clusterNames, err
-		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom):
+		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
 			_, err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, terratestConfig.KubernetesVersion, terratestConfig.PSACT, terratestConfig.Nodepools,
 				terratestConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 			return clusterNames, err
@@ -69,6 +69,9 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 			return clusterNames, err
 		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s:
 			_, err = customV2.SetCustomRKE2K3s(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
+			return clusterNames, err
+		case module == modules.AirgapRKE1:
+			_, err = airgap.SetAirgapRKE1(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
 			return clusterNames, err
 		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
 			_, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
