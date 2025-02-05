@@ -11,10 +11,10 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -35,7 +35,7 @@ type TfpSanityTestSuite struct {
 }
 
 func (t *TfpSanityTestSuite) TearDownSuite() {
-	keyPath := sanity.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath)
 	cleanup.Cleanup(t.T(), t.standaloneTerraformOptions, keyPath)
 }
 
@@ -46,7 +46,7 @@ func (t *TfpSanityTestSuite) SetupSuite() {
 	t.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, t.terratestConfig)
 
-	keyPath := sanity.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath)
 	standaloneTerraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -80,7 +80,7 @@ func (t *TfpSanityTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConf
 	t.client = client
 	t.client.RancherConfig.AdminToken = rancherConfig.AdminToken
 
-	keyPath := rancher2.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(t.T(), terraformConfig, terratestConfig, keyPath)
 	t.terraformOptions = terraformOptions
 }
@@ -112,7 +112,7 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		t.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, t.terraformOptions, nil)

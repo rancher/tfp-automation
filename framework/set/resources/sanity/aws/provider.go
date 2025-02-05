@@ -13,6 +13,9 @@ import (
 const (
 	locals            = "locals"
 	requiredProviders = "required_providers"
+	k3sServerOne      = "k3s_server1"
+	k3sServerTwo      = "k3s_server2"
+	k3sServerThree    = "k3s_server3"
 	rke2ServerOne     = "rke2_server1"
 	rke2ServerTwo     = "rke2_server2"
 	rke2ServerThree   = "rke2_server3"
@@ -42,14 +45,23 @@ func CreateAWSProviderBlock(rootBody *hclwrite.Body, terraformConfig *config.Ter
 }
 
 // CreateLocalBlock will set up the local block. Returns the local block.
-func CreateLocalBlock(rootBody *hclwrite.Body) {
+func CreateLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
 	localBlock := rootBody.AppendNewBlock(locals, nil)
 	localBlockBody := localBlock.Body()
 
-	instanceIds := map[string]interface{}{
-		rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne + ".id",
-		rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo + ".id",
-		rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree + ".id",
+	var instanceIds map[string]interface{}
+	if terraformConfig.Standalone.RKE2Version != "" {
+		instanceIds = map[string]interface{}{
+			rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne + ".id",
+			rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo + ".id",
+			rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree + ".id",
+		}
+	} else if terraformConfig.Standalone.K3SVersion != "" {
+		instanceIds = map[string]interface{}{
+			k3sServerOne:   defaults.AwsInstance + "." + k3sServerOne + ".id",
+			k3sServerTwo:   defaults.AwsInstance + "." + k3sServerTwo + ".id",
+			k3sServerThree: defaults.AwsInstance + "." + k3sServerThree + ".id",
+		}
 	}
 
 	instanceIdsBlock := localBlockBody.AppendNewBlock(rke2InstanceIDs+" =", nil)

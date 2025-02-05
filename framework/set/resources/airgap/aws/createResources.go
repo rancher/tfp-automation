@@ -41,7 +41,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 		rootBody.AppendNewline()
 	}
 
-	sanity.CreateLocalBlock(rootBody)
+	sanity.CreateLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
 	ports := []int64{80, 443, 6443, 9345}

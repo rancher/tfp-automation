@@ -11,6 +11,7 @@ Please see below for more details for your config. Please note that the config c
 4. [Setup RKE1 Cluster](#Setup-RKE1-Cluster)
 5. [Setup RKE2 Cluster](#Setup-RKE2-Cluster)
 6. [Setup Airgap RKE2 Cluster](#Setup-Airgap-RKE2-Cluster)
+6. [Setup K3S Cluster](#Setup-K3S-Cluster)
 
 ## Setup Rancher
 
@@ -70,8 +71,6 @@ terraform:
 Before running locally, be sure to run the following commands:
 
 ```yaml
-export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"
-export SANITY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/sanity"
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
@@ -135,8 +134,6 @@ terraform:
 Before running, be sure to run the following commands:
 
 ```yaml
-export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"
-export AIRGAP_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/airgap"
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
@@ -189,8 +186,6 @@ terraform:
 Before running, be sure to run the following commands:
 
 ```yaml
-export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"
-export PROXY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/proxy"
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
@@ -233,7 +228,6 @@ terraform:
 Before running, be sure to run the following commands:
 
 ```yaml
-export RKE_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rke"
 export RKE_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export AWS_PROVIDER_VERSION=""
@@ -265,7 +259,6 @@ terraform:
     awsRootSize: 100
     awsRoute53Zone: ""
     awsUser: ""
-    registryRootSize: 500
     sshConnectionType: "ssh"
     standaloneSecurityGroupNames: [""]
     timeout: ""
@@ -283,6 +276,14 @@ terraform:
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
     registryName: ""                              # REQUIRED - fill with desired value
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export AWS_PROVIDER_VERSION=""
+export LOCALS_PROVIDER_VERSION=""
 ```
 
 See the below examples on how to run the tests:
@@ -332,6 +333,58 @@ terraform:
     registryName: ""                              # REQUIRED - fill with desired value
 ```
 
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export AWS_PROVIDER_VERSION=""
+export LOCALS_PROVIDER_VERSION=""
+```
+
 See the below examples on how to run the tests:
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateAirgappedRKE2ClusterTestSuite$"`
+
+## Setup K3S Cluster
+
+See below an example config on setting up a standalone K3S cluster:
+
+```yaml
+terraform:
+  hostnamePrefix: ""
+  privateKeyPath: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    region: ""
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    awsUser: ""
+    sshConnectionType: "ssh"
+    standaloneSecurityGroupNames: [""]
+    timeout: ""
+  standalone:
+    k3sVersion: ""                                # REQUIRED - the format MUST be in `v1.xx.x+k3s1` (i.e. v1.31.4+k3s1)
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export AWS_PROVIDER_VERSION=""
+export LOCALS_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run the tests:
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestCreateK3SClusterTestSuite$"`

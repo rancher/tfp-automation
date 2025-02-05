@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -53,7 +54,7 @@ func (s *ScaleTestSuite) SetupSuite() {
 
 	s.terratestConfig = terratestConfig
 
-	keyPath := rancher2.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.terraformOptions = terraformOptions
 
@@ -93,7 +94,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
@@ -141,7 +142,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)

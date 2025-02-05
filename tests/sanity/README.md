@@ -94,8 +94,6 @@ terraform:
 Before running, be sure to run the following commands:
 
 ```yaml
-export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"
-export SANITY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/sanity"
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""

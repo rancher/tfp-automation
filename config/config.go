@@ -116,6 +116,7 @@ type Standalone struct {
 	AirgapInternalFQDN             string `json:"airgapInternalFQDN,omitempty" yaml:"airgapInternalFQDN,omitempty"`
 	BootstrapPassword              string `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
 	CertManagerVersion             string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
+	K3SVersion                     string `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
 	ProxyRancher                   bool   `json:"proxyRancher,omitempty" yaml:"proxyRancher,omitempty"`
 	RancherChartRepository         string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
 	RancherHostname                string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`

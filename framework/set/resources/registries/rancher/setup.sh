@@ -55,8 +55,9 @@ elif [ -n "$PRIME_RANCHER_AGENT_IMAGE" ]; then
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImage=${REGISTRY}/${PRIME_RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
+                                                                                 --set systemDefaultRegistry=${REGISTRY} \
                                                                                  --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                 --set "extraEnv[0].value=${REGISTRY}/${PRIME_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                 --set "extraEnv[0].value=${PRIME_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
 
 else

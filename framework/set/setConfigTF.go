@@ -8,6 +8,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap"
@@ -17,6 +18,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/multiclusters"
 	nodedriver "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke1"
 	nodedriverV2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +30,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 
 	clusterNames := []string{clusterName}
 	var file *os.File
-	keyPath := resources.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 
 	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {

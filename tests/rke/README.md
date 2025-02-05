@@ -60,7 +60,6 @@ terraform:
 Before running, be sure to run the following commands:
 
 ```yaml
-export RKE_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rke"
 export RKE_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export AWS_PROVIDER_VERSION=""
