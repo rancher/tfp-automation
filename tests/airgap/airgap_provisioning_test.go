@@ -14,7 +14,6 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -51,7 +50,7 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 	a.standaloneTerraformOptions = standaloneTerraformOptions
 
-	registry, err := resources.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig)
+	registry, err := airgap.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig)
 	require.NoError(a.T(), err)
 
 	a.registry = registry
@@ -94,6 +93,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		name   string
 		module string
 	}{
+		{"RKE1", "airgap_rke1"},
 		{"RKE2", "airgap_rke2"},
 		{"K3S", "airgap_k3s"},
 	}
@@ -133,6 +133,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 		name   string
 		module string
 	}{
+		{"Upgrading RKE1", "airgap_rke1"},
 		{"Upgrading RKE2", "airgap_rke2"},
 		{"Upgrading K3S", "airgap_k3s"},
 	}

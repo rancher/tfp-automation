@@ -199,7 +199,7 @@ export AWS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestTfpProxyProvisioningTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestProxyRancherTestSuite$"`
 
 ## Setup RKE1 Cluster
 

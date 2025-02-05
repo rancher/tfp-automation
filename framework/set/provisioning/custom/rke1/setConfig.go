@@ -19,7 +19,7 @@ func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 	if terraformConfig.MultiCluster {
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, clusterName)
 
-		setRancher2Cluster(rootBody, terraformConfig, clusterName)
+		SetRancher2Cluster(rootBody, terraformConfig, clusterName)
 
 		nullresource.SetNullResource(rootBody, terraformConfig, clusterName)
 	} else {
@@ -27,7 +27,7 @@ func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, clusterName)
 
-		setRancher2Cluster(rootBody, terraformConfig, clusterName)
+		SetRancher2Cluster(rootBody, terraformConfig, clusterName)
 
 		nullresource.SetNullResource(rootBody, terraformConfig, clusterName)
 

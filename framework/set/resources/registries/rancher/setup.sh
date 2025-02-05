@@ -8,7 +8,8 @@ RANCHER_TAG_VERSION=$5
 BOOTSTRAP_PASSWORD=$6
 RANCHER_IMAGE=$7
 REGISTRY=$8
-STAGING_RANCHER_AGENT_IMAGE=${9}
+STAGING_RANCHER_AGENT_IMAGE=${9:-""}
+PRIME_RANCHER_AGENT_IMAGE=${10}
 
 set -ex
 
@@ -48,6 +49,15 @@ if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
                                                                                  --set "extraEnv[0].value=${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                  --set systemDefaultRegistry=${REGISTRY} \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
+
+elif [ -n "$PRIME_RANCHER_AGENT_IMAGE" ]; then
+    helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                 --set hostname=${HOSTNAME} \
+                                                                                 --set rancherImage=${REGISTRY}/${PRIME_RANCHER_IMAGE} \
+                                                                                 --set rancherImageTag=${RANCHER_TAG_VERSION} \
+                                                                                 --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
+                                                                                 --set "extraEnv[0].value=${REGISTRY}/${PRIME_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
 
 else
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \

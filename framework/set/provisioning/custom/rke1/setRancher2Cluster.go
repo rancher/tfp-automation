@@ -7,8 +7,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// setRancher2ClusterV2 is a function that will set the rancher2_cluster_v2 configurations in the main.tf file.
-func setRancher2Cluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) error {
+// SetRancher2Cluster is a function that will set the rancher2_cluster configurations in the main.tf file.
+func SetRancher2Cluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) error {
 	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, clusterName})
 	clusterBlockBody := clusterBlock.Body()
 

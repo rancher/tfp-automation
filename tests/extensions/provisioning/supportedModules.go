@@ -46,6 +46,7 @@ func verifyModule(module string) bool {
 		modules.CustomEC2RKE1,
 		modules.CustomEC2RKE2,
 		modules.CustomEC2K3s,
+		modules.AirgapRKE1,
 		modules.AirgapRKE2,
 		modules.AirgapK3S,
 	}
