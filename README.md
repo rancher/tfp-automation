@@ -18,10 +18,12 @@ In addition to the main purpose of testing the Rancher2 provider, `tfp-automatio
         -   [GKE](#configurations-terraform-gke)
         -   [AZURE_RKE1](#configurations-terraform-azure_rke1)
         -   [EC2_RKE1](#configurations-terraform-ec2_rke1)
+        -   [HARVESTER_RKE1](#configurations-terraform-harvester_rke1)
         -   [LINODE_RKE1](#configurations-terraform-linode_rke1)
         -   [VSPHERE_RKE1](#configurations-terraform-vsphere_rke1)
         -   [AZURE_RKE2 + AZURE_K3S](#configurations-terraform-rke2_k3s_azure)
         -   [EC2_RKE2 + EC2_K3S](#configurations-terraform-rke2_k3s_ec2)
+        -   [HARVESTER_RKE2 + HARVESTER_K3S](#configurations-terraform-rke2_k3s_harvester)
         -   [LINODE_RKE2 + LINODE_K3S](#configurations-terraform-rke2_k3s_linode)
         -   [VSPHERE_RKE2 + VSPHERE_K3S](#configurations-terraform-rke2_k3s_vsphere)
     -   [Terratest](#configurations-terratest)
@@ -45,7 +47,6 @@ In addition to the main purpose of testing the Rancher2 provider, `tfp-automatio
 
 ##### When testing locally, the following environment variables should be exported:
 ```yaml
-export RANCHER2_KEY_PATH="<tfp-automation repo path>/modules/rancher"  #Required 
 export RANCHER2_PROVIDER_VERSION=""                                    #Required
 export AWS_PROVIDER_VERSION=""                                         #Required for custom cluster provisioning
 export LOCALS_PROVIDER_VERSION=""                                      #Required for custom cluster provisioning
@@ -318,27 +319,6 @@ terraform:
 ```
 ---
 
-
-<a name="configurations-terraform-linode_rke1"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-###### LINODE_RKE1
-
-```yaml
-terraform:
-  module: linode_rke1
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
-  linodeCredentials:
-    linodeToken: ""
-  linodeConfig:
-    region: us-east
-    linodeRootPass: ""
-```
-
----
-
 <a name="configurations-terraform-harvester_rke1"></a>
 #### :small_red_triangle: [Back to top](#top)
 
@@ -364,7 +344,25 @@ terraform:
     vmNamespace: "default"
     sshUser: "ubuntu"
 ```
+---
 
+<a name="configurations-terraform-linode_rke1"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+###### LINODE_RKE1
+
+```yaml
+terraform:
+  module: linode_rke1
+  networkPlugin: canal
+  nodeTemplateName: tf-rke1-template
+  hostnamePrefix: tfp
+  linodeCredentials:
+    linodeToken: ""
+  linodeConfig:
+    region: us-east
+    linodeRootPass: ""
+```
 ---
 
 <a name="configurations-terraform-vsphere_rke1"></a>
@@ -470,32 +468,7 @@ terraform:
     awsVpcID: vpc-xxxxxxxx
     awsZoneLetter: a
 ```
-
 ---
-
-
-<a name="configurations-terraform-rke2_k3s_linode"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-###### LINODE_RKE2 + LINODE_K3S
-
-```yaml
-terraform:
-  module: linode_k3s
-  cloudCredentialName: tf-linode-creds
-  machineConfigName: tf-k3s
-  enableNetworkPolicy: false
-  defaultClusterRoleForProjectMembers: user
-  linodeCredentials:
-    linodeToken: ""
-  linodeConfig:
-    linodeImage: linode/ubuntu20.04
-    region: us-east
-    linodeRootPass: xxxxxxxxxxxx
-```
-
----
-
 
 <a name="configurations-terraform-rke2_k3s_harvester"></a>
 #### :small_red_triangle: [Back to top](#top)
@@ -521,9 +494,28 @@ terraform:
     vmNamespace: "default"
     sshUser: "ubuntu"
 ```
-
 ---
 
+<a name="configurations-terraform-rke2_k3s_linode"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+###### LINODE_RKE2 + LINODE_K3S
+
+```yaml
+terraform:
+  module: linode_k3s
+  cloudCredentialName: tf-linode-creds
+  machineConfigName: tf-k3s
+  enableNetworkPolicy: false
+  defaultClusterRoleForProjectMembers: user
+  linodeCredentials:
+    linodeToken: ""
+  linodeConfig:
+    linodeImage: linode/ubuntu20.04
+    region: us-east
+    linodeRootPass: xxxxxxxxxxxx
+```
+---
 
 <a name="configurations-terraform-rke2_k3s_vsphere"></a>
 #### :small_red_triangle: [Back to top](#top)
@@ -816,4 +808,4 @@ Testing configurations for this are the same as outlined in provisioning test ab
 
 ##### Cleanup
 
-Cleanup test may be used to clean up resources in situations where rancher config has `cleanup` set to `false`.  This may be helpful in debugging.  This test expects the same configurations used to initially create this environment, to properly clean them up.
+Cleanup test may be used to clean up resources in situations where rancher config has `cleanup` set to `false`.  This may be helpful in debugging. This test expects the same configurations used to initially create this environment, to properly clean them up.

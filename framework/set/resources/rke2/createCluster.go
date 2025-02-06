@@ -28,8 +28,8 @@ func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 		return nil, err
 	}
 
-	serverScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2/add-servers.sh")
+	serverScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke2/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke2/add-servers.sh")
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
 	if err != nil {

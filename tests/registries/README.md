@@ -101,7 +101,12 @@ terraform:
 
 Before running, be sure to run the following commands:
 
-`export RANCHER2_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/rancher2"; export REGISTRY_KEY_PATH="/<path>/<to>/go/src/github.com/rancher/tfp-automation/modules/registries"; export RANCHER2_PROVIDER_VERSION=""; export CATTLE_TEST_CONFIG=<path/to/yaml>; export LOCALS_PROVIDER_VERSION=""; export AWS_PROVIDER_VERSION=""`
+```yaml
+export RANCHER2_PROVIDER_VERSION=""
+'export CATTLE_TEST_CONFIG=<path/to/yaml>
+export LOCALS_PROVIDER_VERSION=""
+export AWS_PROVIDER_VERSION=""`
+```
 
 See the below examples on how to run the tests:
 

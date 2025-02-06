@@ -8,8 +8,10 @@ import (
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	rke "github.com/rancher/tfp-automation/framework/set/resources/rke"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/stretchr/testify/require"
@@ -26,7 +28,7 @@ type RKEProviderTestSuite struct {
 }
 
 func (t *RKEProviderTestSuite) TearDownSuite() {
-	keyPath := rke.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath)
 	cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 }
 
@@ -37,7 +39,7 @@ func (t *RKEProviderTestSuite) TestCreateRKECluster() {
 	t.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, t.terratestConfig)
 
-	keyPath := rke.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath)
 	terraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.terraformOptions = terraformOptions
 

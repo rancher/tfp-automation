@@ -10,8 +10,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
+	"github.com/rancher/tfp-automation/framework/set/resources/k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
 	"github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type CreateRKE2ClusterTestSuite struct {
+type CreateK3SClusterTestSuite struct {
 	suite.Suite
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
@@ -27,33 +27,27 @@ type CreateRKE2ClusterTestSuite struct {
 }
 
 const (
-	rke2ServerOne   = "rke2_server1"
-	rke2ServerTwo   = "rke2_server2"
-	rke2ServerThree = "rke2_server3"
+	k3sServerOne   = "k3s_server1"
+	k3sServerTwo   = "k3s_server2"
+	k3sServerThree = "k3s_server3"
 
-	rke2ServerOnePublicDNS = "rke2_server1_public_dns"
-	registryPublicDNS      = "registry_public_dns"
-
-	nonAuthRegistry = "non_auth_registry"
-
-	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
-	rke2ServerTwoPublicDNS   = "rke2_server2_public_dns"
-	rke2ServerThreePublicDNS = "rke2_server3_public_dns"
-	rke2BastionPublicDNS     = "rke2_bastion_public_dns"
-	rke2ServerTwoPrivateIP   = "rke2_server2_private_ip"
-	rke2ServerThreePrivateIP = "rke2_server3_private_ip"
-
-	terraformConst = "terraform"
+	k3sServerOnePublicDNS   = "k3s_server1_public_dns"
+	k3sServerOnePrivateIP   = "k3s_server1_private_ip"
+	k3sServerTwoPublicDNS   = "k3s_server2_public_dns"
+	k3sServerThreePublicDNS = "k3s_server3_public_dns"
+	k3sBastionPublicDNS     = "k3s_bastion_public_dns"
+	k3sServerTwoPrivateIP   = "k3s_server2_private_ip"
+	k3sServerThreePrivateIP = "k3s_server3_private_ip"
 )
 
-func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
+func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 	i.terraformConfig = new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, i.terraformConfig)
 
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RKE2KeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.K3sKeyPath)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -67,26 +61,26 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances := []string{k3sServerOne, k3sServerTwo, k3sServerThree}
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
-	rke2ServerOnePublicDNS := terraform.Output(i.T(), terraformOptions, rke2ServerOnePublicDNS)
-	rke2ServerOnePrivateIP := terraform.Output(i.T(), terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPublicDNS := terraform.Output(i.T(), terraformOptions, rke2ServerTwoPublicDNS)
-	rke2ServerThreePublicDNS := terraform.Output(i.T(), terraformOptions, rke2ServerThreePublicDNS)
+	k3sServerOnePublicDNS := terraform.Output(i.T(), terraformOptions, k3sServerOnePublicDNS)
+	k3sServerOnePrivateIP := terraform.Output(i.T(), terraformOptions, k3sServerOnePrivateIP)
+	k3sServerTwoPublicDNS := terraform.Output(i.T(), terraformOptions, k3sServerTwoPublicDNS)
+	k3sServerThreePublicDNS := terraform.Output(i.T(), terraformOptions, k3sServerThreePublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, i.terraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS)
+	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, i.terraformConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
-	logrus.Infof("Kubeconfig file is located in /home/%s/.kube in the node: %s", i.terraformConfig.Standalone.OSUser, rke2ServerOnePublicDNS)
+	logrus.Infof("Kubeconfig file is located in /home/%s/.kube in the node: %s", i.terraformConfig.Standalone.OSUser, k3sServerOnePublicDNS)
 }
 
-func TestCreateRKE2ClusterTestSuite(t *testing.T) {
-	suite.Run(t, new(CreateRKE2ClusterTestSuite))
+func TestCreateK3SClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(CreateK3SClusterTestSuite))
 }

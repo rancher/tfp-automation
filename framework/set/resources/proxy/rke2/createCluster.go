@@ -9,7 +9,7 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	sanity "github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2"
+	sanity "github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )

@@ -10,8 +10,7 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2"
-	sanity "github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2"
+	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -84,7 +83,7 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 // createAirgappedRKE2Server is a helper function that will create the RKE2 server.
 func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP,
 	rke2Token, registryPublicDNS string, script []byte) {
-	nullResourceBlockBody, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
+	nullResourceBlockBody, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " + terraformConfig.Standalone.RancherImage + " " +
@@ -122,7 +121,7 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
+		nullResourceBlockBody, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " +

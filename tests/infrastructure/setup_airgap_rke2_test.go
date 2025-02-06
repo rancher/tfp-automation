@@ -8,9 +8,11 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/sirupsen/logrus"
@@ -32,7 +34,7 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := sanity.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RKE2KeyPath)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 

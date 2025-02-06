@@ -6,9 +6,10 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/airgap"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -28,7 +29,7 @@ func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := airgap.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 

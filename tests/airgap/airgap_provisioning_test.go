@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
@@ -35,7 +36,7 @@ type TfpAirgapProvisioningTestSuite struct {
 }
 
 func (a *TfpAirgapProvisioningTestSuite) TearDownSuite() {
-	keyPath := airgap.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath)
 	cleanup.Cleanup(a.T(), a.standaloneTerraformOptions, keyPath)
 }
 
@@ -46,7 +47,7 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	a.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, a.terratestConfig)
 
-	keyPath := airgap.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath)
 	standaloneTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 	a.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -83,7 +84,7 @@ func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.T
 	a.client = client
 	a.client.RancherConfig.AdminToken = rancherConfig.AdminToken
 
-	keyPath := rancher2.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(a.T(), terraformConfig, terratestConfig, keyPath)
 	a.terraformOptions = terraformOptions
 }
@@ -114,7 +115,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		a.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, nil)
@@ -154,7 +155,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		a.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, nil)

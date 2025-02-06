@@ -13,7 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
-	"github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
+	harvester "github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/rbac"

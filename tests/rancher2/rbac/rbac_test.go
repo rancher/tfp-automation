@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -53,7 +54,7 @@ func (r *RBACTestSuite) SetupSuite() {
 
 	r.terratestConfig = terratestConfig
 
-	keyPath := rancher2.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 
@@ -80,7 +81,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)

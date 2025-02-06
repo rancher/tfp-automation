@@ -8,11 +8,13 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/ad"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/azureAD"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/github"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/ldap"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/okta"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 
 	"github.com/sirupsen/logrus"
@@ -26,7 +28,7 @@ func AuthConfig(terraformConfig *config.TerraformConfig, testUser, testPassword 
 	authProvider := terraformConfig.AuthProvider
 
 	var file *os.File
-	keyPath := resources.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 
 	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {

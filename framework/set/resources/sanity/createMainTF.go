@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rke2"
 	"github.com/sirupsen/logrus"
 )
 

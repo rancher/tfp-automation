@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -52,7 +53,7 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 
 	k.terratestConfig = terratestConfig
 
-	keyPath := rancher2.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(k.T(), k.terraformConfig, k.terratestConfig, keyPath)
 	k.terraformOptions = terraformOptions
 
@@ -78,7 +79,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		k.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
@@ -112,7 +113,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		k.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)

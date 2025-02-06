@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -37,7 +38,7 @@ type TfpRegistriesTestSuite struct {
 }
 
 func (r *TfpRegistriesTestSuite) TearDownSuite() {
-	keyPath := registries.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath)
 	cleanup.Cleanup(r.T(), r.standaloneTerraformOptions, keyPath)
 }
 
@@ -48,7 +49,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 	r.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, r.terratestConfig)
 
-	keyPath := registries.KeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath)
 	standaloneTerraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -87,7 +88,7 @@ func (r *TfpRegistriesTestSuite) TfpSetupSuite(terratestConfig *config.Terratest
 	r.client = client
 	r.client.RancherConfig.AdminToken = rancherConfig.AdminToken
 
-	keyPath := rancher2.SetKeyPath()
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(r.T(), terraformConfig, terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 }
@@ -126,7 +127,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
@@ -173,7 +174,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
@@ -222,7 +223,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath()
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
