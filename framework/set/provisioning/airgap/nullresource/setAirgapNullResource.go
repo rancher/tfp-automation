@@ -43,9 +43,9 @@ func SetAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terr
 
 	var bastionHostExpression string
 
-	if terraformConfig.Module == modules.ImportK3s {
+	if terraformConfig.Module == modules.ImportEC2K3s {
 		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + k3sServerOne + `.` + defaults.PublicIp + `}"`
-	} else if terraformConfig.Module == modules.ImportRKE2 {
+	} else if terraformConfig.Module == modules.ImportEC2RKE2 {
 		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + rke2ServerOne + `.` + defaults.PublicIp + `}"`
 	} else {
 		bastionHostExpression = defaults.AwsInstance + `.` + bastion + `.` + defaults.PublicIp

@@ -38,8 +38,6 @@ Similar to the `provisioning` tests, the node scaling tests have static test cas
 terratest:
   kubernetesVersion: ""
   nodeCount: 3
-  scaledUpNodeCount: 8
-  scaledDownNodeCount: 6
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   nodepools:
     - etcd: true
@@ -55,6 +53,7 @@ terratest:
       worker: true
       quantity: 1
   scalingInput:
+    scaledUpNodeCount: 8
     scaledUpNodepools:
       - etcd: true
         controlplane: false
@@ -68,6 +67,7 @@ terratest:
         controlplane: false
         worker: true
         quantity: 3
+    scaledDownNodeCount: 6
     scaledDownNodepools:
       - etcd: true
         controlplane: false
@@ -89,13 +89,13 @@ terratest:
 terratest:
   kubernetesVersion: ""
   nodeCount: 3
-  scaledUpNodeCount: 8
-  scaledDownNodeCount: 6
   nodepools:
     - quantity: 3
   scalingInput:
+    scaledUpNodeCount: 8
     scaledUpNodepools:
       - quantity: 8
+    scaledDownNodeCount: 6
     scaledDownNodepools:
       - quantity: 6
 ```
@@ -106,19 +106,19 @@ terratest:
 terratest:
   kubernetesVersion: ""
   nodeCount: 3
-  scaledUpNodeCount: 8
-  scaledDownNodeCount: 6
   nodepools:
     - instanceType: "t3.medium"
       desiredSize: 3
       maxSize: 10
       minSize: 3
   scalingInput:
+    scaledUpNodeCount: 8
     scaledUpNodepools:
       - instanceType: "t3.medium"
         desiredSize: 8
         maxSize: 10
         minSize: 3
+    scaledDownNodeCount: 6
     scaledDownNodepools:
       - instanceType: "t3.medium"
         desiredSize: 6
@@ -132,15 +132,15 @@ terratest:
 terratest:
   kubernetesVersion: ""
   nodeCount: 3
-  scaledUpNodeCount: 8
-  scaledDownNodeCount: 6
   nodepools:
     - quantity: 3
       maxPodsContraint: 110
   scalingInput:
+    scaledUpNodeCount: 8
     scaledUpNodepools:
       - quantity: 8
         maxPodsContraint: 110
+    scaledDownNodeCount: 6
     scaledDownNodepools:
       - quantity: 6
         maxPodsContraint: 110

@@ -2,7 +2,9 @@ package config
 
 import (
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
+	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config/authproviders"
 	aws "github.com/rancher/tfp-automation/config/nodeproviders/aws"
 	azure "github.com/rancher/tfp-automation/config/nodeproviders/azure"
@@ -10,6 +12,7 @@ import (
 	harvester "github.com/rancher/tfp-automation/config/nodeproviders/harvester"
 	linode "github.com/rancher/tfp-automation/config/nodeproviders/linode"
 	vsphere "github.com/rancher/tfp-automation/config/nodeproviders/vsphere"
+	"github.com/rancher/tfp-automation/defaults/configs"
 )
 
 type TestClientName string
@@ -174,7 +177,6 @@ type TerraformConfig struct {
 	HostnamePrefix                      string                       `json:"hostnamePrefix,omitempty" yaml:"hostnamePrefix,omitempty"`
 	MachineConfigName                   string                       `json:"machineConfigName,omitempty" yaml:"machineConfigName,omitempty"`
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
-	MultiCluster                        bool                         `json:"multiCluster,omitempty" yaml:"multiCluster,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
 	NodeTemplateName                    string                       `json:"nodeTemplateName,omitempty" yaml:"nodeTemplateName,omitempty"`
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
@@ -211,4 +213,18 @@ type TerratestConfig struct {
 	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
 	SnapshotInput             Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
 	TFLogging                 bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
+}
+
+// LoadTFPConfigs loads the TFP configurations from the provided map
+func LoadTFPConfigs(cattleConfig map[string]any) (*rancher.Config, *TerraformConfig, *TerratestConfig) {
+	rancherConfig := new(rancher.Config)
+	operations.LoadObjectFromMap(configs.Rancher, cattleConfig, rancherConfig)
+
+	terraformConfig := new(TerraformConfig)
+	operations.LoadObjectFromMap(TerraformConfigurationFileKey, cattleConfig, terraformConfig)
+
+	terratestConfig := new(TerratestConfig)
+	operations.LoadObjectFromMap(TerratestConfigurationFileKey, cattleConfig, terratestConfig)
+
+	return rancherConfig, terraformConfig, terratestConfig
 }
