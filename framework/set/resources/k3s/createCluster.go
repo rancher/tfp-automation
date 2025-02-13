@@ -44,8 +44,8 @@ func CreateK3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 
 	k3sToken := namegen.AppendRandomString(token)
 
-	createK3SServer(rootBody, terraformConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sToken, serverOneScriptContent)
-	addK3SServerNodes(rootBody, terraformConfig, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS, k3sToken, newServersScriptContent)
+	CreateK3SServer(rootBody, terraformConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sToken, serverOneScriptContent)
+	AddK3SServerNodes(rootBody, terraformConfig, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS, k3sToken, newServersScriptContent)
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
@@ -56,8 +56,8 @@ func CreateK3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 	return file, nil
 }
 
-// createK3SServer is a helper function that will create the K3S server.
-func createK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP,
+// CreateK3SServer is a helper function that will create the K3S server.
+func CreateK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP,
 	k3sToken string, script []byte) {
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, k3sServerOnePublicDNS, k3sServerOne)
 
@@ -71,8 +71,8 @@ func createK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	}))
 }
 
-// addK3SServerNodes is a helper function that will add additional K3s server nodes to the initial K3s server.
-func addK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sServerOnePrivateIP, k3sServerTwoPublicDNS,
+// AddK3SServerNodes is a helper function that will add additional K3s server nodes to the initial K3s server.
+func AddK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sServerOnePrivateIP, k3sServerTwoPublicDNS,
 	k3sServerThreePublicDNS, k3sToken string, script []byte) {
 	instances := []string{k3sServerTwoPublicDNS, k3sServerThreePublicDNS}
 	hosts := []string{k3sServerTwo, k3sServerThree}

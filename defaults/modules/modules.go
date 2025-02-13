@@ -23,4 +23,7 @@ const (
 	AirgapRKE1    = "airgap_rke1"
 	AirgapRKE2    = "airgap_rke2"
 	AirgapK3S     = "airgap_k3s"
+	ImportRKE1    = "import_rke1"
+	ImportRKE2    = "import_rke2"
+	ImportK3s     = "import_k3s"
 )

@@ -72,12 +72,62 @@ terratest:
   nodeCount: 3
 ```
 
+For running the imported clusters, reference the example config block below:
+
+```yaml
+rancher:
+  host: ""
+  adminToken: ""
+  cleanup: true
+terraform:
+  cloudCredentialName: ""
+  cni: ""
+  defaultClusterRoleForProjectMembers: "true"
+  enableNetworkPolicy: false
+  hostnamePrefix: ""
+  machineConfigName: ""
+  networkPlugin: ""
+  nodeTemplateName: ""
+  privateKeyPath: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    region: ""
+    awsSecurityGroupNames: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    region: ""
+    awsUser: ""
+    standaloneSecurityGroupNames: [""]
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  standalone:
+    k3sVersion: ""                      # Ensure k3s1 suffix is appended (i.e. v1.30.9+k3s1)
+    osGroup: ""
+    osUser: ""
+    rke2Version: ""                     # Ensure rke2r1 suffix is appended (i.e. v1.30.9+rke2r1)
+terratest:
+  tfLogging: true
+```
+
+In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.xx.x` defined for the RKE1 portion of the test.
+
 See the below examples on how to run the tests:
 
 ### RKE1/RKE2/K3S
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionTestSuite/TestTfpProvision$"` \
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionTestSuite/TestTfpProvisionDynamicInput$"`
+
+### Imported
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionImportTestSuite/TestTfpProvisionImport$"`
 
 ### Hosted
 
