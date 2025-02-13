@@ -34,6 +34,9 @@ func verifyModule(module string) bool {
 		modules.EC2RKE1,
 		modules.EC2RKE2,
 		modules.EC2K3s,
+		modules.HarvesterRKE1,
+		modules.HarvesterRKE2,
+		modules.HarvesterK3s,
 		modules.LinodeRKE1,
 		modules.LinodeRKE2,
 		modules.LinodeK3s,
@@ -46,6 +49,9 @@ func verifyModule(module string) bool {
 		modules.AirgapRKE1,
 		modules.AirgapRKE2,
 		modules.AirgapK3S,
+		modules.ImportRKE1,
+		modules.ImportRKE2,
+		modules.ImportK3s,
 	}
 
 	for _, supportedModule := range supportedModules {

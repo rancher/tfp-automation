@@ -83,7 +83,7 @@ func SetAirgapRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
-		logrus.Infof("Failed to write custom RKE2/K3s configurations to main.tf file. Error: %v", err)
+		logrus.Infof("Failed to write airgap RKE2/K3s configurations to main.tf file. Error: %v", err)
 		return nil, err
 	}
 

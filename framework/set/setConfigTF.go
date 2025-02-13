@@ -15,6 +15,7 @@ import (
 	custom "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
 	customV2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/hosted"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/multiclusters"
 	nodedriver "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke1"
 	nodedriverV2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
@@ -58,11 +59,11 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 		case module == clustertypes.GKE:
 			_, err = hosted.SetGKE(terraformConfig, clusterName, terratestConfig.KubernetesVersion, terratestConfig.Nodepools, newFile, rootBody, file)
 			return clusterNames, err
-		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
+		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap) && !strings.Contains(module, defaults.Import):
 			_, err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, terratestConfig.KubernetesVersion, terratestConfig.PSACT, terratestConfig.Nodepools,
 				terratestConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 			return clusterNames, err
-		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
+		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap) && !strings.Contains(module, defaults.Import):
 			_, err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, terratestConfig.KubernetesVersion, terratestConfig.PSACT, terratestConfig.Nodepools,
 				terratestConfig.SnapshotInput, newFile, rootBody, file, rbacRole)
 			return clusterNames, err
@@ -78,6 +79,13 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
 			_, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
 			return clusterNames, err
+		case module == modules.ImportRKE1:
+			_, err = imported.SetImportedRKE1(rancherConfig, terraformConfig, terratestConfig, clusterName, newFile, rootBody, file)
+			return clusterNames, err
+		case module == modules.ImportRKE2 || module == modules.ImportK3s:
+			_, err = imported.SetImportedRKE2K3s(rancherConfig, terraformConfig, terratestConfig, clusterName, newFile, rootBody, file)
+			return clusterNames, err
+
 		default:
 			logrus.Errorf("Unsupported module: %v", module)
 		}

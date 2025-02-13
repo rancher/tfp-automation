@@ -19,6 +19,7 @@ import (
 	custom "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
 	customV2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/hosted"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	nodedriver "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke1"
 	nodedriverV2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -100,6 +101,16 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 			}
 		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
 			file, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraformConfig, terratestConfig, nil, clusterName, newFile, rootBody, file)
+			if err != nil {
+				return clusterNames, err
+			}
+		case module == modules.ImportRKE1:
+			file, err = imported.SetImportedRKE1(rancherConfig, terraformConfig, terratestConfig, clusterName, newFile, rootBody, file)
+			if err != nil {
+				return clusterNames, err
+			}
+		case module == modules.ImportRKE2 || module == modules.ImportK3s:
+			file, err = imported.SetImportedRKE2K3s(rancherConfig, terraformConfig, terratestConfig, clusterName, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, err
 			}

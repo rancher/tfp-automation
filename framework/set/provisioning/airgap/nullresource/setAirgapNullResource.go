@@ -4,13 +4,17 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
 )
 
 const (
-	alwaysRun = "always_run"
-	bastion   = "bastion"
+	alwaysRun     = "always_run"
+	bastion       = "bastion"
+	importNodeOne = "import_node_one"
+	k3sServerOne  = "k3s_server1"
+	rke2ServerOne = "rke2_server1"
 )
 
 // SetAirgapNullResource is a function that will set the airgap null_resource configurations in the main.tf file,
@@ -37,7 +41,16 @@ func SetAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terr
 	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	bastionHostExpression := defaults.AwsInstance + `.` + bastion + `.` + defaults.PublicIp
+	var bastionHostExpression string
+
+	if terraformConfig.Module == modules.ImportK3s {
+		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + k3sServerOne + `.` + defaults.PublicIp + `}"`
+	} else if terraformConfig.Module == modules.ImportRKE2 {
+		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + rke2ServerOne + `.` + defaults.PublicIp + `}"`
+	} else {
+		bastionHostExpression = defaults.AwsInstance + `.` + bastion + `.` + defaults.PublicIp
+	}
+
 	bastionHost := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(bastionHostExpression)},
 	}

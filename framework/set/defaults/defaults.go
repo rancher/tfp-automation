@@ -2,6 +2,7 @@ package defaults
 
 const (
 	Data         = "data"
+	Description  = "description"
 	Resource     = "resource"
 	ResourceKind = "kind"
 	ResourceName = "name"
@@ -16,6 +17,7 @@ const (
 	File         = "file"
 	Airgap       = "airgap"
 	Custom       = "custom"
+	Import       = "import"
 
 	Rancher2Source      = "rancher/rancher2"
 	Rancher2LocalSource = "terraform.local/local/rancher2"
@@ -87,6 +89,7 @@ const (
 	ControlPlaneRoleFlag     = "--controlplane"
 	WorkerRoleFlag           = "--worker"
 	OriginalNodeCommand      = "original_node_command"
+	InsecureCommand          = "insecure_command"
 	InsecureNodeCommand      = "insecure_node_command"
 	ClusterRegistrationToken = "cluster_registration_token"
 	NodeCommand              = "node_command"
