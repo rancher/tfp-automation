@@ -65,6 +65,9 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 
 // getProviderVersions returns the versions for the providers based on environment variables.
 func getProviderVersions(terraformConfig *config.TerraformConfig, configMap []map[string]any) (string, string, string, string, string) {
+	terraform := new(config.TerraformConfig)
+	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
+
 	customModule := containsCustomModule(configMap)
 
 	providerVersion := os.Getenv(providerEnvVar)
@@ -74,8 +77,8 @@ func getProviderVersions(terraformConfig *config.TerraformConfig, configMap []ma
 
 	var awsProviderVersion, localProviderVersion, rkeProviderVersion string
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) || strings.Contains(terraformConfig.Module, defaults.Airgap) || 
-	strings.Contains(terraformConfig.Module, defaults.Import) || customModule {
+	if strings.Contains(terraform.Module, defaults.Custom) || strings.Contains(terraform.Module, defaults.Airgap) ||
+		strings.Contains(terraform.Module, defaults.Import) || customModule {
 		awsProviderVersion = os.Getenv(awsProviderEnvVar)
 		if awsProviderVersion == "" {
 			logrus.Fatalf("Expected env var not set %s", awsProviderEnvVar)
@@ -105,6 +108,9 @@ func getProviderVersions(terraformConfig *config.TerraformConfig, configMap []ma
 // createRequiredProviders creates the required_providers block.
 func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, awsProviderVersion, localProviderVersion,
 	providerVersion, source, rkeProviderVersion string, configMap []map[string]any) {
+	tfConfig := new(config.TerraformConfig)
+	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], tfConfig)
+
 	tfBlock := rootBody.AppendNewBlock(terraform, nil)
 	tfBlockBody := tfBlock.Body()
 
@@ -113,8 +119,8 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 
 	customModule := containsCustomModule(configMap)
 
-	if strings.Contains(terraformConfig.Module, defaults.Airgap) || strings.Contains(terraformConfig.Module, defaults.Import) || 
-	customModule {
+	if strings.Contains(tfConfig.Module, defaults.Airgap) || strings.Contains(tfConfig.Module, defaults.Import) ||
+		customModule {
 		reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(defaults.AwsSource),
 			defaults.Version: cty.StringVal(awsProviderVersion),
@@ -141,9 +147,12 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 
 // createProvider creates a provider block for the given rancher config.
 func createProvider(rootBody *hclwrite.Body, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, configMap []map[string]any) {
+	terraform := new(config.TerraformConfig)
+	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
+
 	customModule := containsCustomModule(configMap)
 
-	if strings.Contains(terraformConfig.Module, defaults.Airgap) || strings.Contains(terraformConfig.Module, defaults.Import) || customModule {
+	if strings.Contains(terraform.Module, defaults.Airgap) || strings.Contains(terraform.Module, defaults.Import) || customModule {
 		awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
 		awsProvBlockBody := awsProvBlock.Body()
 
