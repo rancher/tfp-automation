@@ -42,7 +42,7 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	command := "bash -c '/tmp/import-nodes.sh " + encodedPEMFile + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.OSGroup + " " + nodeOnePublicDNS + " " + importCommand
 
-	if terraformConfig.Module == modules.ImportRKE1 {
+	if terraformConfig.Module == modules.ImportEC2RKE1 {
 		command += " " + kubeConfig
 	}
 
@@ -58,7 +58,7 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	var dependsOnServer string
 
-	if terraformConfig.Module == modules.ImportK3s || terraformConfig.Module == modules.ImportRKE2 {
+	if terraformConfig.Module == modules.ImportEC2K3s || terraformConfig.Module == modules.ImportEC2RKE2 {
 		dependsOnServer = `[` + defaults.NullResource + `.` + addServer + serverTwo + `, ` + defaults.NullResource + `.` + addServer + serverThree + `]`
 	} else {
 		dependsOnServer = `[` + defaults.RKECluster + `.` + defaults.RKECluster + `]`

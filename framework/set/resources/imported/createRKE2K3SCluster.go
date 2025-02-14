@@ -32,7 +32,7 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 
 	var serverScriptPath, newServersScriptPath string
 
-	if terraformConfig.Module == modules.ImportK3s {
+	if terraformConfig.Module == modules.ImportEC2K3s {
 		serverScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/k3s/init-server.sh")
 		newServersScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/k3s/add-servers.sh")
 	} else {
@@ -105,7 +105,7 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 
 	var version string
 
-	if terraformConfig.Module == modules.ImportK3s {
+	if terraformConfig.Module == modules.ImportEC2K3s {
 		version = terraformConfig.Standalone.K3SVersion
 	} else {
 		version = terraformConfig.Standalone.RKE2Version
@@ -149,7 +149,7 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 
 		var version string
 
-		if terraformConfig.Module == modules.ImportK3s {
+		if terraformConfig.Module == modules.ImportEC2K3s {
 			version = terraformConfig.Standalone.K3SVersion
 		} else {
 			version = terraformConfig.Standalone.RKE2Version

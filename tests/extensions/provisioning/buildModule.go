@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/rancher/shepherd/clients/rancher"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -15,19 +14,10 @@ import (
 )
 
 // BuildModule is a function that builds the Terraform module.
-func BuildModule(t *testing.T) error {
-	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
-
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
-
-	terratestConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig(configs.Terratest, terratestConfig)
-
+func BuildModule(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any) error {
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 
-	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, "", "", "", "", "", nil)
+	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, "", "", "", "", "", configMap)
 	if err != nil {
 		return err
 	}

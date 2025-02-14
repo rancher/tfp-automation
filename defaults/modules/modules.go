@@ -14,6 +14,9 @@ const (
 	HarvesterRKE1 = "harvester_rke1"
 	HarvesterRKE2 = "harvester_rke2"
 	HarvesterK3s  = "harvester_k3s"
+	ImportEC2RKE1 = "ec2_rke1_import"
+	ImportEC2RKE2 = "ec2_rke2_import"
+	ImportEC2K3s  = "ec2_k3s_import"
 	LinodeRKE1    = "linode_rke1"
 	LinodeRKE2    = "linode_rke2"
 	LinodeK3s     = "linode_k3s"
@@ -23,7 +26,4 @@ const (
 	AirgapRKE1    = "airgap_rke1"
 	AirgapRKE2    = "airgap_rke2"
 	AirgapK3S     = "airgap_k3s"
-	ImportRKE1    = "import_rke1"
-	ImportRKE2    = "import_rke2"
-	ImportK3s     = "import_k3s"
 )

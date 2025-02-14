@@ -23,7 +23,7 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 		cty.StringVal(defaults.WorkerRoleFlag),
 	}))
 
-	if terraformConfig.MultiCluster && customClusterNames != nil {
+	if customClusterNames != nil {
 		for _, name := range customClusterNames {
 			// Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
 			originalNodeCommandExpressionClusterV2 := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
