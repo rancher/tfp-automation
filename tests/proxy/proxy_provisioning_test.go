@@ -97,9 +97,9 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE1", nodeRolesDedicated, "ec2_rke1"},
-		{"RKE2", nodeRolesDedicated, "ec2_rke2"},
-		{"K3S", nodeRolesDedicated, "ec2_k3s"},
+		{"No Proxy RKE1", nodeRolesDedicated, "ec2_rke1"},
+		{"No Proxy RKE2", nodeRolesDedicated, "ec2_rke2"},
+		{"No Proxy K3S", nodeRolesDedicated, "ec2_k3s"},
 	}
 
 	for _, tt := range tests {
@@ -139,9 +139,9 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE1", nodeRolesDedicated, "ec2_rke1"},
-		{"RKE2", nodeRolesDedicated, "ec2_rke2"},
-		{"K3S", nodeRolesDedicated, "ec2_k3s"},
+		{"Proxy RKE1", nodeRolesDedicated, "ec2_rke1"},
+		{"Proxy RKE2", nodeRolesDedicated, "ec2_rke2"},
+		{"Proxy K3S", nodeRolesDedicated, "ec2_k3s"},
 	}
 
 	for _, tt := range tests {

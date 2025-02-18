@@ -63,9 +63,9 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 		name   string
 		module string
 	}{
-		{"RKE1", "import_rke1"},
-		{"RKE2", "import_rke2"},
-		{"K3S", "import_k3s"},
+		{"Importing TFP RKE1", "import_rke1"},
+		{"Importing TFP RKE2", "import_rke2"},
+		{"Importing TFP K3S", "import_k3s"},
 	}
 
 	for _, tt := range tests {
