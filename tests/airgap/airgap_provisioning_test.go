@@ -94,9 +94,9 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		name   string
 		module string
 	}{
-		{"RKE1", "airgap_rke1"},
-		{"RKE2", "airgap_rke2"},
-		{"K3S", "airgap_k3s"},
+		{"Airgap RKE1", "airgap_rke1"},
+		{"Airgap RKE2", "airgap_rke2"},
+		{"Airgap K3S", "airgap_k3s"},
 	}
 
 	for _, tt := range tests {
@@ -134,9 +134,9 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 		name   string
 		module string
 	}{
-		{"Upgrading RKE1", "airgap_rke1"},
-		{"Upgrading RKE2", "airgap_rke2"},
-		{"Upgrading K3S", "airgap_k3s"},
+		{"Upgrading Airgap RKE1", "airgap_rke1"},
+		{"Upgrading Airgap RKE2", "airgap_rke2"},
+		{"Upgrading Airgap K3S", "airgap_k3s"},
 	}
 
 	for _, tt := range tests {

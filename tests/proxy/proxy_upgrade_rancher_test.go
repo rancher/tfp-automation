@@ -99,12 +99,12 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite(terratestConfig *config.
 }
 
 func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyProvisioning() {
-	p.provisionAndVerifyCluster("Pre-Upgrade ")
+	p.provisionAndVerifyCluster("Pre-Upgrade Proxy ")
 
 	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath)
 	upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyNode, p.proxyServerNodeOne)
 
-	p.provisionAndVerifyCluster("Post-Upgrade ")
+	p.provisionAndVerifyCluster("Post-Upgrade Proxy ")
 
 	if p.terratestConfig.LocalQaseReporting {
 		qase.ReportTest()
