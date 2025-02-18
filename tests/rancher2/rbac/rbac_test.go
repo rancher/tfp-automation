@@ -89,7 +89,6 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(r.T(), adminClient, clusterIDs)
 
 			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, tt.rbacRole)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)

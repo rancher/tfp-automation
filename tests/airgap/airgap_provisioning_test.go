@@ -120,7 +120,6 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, nil)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-			provisioning.VerifyWorkloads(a.T(), a.client, clusterIDs)
 		})
 	}
 
@@ -160,11 +159,9 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, nil)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-			provisioning.VerifyWorkloads(a.T(), a.client, clusterIDs)
 
 			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-			provisioning.VerifyWorkloads(a.T(), a.client, clusterIDs)
 		})
 	}
 

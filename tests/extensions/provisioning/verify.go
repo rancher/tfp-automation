@@ -80,8 +80,6 @@ func VerifyClustersState(t *testing.T, client *rancher.Client, clusterIDs []stri
 
 // VerifyWorkloads validates that different workload operations and workload types are able to provision successfully
 func VerifyWorkloads(t *testing.T, client *rancher.Client, clusterIDs []string) {
-	// Skip test for now. Need to investigate a consistenet way to not hit Docker Hub rate limits.
-	t.Skip("Skipping VerifyWorkloads test")
 	workloadValidations := []struct {
 		name           string
 		validationFunc func(client *rancher.Client, clusterID string) error
