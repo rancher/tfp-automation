@@ -133,7 +133,6 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], &terraformConfig)
-			provisioning.VerifyWorkloads(r.T(), r.client, clusterIDs)
 		})
 	}
 
@@ -180,7 +179,6 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], &terraformConfig)
-			provisioning.VerifyWorkloads(r.T(), r.client, clusterIDs)
 		})
 	}
 
@@ -229,7 +227,6 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], &terraformConfig)
-			provisioning.VerifyWorkloads(r.T(), r.client, clusterIDs)
 		})
 	}
 

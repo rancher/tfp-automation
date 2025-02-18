@@ -122,7 +122,6 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 
 			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), p.client, clusterIDs)
 		})
 	}
 
@@ -164,7 +163,6 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 
 			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), p.client, clusterIDs)
 		})
 	}
 

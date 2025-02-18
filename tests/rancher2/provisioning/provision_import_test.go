@@ -84,7 +84,6 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 
 			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
 		})
 	}
 

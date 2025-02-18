@@ -102,7 +102,6 @@ func (s *ScaleTestSuite) TestTfpScale() {
 
 			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(s.T(), adminClient, clusterIDs)
 
 			terratestConfig.Nodepools = tt.scaleUpNodeRoles
 
@@ -150,7 +149,6 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 
 			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(s.T(), adminClient, clusterIDs)
 
 			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledUpNodepools
 

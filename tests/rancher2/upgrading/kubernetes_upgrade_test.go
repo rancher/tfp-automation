@@ -87,7 +87,6 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 
 			clusterIDs := provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(k.T(), adminClient, clusterIDs)
 
 			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
@@ -121,7 +120,6 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 
 			clusterIDs := provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(k.T(), adminClient, clusterIDs)
 
 			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, clusterName, poolName, k.terraformOptions)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)

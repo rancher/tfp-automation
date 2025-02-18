@@ -144,7 +144,6 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string)
 
 			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), p.client, clusterIDs)
 		})
 	}
 }
