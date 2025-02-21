@@ -16,7 +16,8 @@ import (
 const (
 	address          = "address"
 	addServer        = "add_server_"
-	cluster          = "import_cluster"
+	importCluster    = "import_cluster"
+	copyScript       = "copy_script"
 	enableCriDockerD = "enable_cri_dockerd"
 	role             = "role"
 	serverOne        = "server1"
@@ -33,8 +34,10 @@ func SetImportedRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.T
 	SetImportedCluster(rootBody, clusterName)
 
 	rootBody.AppendNewline()
-
-	instances := []string{serverOne, serverTwo, serverThree}
+	serverOneName := clusterName + `_` + serverOne
+	serverTwoName := clusterName + `_` + serverTwo
+	serverThreeName := clusterName + `_` + serverThree
+	instances := []string{serverOneName, serverTwoName, serverThreeName}
 
 	for _, instance := range instances {
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
@@ -43,18 +46,18 @@ func SetImportedRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.T
 
 	var nodeOnePublicDNS, nodeOnePrivateIP, nodeTwoPublicDNS, nodeThreePublicDNS string
 
-	nodeOnePrivateIP = fmt.Sprintf("${%s.%s.private_ip}", defaults.AwsInstance, serverOne)
-	nodeOnePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverOne)
-	nodeTwoPublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverTwo)
-	nodeThreePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverThree)
+	nodeOnePrivateIP = fmt.Sprintf("${%s.%s.private_ip}", defaults.AwsInstance, serverOneName)
+	nodeOnePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverOneName)
+	nodeTwoPublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverTwoName)
+	nodeThreePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverThreeName)
 
-	imported.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, nodeOnePublicDNS, nodeOnePrivateIP, nodeTwoPublicDNS, nodeThreePublicDNS)
+	imported.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, nodeOnePublicDNS, nodeOnePrivateIP, nodeTwoPublicDNS, nodeThreePublicDNS, clusterName)
 
 	rootBody.AppendNewline()
 
 	importCommand := getImportCommand(clusterName)
 
-	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, "", importCommand[serverOne], clusterName)
+	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, "", importCommand[serverOneName], clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +76,8 @@ func getImportCommand(clusterName string) map[string]string {
 	command := make(map[string]string)
 	importCommand := fmt.Sprintf("${%s.%s.%s[0].%s}", defaults.Cluster, clusterName, defaults.ClusterRegistrationToken, defaults.InsecureCommand)
 
-	command[serverOne] = importCommand
+	serverOneName := clusterName + `_` + serverOne
+	command[serverOneName] = importCommand
 
 	return command
 }
