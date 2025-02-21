@@ -72,13 +72,13 @@ func SetMultiCluster(client *rancher.Client, rancherConfig *rancher.Config, conf
 			if err != nil {
 				return clusterNames, err
 			}
-		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
+		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap) && !strings.Contains(module, defaults.Import):
 			file, err = nodedriver.SetRKE1(terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
 				snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
 				return clusterNames, err
 			}
-		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap):
+		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Airgap) && !strings.Contains(module, defaults.Import):
 			file, err = nodedriverV2.SetRKE2K3s(client, terraformConfig, clusterName, poolName, kubernetesVersion, psact, nodePools,
 				snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {

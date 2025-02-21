@@ -24,7 +24,7 @@ const (
 
 // CreateRKE2K3SImportedCluster is a helper function that will create the RKE2/K3S cluster to be imported into Rancher.
 func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePublicDNS, serverOnePrivateIP,
-	serverTwoPublicDNS, serverThreePublicDNS string) {
+	serverTwoPublicDNS, serverThreePublicDNS, clusterName string) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return
@@ -52,13 +52,14 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 
 	token := namegen.AppendRandomString(token)
 
-	createImportedRKE2K3SServer(rootBody, terraformConfig, serverOnePublicDNS, serverOnePrivateIP, token, serverOneScriptContent)
-	addImportedRKE2K3SServerNodes(rootBody, terraformConfig, serverOnePrivateIP, serverTwoPublicDNS, serverThreePublicDNS, token, newServersScriptContent)
+	createImportedRKE2K3SServer(rootBody, terraformConfig, serverOnePublicDNS, serverOnePrivateIP, token, clusterName, serverOneScriptContent)
+	addImportedRKE2K3SServerNodes(rootBody, terraformConfig, serverOnePrivateIP, serverTwoPublicDNS, serverThreePublicDNS, token, clusterName, newServersScriptContent)
 }
 
+/*
 // CreateImportedNullResource is a helper function that will create the null_resource for the cluster.
-func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, instance, host string) (*hclwrite.Body, *hclwrite.Body) {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, host})
+func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, publicDNS, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
+	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, resourceName})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
 	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
@@ -67,7 +68,7 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	hostExpression := `"` + instance + `"`
+	hostExpression := `"` + publicDNS + `"`
 
 	newHost := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
@@ -96,12 +97,57 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 	rootBody.AppendNewline()
 
 	return nullResourceBlockBody, provisionerBlockBody
+}*/
+
+// CreateImportedNullResourceCopy is a helper function that will create the null_resource for the cluster.
+func CreateImportedNullResourceCopy(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, publicDNS, resourceName, clusterName string) (*hclwrite.Body, *hclwrite.Body) {
+	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, resourceName})
+	nullResourceBlockBody := nullResourceBlock.Body()
+
+	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlockBody := provisionerBlock.Body()
+
+	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlockBody := connectionBlock.Body()
+
+	hostExpression := `"` + publicDNS + `"`
+
+	newHost := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
+	}
+
+	connectionBlockBody.SetAttributeRaw(defaults.Host, newHost)
+
+	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
+	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+
+	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+	keyPath := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
+	}
+
+	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
+	serverOneName := clusterName + `_` + serverOne
+	serverTwoName := clusterName + `_` + serverTwo
+	serverThreeName := clusterName + `_` + serverThree
+	dependsOnServer := `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
+
+	server := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
+	}
+
+	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+
+	rootBody.AppendNewline()
+
+	return nullResourceBlockBody, provisionerBlockBody
 }
 
 // createImportedRKE2K3SServer is a helper function that will create the server to be imported into Rancher.
 func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePublicDNS, serverOnePrivateIP,
-	token string, script []byte) {
-	_, provisionerBlockBody := CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicDNS, serverOne)
+	token, clusterName string, script []byte) {
+	copyScriptName := clusterName + `_copy_script_` + serverOne
+	_, provisionerBlockBody := CreateImportedNullResourceCopy(rootBody, terraformConfig, serverOnePublicDNS, copyScriptName, clusterName)
 
 	var version string
 
@@ -120,7 +166,8 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
 	}))
 
-	nullResourceBlockBody, provisionerBlockBody := CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicDNS, createCluster)
+	createClusterName := clusterName + `_` + createCluster
+	nullResourceBlockBody, provisionerBlockBody := CreateImportedNullResourceCopy(rootBody, terraformConfig, serverOnePublicDNS, createClusterName, clusterName)
 
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
@@ -128,7 +175,7 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
 
-	dependsOnServer := `[` + defaults.NullResource + `.` + serverOne + `]`
+	dependsOnServer := `[` + defaults.NullResource + `.` + copyScriptName + `]`
 
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
@@ -139,13 +186,14 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 
 // addImportedServerNodes is a helper function that will add additional server nodes to the initial server.
 func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePrivateIP, serverTwoPublicDNS,
-	serverThreePublicDNS, token string, script []byte) {
-	instances := []string{serverTwoPublicDNS, serverThreePublicDNS}
-	hosts := []string{serverTwo, serverThree}
+	serverThreePublicDNS, token, clusterName string, script []byte) {
+	dnsList := []string{serverTwoPublicDNS, serverThreePublicDNS}
 
-	for i, instance := range instances {
-		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := CreateImportedNullResource(rootBody, terraformConfig, instance, host)
+	createClusterName := clusterName + `_` + createCluster
+	resourceNames := []string{serverTwo, serverThree}
+	for i, dns := range dnsList {
+		resourceName := clusterName + `_` + resourceNames[i]
+		nullResourceBlockBody, provisionerBlockBody := CreateImportedNullResourceCopy(rootBody, terraformConfig, dns, resourceName, clusterName)
 
 		var version string
 
@@ -163,14 +211,14 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
 		}))
 
-		dependsOnServer := `[` + defaults.NullResource + `.` + serverOne + `]`
+		dependsOnServer := `[` + defaults.NullResource + `.` + createClusterName + `]`
 		server := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 		}
 
 		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
 
-		nullResourceBlockBody, provisionerBlockBody = CreateImportedNullResource(rootBody, terraformConfig, instance, addServer+"_"+host)
+		nullResourceBlockBody, provisionerBlockBody = CreateImportedNullResourceCopy(rootBody, terraformConfig, dns, addServer+"_"+resourceName, clusterName)
 
 		provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 			{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
@@ -178,7 +226,8 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 			{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 		})
 
-		dependsOnServer = `[` + defaults.NullResource + `.` + createCluster + `]`
+		importClusterName := clusterName + `_` + resourceNames[i]
+		dependsOnServer = `[` + defaults.NullResource + `.` + importClusterName + `]`
 
 		server = hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
