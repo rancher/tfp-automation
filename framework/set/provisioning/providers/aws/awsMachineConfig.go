@@ -17,8 +17,12 @@ func SetAWSRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraform
 	awsConfigBlock := machineConfigBlockBody.AppendNewBlock(amazon.EC2Config, nil)
 	awsConfigBlockBody := awsConfigBlock.Body()
 
-	awsConfigBlockBody.SetAttributeValue(amazon.AMI, cty.StringVal(terraformConfig.AWSConfig.AMI))
 	awsConfigBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
+	awsConfigBlockBody.SetAttributeValue(amazon.AMI, cty.StringVal(terraformConfig.AWSConfig.AMI))
+	awsConfigBlockBody.SetAttributeValue(amazon.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
+	awsConfigBlockBody.SetAttributeValue(amazon.SSHUser, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+	awsConfigBlockBody.SetAttributeValue(amazon.VolumeType, cty.StringVal(terraformConfig.AWSConfig.AWSVolumeType))
+	awsConfigBlockBody.SetAttributeValue(amazon.RootSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))
 
 	awsSecGroupsExpression := fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroupNames[0])
 	awsSecGroupsList := hclwrite.Tokens{
@@ -29,6 +33,4 @@ func SetAWSRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraform
 	awsConfigBlockBody.SetAttributeValue(amazon.SubnetID, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))
 	awsConfigBlockBody.SetAttributeValue(amazon.VPCID, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
 	awsConfigBlockBody.SetAttributeValue(amazon.Zone, cty.StringVal(terraformConfig.AWSConfig.AWSZoneLetter))
-	awsConfigBlockBody.SetAttributeValue(amazon.RootSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))
-	awsConfigBlockBody.SetAttributeValue(amazon.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
 }
