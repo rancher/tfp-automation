@@ -86,7 +86,6 @@ terraform:
   enableNetworkPolicy: false
   hostnamePrefix: ""
   machineConfigName: ""
-  networkPlugin: ""
   nodeTemplateName: ""
   privateKeyPath: ""
   awsCredentials:

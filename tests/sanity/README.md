@@ -40,7 +40,7 @@ terraform:
   hostnamePrefix: ""                              # REQUIRED - fill with desired value
   machineConfigName: ""                           # REQUIRED - fill with desired value
   module: ""                                      # REQUIRED - leave this field empty as shown
-  networkPlugin: ""                               # REQUIRED - fill with desired value
+  cni: ""                                         # REQUIRED - fill with desired value
   nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   ###########################

@@ -29,7 +29,7 @@ terraform:
     hostnamePrefix: ""
     machineConfigName: ""
     module: "linode_k3s"
-    networkPlugin: "canal"
+    cni: "canal"
     nodeTemplateName: ""                # Needed for RKE1 clusters
     linodeCredentials:
         linodeToken: ""

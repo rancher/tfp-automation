@@ -114,7 +114,7 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	networkBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Network, nil)
 	networkBlockBody := networkBlock.Body()
 
-	networkBlockBody.SetAttributeValue(defaults.Plugin, cty.StringVal(terraformConfig.NetworkPlugin))
+	networkBlockBody.SetAttributeValue(defaults.Plugin, cty.StringVal(terraformConfig.CNI))
 
 	rootBody.AppendNewline()
 
