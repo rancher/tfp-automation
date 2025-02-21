@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
@@ -42,7 +43,7 @@ const (
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
 func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, testUser, testPassword string, authProvider bool, configMap []map[string]any) (*hclwrite.File, *hclwrite.Body) {
-	providerVersion, awsProviderVersion, localProviderVersion, source, rkeProviderVersion := getProviderVersions(terraformConfig)
+	providerVersion, awsProviderVersion, localProviderVersion, source, rkeProviderVersion := getProviderVersions(terraformConfig, configMap)
 
 	newFile := hclwrite.NewEmptyFile()
 	rootBody := newFile.Body()
@@ -63,7 +64,7 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, terraformConfig *conf
 }
 
 // getProviderVersions returns the versions for the providers based on environment variables.
-func getProviderVersions(terraformConfig *config.TerraformConfig) (string, string, string, string, string) {
+func getProviderVersions(terraformConfig *config.TerraformConfig, configMap []map[string]any) (string, string, string, string, string) {
 	providerVersion := os.Getenv(providerEnvVar)
 	if providerVersion == "" {
 		logrus.Fatalf("Expected env var not set %s", providerEnvVar)
@@ -89,7 +90,16 @@ func getProviderVersions(terraformConfig *config.TerraformConfig) (string, strin
 		source = "terraform.local/local/rancher2"
 	}
 
-	if terraformConfig.Module == modules.ImportRKE1 {
+	var importCluster bool
+	for _, cattleConfig := range configMap {
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, terraform)
+		if terraform.Module == modules.ImportRKE1 {
+			importCluster = true
+		}
+	}
+
+	if importCluster || terraformConfig.Module == modules.ImportRKE1 {
 		rkeProviderVersion = os.Getenv(rkeEnvVar)
 		if rkeProviderVersion == "" {
 			logrus.Fatalf("Expected env var not set %s", rkeEnvVar)
@@ -138,7 +148,16 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 		version:       cty.StringVal(providerVersion),
 	}))
 
-	if terraformConfig.Module == modules.ImportRKE1 {
+	var importCluster bool
+	for _, cattleConfig := range configMap {
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, terraform)
+		if terraform.Module == modules.ImportRKE1 {
+			importCluster = true
+		}
+	}
+
+	if importCluster || terraformConfig.Module == modules.ImportRKE1 {
 		reqProvsBlockBody.SetAttributeValue(defaults.RKE, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(rancherRKE),
 			defaults.Version: cty.StringVal(rkeProviderVersion),

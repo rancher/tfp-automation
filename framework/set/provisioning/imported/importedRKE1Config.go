@@ -21,14 +21,15 @@ func SetImportedRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terr
 
 	rootBody.AppendNewline()
 
-	createRKE1Cluster(rootBody, terraformConfig, terratestConfig)
+	createRKE1Cluster(rootBody, terraformConfig, terratestConfig, clusterName)
 
 	importCommand := getImportCommand(clusterName)
 
-	nodeOnePublicDNS := fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverOne)
-	kubeConfig := fmt.Sprintf("${%s.%s.kube_config_yaml}", defaults.RKECluster, defaults.RKECluster)
+	serverOneName := clusterName + `_` + serverOne
+	nodeOnePublicDNS := fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverOneName)
+	kubeConfig := fmt.Sprintf("${%s.%s.kube_config_yaml}", defaults.RKECluster, clusterName)
 
-	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, kubeConfig, importCommand[serverOne], clusterName)
+	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, kubeConfig, importCommand[serverOneName], clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -43,15 +44,18 @@ func SetImportedRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terr
 }
 
 // createRKE1Cluster is a helper function that will create the RKE1 cluster.
-func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) {
-	instances := []string{serverOne, serverTwo, serverThree}
+func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, clusterName string) {
+	serverOneName := clusterName + `_` + serverOne
+	serverTwoName := clusterName + `_` + serverTwo
+	serverThreeName := clusterName + `_` + serverThree
+	instances := []string{serverOneName, serverTwoName, serverThreeName}
 
 	for _, instance := range instances {
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 		rootBody.AppendNewline()
 	}
 
-	rkeBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.RKECluster, defaults.RKECluster})
+	rkeBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.RKECluster, clusterName})
 	rkeBlockBody := rkeBlock.Body()
 
 	for _, instance := range instances {
@@ -85,7 +89,7 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 
 	var dependsOnServer string
 
-	dependsOnServer = `[` + defaults.AwsInstance + `.` + serverOne + `, ` + defaults.AwsInstance + `.` + serverTwo + `, ` + defaults.AwsInstance + `.` + serverThree + `]`
+	dependsOnServer = `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
 
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
