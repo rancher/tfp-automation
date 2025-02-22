@@ -43,7 +43,7 @@ func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installSquidProxy)
 
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.OSUser + " " + rke2BastionPublicDNS + " " +
-		terraformConfig.Standalone.BootstrapPassword + "'"
+		terraformConfig.Standalone.BootstrapPassword + " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/setup.sh"),

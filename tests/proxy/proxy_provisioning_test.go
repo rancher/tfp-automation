@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/rancher/tests/v2/actions/pipeline"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
@@ -34,7 +35,6 @@ type TfpProxyProvisioningTestSuite struct {
 	terratestConfig            *config.TerratestConfig
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
-	adminUser                  *management.User
 	proxyBastion               string
 }
 
@@ -69,8 +69,6 @@ func (p *TfpProxyProvisioningTestSuite) TfpSetupSuite() map[string]any {
 		Password: p.rancherConfig.AdminPassword,
 	}
 
-	p.adminUser = adminUser
-
 	userToken, err := token.GenerateUserToken(adminUser, p.rancherConfig.Host)
 	require.NoError(p.T(), err)
 
@@ -81,6 +79,11 @@ func (p *TfpProxyProvisioningTestSuite) TfpSetupSuite() map[string]any {
 
 	p.client = client
 	p.client.RancherConfig.AdminToken = p.rancherConfig.AdminToken
+	p.client.RancherConfig.AdminPassword = p.rancherConfig.AdminPassword
+	p.client.RancherConfig.Host = p.rancherConfig.Host
+
+	err = pipeline.PostRancherInstall(p.client, p.client.RancherConfig.AdminPassword)
+	require.NoError(p.T(), err)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
@@ -105,12 +108,15 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 	for _, tt := range tests {
 		cattleConfig := p.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
-		
+
 		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "proxy", "proxyBastion"}, "", configMap[0])
-		
+
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
 
 		terratest := new(config.TerratestConfig)
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
@@ -122,7 +128,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, p.terraformOptions, configMap)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 		})
 	}
@@ -148,12 +154,15 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 	for _, tt := range tests {
 		cattleConfig := p.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
-		
+
 		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "proxy", "proxyBastion"}, p.proxyBastion, configMap[0])
-		
+
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
 
 		terratest := new(config.TerratestConfig)
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
@@ -165,7 +174,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, p.terraformOptions, configMap)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 		})
 	}

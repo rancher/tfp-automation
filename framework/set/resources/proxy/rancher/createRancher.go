@@ -40,11 +40,11 @@ func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " +
 		rke2BastionPublicDNS
 
-	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	command += "'"
+	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/setup.sh"),

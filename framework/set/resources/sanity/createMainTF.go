@@ -39,6 +39,8 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlockBody := tfBlock.Body()
 
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+
+	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return err
@@ -52,6 +54,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	rke2ServerThreePublicDNS := terraform.Output(t, terraformOptions, rke2ServerThreePublicDNS)
 
 	file = OpenFile(file, keyPath)
+	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS)
 	if err != nil {
 		return err
@@ -60,6 +63,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = OpenFile(file, keyPath)
+	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS)
 	if err != nil {
 		return err

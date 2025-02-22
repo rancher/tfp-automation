@@ -35,19 +35,15 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
-		terraformConfig.Standalone.RancherHostname + " " + " " + terraformConfig.Standalone.AirgapInternalFQDN + " " +
+		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.AirgapInternalFQDN + " " +
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
 		terraformConfig.Standalone.RancherImage + " " + registryPublicDNS
 
-	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
-	}
-
-	command += "'"
+	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/setup.sh"),
