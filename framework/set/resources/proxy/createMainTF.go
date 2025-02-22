@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/squid"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -43,6 +44,8 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlockBody := tfBlock.Body()
 
 	instances := []string{rke2Bastion, rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+
+	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratest, instances)
 	if err != nil {
 		return "", "", err
@@ -59,6 +62,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating squid proxy...")
 	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS)
 	if err != nil {
 		return "", "", err
@@ -67,6 +71,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS)
 	if err != nil {
 		return "", "", err
@@ -75,6 +80,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2BastionPublicDNS)
 	if err != nil {
 		return "", "", err

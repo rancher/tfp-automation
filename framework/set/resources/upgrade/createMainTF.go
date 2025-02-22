@@ -39,6 +39,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	file = sanity.OpenFile(file, keyPath)
 	switch {
 	case terraformConfig.Standalone.ProxyRancher:
+		logrus.Infof("Upgrading Proxy Rancher...")
 		_, err := rancher.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, serverNode, proxyNode)
 		if err != nil {
 			return err

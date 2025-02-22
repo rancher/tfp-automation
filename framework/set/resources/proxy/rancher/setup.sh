@@ -8,7 +8,7 @@ RANCHER_TAG_VERSION=$5
 BOOTSTRAP_PASSWORD=$6
 RANCHER_IMAGE=$7
 BASTION=$8
-STAGING_RANCHER_AGENT_IMAGE=${9}
+RANCHER_AGENT_IMAGE=${9}
 PROXY_PORT="3128"
 NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,.svc\\,.cluster.local\\,cattle-system.svc\\,169.254.169.254"
 
@@ -46,13 +46,13 @@ echo "Waiting 1 minute for Rancher"
 sleep 60
 
 echo "Installing Rancher"
-if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
+if [ -n "$RANCHER_AGENT_IMAGE" ]; then
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                 --set "extraEnv[0].value=${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                 --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                  --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                  --set noProxy="${NO_PROXY}" \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel

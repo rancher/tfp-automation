@@ -40,15 +40,11 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.RancherImage
 
-	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
-	}
-
-	command += "'"
+	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/auth-registry.sh"),
@@ -87,15 +83,11 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.RancherImage
 
-	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
-	}
-
-	command += "'"
+	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/non-auth-registry.sh"),

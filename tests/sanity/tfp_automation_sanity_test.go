@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/rancher/tests/v2/actions/pipeline"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
@@ -31,7 +32,6 @@ type TfpSanityTestSuite struct {
 	terratestConfig            *config.TerratestConfig
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
-	adminUser                  *management.User
 }
 
 func (t *TfpSanityTestSuite) TearDownSuite() {
@@ -50,7 +50,8 @@ func (t *TfpSanityTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.standaloneTerraformOptions = standaloneTerraformOptions
 
-	resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	err := resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	require.NoError(t.T(), err)
 }
 
 func (t *TfpSanityTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig) {
@@ -64,10 +65,8 @@ func (t *TfpSanityTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConf
 
 	adminUser := &management.User{
 		Username: "admin",
-		Password: rancherConfig.AdminPassword,
+		Password: t.rancherConfig.AdminPassword,
 	}
-
-	t.adminUser = adminUser
 
 	userToken, err := token.GenerateUserToken(adminUser, t.rancherConfig.Host)
 	require.NoError(t.T(), err)
@@ -78,7 +77,12 @@ func (t *TfpSanityTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConf
 	require.NoError(t.T(), err)
 
 	t.client = client
-	t.client.RancherConfig.AdminToken = rancherConfig.AdminToken
+	t.client.RancherConfig.AdminToken = t.rancherConfig.AdminToken
+	t.client.RancherConfig.AdminPassword = t.rancherConfig.AdminPassword
+	t.client.RancherConfig.Host = t.rancherConfig.Host
+
+	err = pipeline.PostRancherInstall(t.client, t.client.RancherConfig.AdminPassword)
+	require.NoError(t.T(), err)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(t.T(), terraformConfig, terratestConfig, keyPath)
