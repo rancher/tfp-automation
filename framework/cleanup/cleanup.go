@@ -7,6 +7,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/sirupsen/logrus"
 )
 
 // Cleanup is a function that will run terraform destroy and cleanup Terraform resources.
@@ -15,6 +16,7 @@ func Cleanup(t *testing.T, terraformOptions *terraform.Options, keyPath string) 
 	config.LoadConfig(configs.Rancher, rancherConfig)
 
 	if *rancherConfig.Cleanup {
+		logrus.Infof("Cleaning up Terraform resources...")
 		terraform.Destroy(t, terraformOptions)
 		TFFilesCleanup(keyPath)
 	}

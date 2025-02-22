@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/rancher/tests/v2/actions/pipeline"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
@@ -31,7 +32,6 @@ type TfpAirgapProvisioningTestSuite struct {
 	terratestConfig            *config.TerratestConfig
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
-	adminUser                  *management.User
 	registry                   string
 }
 
@@ -68,10 +68,8 @@ func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.T
 
 	adminUser := &management.User{
 		Username: "admin",
-		Password: rancherConfig.AdminPassword,
+		Password: a.rancherConfig.AdminPassword,
 	}
-
-	a.adminUser = adminUser
 
 	userToken, err := token.GenerateUserToken(adminUser, a.rancherConfig.Host)
 	require.NoError(a.T(), err)
@@ -82,7 +80,12 @@ func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.T
 	require.NoError(a.T(), err)
 
 	a.client = client
-	a.client.RancherConfig.AdminToken = rancherConfig.AdminToken
+	a.client.RancherConfig.AdminToken = a.rancherConfig.AdminToken
+	a.client.RancherConfig.AdminPassword = a.rancherConfig.AdminPassword
+	a.client.RancherConfig.Host = a.rancherConfig.Host
+
+	err = pipeline.PostRancherInstall(a.client, a.client.RancherConfig.AdminPassword)
+	require.NoError(a.T(), err)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(a.T(), terraformConfig, terratestConfig, keyPath)
