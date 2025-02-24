@@ -19,7 +19,7 @@ import (
 // // SetAirgapRKE1 is a function that will set the airgap RKE1 cluster configurations in the main.tf file.
 func SetAirgapRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	configMap []map[string]any, clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
-	rke1.SetRancher2Cluster(rootBody, terraformConfig, clusterName)
+	rke1.SetRancher2Cluster(rootBody, terraformConfig, terratestConfig, clusterName)
 	rootBody.AppendNewline()
 
 	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, bastion)

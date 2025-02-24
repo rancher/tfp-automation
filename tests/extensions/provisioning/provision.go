@@ -18,19 +18,11 @@ func Provision(t *testing.T, client *rancher.Client, rancherConfig *rancher.Conf
 	var clusterNames []string
 	var clusterIDs []string
 
-	if !terraformConfig.MultiCluster {
-		isSupported := SupportedModules(terraformConfig, terraformOptions, nil)
-		require.True(t, isSupported)
+	isSupported := SupportedModules(terraformConfig, terraformOptions, configMap)
+	require.True(t, isSupported)
 
-		clusterNames, err = framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", nil)
-		require.NoError(t, err)
-	} else {
-		isSupported := SupportedModules(terraformConfig, terraformOptions, configMap)
-		require.True(t, isSupported)
-
-		clusterNames, err = framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", configMap)
-		require.NoError(t, err)
-	}
+	clusterNames, err = framework.ConfigTF(client, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", configMap)
+	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)
 

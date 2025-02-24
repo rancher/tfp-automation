@@ -1,11 +1,13 @@
 package provisioning
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -23,13 +25,14 @@ type ProvisionImportTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	cattleConfig     map[string]any
 	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
 	terraformOptions *terraform.Options
 }
 
-func (p *ProvisionImportTestSuite) SetupSuite() {
+func (p *ProvisionImportTestSuite) SetupSuite() map[string]any {
 	testSession := session.NewSession()
 	p.session = testSession
 
@@ -38,24 +41,14 @@ func (p *ProvisionImportTestSuite) SetupSuite() {
 
 	p.client = client
 
-	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
-
-	p.rancherConfig = rancherConfig
-
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
-
-	p.terraformConfig = terraformConfig
-
-	terratestConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
-
-	p.terratestConfig = terratestConfig
+	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
+
+	return p.cattleConfig
 }
 
 func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
@@ -63,15 +56,16 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 		name   string
 		module string
 	}{
-		{"Importing TFP RKE1", "import_rke1"},
-		{"Importing TFP RKE2", "import_rke2"},
-		{"Importing TFP K3S", "import_k3s"},
+		{"Importing TFP RKE1", "ec2_rke1_import"},
+		{"Importing TFP RKE2", "ec2_rke2_import"},
+		{"Importing TFP K3S", "ec2_k3s_import"},
 	}
 
 	for _, tt := range tests {
-		terratestConfig := *p.terratestConfig
-		terraformConfig := *p.terraformConfig
-		terraformConfig.Module = tt.module
+		cattleConfig := p.SetupSuite()
+		configMap := []map[string]any{cattleConfig}
+
+		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
@@ -82,7 +76,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, &terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, nil)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, configMap)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 	}

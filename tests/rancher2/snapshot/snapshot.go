@@ -57,7 +57,7 @@ const (
 // snapshotRestore creates workloads, takes a snapshot of the cluster, restores the cluster and verifies the workloads created after
 // a snapshot no longer are present in the cluster
 func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options) {
+	terratestConfig *config.TerratestConfig, testUser, testPassword, clusterName, poolName string, terraformOptions *terraform.Options, configMap []map[string]any) {
 	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
 
 	clusterID, err := clusters.GetClusterIDByName(client, clusterName)
@@ -71,10 +71,10 @@ func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *ranche
 
 	deploymentResp, serviceResp := createWorkloads(t, client, clusterID, podTemplate, initialWorkloadName, isCattleLabeled, DeploymentSteveType)
 
-	cluster, snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, testUser, testPassword, clusterName, poolName, clusterID, terraformOptions)
+	cluster, snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, testUser, testPassword, clusterName, poolName, clusterID, terraformOptions, configMap)
 	require.NoError(t, err)
 
-	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, testUser, testPassword, clusterName, poolName, cluster, clusterID, terraformOptions)
+	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, testUser, testPassword, clusterName, poolName, cluster, clusterID, terraformOptions, configMap)
 
 	_, err = steveclient.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
 	require.Error(t, err)
@@ -93,10 +93,10 @@ func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *ranche
 // snapshotV2Prov takes a snapshot of the cluster and creates a deployment and service in the cluster.
 func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, podTemplate corev1.PodTemplateSpec, testUser, testPassword, clusterName, poolName, clusterID string,
-	terraformOptions *terraform.Options) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
+	terraformOptions *terraform.Options, configMap []map[string]any) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
 	terratestConfig.SnapshotInput.CreateSnapshot = true
 
-	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", nil)
+	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", configMap)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -117,7 +117,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	require.NoError(t, err)
 
 	if terratestConfig.SnapshotInput.SnapshotRestore == kubernetesVersion || terratestConfig.SnapshotInput.SnapshotRestore == all {
-		upgradeCluster(t, client, rancherConfig, clusterName, poolName, testUser, testPassword, clusterID, terratestConfig, terraformConfig, terraformOptions)
+		upgradeCluster(t, client, rancherConfig, clusterName, poolName, testUser, testPassword, clusterID, terratestConfig, terraformConfig, terraformOptions, configMap)
 	}
 
 	return cluster, snapshotID[0].Name, postDeploymentResp, postServiceResp, err
@@ -126,12 +126,12 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 // restoreV2Prov restores the cluster to the previous state after a snapshot is taken.
 func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, snapshotName, testUser, testPassword, clusterName, poolName string, cluster *apisV1.Cluster,
-	clusterID string, terraformOptions *terraform.Options) {
+	clusterID string, terraformOptions *terraform.Options, configMap []map[string]any) {
 	terratestConfig.SnapshotInput.CreateSnapshot = false
 	terratestConfig.SnapshotInput.RestoreSnapshot = true
 	terratestConfig.SnapshotInput.SnapshotName = snapshotName
 
-	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", nil)
+	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", configMap)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -164,7 +164,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 
 // upgradeCluster upgrades the cluster to the specified version.
 func upgradeCluster(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, clusterName, poolName, testUser, testPassword,
-	clusterID string, terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options) {
+	clusterID string, terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, configMap []map[string]any) {
 	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, clusterName, namespace)
 	require.NoError(t, err)
 
@@ -192,7 +192,7 @@ func upgradeCluster(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	terratestConfig.KubernetesVersion = clusterObject.Spec.KubernetesVersion
 	terratestConfig.SnapshotInput.CreateSnapshot = false
 
-	_, err = framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", nil)
+	_, err = framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, testUser, testPassword, clusterName, poolName, "", configMap)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

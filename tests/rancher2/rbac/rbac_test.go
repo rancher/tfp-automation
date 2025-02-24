@@ -1,11 +1,12 @@
 package rbac
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -24,6 +25,7 @@ type RBACTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	cattleConfig     map[string]any
 	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
@@ -39,26 +41,16 @@ func (r *RBACTestSuite) SetupSuite() {
 
 	r.client = client
 
-	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
-
-	r.rancherConfig = rancherConfig
-
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
-
-	r.terraformConfig = terraformConfig
-
-	terratestConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
-
-	r.terratestConfig = terratestConfig
+	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 
-	provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion)
+	configMap := []map[string]any{r.cattleConfig}
+
+	provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 }
 
 func (r *RBACTestSuite) TestTfpRBAC() {
@@ -87,7 +79,9 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
 			require.NoError(r.T(), err)
 
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, nil)
+			configMap := []map[string]any{r.cattleConfig}
+
+			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, configMap)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 
 			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, tt.rbacRole)

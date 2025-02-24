@@ -1,12 +1,14 @@
 package nodescaling
 
 import (
+	"os"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -24,6 +26,7 @@ type ScaleTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
+	cattleConfig     map[string]any
 	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
@@ -39,26 +42,16 @@ func (s *ScaleTestSuite) SetupSuite() {
 
 	s.client = client
 
-	rancherConfig := new(rancher.Config)
-	ranchFrame.LoadConfig(configs.Rancher, rancherConfig)
-
-	s.rancherConfig = rancherConfig
-
-	terraformConfig := new(config.TerraformConfig)
-	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, terraformConfig)
-
-	s.terraformConfig = terraformConfig
-
-	terratestConfig := new(config.TerratestConfig)
-	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, terratestConfig)
-
-	s.terratestConfig = terratestConfig
+	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.terraformOptions = terraformOptions
 
-	provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion)
+	configMap := []map[string]any{s.cattleConfig}
+
+	provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 }
 
 func (s *ScaleTestSuite) TestTfpScale() {
@@ -76,8 +69,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 	}
 
 	for _, tt := range tests {
-		terratestConfig := *s.terratestConfig
-		terratestConfig.Nodepools = tt.nodeRoles
+		s.terratestConfig.Nodepools = tt.nodeRoles
 
 		var scaledUpCount, scaledDownCount int64
 
@@ -93,6 +85,8 @@ func (s *ScaleTestSuite) TestTfpScale() {
 
 		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
 
+		configMap := []map[string]any{s.cattleConfig}
+
 		s.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
@@ -100,21 +94,21 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			terratestConfig.Nodepools = tt.scaleUpNodeRoles
+			operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.scaleUpNodeRoles, configMap[0])
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
 
 			time.Sleep(2 * time.Minute)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, clusterName, s.terraformConfig, scaledUpCount)
 
-			terratestConfig.Nodepools = tt.scaleDownNodeRoles
+			operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.scaleDownNodeRoles, configMap[0])
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
 
 			time.Sleep(2 * time.Minute)
 
@@ -147,21 +141,23 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
+			configMap := []map[string]any{s.cattleConfig}
+
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledUpNodepools
+			operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledUpNodepools, configMap[0])
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
 
 			time.Sleep(2 * time.Minute)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), adminClient, clusterName, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
 
-			s.terratestConfig.Nodepools = s.terratestConfig.ScalingInput.ScaledDownNodepools
+			operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledDownNodepools, configMap[0])
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions)
+			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
 
 			time.Sleep(2 * time.Minute)
 

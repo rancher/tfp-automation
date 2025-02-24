@@ -8,7 +8,8 @@ import (
 )
 
 // SetRancher2Cluster is a function that will set the rancher2_cluster configurations in the main.tf file.
-func SetRancher2Cluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) error {
+func SetRancher2Cluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+	clusterName string) error {
 	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, clusterName})
 	clusterBlockBody := clusterBlock.Body()
 
@@ -16,6 +17,8 @@ func SetRancher2Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
+
+	rkeConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 
 	networkBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Network, nil)
 	networkBlockBody := networkBlock.Body()
