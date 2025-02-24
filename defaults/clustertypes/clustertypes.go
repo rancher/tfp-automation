@@ -9,4 +9,5 @@ const (
 	RKE2    = "rke2"
 	K3S     = "k3s"
 	RANCHER = "-rancher"
+	CUSTOM  = "custom"
 )
