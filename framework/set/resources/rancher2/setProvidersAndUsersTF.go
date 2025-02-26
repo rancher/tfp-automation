@@ -95,7 +95,16 @@ func getProviderVersions(terraformConfig *config.TerraformConfig, configMap []ma
 		source = "terraform.local/local/rancher2"
 	}
 
-	if terraformConfig.Module == modules.ImportEC2RKE1 {
+	var importCluster bool
+	for _, cattleConfig := range configMap {
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, terraform)
+		if terraform.Module == modules.ImportEC2RKE1 {
+			importCluster = true
+		}
+	}
+
+	if importCluster || terraformConfig.Module == modules.ImportEC2RKE1 {
 		rkeProviderVersion = os.Getenv(rkeEnvVar)
 		if rkeProviderVersion == "" {
 			logrus.Fatalf("Expected env var not set %s", rkeEnvVar)
@@ -137,7 +146,17 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 		version:       cty.StringVal(providerVersion),
 	}))
 
-	if terraformConfig.Module == modules.ImportEC2RKE1 {
+	var importCluster bool
+	for _, cattleConfig := range configMap {
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, terraform)
+
+		if terraform.Module == modules.ImportEC2RKE1 {
+			importCluster = true
+		}
+	}
+
+	if importCluster || terraformConfig.Module == modules.ImportEC2RKE1 {
 		reqProvsBlockBody.SetAttributeValue(defaults.RKE, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(rancherRKE),
 			defaults.Version: cty.StringVal(rkeProviderVersion),

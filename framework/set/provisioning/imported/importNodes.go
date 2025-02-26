@@ -49,7 +49,8 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	command += "'"
 
 	// Need to first create a null resource block to copy the script to the node.
-	nullResourceBlockBody, provisionerBlockBody := imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, clusterName)
+	copyScriptName := clusterName + `_` + copyScript
+	nullResourceBlockBody, provisionerBlockBody := imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, copyScriptName, clusterName)
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/import-nodes.sh"),
@@ -59,9 +60,11 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	var dependsOnServer string
 
 	if terraformConfig.Module == modules.ImportEC2K3s || terraformConfig.Module == modules.ImportEC2RKE2 {
-		dependsOnServer = `[` + defaults.NullResource + `.` + addServer + serverTwo + `, ` + defaults.NullResource + `.` + addServer + serverThree + `]`
+		addServerTwoName := addServer + clusterName + `_` + serverTwo
+		addServerThreeName := addServer + clusterName + `_` + serverThree
+		dependsOnServer = `[` + defaults.NullResource + `.` + addServerTwoName + `, ` + defaults.NullResource + `.` + addServerThreeName + `]`
 	} else {
-		dependsOnServer = `[` + defaults.RKECluster + `.` + defaults.RKECluster + `]`
+		dependsOnServer = `[` + defaults.RKECluster + `.` + clusterName + `]`
 	}
 
 	server := hclwrite.Tokens{
@@ -72,7 +75,8 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	// A second null resource block is needed to properly run the script on the node. This is because the cluster registration
 	// token and RKE1 kube config will be not passed correctly as Bash parameters.
-	nullResourceBlockBody, provisionerBlockBody = imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, cluster)
+	importClusterName := clusterName + `_` + importCluster
+	nullResourceBlockBody, provisionerBlockBody = imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName, clusterName)
 
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
@@ -80,7 +84,7 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
 
-	dependsOnServer = `[` + defaults.NullResource + `.` + clusterName + `]`
+	dependsOnServer = `[` + defaults.NullResource + `.` + copyScriptName + `]`
 
 	server = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},

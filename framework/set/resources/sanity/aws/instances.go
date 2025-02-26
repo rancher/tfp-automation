@@ -17,7 +17,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, hostnamePrefix})
 	configBlockBody := configBlock.Body()
 
-	if terraformConfig.Standalone == nil {
+	if strings.Contains(terraformConfig.Module, "custom") {
 		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
 	}
 
@@ -27,10 +27,10 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	var awsSecGroupsExpression string
 
-	if terraformConfig.Standalone != nil {
-		awsSecGroupsExpression = fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.StandaloneSecurityGroupNames[0])
-	} else {
+	if strings.Contains(terraformConfig.Module, "custom") {
 		awsSecGroupsExpression = fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroupNames[0])
+	} else {
+		awsSecGroupsExpression = fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.StandaloneSecurityGroupNames[0])
 	}
 
 	awsSecGroupsList := hclwrite.Tokens{
@@ -56,7 +56,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	tagsBlock := configBlockBody.AppendNewBlock(defaults.Tags+" =", nil)
 	tagsBlockBody := tagsBlock.Body()
 
-	if terraformConfig.Standalone == nil {
+	if strings.Contains(terraformConfig.Module, "custom") {
 		expression := fmt.Sprintf(`"%s-${`+defaults.Count+`.`+defaults.Index+`}"`, terraformConfig.HostnamePrefix)
 		tags := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
