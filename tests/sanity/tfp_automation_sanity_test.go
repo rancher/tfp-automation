@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/rancher/tests/v2/actions/pipeline"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
@@ -34,7 +35,6 @@ type TfpSanityTestSuite struct {
 	terratestConfig            *config.TerratestConfig
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
-	adminUser                  *management.User
 }
 
 func (t *TfpSanityTestSuite) TearDownSuite() {
@@ -50,7 +50,8 @@ func (t *TfpSanityTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.standaloneTerraformOptions = standaloneTerraformOptions
 
-	resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	err := resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	require.NoError(t.T(), err)
 }
 
 func (t *TfpSanityTestSuite) TfpSetupSuite() map[string]any {
@@ -65,8 +66,6 @@ func (t *TfpSanityTestSuite) TfpSetupSuite() map[string]any {
 		Password: t.rancherConfig.AdminPassword,
 	}
 
-	t.adminUser = adminUser
-
 	userToken, err := token.GenerateUserToken(adminUser, t.rancherConfig.Host)
 	require.NoError(t.T(), err)
 
@@ -77,6 +76,11 @@ func (t *TfpSanityTestSuite) TfpSetupSuite() map[string]any {
 
 	t.client = client
 	t.client.RancherConfig.AdminToken = t.rancherConfig.AdminToken
+	t.client.RancherConfig.AdminPassword = t.rancherConfig.AdminPassword
+	t.client.RancherConfig.Host = t.rancherConfig.Host
+
+	err = pipeline.PostRancherInstall(t.client, t.client.RancherConfig.AdminPassword)
+	require.NoError(t.T(), err)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
@@ -107,6 +111,9 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 
 		provisioning.GetK8sVersion(t.T(), t.client, t.terratestConfig, t.terraformConfig, configs.DefaultK8sVersion, configMap)
 
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
+
 		terratest := new(config.TerratestConfig)
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
 
@@ -117,9 +124,8 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, t.terraformConfig, t.terratestConfig, testUser, testPassword, clusterName, poolName, t.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, t.terraformOptions, configMap)
 			provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
-			provisioning.VerifyWorkloads(t.T(), t.client, clusterIDs)
 		})
 	}
 

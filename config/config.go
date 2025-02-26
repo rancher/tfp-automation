@@ -121,6 +121,7 @@ type Standalone struct {
 	CertManagerVersion             string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
 	K3SVersion                     string `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
 	ProxyRancher                   bool   `json:"proxyRancher,omitempty" yaml:"proxyRancher,omitempty"`
+	RancherAgentImage              string `json:"rancherAgentImage,omitempty" yaml:"rancherAgentImage,omitempty"`
 	RancherChartRepository         string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
 	RancherHostname                string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
 	RancherImage                   string `json:"rancherImage,omitempty" yaml:"rancherImage,omitempty"`
@@ -128,12 +129,10 @@ type Standalone struct {
 	Repo                           string `json:"repo,omitempty" yaml:"repo,omitempty"`
 	OSUser                         string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
 	OSGroup                        string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
-	PrimeRancherAgentImage         string `json:"primeRancherAgentImage,omitempty" yaml:"primeRancherAgentImage,omitempty"`
 	RKE2Version                    string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
-	StagingRancherAgentImage       string `json:"stagingRancherAgentImage,omitempty" yaml:"stagingRancherAgentImage,omitempty"`
 	UpgradedRancherChartRepository string `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`
 	UpgradedRancherImage           string `json:"upgradedRancherImage,omitempty" yaml:"upgradedRancherImage,omitempty"`
-	UpgradedRancherStagingImage    string `json:"upgradedRancherStagingImage,omitempty" yaml:"upgradedRancherStagingImage,omitempty"`
+	UpgradedRancherAgentImage      string `json:"upgradedRancherAgentImage,omitempty" yaml:"upgradedRancherAgentImage,omitempty"`
 	UpgradedRancherRepo            string `json:"upgradedRancherRepo,omitempty" yaml:"upgradedRancherRepo,omitempty"`
 	UpgradedRancherTagVersion      string `json:"upgradedRancherTagVersion,omitempty" yaml:"upgradedRancherTagVersion,omitempty"`
 }
@@ -212,6 +211,7 @@ type TerratestConfig struct {
 	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
 	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
 	SnapshotInput             Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
+	StandaloneLogging         bool       `json:"standaloneLogging,omitempty" yaml:"standaloneLogging,omitempty"`
 	TFLogging                 bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
 }
 

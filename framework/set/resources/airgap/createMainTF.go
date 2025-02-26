@@ -44,6 +44,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
+	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return "", err
@@ -57,6 +58,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	rke2ServerTwoPrivateIP := terraform.Output(t, terraformOptions, rke2ServerTwoPrivateIP)
 	rke2ServerThreePrivateIP := terraform.Output(t, terraformOptions, rke2ServerThreePrivateIP)
 
+	logrus.Infof("Creating registry...")
 	file = OpenFile(file, keyPath)
 	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS, nonAuthRegistry)
 	if err != nil {
@@ -66,6 +68,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = OpenFile(file, keyPath)
+	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", err
@@ -74,6 +77,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = OpenFile(file, keyPath)
+	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS)
 	if err != nil {
 		return "", err

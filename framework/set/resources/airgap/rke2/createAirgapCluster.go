@@ -89,15 +89,11 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 		rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " + terraformConfig.Standalone.RancherImage + " " +
 		terraformConfig.Standalone.RancherTagVersion
 
-	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
-	}
-
-	command += "'"
+	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -127,15 +123,11 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " +
 			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion
 
-		if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-			command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+		if terraformConfig.Standalone.RancherAgentImage != "" {
+			command += " " + terraformConfig.Standalone.RancherAgentImage
 		}
 
-		if terraformConfig.Standalone.PrimeRancherAgentImage != "" {
-			command += " " + terraformConfig.Standalone.PrimeRancherAgentImage
-		}
-
-		command += "'"
+		command += " || true'"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

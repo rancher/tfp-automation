@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/rancher/tests/v2/actions/pipeline"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
@@ -34,7 +35,6 @@ type TfpAirgapProvisioningTestSuite struct {
 	terratestConfig            *config.TerratestConfig
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
-	adminUser                  *management.User
 	registry                   string
 }
 
@@ -57,7 +57,7 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	a.registry = registry
 }
 
-func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig) map[string]any {
+func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite() map[string]any {
 	testSession := session.NewSession()
 	a.session = testSession
 
@@ -69,8 +69,6 @@ func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.T
 		Password: a.rancherConfig.AdminPassword,
 	}
 
-	a.adminUser = adminUser
-
 	userToken, err := token.GenerateUserToken(adminUser, a.rancherConfig.Host)
 	require.NoError(a.T(), err)
 
@@ -81,6 +79,13 @@ func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite(terratestConfig *config.T
 
 	a.client = client
 	a.client.RancherConfig.AdminToken = a.rancherConfig.AdminToken
+	a.client.RancherConfig.AdminPassword = a.rancherConfig.AdminPassword
+	a.client.RancherConfig.Host = a.terraformConfig.Standalone.AirgapInternalFQDN
+
+	err = pipeline.PostRancherInstall(a.client, a.client.RancherConfig.AdminPassword)
+	require.NoError(a.T(), err)
+
+	a.client.RancherConfig.Host = a.rancherConfig.Host
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
@@ -100,14 +105,17 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 	}
 
 	for _, tt := range tests {
-		cattleConfig := a.TfpSetupSuite(a.terratestConfig, a.terraformConfig)
+		cattleConfig := a.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
-		
+
 		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
-		
+
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
 
 		terratest := new(config.TerratestConfig)
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
@@ -118,8 +126,8 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		a.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
-			
-			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, a.terraformConfig, a.terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
+
+			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 		})
 	}
@@ -140,14 +148,17 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 	}
 
 	for _, tt := range tests {
-		cattleConfig := a.TfpSetupSuite(a.terratestConfig, a.terraformConfig)
+		cattleConfig := a.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
-		
+
 		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
 		operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
-		
+
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.SecondHighestVersion, configMap)
+
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
 
 		terratest := new(config.TerratestConfig)
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
@@ -159,10 +170,10 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, a.terraformConfig, a.terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 
-			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, a.terraformConfig, a.terratestConfig, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
+			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 		})
 	}

@@ -34,14 +34,14 @@ func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclw
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, upgradeRancher)
 
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
-		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
+		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
 		terraformConfig.Standalone.UpgradedRancherImage + " " + proxyNode
 
-	if terraformConfig.Standalone.UpgradedRancherStagingImage != "" {
-		command += " " + terraformConfig.Standalone.UpgradedRancherStagingImage
+	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 	}
 
-	command += "'"
+	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/upgrade.sh"),

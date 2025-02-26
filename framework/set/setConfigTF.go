@@ -110,16 +110,24 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terraformCo
 			}
 		case module == modules.AirgapRKE1:
 			_, err = airgap.SetAirgapRKE1(rancherConfig, terraform, terratest, configMap, clusterName, newFile, rootBody, file)
-			return clusterNames, err
+			if err != nil {
+				return clusterNames, err
+			}
 		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
 			_, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraform, terratest, configMap, clusterName, newFile, rootBody, file)
-			return clusterNames, err
+			if err != nil {
+				return clusterNames, err
+			}
 		case module == modules.ImportEC2RKE1:
 			_, err = imported.SetImportedRKE1(rancherConfig, terraform, terratest, clusterName, newFile, rootBody, file)
-			return clusterNames, err
+			if err != nil {
+				return clusterNames, err
+			}
 		case module == modules.ImportEC2RKE2 || module == modules.ImportEC2K3s:
 			_, err = imported.SetImportedRKE2K3s(rancherConfig, terraform, terratest, clusterName, newFile, rootBody, file)
-			return clusterNames, err
+			if err != nil {
+				return clusterNames, err
+			}
 		default:
 			logrus.Errorf("Unsupported module: %v", module)
 		}

@@ -35,8 +35,8 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.RancherImage
 
-	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
 	command += "'"
@@ -78,8 +78,8 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.RancherImage
 
-	if terraformConfig.Standalone.StagingRancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.StagingRancherAgentImage
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
 	command += "'"
