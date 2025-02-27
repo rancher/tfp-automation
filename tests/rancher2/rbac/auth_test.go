@@ -74,7 +74,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		authConfig := *r.terraformConfig
 		authConfig.AuthProvider = tt.authProvider
 
-		testUser, testPassword, _, _ := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
@@ -101,7 +101,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 	}
 
 	for _, tt := range tests {
-		testUser, testPassword, _, _ := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)

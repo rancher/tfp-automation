@@ -16,12 +16,12 @@ import (
 )
 
 // SetAKS is a function that will set the AKS configurations in the main.tf file.
-func SetAKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
+func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
 	rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	azCredConfigBlock := cloudCredBlockBody.AppendNewBlock(azure.AzureCredentialConfig, nil)
 	azCredConfigBlockBody := azCredConfigBlock.Body()
@@ -36,7 +36,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, defaults.Cluster})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	aksConfigBlock := clusterBlockBody.AppendNewBlock(azure.AKSConfig, nil)
 	aksConfigBlockBody := aksConfigBlock.Body()
@@ -49,7 +49,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 	aksConfigBlockBody.SetAttributeValue(azure.OutboundType, cty.StringVal(terraformConfig.AzureConfig.OutboundType))
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceGroup, cty.StringVal(terraformConfig.AzureConfig.ResourceGroup))
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceLocation, cty.StringVal(terraformConfig.AzureConfig.ResourceLocation))
-	aksConfigBlockBody.SetAttributeValue(azure.DNSPrefix, cty.StringVal(terraformConfig.HostnamePrefix))
+	aksConfigBlockBody.SetAttributeValue(azure.DNSPrefix, cty.StringVal(terraformConfig.ResourcePrefix))
 	aksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkPlugin, cty.StringVal(terraformConfig.NetworkPlugin))
 	aksConfigBlockBody.SetAttributeValue(azure.VirtualNetwork, cty.StringVal(terraformConfig.AzureConfig.Vnet))

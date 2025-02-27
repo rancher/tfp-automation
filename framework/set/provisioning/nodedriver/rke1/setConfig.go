@@ -48,13 +48,13 @@ const (
 )
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
-func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
+func SetRKE1(terraformConfig *config.TerraformConfig, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*os.File, error) {
 
-	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, clusterName})
+	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, terraformConfig.ResourcePrefix})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
 
-	nodeTemplateBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.NodeTemplateName))
+	nodeTemplateBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	if terraformConfig.PrivateRegistries != nil {
 		nodeTemplateBlockBody.SetAttributeValue(defaults.EngineInsecureRegistry, cty.ListVal([]cty.Value{
@@ -70,8 +70,8 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	case terraformConfig.Module == modules.LinodeRKE1:
 		linode.SetLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.HarvesterRKE1:
-		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig, clusterName)
-		harvester.SetHarvesterRKE1Provider(nodeTemplateBlockBody, terraformConfig, clusterName)
+		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig)
+		harvester.SetHarvesterRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	case terraformConfig.Module == modules.VsphereRKE1:
 		vsphere.SetVsphereRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	}
@@ -79,27 +79,27 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	rootBody.AppendNewline()
 
 	if strings.Contains(psact, defaults.RancherBaseline) {
-		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, clusterName)
+		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
 
 		rootBody.AppendNewline()
 	}
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, clusterName})
+	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, terraformConfig.ResourcePrefix})
 	clusterBlockBody := clusterBlock.Body()
 
 	dependsOnTemp := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + clusterName + "]")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + terraformConfig.ResourcePrefix + "]")},
 	}
 
 	if psact == defaults.RancherBaseline {
 		dependsOnTemp = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + clusterName + "," +
-				defaults.PodSecurityAdmission + "." + clusterName + "]")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + terraformConfig.ResourcePrefix + "," +
+				defaults.PodSecurityAdmission + "." + terraformConfig.ResourcePrefix + "]")},
 		}
 	}
 
 	clusterBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnTemp)
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 	clusterBlockBody.SetAttributeValue(defaults.DefaultPodSecurityAdmission, cty.StringVal(psact))
 
 	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
@@ -139,10 +139,10 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 	clusterSyncNodePoolIDs := ""
 
 	for count, pool := range nodePools {
-		setNodePool(nodePools, count, pool, rootBody, clusterSyncNodePoolIDs, poolName, terraformConfig, clusterName)
+		setNodePool(nodePools, count, pool, rootBody, clusterSyncNodePoolIDs, terraformConfig)
 	}
 
-	setClusterSync(rootBody, clusterSyncNodePoolIDs, clusterName)
+	setClusterSync(rootBody, clusterSyncNodePoolIDs, terraformConfig.ResourcePrefix)
 
 	rootBody.AppendNewline()
 
@@ -155,13 +155,13 @@ func SetRKE1(terraformConfig *config.TerraformConfig, clusterName, poolName, k8s
 		rootBody.AppendNewline()
 
 		cluster := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + clusterName + ".id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
 		}
 
 		if strings.Contains(string(rbacRole), project) {
-			rbac.AddProjectMember(nil, "", newFile, rootBody, cluster, rbacRole, user, true)
+			rbac.AddProjectMember(nil, newFile, rootBody, cluster, rbacRole, user, "", true)
 		} else {
-			rbac.AddClusterRole(nil, "", newFile, rootBody, cluster, rbacRole, user, true)
+			rbac.AddClusterRole(nil, newFile, rootBody, cluster, rbacRole, user, "", true)
 		}
 	}
 

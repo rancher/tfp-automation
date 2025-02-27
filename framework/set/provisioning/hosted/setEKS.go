@@ -16,12 +16,12 @@ import (
 )
 
 // SetEKS is a function that will set the EKS configurations in the main.tf file.
-func SetEKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
+func SetEKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
 	rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	ec2CredConfigBlock := cloudCredBlockBody.AppendNewBlock(amazon.EC2CredentialConfig, nil)
 	ec2CredConfigBlockBody := ec2CredConfigBlock.Body()
@@ -34,7 +34,7 @@ func SetEKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, defaults.Cluster})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	eksConfigBlock := clusterBlockBody.AppendNewBlock(amazon.EKSConfig, nil)
 	eksConfigBlockBody := eksConfigBlock.Body()
@@ -64,7 +64,7 @@ func SetEKS(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 		nodePoolsBlock := eksConfigBlockBody.AppendNewBlock(amazon.NodeGroups, nil)
 		nodePoolsBlockBody := nodePoolsBlock.Body()
 
-		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.HostnamePrefix+`-pool`+poolNum))
+		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
 		nodePoolsBlockBody.SetAttributeValue(amazon.InstanceType, cty.StringVal(pool.InstanceType))
 		nodePoolsBlockBody.SetAttributeValue(amazon.DesiredSize, cty.NumberIntVal(pool.DesiredSize))
 		nodePoolsBlockBody.SetAttributeValue(amazon.MaxSize, cty.NumberIntVal(pool.MaxSize))

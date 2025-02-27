@@ -118,13 +118,13 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		t.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, t.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, t.terraformOptions, configMap)
 			provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
 		})
 	}

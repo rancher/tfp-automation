@@ -81,7 +81,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			s.T().Skip("RKE1 is not supported")
 		}
 
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		s.Run(tt.name, func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
@@ -92,10 +92,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 
 			configMap := []map[string]any{s.cattleConfig}
 
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, s.terraformOptions, configMap)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
+			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, s.terraformOptions, configMap)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 		})
 	}
@@ -119,7 +119,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 	for _, tt := range tests {
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.terratestConfig.KubernetesVersion
 
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
@@ -130,10 +130,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 
 			configMap := []map[string]any{s.cattleConfig}
 
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, nil)
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, clusterName, poolName, s.terraformOptions, configMap)
+			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 		})
 	}

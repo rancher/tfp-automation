@@ -12,13 +12,13 @@ import (
 )
 
 // SetCustomRKE1 is a function that will set the custom RKE1 cluster configurations in the main.tf file.
-func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any, clusterName string,
+func SetCustomRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
-	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, clusterName)
+	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
 
-	SetRancher2Cluster(rootBody, terraformConfig, terratestConfig, clusterName)
+	SetRancher2Cluster(rootBody, terraformConfig, terratestConfig)
 
-	nullresource.SetNullResource(rootBody, terraformConfig, clusterName)
+	nullresource.SetNullResource(rootBody, terraformConfig)
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {

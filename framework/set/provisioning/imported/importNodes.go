@@ -15,8 +15,7 @@ import (
 )
 
 // importNodes is a function that will import the nodes to the cluster
-func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodeOnePublicDNS, kubeConfig, importCommand,
-	clusterName string) error {
+func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodeOnePublicDNS, kubeConfig, importCommand string) error {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -49,8 +48,8 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	command += "'"
 
 	// Need to first create a null resource block to copy the script to the node.
-	copyScriptName := clusterName + `_` + copyScript
-	nullResourceBlockBody, provisionerBlockBody := imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, copyScriptName, clusterName)
+	copyScriptName := terraformConfig.ResourcePrefix + `_` + copyScript
+	nullResourceBlockBody, provisionerBlockBody := imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, copyScriptName)
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/import-nodes.sh"),
@@ -60,11 +59,11 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	var dependsOnServer string
 
 	if terraformConfig.Module == modules.ImportEC2K3s || terraformConfig.Module == modules.ImportEC2RKE2 {
-		addServerTwoName := addServer + clusterName + `_` + serverTwo
-		addServerThreeName := addServer + clusterName + `_` + serverThree
+		addServerTwoName := addServer + terraformConfig.ResourcePrefix + `_` + serverTwo
+		addServerThreeName := addServer + terraformConfig.ResourcePrefix + `_` + serverThree
 		dependsOnServer = `[` + defaults.NullResource + `.` + addServerTwoName + `, ` + defaults.NullResource + `.` + addServerThreeName + `]`
 	} else {
-		dependsOnServer = `[` + defaults.RKECluster + `.` + clusterName + `]`
+		dependsOnServer = `[` + defaults.RKECluster + `.` + terraformConfig.ResourcePrefix + `]`
 	}
 
 	server := hclwrite.Tokens{
@@ -75,8 +74,8 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	// A second null resource block is needed to properly run the script on the node. This is because the cluster registration
 	// token and RKE1 kube config will be not passed correctly as Bash parameters.
-	importClusterName := clusterName + `_` + importCluster
-	nullResourceBlockBody, provisionerBlockBody = imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName, clusterName)
+	importClusterName := terraformConfig.ResourcePrefix + `_` + importCluster
+	nullResourceBlockBody, provisionerBlockBody = imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName)
 
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},

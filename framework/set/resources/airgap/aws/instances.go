@@ -39,7 +39,7 @@ func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *confi
 	tagsBlock := configBlockBody.AppendNewBlock(defaults.Tags+" =", nil)
 	tagsBlockBody := tagsBlock.Body()
 
-	expression := fmt.Sprintf(`"%s`, terraformConfig.HostnamePrefix+"-"+hostnamePrefix+`"`)
+	expression := fmt.Sprintf(`"%s`, terraformConfig.ResourcePrefix+"-"+hostnamePrefix+`"`)
 	tags := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 	}

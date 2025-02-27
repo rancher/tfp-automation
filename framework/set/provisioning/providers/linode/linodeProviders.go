@@ -23,11 +23,11 @@ func SetLinodeRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig
 
 // SetLinodeRKE2K3SProvider is a helper function that will set the Linode RKE2/K3S
 // Terraform provider details in the main.tf file.
-func SetLinodeRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) {
-	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, clusterName})
+func SetLinodeRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, terraformConfig.ResourcePrefix})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	linodeCredBlock := cloudCredBlockBody.AppendNewBlock(linode.LinodeCredentialConfig, nil)
 	linodeCredBlockBody := linodeCredBlock.Body()

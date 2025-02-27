@@ -121,13 +121,13 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		a.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 		})
 	}
@@ -164,16 +164,16 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		a.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 
-			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, a.terraformOptions, configMap)
+			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 		})
 	}
