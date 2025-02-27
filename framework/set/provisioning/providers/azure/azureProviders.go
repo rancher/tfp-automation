@@ -43,11 +43,11 @@ func SetAzureRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig 
 }
 
 // SetAzureRKE2K3SProvider is a helper function that will set the Azure RKE2/K3S Terraform provider details in the main.tf file.
-func SetAzureRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) {
-	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, clusterName})
+func SetAzureRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, terraformConfig.ResourcePrefix})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	azureCredBlock := cloudCredBlockBody.AppendNewBlock(azure.AzureCredentialConfig, nil)
 	azureCredBlockBody := azureCredBlock.Body()

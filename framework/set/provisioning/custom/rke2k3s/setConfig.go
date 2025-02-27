@@ -12,13 +12,12 @@ import (
 )
 
 // SetCustomRKE2K3s is a function that will set the custom RKE2/K3s cluster configurations in the main.tf file.
-func SetCustomRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any, clusterName string,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
-	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, clusterName)
+func SetCustomRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
 
-	SetRancher2ClusterV2(rootBody, terraformConfig, terratestConfig, clusterName)
+	SetRancher2ClusterV2(rootBody, terraformConfig, terratestConfig)
 
-	nullresource.SetNullResource(rootBody, terraformConfig, clusterName)
+	nullresource.SetNullResource(rootBody, terraformConfig)
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {

@@ -29,7 +29,7 @@ func CreateRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	}
 
 	routeRecordBlockBody.SetAttributeRaw(zoneID, values)
-	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.HostnamePrefix))
+	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
 	routeRecordBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(CNAME))
 	routeRecordBlockBody.SetAttributeValue(ttl, cty.NumberIntVal(300))
 
@@ -60,7 +60,7 @@ func CreateRoute53InternalRecord(rootBody *hclwrite.Body, terraformConfig *confi
 	}
 
 	routeRecordBlockBody.SetAttributeRaw(zoneID, values)
-	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.HostnamePrefix+"-internal"))
+	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-internal"))
 	routeRecordBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(CNAME))
 	routeRecordBlockBody.SetAttributeValue(ttl, cty.NumberIntVal(300))
 

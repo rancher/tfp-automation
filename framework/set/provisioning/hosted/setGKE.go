@@ -15,11 +15,11 @@ import (
 )
 
 // SetGKE is a function that will set the GKE configurations in the main.tf file.
-func SetGKE(terraformConfig *config.TerraformConfig, clusterName, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.CloudCredentialName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	googleCredConfigBlock := cloudCredBlockBody.AppendNewBlock(google.GoogleCredentialConfig, nil)
 	googleCredConfigBlock.Body().SetAttributeValue(google.AuthEncodedJSON, cty.StringVal(terraformConfig.GoogleCredentials.AuthEncodedJSON))
@@ -29,12 +29,12 @@ func SetGKE(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, defaults.Cluster})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	gkeConfigBlock := clusterBlockBody.AppendNewBlock(google.GKEConfig, nil)
 	gkeConfigBlockBody := gkeConfigBlock.Body()
 
-	gkeConfigBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	gkeConfigBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	cloudCredSecret := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + defaults.CloudCredential + ".id")},
@@ -60,7 +60,7 @@ func SetGKE(terraformConfig *config.TerraformConfig, clusterName, k8sVersion str
 
 		nodePoolsBlockBody.SetAttributeValue(google.InitialNodeCount, cty.NumberIntVal(pool.Quantity))
 		nodePoolsBlockBody.SetAttributeValue(google.MaxPodsConstraint, cty.NumberIntVal(pool.MaxPodsContraint))
-		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.HostnamePrefix+`-pool`+poolNum))
+		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
 		nodePoolsBlockBody.SetAttributeValue(google.Version, cty.StringVal(k8sVersion))
 	}
 

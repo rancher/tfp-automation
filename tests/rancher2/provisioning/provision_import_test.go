@@ -42,6 +42,10 @@ func (p *ProvisionImportTestSuite) SetupSuite() map[string]any {
 	p.client = client
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+	require.NoError(p.T(), err)
+
+	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
@@ -67,7 +71,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 
 		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
@@ -76,7 +80,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, clusterName, poolName, p.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, p.terraformOptions, configMap)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 	}

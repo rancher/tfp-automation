@@ -11,8 +11,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body,
-	poolName, clusterName string) error {
+func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body) error {
 	poolNum := strconv.Itoa(count)
 
 	_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
@@ -23,10 +22,10 @@ func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool con
 	machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock(defaults.MachinePools, nil)
 	machinePoolsBlockBody := machinePoolsBlock.Body()
 
-	machinePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName+poolName+poolNum))
+	machinePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal("pool"+poolNum))
 
 	cloudCredSecretName := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + clusterName + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + terraformConfig.ResourcePrefix + ".id")},
 	}
 
 	machinePoolsBlockBody.SetAttributeRaw(cloudCredentialSecretName, cloudCredSecretName)
@@ -39,13 +38,13 @@ func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool con
 	machineConfigBlockBody := machineConfigBlock.Body()
 
 	kind := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + clusterName + ".kind")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + ".kind")},
 	}
 
 	machineConfigBlockBody.SetAttributeRaw(defaults.ResourceKind, kind)
 
 	name := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + clusterName + ".name")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + ".name")},
 	}
 
 	machineConfigBlockBody.SetAttributeRaw(defaults.ResourceName, name)

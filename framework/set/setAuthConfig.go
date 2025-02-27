@@ -38,7 +38,7 @@ func AuthConfig(terraformConfig *config.TerraformConfig, testUser, testPassword 
 
 	defer file.Close()
 
-	newFile, rootBody := resources.SetProvidersAndUsersTF(rancherConfig, terraformConfig, testUser, testPassword, true, nil)
+	newFile, rootBody := resources.SetProvidersAndUsersTF(testUser, testPassword, true, nil)
 
 	rootBody.AppendNewline()
 

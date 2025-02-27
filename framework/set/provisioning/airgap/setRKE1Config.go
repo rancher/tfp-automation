@@ -18,8 +18,8 @@ import (
 
 // // SetAirgapRKE1 is a function that will set the airgap RKE1 cluster configurations in the main.tf file.
 func SetAirgapRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	configMap []map[string]any, clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
-	rke1.SetRancher2Cluster(rootBody, terraformConfig, terratestConfig, clusterName)
+	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+	rke1.SetRancher2Cluster(rootBody, terraformConfig, terratestConfig)
 	rootBody.AppendNewline()
 
 	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, bastion)
@@ -39,7 +39,7 @@ func SetAirgapRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 
 	rootBody.AppendNewline()
 
-	file, _ = locals.SetLocals(rootBody, terraformConfig, configMap, clusterName, newFile, file, nil)
+	file, _ = locals.SetLocals(rootBody, terraformConfig, configMap, newFile, file, nil)
 
 	rootBody.AppendNewline()
 
@@ -48,7 +48,7 @@ func SetAirgapRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 		return nil, err
 	}
 
-	registrationCommands, nodePrivateIPs := getRKE1RegistrationCommands(clusterName)
+	registrationCommands, nodePrivateIPs := getRKE1RegistrationCommands(terraformConfig.ResourcePrefix)
 
 	for _, instance := range instances {
 		var dependsOn []string
