@@ -27,8 +27,8 @@ const (
 )
 
 // AddProjectMember is a helper function that will add the RBAC project member to `user` in the main.tf file.
-func AddProjectMember(client *rancher.Client, clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body,
-	clusterBlockID hclwrite.Tokens, rbacRole config.Role, newUser string, isRKE1 bool) (*hclwrite.File, *hclwrite.Body) {
+func AddProjectMember(client *rancher.Client, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	clusterBlockID hclwrite.Tokens, rbacRole config.Role, newUser, clusterName string, isRKE1 bool) (*hclwrite.File, *hclwrite.Body) {
 	projectBlock := rootBody.AppendNewBlock(defaults.Resource, []string{project, project})
 	projectBlockBody := projectBlock.Body()
 
@@ -65,8 +65,8 @@ func AddProjectMember(client *rancher.Client, clusterName string, newFile *hclwr
 }
 
 // AddClusterRole is a helper function that will add the RBAC cluster role to non `user` member in the main.tf file.
-func AddClusterRole(client *rancher.Client, clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body, clusterBlockID hclwrite.Tokens,
-	rbacRole config.Role, newUser string, isRKE1 bool) (*hclwrite.File, *hclwrite.Body) {
+func AddClusterRole(client *rancher.Client, newFile *hclwrite.File, rootBody *hclwrite.Body, clusterBlockID hclwrite.Tokens,
+	rbacRole config.Role, newUser, clusterName string, isRKE1 bool) (*hclwrite.File, *hclwrite.Body) {
 	clusterRoleTemplateBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterRoleTemplateBinding, clusterRoleTemplateBinding})
 	clusterRoleTemplateBindingBlockBody := clusterRoleTemplateBindingBlock.Body()
 

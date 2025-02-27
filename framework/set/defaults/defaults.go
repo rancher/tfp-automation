@@ -53,7 +53,7 @@ const (
 	MachineGlobalConfig   = "machine_global_config"
 	MachineSelectorConfig = "machine_selector_config"
 	MachinePools          = "machine_pools"
-	NodePool              = "auto-tfp-pool"
+	NodePool              = "node-pool"
 	Etcd                  = "etcd"
 	Enabled               = "enabled"
 	RancherClusterID      = "cluster_id"

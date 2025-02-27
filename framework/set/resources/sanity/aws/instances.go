@@ -57,14 +57,14 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	tagsBlockBody := tagsBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, "custom") {
-		expression := fmt.Sprintf(`"%s-${`+defaults.Count+`.`+defaults.Index+`}"`, terraformConfig.HostnamePrefix)
+		expression := fmt.Sprintf(`"%s-${`+defaults.Count+`.`+defaults.Index+`}"`, terraformConfig.ResourcePrefix)
 		tags := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 		}
 
 		tagsBlockBody.SetAttributeRaw(defaults.Name, tags)
 	} else {
-		expression := fmt.Sprintf(`"%s`, terraformConfig.HostnamePrefix+"-"+hostnamePrefix+`"`)
+		expression := fmt.Sprintf(`"%s`, terraformConfig.ResourcePrefix+`"`)
 		tags := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 		}

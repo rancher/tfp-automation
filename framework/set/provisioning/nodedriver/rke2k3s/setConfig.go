@@ -60,42 +60,42 @@ const (
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
-func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig, clusterName, poolName, k8sVersion, psact string,
+func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig, k8sVersion, psact string,
 	nodePools []config.Nodepool, snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*os.File, error) {
 	switch {
 	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
-		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig, clusterName)
+		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
 	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
-		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig, clusterName)
+		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig)
 	case terraformConfig.Module == modules.HarvesterRKE2 || terraformConfig.Module == modules.HarvesterK3s:
-		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig, clusterName)
+		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig)
 	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
-		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig, clusterName)
+		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig)
 	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:
-		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig, clusterName)
+		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()
 
 	if strings.Contains(psact, defaults.RancherBaseline) {
-		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, clusterName)
+		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
 
 		rootBody.AppendNewline()
 	}
 
-	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, clusterName})
+	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, terraformConfig.ResourcePrefix})
 	machineConfigBlockBody := machineConfigBlock.Body()
 
 	if psact == defaults.RancherBaseline {
 		dependsOnTemp := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.PodSecurityAdmission + "." +
-				clusterName + "]")},
+				terraformConfig.ResourcePrefix + "]")},
 		}
 
 		machineConfigBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnTemp)
 	}
 
-	machineConfigBlockBody.SetAttributeValue(defaults.GenerateName, cty.StringVal(terraformConfig.MachineConfigName))
+	machineConfigBlockBody.SetAttributeValue(defaults.GenerateName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	switch {
 	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
@@ -112,10 +112,10 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, clusterName})
+	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, terraformConfig.ResourcePrefix})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 	clusterBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
 	clusterBlockBody.SetAttributeValue(defaults.EnableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))
 	clusterBlockBody.SetAttributeValue(defaults.DefaultPodSecurityAdmission, cty.StringVal(psact))
@@ -143,13 +143,13 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, machineGlobalConfigValue)
 
 	for count, pool := range nodePools {
-		setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody, poolName, clusterName)
+		setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody)
 	}
 
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
 		if terraformConfig.PrivateRegistries.Username != "" {
 			rootBody.AppendNewline()
-			CreateRegistrySecret(terraformConfig, clusterName, rootBody)
+			CreateRegistrySecret(terraformConfig, rootBody)
 		}
 
 		SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
@@ -167,7 +167,7 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 	upgradeStrategyBlockBody.SetAttributeValue(workerConcurrency, cty.StringVal(("10%")))
 
 	if terraformConfig.ETCD != nil {
-		setEtcdConfig(rkeConfigBlockBody, terraformConfig, clusterName)
+		setEtcdConfig(rkeConfigBlockBody, terraformConfig)
 	}
 
 	if snapshots.CreateSnapshot {
@@ -189,9 +189,9 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 		rootBody.AppendNewline()
 
 		if strings.Contains(string(rbacRole), project) {
-			rbac.AddProjectMember(client, clusterName, newFile, rootBody, nil, rbacRole, user, false)
+			rbac.AddProjectMember(client, newFile, rootBody, nil, rbacRole, user, terraformConfig.ResourcePrefix, false)
 		} else {
-			rbac.AddClusterRole(client, clusterName, newFile, rootBody, nil, rbacRole, user, false)
+			rbac.AddClusterRole(client, newFile, rootBody, nil, rbacRole, user, terraformConfig.ResourcePrefix, false)
 		}
 	}
 

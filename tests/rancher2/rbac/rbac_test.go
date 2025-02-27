@@ -70,7 +70,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 		tt.name = tt.name + " Module: " + r.terraformConfig.Module
 
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
@@ -81,10 +81,10 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 			configMap := []map[string]any{r.cattleConfig}
 
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, r.terraformOptions, configMap)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 
-			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, clusterName, poolName, r.terraformOptions, tt.rbacRole)
+			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, r.terraformOptions, tt.rbacRole)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 		})
 	}

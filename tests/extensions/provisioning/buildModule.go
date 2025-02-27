@@ -17,7 +17,7 @@ import (
 func BuildModule(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any) error {
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 
-	_, err := framework.ConfigTF(nil, rancherConfig, terraformConfig, terratestConfig, "", "", "", "", "", configMap)
+	_, err := framework.ConfigTF(nil, "", "", "", configMap)
 	if err != nil {
 		return err
 	}

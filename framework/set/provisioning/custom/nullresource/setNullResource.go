@@ -11,11 +11,11 @@ import (
 
 // SetNullResource is a function that will set the null_resource configurations in the main.tf file,
 // to register the nodes to the cluster
-func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) error {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, defaults.RegisterNodes + "-" + clusterName})
+func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
+	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, defaults.RegisterNodes + "-" + terraformConfig.ResourcePrefix})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
-	countExpression := defaults.Length + `(` + defaults.AwsInstance + `.` + clusterName + `)`
+	countExpression := defaults.Length + `(` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `)`
 	nullResourceBlockBody.SetAttributeRaw(defaults.Count, hclwrite.TokensForIdentifier(countExpression))
 
 	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
@@ -23,7 +23,7 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 
 	if terraformConfig.Module == modules.CustomEC2RKE1 {
 		regCommand := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Cluster + `.` + clusterName + `.` + defaults.ClusterRegistrationToken + `[0].` + defaults.NodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Cluster + `.` + terraformConfig.ResourcePrefix + `.` + defaults.ClusterRegistrationToken + `[0].` + defaults.NodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
 		}
 
 		provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
@@ -31,7 +31,7 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 
 	if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s {
 		regCommand := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Local + `.` + clusterName + "_" + defaults.InsecureNodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Local + `.` + terraformConfig.ResourcePrefix + "_" + defaults.InsecureNodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
 		}
 
 		provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
@@ -43,7 +43,7 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
 	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
-	hostExpression := defaults.AwsInstance + `.` + clusterName + `[` + defaults.Count + `.` + defaults.Index + `].` + defaults.PublicIp
+	hostExpression := defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `[` + defaults.Count + `.` + defaults.Index + `].` + defaults.PublicIp
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
@@ -58,7 +58,7 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
 
 	if terraformConfig.Module == modules.CustomEC2RKE1 {
-		clusterExpression := `[` + defaults.Cluster + `.` + clusterName + `]`
+		clusterExpression := `[` + defaults.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
 		cluster := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(clusterExpression)},
 		}
@@ -67,7 +67,7 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	}
 
 	if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s {
-		clusterV2Expression := `[` + defaults.ClusterV2 + `.` + clusterName + `]`
+		clusterV2Expression := `[` + defaults.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
 		clusterV2 := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(clusterV2Expression)},
 		}
