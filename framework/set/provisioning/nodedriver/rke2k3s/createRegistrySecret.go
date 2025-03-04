@@ -17,8 +17,8 @@ const (
 )
 
 // CreateRegistrySecret is a function that will set the airgap RKE2/K3s cluster configurations in the main.tf file.
-func CreateRegistrySecret(terraformConfig *config.TerraformConfig, clusterName string, rootBody *hclwrite.Body) {
-	secretBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.SecretV2, clusterName})
+func CreateRegistrySecret(terraformConfig *config.TerraformConfig, rootBody *hclwrite.Body) {
+	secretBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.SecretV2, terraformConfig.ResourcePrefix})
 	secretBlockBody := secretBlock.Body()
 
 	secretBlockBody.SetAttributeValue(clusterID, cty.StringVal(localCluster))

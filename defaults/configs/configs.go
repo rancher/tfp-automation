@@ -23,11 +23,9 @@ const (
 )
 
 // CreateTestCredentials creates test credentials for the test user, password, cluster name, and pool name.
-func CreateTestCredentials() (string, string, string, string) {
+func CreateTestCredentials() (string, string) {
 	testUser := namegen.AppendRandomString(TestUser)
 	testPassword := namegen.AppendRandomString(TestPassword)
-	clusterName := namegen.AppendRandomString(TFP)
-	poolName := namegen.AppendRandomString(TFP)
 
-	return testUser, testPassword, clusterName, poolName
+	return testUser, testPassword
 }

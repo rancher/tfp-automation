@@ -27,8 +27,8 @@ const (
 
 // // SetAirgapRKE2K3s is a function that will set the airgap RKE2/K3s cluster configurations in the main.tf file.
 func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	configMap []map[string]any, clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
-	v2.SetRancher2ClusterV2(rootBody, terraformConfig, terratestConfig, clusterName)
+	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+	v2.SetRancher2ClusterV2(rootBody, terraformConfig, terratestConfig)
 	rootBody.AppendNewline()
 
 	aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, bastion)
@@ -54,7 +54,7 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 
 	rootBody.AppendNewline()
 
-	file, _ = locals.SetLocals(rootBody, terraformConfig, configMap, clusterName, newFile, file, nil)
+	file, _ = locals.SetLocals(rootBody, terraformConfig, configMap, newFile, file, nil)
 
 	rootBody.AppendNewline()
 
@@ -63,7 +63,7 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 		return nil, err
 	}
 
-	registrationCommands, nodePrivateIPs := getRKE2K3sRegistrationCommands(terraformConfig, clusterName)
+	registrationCommands, nodePrivateIPs := getRKE2K3sRegistrationCommands(terraformConfig)
 
 	for _, instance := range instances {
 		var dependsOn []string
@@ -106,14 +106,14 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 }
 
 // getRKE2K3sRegistrationCommands is a helper function that will return the registration commands for the airgap nodes.
-func getRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig, clusterName string) (map[string]string, map[string]string) {
+func getRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig) (map[string]string, map[string]string) {
 	commands := make(map[string]string)
 	nodePrivateIPs := make(map[string]string)
 
-	etcdRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, clusterName, defaults.InsecureNodeCommand, defaults.EtcdRoleFlag)
-	controlPlaneRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, clusterName, defaults.InsecureNodeCommand, defaults.ControlPlaneRoleFlag)
-	workerRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, clusterName, defaults.InsecureNodeCommand, defaults.WorkerRoleFlag)
-	allRolesRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, clusterName, defaults.InsecureNodeCommand, defaults.AllFlags)
+	etcdRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.EtcdRoleFlag)
+	controlPlaneRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.ControlPlaneRoleFlag)
+	workerRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.WorkerRoleFlag)
+	allRolesRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.AllFlags)
 
 	airgapNodeOnePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeOne, defaults.PrivateIp)
 	airgapNodeTwoPrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeTwo, defaults.PrivateIp)

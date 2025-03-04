@@ -30,13 +30,13 @@ const (
 
 // // SetImportedRKE2K3s is a function that will set the imported RKE2/K3s cluster configurations in the main.tf file.
 func SetImportedRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	clusterName string, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
-	SetImportedCluster(rootBody, clusterName)
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+	SetImportedCluster(rootBody, terraformConfig.ResourcePrefix)
 
 	rootBody.AppendNewline()
-	serverOneName := clusterName + `_` + serverOne
-	serverTwoName := clusterName + `_` + serverTwo
-	serverThreeName := clusterName + `_` + serverThree
+	serverOneName := terraformConfig.ResourcePrefix + `_` + serverOne
+	serverTwoName := terraformConfig.ResourcePrefix + `_` + serverTwo
+	serverThreeName := terraformConfig.ResourcePrefix + `_` + serverThree
 	instances := []string{serverOneName, serverTwoName, serverThreeName}
 
 	for _, instance := range instances {
@@ -51,13 +51,13 @@ func SetImportedRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.T
 	nodeTwoPublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverTwoName)
 	nodeThreePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverThreeName)
 
-	imported.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, nodeOnePublicDNS, nodeOnePrivateIP, nodeTwoPublicDNS, nodeThreePublicDNS, clusterName)
+	imported.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, nodeOnePublicDNS, nodeOnePrivateIP, nodeTwoPublicDNS, nodeThreePublicDNS)
 
 	rootBody.AppendNewline()
 
-	importCommand := getImportCommand(clusterName)
+	importCommand := getImportCommand(terraformConfig.ResourcePrefix)
 
-	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, "", importCommand[serverOneName], clusterName)
+	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, "", importCommand[serverOneName])
 	if err != nil {
 		return nil, err
 	}

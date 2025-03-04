@@ -11,11 +11,11 @@ import (
 )
 
 // SetHarvesterRKE1Provider is a helper function that will set the Harvester RKE1 terraform configurations in the main.tf file.
-func SetHarvesterRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) {
+func SetHarvesterRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
 	nodeTemplateBlockBody.SetAttributeValue("engine_install_url", cty.StringVal("https://releases.rancher.com/install-docker/26.1.sh"))
 
 	cloudCredID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + clusterName + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + terraformConfig.ResourcePrefix + ".id")},
 	}
 	nodeTemplateBlockBody.SetAttributeRaw(defaults.CloudCredentialID, cloudCredID)
 
@@ -37,11 +37,11 @@ func SetHarvesterRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformCon
 }
 
 // SetHarvesterCredentialProvider is a helper function that will set the Harvester cloud provider in main.tf
-func SetHarvesterCredentialProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) {
-	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, clusterName})
+func SetHarvesterCredentialProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, terraformConfig.ResourcePrefix})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterName))
+	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	harvesterCredBlock := cloudCredBlockBody.AppendNewBlock(harvester.HarvesterCredentialConfig, nil)
 	harvesterCredBlockBody := harvesterCredBlock.Body()

@@ -44,13 +44,17 @@ func (t *TfpSanityTestSuite) TearDownSuite() {
 
 func (t *TfpSanityTestSuite) SetupSuite() {
 	t.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	configMap, err := provisioning.UniquifyTerraform([]map[string]any{t.cattleConfig})
+	require.NoError(t.T(), err)
+
+	t.cattleConfig = configMap[0]
 	t.rancherConfig, t.terraformConfig, t.terratestConfig = config.LoadTFPConfigs(t.cattleConfig)
 
 	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath)
 	standaloneTerraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.standaloneTerraformOptions = standaloneTerraformOptions
 
-	err := resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	err = resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
 	require.NoError(t.T(), err)
 }
 
@@ -118,13 +122,13 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword, clusterName, poolName := configs.CreateTestCredentials()
+		testUser, testPassword := configs.CreateTestCredentials()
 
 		t.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, clusterName, poolName, t.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, t.terraformOptions, configMap)
 			provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
 		})
 	}

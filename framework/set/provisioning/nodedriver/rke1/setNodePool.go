@@ -12,7 +12,7 @@ import (
 )
 
 func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, rootBody *hclwrite.Body,
-	clusterSyncNodePoolIDs, poolName string, terraformConfig *config.TerraformConfig, clusterName string) error {
+	clusterSyncNodePoolIDs string, terraformConfig *config.TerraformConfig) error {
 	poolNum := strconv.Itoa(count)
 
 	_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
@@ -20,25 +20,25 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 		return err
 	}
 
-	nodePoolBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherNodePool, clusterName + defaults.NodePool + poolNum})
+	nodePoolBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherNodePool, terraformConfig.ResourcePrefix + defaults.NodePool + poolNum})
 	nodePoolBlockBody := nodePoolBlock.Body()
 
 	dependsOnCluster := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.Cluster + "." + clusterName + "]")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.Cluster + "." + terraformConfig.ResourcePrefix + "]")},
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnCluster)
 
 	clusterID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + clusterName + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(defaults.RancherClusterID, clusterID)
-	nodePoolBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(poolName+poolNum))
-	nodePoolBlockBody.SetAttributeValue(hostnamePrefix, cty.StringVal(terraformConfig.HostnamePrefix+"-"+poolName+poolNum))
+	nodePoolBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal("pool"+poolNum))
+	nodePoolBlockBody.SetAttributeValue(hostnamePrefix, cty.StringVal(terraformConfig.ResourcePrefix+"-pool"+poolNum))
 
 	nodeTempID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(nodeTemplate + "." + clusterName + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(nodeTemplate + "." + terraformConfig.ResourcePrefix + ".id")},
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(nodeTemplateID, nodeTempID)
@@ -50,11 +50,11 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 	rootBody.AppendNewline()
 
 	if count != len(nodePools) {
-		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + clusterName + poolNum + ".id, "
+		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + terraformConfig.ResourcePrefix + poolNum + ".id, "
 	}
 
 	if count == len(nodePools) {
-		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + clusterName + poolNum + ".id"
+		clusterSyncNodePoolIDs = clusterSyncNodePoolIDs + rancherNodePool + "." + terraformConfig.ResourcePrefix + poolNum + ".id"
 	}
 
 	return nil
