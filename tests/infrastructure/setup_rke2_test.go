@@ -68,6 +68,8 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 	tfBlockBody := tfBlock.Body()
 
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+
+	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 
@@ -79,6 +81,7 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 	rke2ServerThreePublicDNS := terraform.Output(i.T(), terraformOptions, rke2ServerThreePublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, i.terraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS)
 	require.NoError(i.T(), err)
 

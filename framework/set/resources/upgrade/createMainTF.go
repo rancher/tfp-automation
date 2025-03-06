@@ -7,19 +7,22 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
+	airgap "github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
+	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
+	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	terraformConst = "terraform"
+	nonAuthRegistry = "non_auth_registry"
+	terraformConst  = "terraform"
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server behind a proxy.
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratest *config.TerratestConfig, proxyNode, serverNode string) error {
+	terratest *config.TerratestConfig, serverNode, proxyNode, bastionNode, registryNode string) error {
 	var file *os.File
 	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
@@ -38,17 +41,34 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	switch {
-	case terraformConfig.Standalone.ProxyRancher:
-		logrus.Infof("Upgrading Proxy Rancher...")
-		_, err := rancher.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, serverNode, proxyNode)
+	case terraformConfig.Standalone.UpgradeAirgapRancher:
+		logrus.Infof("Updating private registry...")
+		_, err := registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryNode, nonAuthRegistry)
 		if err != nil {
 			return err
 		}
+
+		terraform.InitAndApply(t, terraformOptions)
+
+		file = sanity.OpenFile(file, keyPath)
+		logrus.Infof("Upgrading Airgap Rancher...")
+		file, err = airgap.UpgradeAirgapRancher(file, newFile, rootBody, terraformConfig, registryNode, bastionNode)
+		if err != nil {
+			return err
+		}
+
+		terraform.InitAndApply(t, terraformOptions)
+	case terraformConfig.Standalone.UpgradeProxyRancher:
+		logrus.Infof("Upgrading Proxy Rancher...")
+		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, serverNode, proxyNode)
+		if err != nil {
+			return err
+		}
+
+		terraform.InitAndApply(t, terraformOptions)
 	default:
 		logrus.Errorf("Unsupported Rancher environment. Please check the configuration file.")
 	}
-
-	terraform.InitAndApply(t, terraformOptions)
 
 	return nil
 }

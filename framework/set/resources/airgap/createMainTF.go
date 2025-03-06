@@ -33,7 +33,7 @@ const (
 
 // CreateMainTF is a helper function that will create the main.tf file for creating an Airgapped-Rancher server.
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig) (string, error) {
+	terratestConfig *config.TerratestConfig) (string, string, error) {
 	var file *os.File
 	file = OpenFile(file, keyPath)
 	defer file.Close()
@@ -47,7 +47,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -62,7 +62,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	file = OpenFile(file, keyPath)
 	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS, nonAuthRegistry)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -71,7 +71,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -80,12 +80,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	return registryPublicDNS, nil
+	return registryPublicDNS, rke2BastionPublicDNS, nil
 }
 
 // OpenFile is a helper function that will open the main.tf file.

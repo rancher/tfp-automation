@@ -78,13 +78,26 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2NonAuthRegistryPublicDNS, registryType)
 
-	command := "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " +
-		rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
-		terraformConfig.Standalone.RancherImage
+	var command string
 
-	if terraformConfig.Standalone.RancherAgentImage != "" {
-		command += " " + terraformConfig.Standalone.RancherAgentImage
+	if terraformConfig.Standalone.UpgradeAirgapRancher {
+		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " +
+			rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
+			terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
+			terraformConfig.Standalone.UpgradedRancherImage
+
+		if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
+			command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
+		}
+	} else {
+		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " +
+			rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+			terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
+			terraformConfig.Standalone.RancherImage
+
+		if terraformConfig.Standalone.RancherAgentImage != "" {
+			command += " " + terraformConfig.Standalone.RancherAgentImage
+		}
 	}
 
 	command += " || true'"

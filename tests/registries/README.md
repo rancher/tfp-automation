@@ -29,28 +29,21 @@ In no particular order, see an example below:
 rancher:
   host: ""                                        # REQUIRED - fill out with the expected Rancher server URL
   adminPassword: ""                               # REQUIRED - this is the same as the bootstrapPassword below, make sure they match
-  adminToken: ""                                  # REQUIRED - leave this field empty as shown
   insecure: true                                  # REQUIRED - leave this as true
 #######################
 # TERRAFORM CONFIG
 #######################
 terraform:
-  cloudCredentialName: ""                         # REQUIRED - fill with desired value
+  cni: ""                                         # REQUIRED - fill with desired value
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
-  hostnamePrefix: ""                              # REQUIRED - fill with desired value
-  machineConfigName: ""                           # REQUIRED - fill with desired value
-  module: ""                                      # REQUIRED - leave this field empty as shown
-  cni: ""                                         # REQUIRED - fill with desired value
-  nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   privateRegistries:
     authConfigSecretName: ""                      # REQUIRED (authenticated registry only) - specify the name of the secret you wanted created
     insecure: true
-    url: ""                                       # LEAVE BLANK - will be set during the test
-    systemDefaultRegistry: ""                     # LEAVE BLANK - will be set during the test
     username: ""                                  # REQUIRED (authenticated registry only) - username of the private registry
     password: ""                                  # REQUIRED (authenticated registry only) - password of the private registry
+  resourcePrefix: ""                              # REQUIRED - fill with desired value
   ########################
   # INFRASTRUCTURE SETUP
   ########################
@@ -61,6 +54,7 @@ terraform:
     ami: ""
     awsKeyName: ""
     awsInstanceType: ""
+    awsSecurityGroups: [""]
     awsSecurityGroupNames: [""]
     awsSubnetID: ""
     awsVpcID: ""
@@ -71,7 +65,6 @@ terraform:
     awsUser: ""
     registryRootSize: 500
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: "5m"
   ###################################
   # STANDALONE CONFIG - RANCHER SETUP

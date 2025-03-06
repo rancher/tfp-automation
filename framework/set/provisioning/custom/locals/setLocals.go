@@ -33,18 +33,32 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 
 			localsBlockBody.SetAttributeRaw(name+"_"+defaults.OriginalNodeCommand, originalNodeCommand)
 
-			insecureNodeCommandExpressionClusterV2 := fmt.Sprintf(`"curl --insecure ${substr(local.%s_original_node_command, 4, length(local.%s_original_node_command) - 4)}"`, name, name)
+			windowsOriginalNodeCommandExpression := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.WindowsNodeCommand
+			windowsOriginalNodeCommand := hclwrite.Tokens{
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsOriginalNodeCommandExpression)},
+			}
+
+			localsBlockBody.SetAttributeRaw(name+"_"+defaults.WindowsOriginalNodeCommand, windowsOriginalNodeCommand)
+
+			insecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_original_node_command, "curl", "curl --insecure")}"`, name)
 			insecureNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpressionClusterV2)},
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpression)},
 			}
 
 			localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
 
+			windowsInsecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_windows_original_node_command, "curl.exe", "curl.exe --insecure")}"`, name)
+			windowsInsecureNodeCommand := hclwrite.Tokens{
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsInsecureNodeCommandExpression)},
+			}
+
+			localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
 		}
 	} else {
 		//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
 		if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s ||
-			terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapK3S {
+			terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapK3S ||
+			terraformConfig.Module == modules.CustomEC2RKE2Windows {
 			originalNodeCommandExpressionClusterV2 := defaults.ClusterV2 + "." + terraformConfig.ResourcePrefix + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
 			originalNodeCommand := hclwrite.Tokens{
 				{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpressionClusterV2)},
@@ -52,12 +66,26 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 
 			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.OriginalNodeCommand, originalNodeCommand)
 
-			insecureNodeCommandExpressionClusterV2 := fmt.Sprintf(`"curl --insecure ${substr(local.%s_original_node_command, 4, length(local.%s_original_node_command) - 4)}"`, terraformConfig.ResourcePrefix, terraformConfig.ResourcePrefix)
+			windowsNodeCommandExpression := defaults.ClusterV2 + "." + terraformConfig.ResourcePrefix + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.WindowsNodeCommand
+			windowsOriginalNodeCommand := hclwrite.Tokens{
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsNodeCommandExpression)},
+			}
+
+			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.WindowsOriginalNodeCommand, windowsOriginalNodeCommand)
+
+			insecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_original_node_command, "curl", "curl --insecure")}"`, terraformConfig.ResourcePrefix)
 			insecureNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpressionClusterV2)},
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpression)},
 			}
 
 			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
+
+			windowsInsecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_windows_original_node_command, "curl.exe", "curl.exe --insecure")}"`, terraformConfig.ResourcePrefix)
+			windowsInsecureNodeCommand := hclwrite.Tokens{
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsInsecureNodeCommandExpression)},
+			}
+
+			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
 		}
 	}
 

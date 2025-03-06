@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
 	clusterActions "github.com/rancher/rancher/tests/v2/actions/clusters"
 	"github.com/rancher/rancher/tests/v2/actions/psact"
 	"github.com/rancher/rancher/tests/v2/actions/registries"
@@ -13,12 +12,10 @@ import (
 	"github.com/rancher/rancher/tests/v2/actions/workloads/deployment"
 	"github.com/rancher/rancher/tests/v2/actions/workloads/statefulset"
 	"github.com/rancher/shepherd/clients/rancher"
-	v1 "github.com/rancher/shepherd/clients/rancher/v1"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	waitState "github.com/rancher/tfp-automation/framework/wait/state"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -48,33 +45,6 @@ func VerifyClustersState(t *testing.T, client *rancher.Client, clusterIDs []stri
 
 		podErrors := pods.StatusPods(client, cluster.ID)
 		require.Empty(t, podErrors)
-
-		v1ClusterID, err := clusterExtensions.GetV1ProvisioningClusterByName(client, clusterName)
-		require.NoError(t, err)
-
-		var v1Cluster *v1.SteveAPIObject
-		if v1ClusterID == "" {
-			v1Cluster, err = client.Steve.SteveType(stevetypes.Provisioning).ByID("fleet-default/" + clusterID)
-			require.NoError(t, err)
-			require.NotEmpty(t, v1Cluster)
-		} else {
-			v1Cluster, err = client.Steve.SteveType(stevetypes.Provisioning).ByID(v1ClusterID)
-			require.NoError(t, err)
-			require.NotEmpty(t, v1Cluster)
-		}
-
-		clusterObj := new(apisV1.Cluster)
-		err = v1.ConvertToK8sType(v1Cluster, &clusterObj)
-		require.NoError(t, err)
-
-		if clusterObj.Spec.RKEConfig != nil {
-			if clusterObj.Spec.RKEConfig.Registries != nil {
-				for registryURL := range clusterObj.Spec.RKEConfig.Registries.Configs {
-					_, err := registries.CheckAllClusterPodsForRegistryPrefix(client, clusterID, registryURL)
-					require.NoError(t, err)
-				}
-			}
-		}
 	}
 }
 

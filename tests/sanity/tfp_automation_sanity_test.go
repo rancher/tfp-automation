@@ -44,17 +44,13 @@ func (t *TfpSanityTestSuite) TearDownSuite() {
 
 func (t *TfpSanityTestSuite) SetupSuite() {
 	t.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{t.cattleConfig})
-	require.NoError(t.T(), err)
-
-	t.cattleConfig = configMap[0]
 	t.rancherConfig, t.terraformConfig, t.terratestConfig = config.LoadTFPConfigs(t.cattleConfig)
 
 	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath)
 	standaloneTerraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.standaloneTerraformOptions = standaloneTerraformOptions
 
-	err = resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
+	err := resources.CreateMainTF(t.T(), t.standaloneTerraformOptions, keyPath, t.terraformConfig, t.terratestConfig)
 	require.NoError(t.T(), err)
 }
 
@@ -63,6 +59,10 @@ func (t *TfpSanityTestSuite) TfpSetupSuite() map[string]any {
 	t.session = testSession
 
 	t.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	configMap, err := provisioning.UniquifyTerraform([]map[string]any{t.cattleConfig})
+	require.NoError(t.T(), err)
+
+	t.cattleConfig = configMap[0]
 	t.rancherConfig, t.terraformConfig, t.terratestConfig = config.LoadTFPConfigs(t.cattleConfig)
 
 	adminUser := &management.User{
@@ -83,6 +83,10 @@ func (t *TfpSanityTestSuite) TfpSetupSuite() map[string]any {
 	t.client.RancherConfig.AdminPassword = t.rancherConfig.AdminPassword
 	t.client.RancherConfig.Host = t.rancherConfig.Host
 
+	operations.ReplaceValue([]string{"rancher", "adminToken"}, t.rancherConfig.AdminToken, configMap[0])
+	operations.ReplaceValue([]string{"rancher", "adminPassword"}, t.rancherConfig.AdminPassword, configMap[0])
+	operations.ReplaceValue([]string{"rancher", "host"}, t.rancherConfig.Host, configMap[0])
+
 	err = pipeline.PostRancherInstall(t.client, t.client.RancherConfig.AdminPassword)
 	require.NoError(t.T(), err)
 
@@ -101,9 +105,10 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE1", nodeRolesDedicated, "linode_rke1"},
-		{"RKE2", nodeRolesDedicated, "linode_rke2"},
-		{"K3S", nodeRolesDedicated, "linode_k3s"},
+		{"RKE1", nodeRolesDedicated, "ec2_rke1"},
+		{"RKE2", nodeRolesDedicated, "ec2_rke2"},
+		{"RKE2 Windows", nil, "ec2_rke2_windows_custom"},
+		{"K3S", nodeRolesDedicated, "ec2_k3s"},
 	}
 
 	for _, tt := range tests {
@@ -128,7 +133,7 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, t.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, t.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
 		})
 	}

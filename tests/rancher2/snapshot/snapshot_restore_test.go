@@ -94,7 +94,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 
 			configMap := []map[string]any{s.cattleConfig}
 
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, s.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, s.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, s.terraformOptions, configMap)
@@ -132,7 +132,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 
 			configMap := []map[string]any{s.cattleConfig}
 
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, nil)
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, nil, false)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap)

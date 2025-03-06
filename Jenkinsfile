@@ -32,6 +32,7 @@ node {
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
                     string(credentialsId: 'RANCHER_LINODE_ACCESSKEY', variable: 'RANCHER_LINODE_ACCESSKEY'),
                     string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
+                    string(credentialsId: 'AWS_SSH_RSA_KEY', variable: 'AWS_SSH_RSA_KEY'),
                     string(credentialsId: 'AWS_SSH_KEY_NAME', variable: 'AWS_SSH_KEY_NAME'),
                     string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
   stage('Checkout') {
@@ -50,8 +51,13 @@ node {
 
       writeFile file: 'config.yml', text: config
 
-      def decoded = new String(env.AWS_SSH_PEM_KEY.decodeBase64())
-      writeFile file: 'key.pem', text: decoded
+      dir(".ssh") {
+        def decoded = new String(env.AWS_SSH_PEM_KEY.decodeBase64())
+        writeFile file: AWS_SSH_KEY_NAME, text: decoded
+
+        def decodedRsa = new String(AWS_SSH_RSA_KEY.decodeBase64())
+        writeFile file: JENKINS_RKE_VALIDATION, text: decodedRsa
+      }
       
       env.CATTLE_TEST_CONFIG=rootPath+'config.yml'
 
@@ -61,7 +67,7 @@ node {
     stage('Run Module Test') {
       try {
         sh """
-          docker run --name ${testContainer} -t -v ${homePath}key.pem:${rootPath}key.pem --env-file ${envFile} ${imageName} sh -c "
+          docker run --name ${testContainer} -t --env-file ${envFile} ${imageName} sh -c "
           /root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile ${testResultsOut} --jsonfile ${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};
           ${rootPath}pipeline/scripts/build_qase_reporter.sh;
           if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"

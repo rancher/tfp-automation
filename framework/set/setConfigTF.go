@@ -26,7 +26,8 @@ import (
 )
 
 // ConfigTF is a function that will set the main.tf file based on the module type.
-func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole configuration.Role, configMap []map[string]any) ([]string, error) {
+func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole configuration.Role, configMap []map[string]any,
+	isWindows bool) ([]string, error) {
 	var file *os.File
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 
@@ -61,7 +62,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 
 		clusterNames = append(clusterNames, terraform.ResourcePrefix)
 
-		if module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s {
+		if module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s || module == modules.CustomEC2RKE2Windows {
 			customClusterNames = append(customClusterNames, terraform.ResourcePrefix)
 		}
 
@@ -96,10 +97,17 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 			if err != nil {
 				return clusterNames, err
 			}
-		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s:
+		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s || module == modules.CustomEC2RKE2Windows:
 			file, err = customV2.SetCustomRKE2K3s(rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, err
+			}
+
+			if isWindows {
+				file, err = customV2.SetCustomRKE2Windows(client, rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
+				if err != nil {
+					return clusterNames, err
+				}
 			}
 		case module == modules.AirgapRKE1:
 			_, err = airgap.SetAirgapRKE1(rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
@@ -127,6 +135,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 
 		if i == len(configMap)-1 && containsCustomModule {
 			file, err = locals.SetLocals(rootBody, terraform, configMap, newFile, file, customClusterNames)
+			rootBody.AppendNewline()
 		}
 	}
 

@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -15,6 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/proxy"
@@ -86,6 +88,10 @@ func (p *TfpProxyProvisioningTestSuite) TfpSetupSuite() map[string]any {
 	p.client.RancherConfig.AdminPassword = p.rancherConfig.AdminPassword
 	p.client.RancherConfig.Host = p.rancherConfig.Host
 
+	operations.ReplaceValue([]string{"rancher", "adminToken"}, p.rancherConfig.AdminToken, configMap[0])
+	operations.ReplaceValue([]string{"rancher", "adminPassword"}, p.rancherConfig.AdminPassword, configMap[0])
+	operations.ReplaceValue([]string{"rancher", "host"}, p.rancherConfig.Host, configMap[0])
+
 	err = pipeline.PostRancherInstall(p.client, p.client.RancherConfig.AdminPassword)
 	require.NoError(p.T(), err)
 
@@ -106,6 +112,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 	}{
 		{"No Proxy RKE1", nodeRolesDedicated, "ec2_rke1"},
 		{"No Proxy RKE2", nodeRolesDedicated, "ec2_rke2"},
+		{"No Proxy RKE2 Windows", nil, "ec2_rke2_windows_custom"},
 		{"No Proxy K3S", nodeRolesDedicated, "ec2_k3s"},
 	}
 
@@ -132,8 +139,13 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+
+			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+				clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, true)
+				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+			}
 		})
 	}
 
@@ -178,7 +190,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 		})
 	}
