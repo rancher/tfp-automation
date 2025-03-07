@@ -62,6 +62,8 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 	tfBlockBody := tfBlock.Body()
 
 	instances := []string{k3sServerOne, k3sServerTwo, k3sServerThree}
+
+	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 
@@ -73,6 +75,7 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 	k3sServerThreePublicDNS := terraform.Output(i.T(), terraformOptions, k3sServerThreePublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating K3s cluster...")
 	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, i.terraformConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS)
 	require.NoError(i.T(), err)
 

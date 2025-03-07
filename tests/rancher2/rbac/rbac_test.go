@@ -83,7 +83,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 			configMap := []map[string]any{r.cattleConfig}
 
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, r.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, r.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 
 			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, r.terraformOptions, tt.rbacRole)

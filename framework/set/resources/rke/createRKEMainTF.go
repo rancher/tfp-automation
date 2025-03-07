@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rke/aws"
 	rke "github.com/rancher/tfp-automation/framework/set/resources/rke/rke"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -34,6 +35,7 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
+	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return "", err
@@ -44,6 +46,7 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 	rkeServerOnePublicIP := terraform.Output(t, terraformOptions, rkeServerOnePublicIP)
 
 	file = resources.OpenFile(file, keyPath)
+	logrus.Infof("Creating RKE cluster...")
 	file, err = rke.CreateRKECluster(file, newFile, rootBody, terraformConfig)
 	if err != nil {
 		return "", err
@@ -59,6 +62,7 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 	kubeConfigContent := terraform.Output(t, terraformOptions, kubeConfig)
 
 	file = resources.OpenFile(file, keyPath)
+	logrus.Infof("Checking RKE cluster status...")
 	file, err = rke.CheckClusterStatus(file, newFile, rootBody, terraformConfig, rkeServerOnePublicIP, kubeConfigContent)
 	if err != nil {
 		return "", err

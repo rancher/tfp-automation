@@ -1,6 +1,8 @@
 package provisioning
 
 import (
+	"slices"
+
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
@@ -9,15 +11,13 @@ import (
 )
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
-func SupportedModules(terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, configMap []map[string]any) bool {
+func SupportedModules(terraformOptions *terraform.Options, configMap []map[string]any) bool {
 	var isSupported bool
 	for _, cattleConfig := range configMap {
 		tfConfig := new(config.TerraformConfig)
 		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, tfConfig)
 
-		module := tfConfig.Module
-
-		isSupported = verifyModule(module)
+		isSupported = verifyModule(tfConfig.Module)
 	}
 
 	return isSupported
@@ -45,6 +45,7 @@ func verifyModule(module string) bool {
 		modules.VsphereK3s,
 		modules.CustomEC2RKE1,
 		modules.CustomEC2RKE2,
+		modules.CustomEC2RKE2Windows,
 		modules.CustomEC2K3s,
 		modules.AirgapRKE1,
 		modules.AirgapRKE2,
@@ -54,11 +55,5 @@ func verifyModule(module string) bool {
 		modules.ImportEC2K3s,
 	}
 
-	for _, supportedModule := range supportedModules {
-		if module == supportedModule {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supportedModules, module)
 }

@@ -120,7 +120,6 @@ type Standalone struct {
 	BootstrapPassword              string `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
 	CertManagerVersion             string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
 	K3SVersion                     string `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
-	ProxyRancher                   bool   `json:"proxyRancher,omitempty" yaml:"proxyRancher,omitempty"`
 	RancherAgentImage              string `json:"rancherAgentImage,omitempty" yaml:"rancherAgentImage,omitempty"`
 	RancherChartRepository         string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
 	RancherHostname                string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
@@ -130,6 +129,8 @@ type Standalone struct {
 	OSUser                         string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
 	OSGroup                        string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
 	RKE2Version                    string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
+	UpgradeAirgapRancher           bool   `json:"upgradeAirgapRancher,omitempty" yaml:"upgradeAirgapRancher,omitempty"`
+	UpgradeProxyRancher            bool   `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
 	UpgradedRancherChartRepository string `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`
 	UpgradedRancherImage           string `json:"upgradedRancherImage,omitempty" yaml:"upgradedRancherImage,omitempty"`
 	UpgradedRancherAgentImage      string `json:"upgradedRancherAgentImage,omitempty" yaml:"upgradedRancherAgentImage,omitempty"`
@@ -138,11 +139,12 @@ type Standalone struct {
 }
 
 type StandaloneRegistry struct {
-	AssetsPath       string `json:"assetsPath,omitempty" yaml:"assetsPath,omitempty"`
-	Authenticated    bool   `json:"authenticated,omitempty" yaml:"authenticated,omitempty"`
-	RegistryName     string `json:"registryName,omitempty" yaml:"registryName,omitempty"`
-	RegistryPassword string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
-	RegistryUsername string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
+	AssetsPath         string `json:"assetsPath,omitempty" yaml:"assetsPath,omitempty"`
+	Authenticated      bool   `json:"authenticated,omitempty" yaml:"authenticated,omitempty"`
+	RegistryName       string `json:"registryName,omitempty" yaml:"registryName,omitempty"`
+	RegistryPassword   string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
+	RegistryUsername   string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
+	UpgradedAssetsPath string `json:"upgradedAssetsPath,omitempty" yaml:"upgradedAssetsPath,omitempty"`
 }
 
 type TerraformConfig struct {
@@ -179,6 +181,8 @@ type TerraformConfig struct {
 	Proxy                               *Proxy                       `json:"proxy,omitempty" yaml:"proxy,omitempty"`
 	Standalone                          *Standalone                  `json:"standalone,omitempty" yaml:"standalone,omitempty"`
 	StandaloneRegistry                  *StandaloneRegistry          `json:"standaloneRegistry,omitempty" yaml:"standaloneRegistry,omitempty"`
+	TimeSleep                           string                       `json:"timeSleep,omitempty" yaml:"timeSleep,omitempty"`
+	WindowsPrivateKeyPath               string                       `json:"windowsPrivateKeyPath,omitempty" yaml:"windowsPrivateKeyPath,omitempty"`
 }
 
 type Scaling struct {
@@ -201,14 +205,15 @@ type Snapshots struct {
 type TerratestConfig struct {
 	KubernetesVersion         string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
 	LocalQaseReporting        bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
-	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
 	NodeCount                 int64      `json:"nodeCount,omitempty" yaml:"nodeCount,omitempty"`
 	Nodepools                 []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
-	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
 	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
+	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
 	SnapshotInput             Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
 	StandaloneLogging         bool       `json:"standaloneLogging,omitempty" yaml:"standaloneLogging,omitempty"`
 	TFLogging                 bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
+	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
+	WindowsNodeCount          int64      `json:"windowsNodeCount,omitempty" yaml:"windowsNodeCount,omitempty"`
 }
 
 // LoadTFPConfigs loads the TFP configurations from the provided map

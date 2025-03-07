@@ -4,8 +4,10 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	"github.com/zclconf/go-cty/cty"
@@ -18,6 +20,10 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 
 	rancher2ClusterV2BlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 	rancher2ClusterV2BlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
+
+	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
+		v2.SetProxyConfig(rancher2ClusterV2BlockBody, terraformConfig)
+	}
 
 	rkeConfigBlock := rancher2ClusterV2BlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
@@ -41,6 +47,16 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 		registryBlockBody := registryBlock.Body()
 
 		v2.SetPrivateRegistryConfig(registryBlockBody, terraformConfig)
+	}
+
+	if terraformConfig.Module == modules.CustomEC2RKE2Windows {
+		dependsOnBlock := `[` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows]`
+
+		server := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnBlock)},
+		}
+
+		rancher2ClusterV2BlockBody.SetAttributeRaw(defaults.DependsOn, server)
 	}
 
 	return nil

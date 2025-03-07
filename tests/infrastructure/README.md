@@ -29,6 +29,7 @@ rancher:
 #######################
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  resourcePrefix: ""
   ##########################################
   # STANDALONE CONFIG - INFRASTRUCTURE SETUP
   ##########################################
@@ -39,6 +40,7 @@ terraform:
     ami: ""
     awsKeyName: ""
     awsInstanceType: ""
+    awsSecurityGroups: [""]
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
@@ -48,7 +50,6 @@ terraform:
     prefix: ""
     awsUser: ""
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: "5m"
   ###################################
   # STANDALONE CONFIG - RANCHER SETUP
@@ -90,6 +91,7 @@ See below an example config on setting up an air-gapped Rancher server powered b
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -102,12 +104,12 @@ terraform:
     awsZoneLetter: ""
     awsRootSize: 100
     awsRoute53Zone: ""
+    awsSecurityGroups: [""]
     awsSecurityGroupNames: [""]
     awsUser: ""
     region: ""
     registryRootSize: 500
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: "5m"
   standalone:
     airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
@@ -115,13 +117,12 @@ terraform:
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
-    primeRancherAgentImage: ""                    # OPTIONAL - fill out only if you are using Rancher Prime
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
-    stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
@@ -151,6 +152,7 @@ See below an example config on setting up a Rancher server behind a proxy, power
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -161,16 +163,17 @@ terraform:
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
+    awsSecurityGroups: [""]
     awsRootSize: 100
     awsRoute53Zone: ""
     region: ""
     awsUser: ""
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: "5m"
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
@@ -179,7 +182,6 @@ terraform:
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
-    stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
 ```
 
@@ -202,8 +204,8 @@ See below an example config on setting up a standalone RKE1 cluster:
 
 ```yaml
 terraform:
-  hostnamePrefix: ""
   privateKeyPath: ""
+  resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -243,8 +245,8 @@ See below an example config on setting up a standalone RKE2 cluster:
 
 ```yaml
 terraform:
-  hostnamePrefix: ""
   privateKeyPath: ""
+  resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -253,6 +255,7 @@ terraform:
     awsKeyName: ""
     awsInstanceType: ""
     region: ""
+    awsSecurityGroups: [""]
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
@@ -260,18 +263,16 @@ terraform:
     awsRoute53Zone: ""
     awsUser: ""
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: ""
   standalone:
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
-    primeRancherAgentImage: ""                    # OPTIONAL - fill out only if you are using Rancher Prime
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
-    stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
@@ -296,8 +297,8 @@ See below an example config on setting up a standalone airgapped RKE2 cluster:
 
 ```yaml
 terraform:
-  hostnamePrefix: ""
   privateKeyPath: ""
+  resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -306,6 +307,7 @@ terraform:
     awsKeyName: ""
     awsInstanceType: ""
     region: ""
+    awsSecurityGroups: [""]
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
@@ -314,19 +316,17 @@ terraform:
     awsUser: ""
     registryRootSize: 500
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: ""
   standalone:
     airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
-    primeRancherAgentImage: ""                    # OPTIONAL - fill out only if you are using Rancher Prime
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
-    stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
@@ -351,8 +351,8 @@ See below an example config on setting up a standalone K3S cluster:
 
 ```yaml
 terraform:
-  hostnamePrefix: ""
   privateKeyPath: ""
+  resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -361,6 +361,7 @@ terraform:
     awsKeyName: ""
     awsInstanceType: ""
     region: ""
+    awsSecurityGroups: [""]
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
@@ -368,7 +369,6 @@ terraform:
     awsRoute53Zone: ""
     awsUser: ""
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: ""
   standalone:
     k3sVersion: ""                                # REQUIRED - the format MUST be in `v1.xx.x+k3s1` (i.e. v1.31.4+k3s1)

@@ -2,17 +2,20 @@ package provisioning
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -20,7 +23,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ProvisionTestSuite struct {
+type ProvisionCustomTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
@@ -31,7 +34,7 @@ type ProvisionTestSuite struct {
 	terraformOptions *terraform.Options
 }
 
-func (p *ProvisionTestSuite) SetupSuite() {
+func (p *ProvisionCustomTestSuite) SetupSuite() map[string]any {
 	testSession := session.NewSession()
 	p.session = testSession
 
@@ -51,25 +54,35 @@ func (p *ProvisionTestSuite) SetupSuite() {
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
 
-	provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+	return p.cattleConfig
 }
 
-func (p *ProvisionTestSuite) TestTfpProvision() {
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-
+func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 	tests := []struct {
-		name      string
-		nodeRoles []config.Nodepool
+		name   string
+		module string
 	}{
-		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated},
+		{"Custom TFP RKE1", "ec2_rke1_custom"},
+		{"Custom TFP RKE2", "ec2_rke2_custom"},
+		{"Custom TFP RKE2 Windows", "ec2_rke2_windows_custom"},
+		{"Custom TFP K3S", "ec2_k3s_custom"},
 	}
 
 	for _, tt := range tests {
-		terratestConfig := *p.terratestConfig
-		terratestConfig.Nodepools = tt.nodeRoles
+		cattleConfig := p.SetupSuite()
+		configMap := []map[string]any{cattleConfig}
 
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
+		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 
+		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		terraform := new(config.TerraformConfig)
+		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
+
+		terratest := new(config.TerratestConfig)
+		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
@@ -79,11 +92,13 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			configMap := []map[string]any{p.cattleConfig}
-
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &terratestConfig, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
+
+			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+				clusterIDs = provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, true)
+				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
+			}
 		})
 	}
 
@@ -92,38 +107,6 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	}
 }
 
-func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
-	tests := []struct {
-		name string
-	}{
-		{config.StandardClientName.String()},
-	}
-
-	for _, tt := range tests {
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
-
-		testUser, testPassword := configs.CreateTestCredentials()
-
-		p.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
-			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
-
-			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
-			require.NoError(p.T(), err)
-
-			configMap := []map[string]any{p.cattleConfig}
-
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, p.terraformOptions, configMap, false)
-			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
-		})
-	}
-
-	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
-	}
-}
-
-func TestTfpProvisionTestSuite(t *testing.T) {
-	suite.Run(t, new(ProvisionTestSuite))
+func TestTfpProvisionCustomTestSuite(t *testing.T) {
+	suite.Run(t, new(ProvisionCustomTestSuite))
 }

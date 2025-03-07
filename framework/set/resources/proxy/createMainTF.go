@@ -59,8 +59,6 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	rke2ServerTwoPublicDNS := terraform.Output(t, terraformOptions, rke2ServerTwoPublicDNS)
 	rke2ServerThreePublicDNS := terraform.Output(t, terraformOptions, rke2ServerThreePublicDNS)
 
-	terraform.InitAndApply(t, terraformOptions)
-
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")
 	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS)

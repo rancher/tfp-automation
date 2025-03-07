@@ -29,8 +29,8 @@ rancher:
 # TERRAFORM CONFIG
 #######################
 terraform:
-  hostnamePrefix: ""                                # REQUIRED - fill with desired value
   privateKeyPath: ""                                # REQUIRED - specify private key that will be used to access created instances
+  resourcePrefix: ""                                # REQUIRED - fill with desired value
   ##########################################
   # STANDALONE CONFIG - INFRASTRUCTURE SETUP
   ##########################################
@@ -45,6 +45,7 @@ terraform:
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
+    awsSecurityGroups: [""]
     awsRootSize: 100
     awsRoute53Zone: ""
     region: ""

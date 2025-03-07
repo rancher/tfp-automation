@@ -35,19 +35,13 @@ rancher:
 # TERRAFORM CONFIG
 #######################
 terraform:
-  cloudCredentialName: ""                         # REQUIRED - fill with desired value
+  cni: ""                                         # REQUIRED - fill with desired value
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
-  hostnamePrefix: ""                              # REQUIRED - fill with desired value
-  machineConfigName: ""                           # REQUIRED - fill with desired value
-  module: ""                                      # REQUIRED - leave this field empty as shown
-  cni: ""                                         # REQUIRED - fill with desired value
-  nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   privateRegistries:
     insecure: true
-    url: ""                                       # LEAVE BLANK - will be set during the test
-    systemDefaultRegistry: ""                     # LEAVE BLANK - will be set during the test
+  resourcePrefix: ""                              # REQUIRED - fill with desired value
   ##########################################
   # INFRASTRUCTURE / CUSTOM CLUSTER SETUP
   ##########################################
@@ -58,6 +52,7 @@ terraform:
     ami: ""
     awsKeyName: ""
     awsInstanceType: ""
+    awsSecurityGroups: [""]
     awsSecurityGroupNames: [""]
     awsSubnetID: ""
     awsVpcID: ""
@@ -68,7 +63,6 @@ terraform:
     awsUser: ""
     registryRootSize: 500
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: "5m"
   ###################################
   # STANDALONE CONFIG - RANCHER SETUP
@@ -106,7 +100,8 @@ export AWS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap --junitfile results.xml --jsonfile results.json -- -timeout=9h -v -run "TestTfpAirgapProvisioningTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap --junitfile results.xml --jsonfile results.json -- -timeout=9h -v -run "TestTfpAirgapProvisioningTestSuite$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/airgap --junitfile results.xml --jsonfile results.json -- -timeout=9h -v -run "TestTfpAirgapUpgradeRancherTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 

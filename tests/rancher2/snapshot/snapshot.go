@@ -96,7 +96,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	terraformOptions *terraform.Options, configMap []map[string]any) (*apisV1.Cluster, string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
 	terratestConfig.SnapshotInput.CreateSnapshot = true
 
-	_, err := framework.ConfigTF(nil, testUser, testPassword, "", configMap)
+	_, err := framework.ConfigTF(nil, testUser, testPassword, "", configMap, false)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -131,7 +131,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 	terratestConfig.SnapshotInput.RestoreSnapshot = true
 	terratestConfig.SnapshotInput.SnapshotName = snapshotName
 
-	_, err := framework.ConfigTF(nil, testUser, testPassword, "", configMap)
+	_, err := framework.ConfigTF(nil, testUser, testPassword, "", configMap, false)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -192,7 +192,7 @@ func upgradeCluster(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	terratestConfig.KubernetesVersion = clusterObject.Spec.KubernetesVersion
 	terratestConfig.SnapshotInput.CreateSnapshot = false
 
-	_, err = framework.ConfigTF(nil, testUser, testPassword, "", configMap)
+	_, err = framework.ConfigTF(nil, testUser, testPassword, "", configMap, false)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

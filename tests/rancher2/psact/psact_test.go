@@ -85,7 +85,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 
 			configMap := []map[string]any{p.cattleConfig}
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &terratestConfig, testUser, testPassword, p.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &terratestConfig, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyClusterPSACT(p.T(), p.client, clusterIDs)
 		})

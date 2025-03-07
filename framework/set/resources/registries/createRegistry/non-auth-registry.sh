@@ -39,21 +39,26 @@ action() {
     fi
 }
 
-echo "Creating a self-signed certificate..."
-sudo mkdir -p /home/${USER}/certs
-sudo openssl req -newkey rsa:4096 -nodes -sha256 -keyout /home/${USER}/certs/domain.key -addext "subjectAltName = DNS:${HOST}" -x509 -days 365 -out /home/${USER}/certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
+echo "Checking if the private registry already exists..."
+if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
+    echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
+else
+    echo "Creating a self-signed certificate..."
+    sudo mkdir -p /home/${USER}/certs
+    sudo openssl req -newkey rsa:4096 -nodes -sha256 -keyout /home/${USER}/certs/domain.key -addext "subjectAltName = DNS:${HOST}" -x509 -days 365 -out /home/${USER}/certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
 
-echo "Copying the certificate to the /etc/docker/certs.d/${HOST} directory..."
-sudo mkdir -p /etc/docker/certs.d/${HOST}
-sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
+    echo "Copying the certificate to the /etc/docker/certs.d/${HOST} directory..."
+    sudo mkdir -p /etc/docker/certs.d/${HOST}
+    sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
 
-echo "Creating a private registry..."
-sudo docker run -d --restart=always --name "${REGISTRY_NAME}" -v /home/${USER}/certs:/certs \
-                                                              -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
-                                                              -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
-                                                              -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
-                                                              -p 443:443 \
-                                                              registry:2
+    echo "Creating a private registry..."
+    sudo docker run -d --restart=always --name "${REGISTRY_NAME}" -v /home/${USER}/certs:/certs \
+                                                                  -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+                                                                  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+                                                                  -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+                                                                  -p 443:443 \
+                                                                  registry:2
+fi
 
 sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
 sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-save-images.sh -O /home/${USER}/rancher-save-images.sh
