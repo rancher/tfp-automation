@@ -28,32 +28,19 @@ In no particular order, see an example below:
 rancher:
   host: ""                                        # REQUIRED - fill out with the expected Rancher server URL
   adminPassword: ""                               # REQUIRED - this is the same as the bootstrapPassword below, make sure they match
-  adminToken: ""                                  # REQUIRED - leave this field empty as shown
   insecure: true                                  # REQUIRED - leave this as true
 #######################
 # TERRAFORM CONFIG
 #######################
 terraform:
-  cloudCredentialName: ""                         # REQUIRED - fill with desired value
+  cni: ""                                         # REQUIRED - fill with desired value
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
-  hostnamePrefix: ""                              # REQUIRED - fill with desired value
-  machineConfigName: ""                           # REQUIRED - fill with desired value
-  module: ""                                      # REQUIRED - leave this field empty as shown
-  cni: ""                                         # REQUIRED - fill with desired value
-  nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  ###########################
-  # DOWNSTREAM CLUSTER CONFIG
-  ###########################
-  linodeCredentials:
-    linodeToken: ""
-  linodeConfig:
-    linodeImage: ""
-    region: ""
-    linodeRootPass: ""
+  resourcePrefix: ""                              # REQUIRED - fill with desired value
+  windowsPrivateKeyPath: ""                       # REQUIRED - specify Windows private key that will be used to access created instances
   ##########################################
-  # STANDALONE CONFIG - INFRASTRUCTURE SETUP
+  # STANDALONE / RANCHER CLUSTER CONFIG
   ##########################################
   awsCredentials:
     awsAccessKey: ""
@@ -67,12 +54,16 @@ terraform:
     awsZoneLetter: ""
     awsRootSize: 100
     awsRoute53Zone: ""
+    awsSecurityGroups: [""]
     awsSecurityGroupNames: [""]
     region: ""
     awsUser: ""
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: "5m"
+    windowsAMI: ""
+    windowsAwsUser: "administrator"
+    windowsInstanceType: ""
+    windowsKeyName: ""
   ###################################
   # STANDALONE CONFIG - RANCHER SETUP
   ###################################
@@ -89,6 +80,11 @@ terraform:
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
     stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
+#######################
+# TERRATEST CONFIG
+#######################
+  nodeCount: 3
+  windowsNodeCount: 1
 ```
 
 Before running, be sure to run the following commands:

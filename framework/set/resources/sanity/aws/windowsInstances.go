@@ -10,28 +10,32 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// CreateAirgappedAWSInstances is a function that will set the AWS instances configurations in the main.tf file.
-func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, hostnamePrefix string) {
-	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, hostnamePrefix})
+// CreateWindowsAWSInstances is a function that will set the Windows AWS instances configurations in the main.tf file.
+func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+	hostnamePrefix string) {
+	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, hostnamePrefix + "-windows"})
 	configBlockBody := configBlock.Body()
 
-	configBlockBody.SetAttributeValue(defaults.AssociatePublicIPAddress, cty.BoolVal(false))
-	configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))
-	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
+	configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.WindowsNodeCount))
+
+	configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.WindowsAMI))
+	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.WindowsInstanceType))
 	configBlockBody.SetAttributeValue(defaults.SubnetId, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))
 
 	awsSecGroupsExpression := fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroups[0])
+
 	awsSecGroupsList := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(awsSecGroupsExpression)},
 	}
 
 	configBlockBody.SetAttributeRaw(defaults.VpcSecurityGroupIds, awsSecGroupsList)
-	configBlockBody.SetAttributeValue(defaults.KeyName, cty.StringVal(terraformConfig.AWSConfig.AWSKeyName))
+	configBlockBody.SetAttributeValue(defaults.KeyName, cty.StringVal(terraformConfig.AWSConfig.WindowsKeyName))
 
 	configBlockBody.AppendNewline()
 
 	rootBlockDevice := configBlockBody.AppendNewBlock(defaults.RootBlockDevice, nil)
 	rootBlockDeviceBody := rootBlockDevice.Body()
+
 	rootBlockDeviceBody.SetAttributeValue(defaults.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))
 
 	configBlockBody.AppendNewline()
@@ -39,7 +43,7 @@ func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *confi
 	tagsBlock := configBlockBody.AppendNewBlock(defaults.Tags+" =", nil)
 	tagsBlockBody := tagsBlock.Body()
 
-	expression := fmt.Sprintf(`"%s`, terraformConfig.ResourcePrefix+"-"+hostnamePrefix+`"`)
+	expression := fmt.Sprintf(`"%s-windows-${`+defaults.Count+`.`+defaults.Index+`}"`, terraformConfig.ResourcePrefix)
 	tags := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 	}
@@ -52,20 +56,30 @@ func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *confi
 	connectionBlockBody := connectionBlock.Body()
 
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
-	hostExpression := defaults.Self + "." + defaults.PrivateIp
+	hostExpression := defaults.Self + "." + defaults.PublicIp
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
 
 	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
+	connectionBlockBody.SetAttributeValue(defaults.TargetPlatform, cty.StringVal(defaults.Windows))
 
-	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+	keyPathExpression := defaults.File + `("` + terraformConfig.WindowsPrivateKeyPath + `")`
 	keyPath := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 	}
 
 	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
 	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
+
+	configBlockBody.AppendNewline()
+
+	provisionerBlock := configBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlockBody := provisionerBlock.Body()
+
+	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		cty.StringVal("echo Connected!!!"),
+	}))
 }

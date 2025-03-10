@@ -51,10 +51,6 @@ func (p *TfpProxyUpgradeRancherTestSuite) TearDownSuite() {
 
 func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-	require.NoError(p.T(), err)
-
-	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath)
@@ -78,6 +74,10 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 	p.session = testSession
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+	require.NoError(p.T(), err)
+
+	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	adminUser := &management.User{
@@ -98,6 +98,10 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 	p.client.RancherConfig.AdminPassword = p.rancherConfig.AdminPassword
 	p.client.RancherConfig.Host = p.rancherConfig.Host
 
+	operations.ReplaceValue([]string{"rancher", "adminToken"}, p.rancherConfig.AdminToken, configMap[0])
+	operations.ReplaceValue([]string{"rancher", "adminPassword"}, p.rancherConfig.AdminPassword, configMap[0])
+	operations.ReplaceValue([]string{"rancher", "host"}, p.rancherConfig.Host, configMap[0])
+
 	err = pipeline.PostRancherInstall(p.client, p.client.RancherConfig.AdminPassword)
 	require.NoError(p.T(), err)
 
@@ -108,11 +112,13 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 	return p.cattleConfig
 }
 
-func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyProvisioning() {
+func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 	p.provisionAndVerifyCluster("Pre-Upgrade Proxy ")
 
+	p.terraformConfig.Standalone.UpgradeProxyRancher = true
+
 	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath)
-	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyNode, p.proxyServerNodeOne)
+	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyServerNodeOne, p.proxyNode, "", "")
 	require.NoError(p.T(), err)
 
 	p.provisionAndVerifyCluster("Post-Upgrade Proxy ")
@@ -158,7 +164,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string)
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 		})
 	}

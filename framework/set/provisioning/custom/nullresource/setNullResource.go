@@ -57,6 +57,15 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 
 	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
 
+	if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s ||
+		terraformConfig.Module == modules.CustomEC2RKE2Windows {
+		regCommand := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Local + `.` + terraformConfig.ResourcePrefix + "_" + defaults.InsecureNodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
+		}
+
+		provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
+	}
+
 	if terraformConfig.Module == modules.CustomEC2RKE1 {
 		clusterExpression := `[` + defaults.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
 		cluster := hclwrite.Tokens{
@@ -66,7 +75,8 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, cluster)
 	}
 
-	if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s {
+	if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s ||
+		terraformConfig.Module == modules.CustomEC2RKE2Windows {
 		clusterV2Expression := `[` + defaults.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
 		clusterV2 := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(clusterV2Expression)},

@@ -48,6 +48,7 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
+	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
@@ -60,12 +61,14 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	rke2ServerThreePrivateIP := terraform.Output(i.T(), terraformOptions, rke2ServerThreePrivateIP)
 
 	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating registry...")
 	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, i.terraformConfig, registryPublicDNS, nonAuthRegistry)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating airgap RKE2 cluster...")
 	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, i.terraformConfig, rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	require.NoError(i.T(), err)
 

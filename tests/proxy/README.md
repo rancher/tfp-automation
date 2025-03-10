@@ -35,17 +35,14 @@ rancher:
 # TERRAFORM CONFIG
 #######################
 terraform:
-  cloudCredentialName: ""                         # REQUIRED - fill with desired value
+  cni: ""                                         # REQUIRED - fill with desired value
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
-  hostnamePrefix: ""                              # REQUIRED - fill with desired value
-  machineConfigName: ""                           # REQUIRED - fill with desired value
-  module: ""                                      # REQUIRED - leave this field empty as shown
-  cni: ""                                         # REQUIRED - fill with desired value
-  nodeTemplateName: ""                            # REQUIRED - fill with desired value
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   proxy:
     proxyBastion: ""                              # REQUIRED - this will be set/unset during testing
+  resourcePrefix: ""                              # REQUIRED - fill with desired value
+  windowsPrivateKeyPath: ""                       # REQUIRED - specify Windows private key that will be used to access created instances
   ########################
   # INFRASTRUCTURE SETUP
   ########################
@@ -56,6 +53,7 @@ terraform:
     ami: ""
     awsKeyName: ""
     awsInstanceType: ""
+    awsSecurityGroups: [""]
     awsSecurityGroupNames: [""]
     awsSubnetID: ""
     awsVpcID: ""
@@ -65,15 +63,17 @@ terraform:
     region: ""
     awsUser: ""
     sshConnectionType: "ssh"
-    standaloneSecurityGroupNames: [""]
     timeout: "5m"
+    windowsAMI: ""
+    windowsAwsUser: "administrator"
+    windowsInstanceType: ""
+    windowsKeyName: ""
   ###################################
   # STANDALONE CONFIG - RANCHER SETUP
   ###################################
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    proxyRancher: true                            # OPTIONAL - Set as true if you are upgrading the Proxy Rancher setup
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
@@ -87,6 +87,11 @@ terraform:
     upgradedRancherChartRepository: ""            # OPTIONAL - set if upgraded. Fill with desired value. Must end with a trailing /
     upgradedRancherImage: ""                      # OPTIONAL - set if upgraded. Fill with desired value
     upgradedRancherTagVersion: ""                 # OPTIONAL - set if upgraded. Fill with desired value
+#######################
+# TERRATEST CONFIG
+#######################
+  nodeCount: 3
+  windowsNodeCount: 1
 ```
 
 Before running, be sure to run the following commands:

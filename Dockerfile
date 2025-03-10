@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM registry.suse.com/bci/golang:1.23
 
 ENV GOPATH /root/go
 ENV PATH ${PATH}:/root/go/bin
@@ -31,7 +31,9 @@ ENV RANCHER2_PROVIDER_VERSION=${RANCHER2_PROVIDER_VERSION}
 ENV LOCALS_PROVIDER_VERSION=${LOCALS_PROVIDER_VERSION}
 ENV AWS_PROVIDER_VERSION=${AWS_PROVIDER_VERSION}
 
-RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -q && apt-get update > /dev/null && apt-get install unzip > /dev/null && \
+RUN zypper install -y openssh wget unzip > /dev/null
+
+RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -q && zypper update && \
     unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip > /dev/null && \ 
     rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip > /dev/null && \
     chmod a+x terraform > /dev/null && mv terraform /usr/local/bin/terraform > /dev/null
@@ -39,14 +41,15 @@ RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform
 ARG CONFIG_FILE
 COPY $CONFIG_FILE /config.yml
 
-ARG PEM_FILE
-COPY $PEM_FILE /key.pem
-RUN echo $PEM_FILE > key.pem && chmod 600 key.pem
+RUN mkdir /root/.ssh && chmod 600 .ssh/jenkins-*
+RUN for pem_file in .ssh/jenkins-*; do \
+      ssh-keygen -f "$pem_file" -y > "/root/.ssh/$(basename "$pem_file").pub"; \
+    done
 
 RUN if [[ -z '$EXTERNAL_ENCODED_VPN' ]] ; then \
       echo 'no vpn provided' ; \
     else \
-      apt-get update > /dev/null && apt-get -y install sudo openvpn net-tools > /dev/null; \
+      zypper update > /dev/null && zypper install -y sudo openvpn net-tools > /dev/null; \
     fi;
 
 RUN if [[ "$RANCHER2_PROVIDER_VERSION" == *"-rc"* ]]; then \
