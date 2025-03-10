@@ -20,7 +20,7 @@ replace (
 )
 
 require (
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	k8s.io/api v0.31.1
 	k8s.io/apimachinery v0.31.1
 	k8s.io/apiserver v0.31.1 // indirect
@@ -30,9 +30,9 @@ require (
 	github.com/antihax/optional v1.0.0
 	github.com/gruntwork-io/terratest v0.42.0
 	github.com/rancher/norman v0.5.1
-	github.com/rancher/rancher v0.0.0-20250122213954-464e5c27fe8d
+	github.com/rancher/rancher v0.0.0-20250307011021-1d8cb65e9395
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20250106223550-9350f4861af3
+	github.com/rancher/shepherd v0.0.0-20250225165610-3b5c95e0e613
 	github.com/sirupsen/logrus v1.9.3
 )
 
@@ -44,7 +44,9 @@ require (
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
+	github.com/kr/fs v0.1.0 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
+	github.com/pkg/sftp v1.13.5 // indirect
 	github.com/rancher/wrangler/v3 v3.1.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.54.0 // indirect
@@ -92,15 +94,15 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/zclconf/go-cty v1.14.1
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/crypto v0.32.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/api v0.201.0 // indirect
 	google.golang.org/genproto v0.0.0-20241007155032-5fefd90f89a9 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
-	google.golang.org/protobuf v1.35.1 // indirect
+	google.golang.org/protobuf v1.36.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -150,11 +152,11 @@ require (
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rancher/aks-operator v1.10.0 // indirect
-	github.com/rancher/apiserver v0.0.0-20241009200134-5a4ecca7b988 // indirect
-	github.com/rancher/eks-operator v1.10.0 // indirect
+	github.com/rancher/apiserver v0.5.1 // indirect
+	github.com/rancher/eks-operator v1.11.0-rc.2 // indirect
 	github.com/rancher/fleet/pkg/apis v0.12.0-alpha.2 // indirect
 	github.com/rancher/gke-operator v1.10.0 // indirect
-	github.com/rancher/lasso v0.0.0-20241202185148-04649f379358 // indirect
+	github.com/rancher/lasso v0.2.0 // indirect
 	github.com/rancher/rke v1.7.0-rc.5 // indirect
 	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20240301001845-4eacc2dabbde // indirect
 	github.com/rancher/wrangler v1.1.2 // indirect
@@ -165,7 +167,7 @@ require (
 	go.qase.io/client v0.0.0-20231114201952-65195ec001fa
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240930140551-af27646dc61f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241007155032-5fefd90f89a9 // indirect
@@ -189,3 +191,7 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+replace github.com/rancher/rancher => github.com/susesgartner/rancher v0.0.0-20250211174056-9f6049f70998
+
+replace github.com/rancher/shepherd => github.com/susesgartner/shepherd v0.0.0-20250211174743-c7954faec9c1
