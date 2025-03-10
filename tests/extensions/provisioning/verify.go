@@ -4,16 +4,16 @@ import (
 	"strings"
 	"testing"
 
-	clusterActions "github.com/rancher/rancher/tests/v2/actions/clusters"
-	"github.com/rancher/rancher/tests/v2/actions/psact"
-	"github.com/rancher/rancher/tests/v2/actions/registries"
-	"github.com/rancher/rancher/tests/v2/actions/workloads/cronjob"
-	"github.com/rancher/rancher/tests/v2/actions/workloads/daemonset"
-	"github.com/rancher/rancher/tests/v2/actions/workloads/deployment"
-	"github.com/rancher/rancher/tests/v2/actions/workloads/statefulset"
 	"github.com/rancher/shepherd/clients/rancher"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	"github.com/rancher/tests/actions/psact"
+	"github.com/rancher/tests/actions/registries"
+	"github.com/rancher/tests/actions/workloads/cronjob"
+	"github.com/rancher/tests/actions/workloads/daemonset"
+	"github.com/rancher/tests/actions/workloads/deployment"
+	"github.com/rancher/tests/actions/workloads/statefulset"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	waitState "github.com/rancher/tfp-automation/framework/wait/state"
@@ -155,13 +155,13 @@ func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, t
 	switch module {
 	case clustertypes.AKS:
 		var aksConfig = cluster.AKSConfig
-		require.Equal(t, *aksConfig.NodePools[0].Count, cluster.NodeCount)
+		require.Equal(t, (*aksConfig.NodePools)[0].Count, cluster.NodeCount)
 	case clustertypes.EKS:
 		var eksConfig = cluster.EKSConfig
-		require.Equal(t, *eksConfig.NodeGroups[0].DesiredSize, cluster.NodeCount)
+		require.Equal(t, (*eksConfig.NodeGroups)[0].DesiredSize, cluster.NodeCount)
 	case clustertypes.GKE:
 		var gkeConfig = cluster.GKEConfig
-		require.Equal(t, *gkeConfig.NodePools[0].InitialNodeCount, cluster.NodeCount)
+		require.Equal(t, (*gkeConfig.NodePools)[0].InitialNodeCount, cluster.NodeCount)
 	case clustertypes.RKE1, clustertypes.RKE2, clustertypes.K3S:
 		require.Equal(t, nodeCount, cluster.NodeCount)
 	default:
