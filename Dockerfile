@@ -33,7 +33,7 @@ ENV AWS_PROVIDER_VERSION=${AWS_PROVIDER_VERSION}
 
 RUN zypper install -y openssh wget unzip > /dev/null
 
-RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -q && zypper update && \
+RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -q && zypper --non-interactive update && \
     unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip > /dev/null && \ 
     rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip > /dev/null && \
     chmod a+x terraform > /dev/null && mv terraform /usr/local/bin/terraform > /dev/null
@@ -49,7 +49,7 @@ RUN for pem_file in .ssh/jenkins-*; do \
 RUN if [[ -z '$EXTERNAL_ENCODED_VPN' ]] ; then \
       echo 'no vpn provided' ; \
     else \
-      zypper update > /dev/null && zypper install -y sudo openvpn net-tools > /dev/null; \
+      zypper --non-interactive update > /dev/null && zypper install -y sudo openvpn net-tools > /dev/null; \
     fi;
 
 RUN if [[ "$RANCHER2_PROVIDER_VERSION" == *"-rc"* ]]; then \
