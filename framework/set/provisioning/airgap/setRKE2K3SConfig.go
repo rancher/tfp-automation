@@ -3,6 +3,7 @@ package airgap
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
@@ -21,11 +22,12 @@ const (
 	airgapNodeOne       = "airgap_node1"
 	airgapNodeTwo       = "airgap_node2"
 	airgapNodeThree     = "airgap_node3"
+	airgapWindowsNode   = "airgap_windows_node"
 	bastion             = "bastion"
 	copyScriptToBastion = "copy_script_to_bastion"
 )
 
-// // SetAirgapRKE2K3s is a function that will set the airgap RKE2/K3s cluster configurations in the main.tf file.
+// SetAirgapRKE2K3s is a function that will set the airgap RKE2/K3s cluster configurations in the main.tf file.
 func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
 	v2.SetRancher2ClusterV2(rootBody, terraformConfig, terratestConfig)
@@ -36,7 +38,7 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 
 	// Based on GH issue https://github.com/rancher/rancher/issues/45607, K3s clusters will only have one node.
 	instances := []string{}
-	if terraformConfig.Module == modules.AirgapRKE2 {
+	if terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapRKE2Windows {
 		instances = []string{airgapNodeOne, airgapNodeTwo, airgapNodeThree}
 	} else if terraformConfig.Module == modules.AirgapK3S {
 		instances = []string{airgapNodeOne}
@@ -44,6 +46,11 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 
 	for _, instance := range instances {
 		airgap.CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
+		rootBody.AppendNewline()
+	}
+
+	if strings.Contains(terraformConfig.Module, modules.AirgapRKE2Windows) {
+		airgap.CreateAirgappedWindowsAWSInstances(rootBody, terraformConfig, airgapWindowsNode)
 		rootBody.AppendNewline()
 	}
 
@@ -63,7 +70,7 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 		return nil, err
 	}
 
-	registrationCommands, nodePrivateIPs := getRKE2K3sRegistrationCommands(terraformConfig)
+	registrationCommands, nodePrivateIPs := GetRKE2K3sRegistrationCommands(terraformConfig)
 
 	for _, instance := range instances {
 		var dependsOn []string
@@ -105,8 +112,8 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 	return file, nil
 }
 
-// getRKE2K3sRegistrationCommands is a helper function that will return the registration commands for the airgap nodes.
-func getRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig) (map[string]string, map[string]string) {
+// GetRKE2K3sRegistrationCommands is a helper function that will return the registration commands for the airgap nodes.
+func GetRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig) (map[string]string, map[string]string) {
 	commands := make(map[string]string)
 	nodePrivateIPs := make(map[string]string)
 
@@ -114,19 +121,23 @@ func getRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig) (ma
 	controlPlaneRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.ControlPlaneRoleFlag)
 	workerRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.WorkerRoleFlag)
 	allRolesRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.AllFlags)
+	windowsRegistrationCommand := fmt.Sprintf("${%s.%s_%s}", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureWindowsNodeCommand)
 
 	airgapNodeOnePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeOne, defaults.PrivateIp)
 	airgapNodeTwoPrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeTwo, defaults.PrivateIp)
 	airgapNodeThreePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeThree, defaults.PrivateIp)
+	airgapWindowsNodePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapWindowsNode, defaults.PrivateIp)
 
-	if terraformConfig.Module == modules.AirgapRKE2 {
+	if terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapRKE2Windows {
 		commands[airgapNodeOne] = etcdRegistrationCommand
 		commands[airgapNodeTwo] = controlPlaneRegistrationCommand
 		commands[airgapNodeThree] = workerRegistrationCommand
+		commands[airgapWindowsNode] = windowsRegistrationCommand
 
 		nodePrivateIPs[airgapNodeOne] = airgapNodeOnePrivateIP
 		nodePrivateIPs[airgapNodeTwo] = airgapNodeTwoPrivateIP
 		nodePrivateIPs[airgapNodeThree] = airgapNodeThreePrivateIP
+		nodePrivateIPs[airgapWindowsNode] = airgapWindowsNodePrivateIP
 	} else if terraformConfig.Module == modules.AirgapK3S {
 		commands[airgapNodeOne] = allRolesRegistrationCommand
 		nodePrivateIPs[airgapNodeOne] = airgapNodeOnePrivateIP

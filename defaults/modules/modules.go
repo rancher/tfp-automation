@@ -26,5 +26,6 @@ const (
 	VsphereK3s           = "vsphere_k3s"
 	AirgapRKE1           = "airgap_rke1"
 	AirgapRKE2           = "airgap_rke2"
+	AirgapRKE2Windows    = "airgap_rke2_windows"
 	AirgapK3S            = "airgap_k3s"
 )

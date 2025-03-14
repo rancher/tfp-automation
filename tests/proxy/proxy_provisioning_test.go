@@ -164,6 +164,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 	}{
 		{"Proxy RKE1", nodeRolesDedicated, "ec2_rke1"},
 		{"Proxy RKE2", nodeRolesDedicated, "ec2_rke2"},
+		{"Proxy RKE2 Windows", nil, "ec2_rke2_windows_custom"},
 		{"Proxy K3S", nodeRolesDedicated, "ec2_k3s"},
 	}
 
@@ -192,6 +193,11 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 
 			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+
+			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+				clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, true)
+				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+			}
 		})
 	}
 

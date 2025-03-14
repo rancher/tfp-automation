@@ -12,6 +12,10 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+const (
+	noProxy = "localhost,127.0.0.0/8,10.0.0.0/8,172.0.0.0/8,192.168.0.0/16,.svc,.cluster.local,cattle-system.svc,169.254.169.25"
+)
+
 // SetLocals is a function that will set the locals configurations in the main.tf file.
 func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, configMap []map[string]any, newFile *hclwrite.File, file *os.File, customClusterNames []string) (*os.File, error) {
 	localsBlock := rootBody.AppendNewBlock(defaults.Locals, nil)
@@ -53,12 +57,25 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 			}
 
 			localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
+
+			if terraformConfig.Module == modules.CustomEC2RKE2Windows && terraformConfig.Proxy.ProxyBastion != "" {
+				// Most Windows distros default to Powershell, but some may not. As such, this workaround does not assume
+				// that Powershell is the default shell. But set will work for cmd.exe and Powershell.
+				envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "set ")`, name)
+				curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)
+
+				proxyWindowsInsecureNodeCommand := hclwrite.Tokens{
+					{Type: hclsyntax.TokenIdent, Bytes: []byte(curlReplace)},
+				}
+
+				localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
+			}
 		}
 	} else {
 		//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
 		if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s ||
 			terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapK3S ||
-			terraformConfig.Module == modules.CustomEC2RKE2Windows {
+			terraformConfig.Module == modules.CustomEC2RKE2Windows || terraformConfig.Module == modules.AirgapRKE2Windows {
 			originalNodeCommandExpressionClusterV2 := defaults.ClusterV2 + "." + terraformConfig.ResourcePrefix + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
 			originalNodeCommand := hclwrite.Tokens{
 				{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpressionClusterV2)},
@@ -86,6 +103,19 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 			}
 
 			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
+
+			if terraformConfig.Module == modules.CustomEC2RKE2Windows && terraformConfig.Proxy.ProxyBastion != "" {
+				// Most Windows distros default to Powershell, but some may not. As such, this workaround does not assume
+				// that Powershell is the default shell. But set will work for cmd.exe and Powershell.
+				envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "set ")`, terraformConfig.ResourcePrefix)
+				curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)
+
+				proxyWindowsInsecureNodeCommand := hclwrite.Tokens{
+					{Type: hclsyntax.TokenIdent, Bytes: []byte(curlReplace)},
+				}
+
+				localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
+			}
 		}
 	}
 
