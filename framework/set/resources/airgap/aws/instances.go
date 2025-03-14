@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -20,12 +21,8 @@ func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *confi
 	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
 	configBlockBody.SetAttributeValue(defaults.SubnetId, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))
 
-	awsSecGroupsExpression := fmt.Sprintf(`["%s"]`, terraformConfig.AWSConfig.AWSSecurityGroups[0])
-	awsSecGroupsList := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(awsSecGroupsExpression)},
-	}
-
-	configBlockBody.SetAttributeRaw(defaults.VpcSecurityGroupIds, awsSecGroupsList)
+	securityGroups := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroups)
+	configBlockBody.SetAttributeRaw(defaults.VpcSecurityGroupIds, securityGroups)
 	configBlockBody.SetAttributeValue(defaults.KeyName, cty.StringVal(terraformConfig.AWSConfig.AWSKeyName))
 
 	configBlockBody.AppendNewline()

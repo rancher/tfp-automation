@@ -32,7 +32,7 @@ else
                                                                                  --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set proxy="http://${BASTION}:${PROXY_PORT}" \
-                                                                                 --set noProxy="${NO_PROXY}"
+                                                                                 --set noProxy="${NO_PROXY}" --devel
 fi
 
 echo "Waiting for Rancher to be rolled out"

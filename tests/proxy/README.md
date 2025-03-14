@@ -74,6 +74,7 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using Rancher Prime or staging registry
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
@@ -82,7 +83,6 @@ terraform:
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
-    stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
     upgradedRancherChartRepository: ""            # OPTIONAL - set if upgraded. Fill with desired value. Must end with a trailing /
     upgradedRancherImage: ""                      # OPTIONAL - set if upgraded. Fill with desired value

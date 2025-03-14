@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -15,6 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/proxy"
@@ -113,8 +115,6 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 }
 
 func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
-	p.provisionAndVerifyCluster("Pre-Upgrade Proxy ")
-
 	p.terraformConfig.Standalone.UpgradeProxyRancher = true
 
 	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath)
@@ -138,6 +138,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string)
 	}{
 		{"RKE1", nodeRolesDedicated, "ec2_rke1"},
 		{"RKE2", nodeRolesDedicated, "ec2_rke2"},
+		{"RKE2 Windows", nil, "ec2_rke2_windows_custom"},
 		{"K3S", nodeRolesDedicated, "ec2_k3s"},
 	}
 
@@ -166,6 +167,11 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string)
 
 			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+
+			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+				clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, true)
+				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+			}
 		})
 	}
 }
