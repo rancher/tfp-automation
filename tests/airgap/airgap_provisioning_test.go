@@ -2,6 +2,7 @@ package airgap
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -15,6 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
@@ -111,6 +113,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 	}{
 		{"Airgap RKE1", "airgap_rke1"},
 		{"Airgap RKE2", "airgap_rke2"},
+		{"Airgap RKE2 Windows", "airgap_rke2_windows"},
 		{"Airgap K3S", "airgap_k3s"},
 	}
 
@@ -140,6 +143,12 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
+
+			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
+				clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, true)
+				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+				provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
+			}
 		})
 	}
 
@@ -155,6 +164,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 	}{
 		{"Upgrading Airgap RKE1", "airgap_rke1"},
 		{"Upgrading Airgap RKE2", "airgap_rke2"},
+		{"Upgrading Airgap RKE2 Windows", "airgap_rke2_windows"},
 		{"Upgrading Airgap K3S", "airgap_k3s"},
 	}
 
@@ -184,6 +194,12 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
+
+			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
+				clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, true)
+				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+				provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
+			}
 
 			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)

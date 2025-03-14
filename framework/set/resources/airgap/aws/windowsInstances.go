@@ -11,14 +11,12 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// CreateWindowsAWSInstances is a function that will set the Windows AWS instances configurations in the main.tf file.
-func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	hostnamePrefix string) {
-	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, hostnamePrefix + "-windows"})
+// CreateAirgappedWindowsAWSInstances is a function that will set the Windows AWS instances configurations in the main.tf file.
+func CreateAirgappedWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, hostnamePrefix string) {
+	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, hostnamePrefix})
 	configBlockBody := configBlock.Body()
 
-	configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.WindowsNodeCount))
-
+	configBlockBody.SetAttributeValue(defaults.AssociatePublicIPAddress, cty.BoolVal(false))
 	configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.WindowsAMI))
 	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.WindowsInstanceType))
 	configBlockBody.SetAttributeValue(defaults.SubnetId, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))
@@ -31,7 +29,6 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 
 	rootBlockDevice := configBlockBody.AppendNewBlock(defaults.RootBlockDevice, nil)
 	rootBlockDeviceBody := rootBlockDevice.Body()
-
 	rootBlockDeviceBody.SetAttributeValue(defaults.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))
 
 	configBlockBody.AppendNewline()
@@ -39,7 +36,7 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	tagsBlock := configBlockBody.AppendNewBlock(defaults.Tags+" =", nil)
 	tagsBlockBody := tagsBlock.Body()
 
-	expression := fmt.Sprintf(`"%s-windows-${`+defaults.Count+`.`+defaults.Index+`}"`, terraformConfig.ResourcePrefix)
+	expression := fmt.Sprintf(`"%s`, terraformConfig.ResourcePrefix+"-"+hostnamePrefix+`"`)
 	tags := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 	}
@@ -54,13 +51,12 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
 	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
-	hostExpression := defaults.Self + "." + defaults.PublicIp
+	hostExpression := defaults.Self + "." + defaults.PrivateIp
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
 
 	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
-	connectionBlockBody.SetAttributeValue(defaults.TargetPlatform, cty.StringVal(defaults.Windows))
 
 	keyPathExpression := defaults.File + `("` + terraformConfig.WindowsPrivateKeyPath + `")`
 	keyPath := hclwrite.Tokens{
@@ -69,13 +65,4 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 
 	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
 	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
-
-	configBlockBody.AppendNewline()
-
-	provisionerBlock := configBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
-	provisionerBlockBody := provisionerBlock.Body()
-
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("echo Connected!!!"),
-	}))
 }
