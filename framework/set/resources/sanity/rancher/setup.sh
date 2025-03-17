@@ -52,7 +52,7 @@ else
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 fi
 
 echo "Waiting for Rancher to be rolled out"

@@ -58,7 +58,7 @@ elif [ -n "$PRIME_RANCHER_AGENT_IMAGE" ]; then
                                                                                  --set systemDefaultRegistry=${REGISTRY} \
                                                                                  --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                  --set "extraEnv[0].value=${PRIME_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 
 else
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -66,7 +66,7 @@ else
                                                                                  --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set systemDefaultRegistry=${REGISTRY} \
-                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 fi
 
 echo "Waiting for Rancher to be rolled out"

@@ -32,3 +32,32 @@ func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *
 
 	return nil
 }
+
+// registerWindowsPrivateNodes is a function that will register the private  Windows nodes to the cluster
+func registerWindowsPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, bastionPublicIP, nodePrivateIP,
+	registrationCommand string) error {
+	privateKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
+	if err != nil {
+		return nil
+	}
+
+	windowsPrivateKey, err := os.ReadFile(terraformConfig.WindowsPrivateKeyPath)
+	if err != nil {
+		return nil
+	}
+
+	encodedPEMFile := base64.StdEncoding.EncodeToString([]byte(privateKey))
+	encodedWindowsPEMFile := base64.StdEncoding.EncodeToString([]byte(windowsPrivateKey))
+
+	newCommand := `\"` + registrationCommand + `\"`
+
+	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
+		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
+		{Type: hclsyntax.TokenStringLit, Bytes: []byte("/tmp/register-windows-nodes.sh " + encodedPEMFile + " " + encodedWindowsPEMFile + " " +
+			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " + terraformConfig.AWSConfig.WindowsAWSUser + " " +
+			bastionPublicIP + " " + nodePrivateIP + " " + newCommand + " " + terraformConfig.PrivateRegistries.SystemDefaultRegistry)},
+		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
+	})
+
+	return nil
+}

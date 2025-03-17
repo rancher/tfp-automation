@@ -64,7 +64,7 @@ else
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                  --set noProxy="${NO_PROXY}" \
-                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD}
+                                                                                 --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 fi
 
 echo "Waiting for Rancher to be rolled out"

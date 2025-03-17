@@ -114,10 +114,17 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 			if err != nil {
 				return clusterNames, err
 			}
-		case module == modules.AirgapRKE2 || module == modules.AirgapK3S:
+		case module == modules.AirgapRKE2 || module == modules.AirgapK3S || module == modules.AirgapRKE2Windows:
 			_, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, err
+			}
+
+			if isWindows {
+				file, err = airgap.SetAirgapRKE2Windows(client, rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
+				if err != nil {
+					return clusterNames, err
+				}
 			}
 		case module == modules.ImportEC2RKE1:
 			_, err = imported.SetImportedRKE1(rancherConfig, terraform, terratest, newFile, rootBody, file)

@@ -7,11 +7,11 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
+	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ const (
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig) (string, string, error) {
 	var file *os.File
-	file = OpenFile(file, keyPath)
+	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -59,7 +59,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	rke2ServerThreePrivateIP := terraform.Output(t, terraformOptions, rke2ServerThreePrivateIP)
 
 	logrus.Infof("Creating registry...")
-	file = OpenFile(file, keyPath)
+	file = sanity.OpenFile(file, keyPath)
 	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryPublicDNS, nonAuthRegistry)
 	if err != nil {
 		return "", "", err
@@ -67,7 +67,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	file = OpenFile(file, keyPath)
+	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
@@ -76,7 +76,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	file = OpenFile(file, keyPath)
+	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, registryPublicDNS)
 	if err != nil {
@@ -86,15 +86,4 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	return registryPublicDNS, rke2BastionPublicDNS, nil
-}
-
-// OpenFile is a helper function that will open the main.tf file.
-func OpenFile(file *os.File, keyPath string) *os.File {
-	file, err := os.Create(keyPath + configs.MainTF)
-	if err != nil {
-		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)
-		return nil
-	}
-
-	return file
 }
