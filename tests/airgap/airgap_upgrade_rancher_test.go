@@ -136,7 +136,6 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	}{
 		{"RKE1", "airgap_rke1"},
 		{"RKE2", "airgap_rke2"},
-		{"RKE2 Windows", "airgap_rke2_windows"},
 		{"K3S", "airgap_k3s"},
 	}
 
@@ -150,11 +149,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		terraform := new(config.TerraformConfig)
-		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
-
-		terratest := new(config.TerratestConfig)
-		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 		testUser, testPassword := configs.CreateTestCredentials()

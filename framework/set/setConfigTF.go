@@ -156,7 +156,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
-		logrus.Infof("Failed to write RKE2/K3S configurations to main.tf file. Error: %v", err)
+		logrus.Infof("Failed to write configurations to main.tf file. Error: %v", err)
 		return clusterNames, err
 	}
 

@@ -39,7 +39,7 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
-		command += terraformConfig.Standalone.RancherAgentImage
+		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
 	command += " || true'"

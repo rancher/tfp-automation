@@ -3,10 +3,12 @@ package locals
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
@@ -27,97 +29,72 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 		cty.StringVal(defaults.WorkerRoleFlag),
 	}))
 
-	if customClusterNames != nil {
-		for _, name := range customClusterNames {
-			// Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
-			originalNodeCommandExpressionClusterV2 := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
-			originalNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpressionClusterV2)},
-			}
-
-			localsBlockBody.SetAttributeRaw(name+"_"+defaults.OriginalNodeCommand, originalNodeCommand)
-
-			windowsOriginalNodeCommandExpression := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.WindowsNodeCommand
-			windowsOriginalNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsOriginalNodeCommandExpression)},
-			}
-
-			localsBlockBody.SetAttributeRaw(name+"_"+defaults.WindowsOriginalNodeCommand, windowsOriginalNodeCommand)
-
-			insecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_original_node_command, "curl", "curl --insecure")}"`, name)
-			insecureNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpression)},
-			}
-
-			localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
-
-			windowsInsecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_windows_original_node_command, "curl.exe", "curl.exe --insecure")}"`, name)
-			windowsInsecureNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsInsecureNodeCommandExpression)},
-			}
-
-			localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
-
-			if terraformConfig.Module == modules.CustomEC2RKE2Windows && terraformConfig.Proxy.ProxyBastion != "" {
-				// Most Windows distros default to Powershell, but some may not. As such, this workaround does not assume
-				// that Powershell is the default shell. But set will work for cmd.exe and Powershell.
-				envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "set ")`, name)
-				curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)
-
-				proxyWindowsInsecureNodeCommand := hclwrite.Tokens{
-					{Type: hclsyntax.TokenIdent, Bytes: []byte(curlReplace)},
-				}
-
-				localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
-			}
-		}
-	} else {
-		//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
-		if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s ||
-			terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapK3S ||
-			terraformConfig.Module == modules.CustomEC2RKE2Windows || terraformConfig.Module == modules.AirgapRKE2Windows {
-			originalNodeCommandExpressionClusterV2 := defaults.ClusterV2 + "." + terraformConfig.ResourcePrefix + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
-			originalNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpressionClusterV2)},
-			}
-
-			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.OriginalNodeCommand, originalNodeCommand)
-
-			windowsNodeCommandExpression := defaults.ClusterV2 + "." + terraformConfig.ResourcePrefix + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.WindowsNodeCommand
-			windowsOriginalNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsNodeCommandExpression)},
-			}
-
-			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.WindowsOriginalNodeCommand, windowsOriginalNodeCommand)
-
-			insecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_original_node_command, "curl", "curl --insecure")}"`, terraformConfig.ResourcePrefix)
-			insecureNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpression)},
-			}
-
-			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
-
-			windowsInsecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_windows_original_node_command, "curl.exe", "curl.exe --insecure")}"`, terraformConfig.ResourcePrefix)
-			windowsInsecureNodeCommand := hclwrite.Tokens{
-				{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsInsecureNodeCommandExpression)},
-			}
-
-			localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
-
-			if terraformConfig.Module == modules.CustomEC2RKE2Windows && terraformConfig.Proxy.ProxyBastion != "" {
-				// Most Windows distros default to Powershell, but some may not. As such, this workaround does not assume
-				// that Powershell is the default shell. But set will work for cmd.exe and Powershell.
-				envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "set ")`, terraformConfig.ResourcePrefix)
-				curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)
-
-				proxyWindowsInsecureNodeCommand := hclwrite.Tokens{
-					{Type: hclsyntax.TokenIdent, Bytes: []byte(curlReplace)},
-				}
-
-				localsBlockBody.SetAttributeRaw(terraformConfig.ResourcePrefix+"_"+defaults.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
-			}
-		}
+	if !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+		setV2ClusterLocalBlock(localsBlockBody, terraformConfig, customClusterNames)
 	}
 
 	return file, nil
+}
+
+func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customClusterNames []string) {
+	if customClusterNames != nil {
+		for _, name := range customClusterNames {
+			setCustomClusterLocalBlock(localsBlockBody, name, terraformConfig)
+		}
+	}
+
+	//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
+	if strings.Contains(terraformConfig.Module, "custom") || strings.Contains(terraformConfig.Module, "airgap") {
+		setCustomClusterLocalBlock(localsBlockBody, terraformConfig.ResourcePrefix, terraformConfig)
+
+	}
+}
+
+func setCustomClusterLocalBlock(localsBlockBody *hclwrite.Body, name string, terraformConfig *config.TerraformConfig) {
+	originalNodeCommandExpression := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
+	originalNodeCommand := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpression)},
+	}
+
+	localsBlockBody.SetAttributeRaw(name+"_"+defaults.OriginalNodeCommand, originalNodeCommand)
+
+	windowsOriginalNodeCommandExpression := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.WindowsNodeCommand
+	windowsOriginalNodeCommand := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsOriginalNodeCommandExpression)},
+	}
+
+	localsBlockBody.SetAttributeRaw(name+"_"+defaults.WindowsOriginalNodeCommand, windowsOriginalNodeCommand)
+
+	insecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_original_node_command, "curl", "curl --insecure")}"`, name)
+	insecureNodeCommand := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpression)},
+	}
+
+	localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
+
+	windowsInsecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_windows_original_node_command, "curl.exe", "curl.exe --insecure")}"`, name)
+	windowsInsecureNodeCommand := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsInsecureNodeCommandExpression)},
+	}
+
+	localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
+
+	if terraformConfig.Module == modules.CustomEC2RKE2Windows && (terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "") {
+		setProxyLocalBlock(localsBlockBody, terraformConfig.ResourcePrefix)
+	}
+}
+
+func setProxyLocalBlock(localsBlockBody *hclwrite.Body, name string) error {
+	// Most Windows distros default to Powershell, but some may not. As such, this workaround does not assume
+	// that Powershell is the default shell. But set will work for cmd.exe and Powershell.
+	envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "set ")`, name)
+	curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)
+
+	proxyWindowsInsecureNodeCommand := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(curlReplace)},
+	}
+
+	localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
+
+	return nil
 }

@@ -76,11 +76,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		terraform := new(config.TerraformConfig)
-		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
-
-		terratest := new(config.TerratestConfig)
-		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 		testUser, testPassword := configs.CreateTestCredentials()

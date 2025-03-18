@@ -7,6 +7,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -68,11 +69,16 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 	}
 
 	for _, tt := range tests {
-		terratestConfig := *p.terratestConfig
-		terratestConfig.Nodepools = tt.nodeRoles
-		terratestConfig.PSACT = string(tt.psact)
+		configMap := []map[string]any{p.cattleConfig}
 
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
+		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		operations.ReplaceValue([]string{"terratest", "psact"}, tt.psact, configMap[0])
+
+		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		testUser, testPassword := configs.CreateTestCredentials()
 
@@ -85,7 +91,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 
 			configMap := []map[string]any{p.cattleConfig}
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &terratestConfig, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyClusterPSACT(p.T(), p.client, clusterIDs)
 		})

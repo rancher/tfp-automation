@@ -3,8 +3,6 @@ package set
 import (
 	"os"
 
-	"github.com/rancher/shepherd/clients/rancher"
-	framework "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -21,11 +19,10 @@ import (
 )
 
 // AuthConfig is a function that will set the main.tf file based on the auth provider.
-func AuthConfig(terraformConfig *config.TerraformConfig, testUser, testPassword string) error {
-	rancherConfig := new(rancher.Config)
-	framework.LoadConfig(configs.Rancher, rancherConfig)
+func AuthConfig(testUser, testPassword string, configMap []map[string]any) error {
+	rancherConfig, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
-	authProvider := terraformConfig.AuthProvider
+	authProvider := terraform.AuthProvider
 
 	var file *os.File
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
@@ -38,25 +35,25 @@ func AuthConfig(terraformConfig *config.TerraformConfig, testUser, testPassword 
 
 	defer file.Close()
 
-	newFile, rootBody := resources.SetProvidersAndUsersTF(testUser, testPassword, true, nil)
+	newFile, rootBody := resources.SetProvidersAndUsersTF(testUser, testPassword, true, configMap)
 
 	rootBody.AppendNewline()
 
 	switch {
 	case authProvider == authproviders.AD:
-		err = ad.SetAD(terraformConfig, newFile, rootBody, file)
+		err = ad.SetAD(terraform, newFile, rootBody, file)
 		return err
 	case authProvider == authproviders.AzureAD:
-		err = azureAD.SetAzureAD(rancherConfig, terraformConfig, newFile, rootBody, file)
+		err = azureAD.SetAzureAD(rancherConfig, terraform, newFile, rootBody, file)
 		return err
 	case authProvider == authproviders.GitHub:
-		err = github.SetGithub(terraformConfig, newFile, rootBody, file)
+		err = github.SetGithub(terraform, newFile, rootBody, file)
 		return err
 	case authProvider == authproviders.Okta:
-		err = okta.SetOkta(rancherConfig, terraformConfig, newFile, rootBody, file)
+		err = okta.SetOkta(rancherConfig, terraform, newFile, rootBody, file)
 		return err
 	case authProvider == authproviders.OpenLDAP:
-		err = ldap.SetOpenLDAP(terraformConfig, newFile, rootBody, file)
+		err = ldap.SetOpenLDAP(terraform, newFile, rootBody, file)
 		return err
 	default:
 		logrus.Errorf("Unsupported auth provider: %v", authProvider)

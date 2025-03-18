@@ -2,6 +2,7 @@ package sanity
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -15,6 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -105,10 +107,10 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE1", nodeRolesDedicated, "ec2_rke1"},
-		{"RKE2", nodeRolesDedicated, "ec2_rke2"},
-		{"RKE2 Windows", nil, "ec2_rke2_windows_custom"},
-		{"K3S", nodeRolesDedicated, "ec2_k3s"},
+		{"Sanity RKE1", nodeRolesDedicated, "ec2_rke1"},
+		{"Sanity RKE2", nodeRolesDedicated, "ec2_rke2"},
+		{"Sanity RKE2 Windows", nil, "ec2_rke2_windows_custom"},
+		{"Sanity K3S", nodeRolesDedicated, "ec2_k3s"},
 	}
 
 	for _, tt := range tests {
@@ -120,11 +122,7 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 
 		provisioning.GetK8sVersion(t.T(), t.client, t.terratestConfig, t.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		terraform := new(config.TerraformConfig)
-		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
-
-		terratest := new(config.TerratestConfig)
-		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 		testUser, testPassword := configs.CreateTestCredentials()
@@ -135,6 +133,11 @@ func (t *TfpSanityTestSuite) TestTfpProvisioningSanity() {
 
 			clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, t.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
+
+			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+				clusterIDs := provisioning.Provision(t.T(), t.client, t.rancherConfig, terraform, terratest, testUser, testPassword, t.terraformOptions, configMap, true)
+				provisioning.VerifyClustersState(t.T(), t.client, clusterIDs)
+			}
 		})
 	}
 

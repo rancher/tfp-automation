@@ -50,6 +50,7 @@ terraform:
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: user
   privateKeyPath: ""
+  windowsPrivateKeyPath: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -68,8 +69,13 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     sshTimeout: "5m"
+    windowsAMI: ""
+    windowsAWSUser: ""
+    windowsInstanceType: ""
+    windowsKeyName: ""
 terratest:
   nodeCount: 3
+  windowsNodeCount: 1
 ```
 
 For running the imported clusters, reference the example config block below:
