@@ -1,0 +1,56 @@
+rancher:
+  host: ""
+  adminToken: ""
+  insecure: true
+  cleanup: true
+
+# TERRAFORM CONFIG - PERMUTATIONS SETUP
+terraform:
+  module: [ec2_rke1, ec2_rke2, ec2_k3s, ec2_rke1_custom, ec2_rke2_custom, ec2_k3s_custom, ec2_rke1_import, ec2_rke2_import, ec2_k3s_import]
+  cni: [calico]
+  resourcePrefix: "oscheck"
+  privateKeyPath: ""
+
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+
+  awsConfig:
+    awsUser: ""
+    ami: [""]
+    awsInstanceType: t2.medium
+    region: "us-east-2"
+    awsVolumeType: "gp2"
+    awsSecurityGroupNames: [""]
+    awsSecurityGroups: [""]
+    awsVpcID: ""
+    awsZoneLetter: a
+    awsRootSize: 100
+    awsKeyName: ""
+    sshConnectionType: "ssh"
+    timeout: "5m"
+
+# STANDALONE CONFIG - IMPORTED CLUSTERS 
+  standalone:
+    rke2Version: "v1.32.3+rke2r1"
+    k3sVersion: "v1.32.3+k3s1"
+    osGroup: ""
+    osUser: ""
+
+# TERRATEST CONFIG - PERMUTATIONS SETUP
+terratest:
+  nodepools:
+    - quantity: 1
+      etcd: true
+      controlplane: false
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: true
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: false
+      worker: true
+  nodeCount: 3
+  kubernetesVersion: [v1.32.3-rancher1-1, v1.32.3+rke2r1, v1.32.3+k3s1]

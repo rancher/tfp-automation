@@ -1,0 +1,50 @@
+rancher:
+  host: ""
+  adminToken: ""
+  insecure: true
+  cleanup: true
+
+# TERRATEST CONFIG - AUTH TEST ONLY
+terraform:
+  authProvider: "github"
+  githubConfig:
+  clientId: ""
+  clientSecret: ""
+
+  adConfig:
+    port: 389
+    servers: [""]
+    serviceAccountPassword: ""
+    serviceAccountUsername: ""
+    userSearchBase: ""
+    testUsername: ""
+    testPassword: ""
+  azureADConfig:
+      applicationID: ""
+      applicationSecret: ""
+      authEndpoint: ""
+      graphEndpoint: ""
+      tenantID: ""
+      tokenEndpoint: ""
+  githubConfig:
+      clientId: ""
+      clientSecret: ""
+  oktaConfig:
+      displayNameField: ""
+      groupsField: ""
+      idpMetadataContent: |
+          <placeholder>
+      spCert: |
+          <placeholder>
+      spKey:  |
+          <placeholder>>
+      uidField: ""
+      userNameField: ""
+  openLDAPConfig:
+      port: 389
+      servers: [""]
+      serviceAccountDistinguishedName: ""
+      serviceAccountPassword: ""
+      userSearchBase: ""
+      testUsername: ""
+      testPassword: ""

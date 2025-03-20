@@ -42,6 +42,10 @@ func (p *ProvisionTestSuite) SetupSuite() {
 	p.client = client
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	p.cattleConfig, err = config.LoadProvisioningDefaults(p.cattleConfig, "")
+	require.NoError(p.T(), err)
+
 	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
 	require.NoError(p.T(), err)
 

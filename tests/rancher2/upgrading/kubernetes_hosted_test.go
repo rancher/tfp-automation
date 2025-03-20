@@ -42,6 +42,12 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 	k.client = client
 
 	k.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	k.cattleConfig, err = config.LoadProvisioningDefaults(k.cattleConfig, "")
+	require.NoError(k.T(), err)
+
+	k.cattleConfig, err = config.LoadPackageDefaults(k.cattleConfig, "")
+	require.NoError(k.T(), err)
+
 	configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
 	require.NoError(k.T(), err)
 
