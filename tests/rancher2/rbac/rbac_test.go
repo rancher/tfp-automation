@@ -43,6 +43,10 @@ func (r *RBACTestSuite) SetupSuite() {
 	r.client = client
 
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	r.cattleConfig, err = config.LoadProvisioningDefaults(r.cattleConfig, "")
+	require.NoError(r.T(), err)
+
 	configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
 	require.NoError(r.T(), err)
 
