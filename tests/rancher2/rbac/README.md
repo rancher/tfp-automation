@@ -41,7 +41,7 @@ terraform:
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rbac --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpRBACTestSuite/TestTfpRBAC$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/rbac --junitfile results/results.xml --jsonfile results/results.json -- -timeout=60m -v -run "TestTfpRBACTestSuite/TestTfpRBAC$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -65,6 +65,9 @@ terraform:
     githubConfig:
     clientId: "<client id>"
     clientSecret: "<client secret>"
+    resourcePrefix: ""
+terratest:
+    tfLogging: true
 ```
 
 If you are running the static tests that will run all of the supported authenticated providers, your config will look like this:
@@ -113,6 +116,9 @@ terraform:
         userSearchBase: ""
         testUsername: ""
         testPassword: ""
+    resourcePrefix: ""
+terratest:
+    tfLogging: true
 ```
 
 See the below examples on how to run the tests:

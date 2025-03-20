@@ -29,7 +29,8 @@ func SetNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
 	}
 
-	if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s {
+	if terraformConfig.Module == modules.CustomEC2RKE2 || terraformConfig.Module == modules.CustomEC2K3s ||
+		terraformConfig.Module == modules.CustomEC2RKE2Windows {
 		regCommand := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Local + `.` + terraformConfig.ResourcePrefix + "_" + defaults.InsecureNodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
 		}

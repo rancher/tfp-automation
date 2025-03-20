@@ -8,6 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -51,8 +52,6 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.terraformOptions = terraformOptions
-
-	provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 }
 
 func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
@@ -73,11 +72,16 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 	}
 
 	for _, tt := range tests {
-		terratestConfig := *s.terratestConfig
-		terratestConfig.Nodepools = tt.nodeRoles
-		terratestConfig.SnapshotInput.SnapshotRestore = tt.etcdSnapshot.SnapshotInput.SnapshotRestore
+		configMap := []map[string]any{s.cattleConfig}
 
-		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.terratestConfig.KubernetesVersion
+		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotRestore"}, tt.etcdSnapshot.SnapshotInput.SnapshotRestore, configMap[0])
+
+		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+
+		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		if strings.Contains(s.terraformConfig.Module, "rke1") {
 			s.T().Skip("RKE1 is not supported")
@@ -94,10 +98,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 
 			configMap := []map[string]any{s.cattleConfig}
 
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, s.terraformOptions, configMap, false)
+			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, &terratestConfig, testUser, testPassword, s.terraformOptions, configMap)
+			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, terratest, testUser, testPassword, s.terraformOptions, configMap)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 		})
 	}
@@ -119,6 +123,9 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 	}
 
 	for _, tt := range tests {
+		configMap := []map[string]any{s.cattleConfig}
+		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
+
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.terratestConfig.KubernetesVersion
 
 		testUser, testPassword := configs.CreateTestCredentials()
@@ -129,8 +136,6 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
 
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
-
-			configMap := []map[string]any{s.cattleConfig}
 
 			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, nil, false)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)

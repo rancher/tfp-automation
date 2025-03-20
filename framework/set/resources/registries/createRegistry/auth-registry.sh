@@ -41,40 +41,6 @@ action() {
     fi
 }
 
-copyImagesWithSkopeo() {
-    if skopeo -v > /dev/null 2>&1; then
-        echo -e "\nSkopeo is already installed"
-    else
-        . /etc/os-release
-
-        [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install skopeo
-        [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install skopeo -y
-        [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y skopeo
-    fi
-
-    declare -A IMAGE_PATTERNS=(
-        ["system-agent-installer-rke2"]="system-agent-installer-rke2"
-        ["rke2-runtime"]="rke2-runtime"
-    )
-
-    for PATTERN in "${!IMAGE_PATTERNS[@]}"; do
-        if [ "${PATTERN}" == "rke2-runtime" ]; then
-            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt | sort -rV | head -n 2)
-            for VERSION in "${VERSIONS[@]}"; do
-                skopeo copy -a docker://docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}-windows-amd64 docker://${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}-windows-amd64
-            done
-        else
-            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt | sort -rV | head -n 2)
-            for VERSION in "${VERSIONS[@]}"; do
-                skopeo copy -a docker://docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION} docker://${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}
-            done
-        fi
-    done
-
-    mapfile -t WINDOWS_IMAGES < <(grep -oP "wins:\K[^ ]+" /home/${USER}/rancher-windows-images.txt)
-    skopeo copy -a docker://docker.io/rancher/wins:${WINDOWS_IMAGES[0]} docker://${HOST}/rancher/wins:${WINDOWS_IMAGES[0]}
-}
-
 echo "Setting up htpasswd..."
 . /etc/os-release
 
@@ -132,6 +98,3 @@ manageImages "pull"
 
 echo "Pushing the newly tagged images..."
 manageImages "push"
-
-echo "Copying needed Windows images with skopeo..."
-copyImagesWithSkopeo

@@ -7,6 +7,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -67,8 +68,13 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	}
 
 	for _, tt := range tests {
-		terratestConfig := *r.terratestConfig
-		terratestConfig.Nodepools = nodeRolesDedicated
+		configMap := []map[string]any{r.cattleConfig}
+
+		operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
+
+		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + r.terraformConfig.Module
 
@@ -83,10 +89,10 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 			configMap := []map[string]any{r.cattleConfig}
 
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, r.terraformOptions, configMap, false)
+			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 
-			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, &terratestConfig, testUser, testPassword, r.terraformOptions, tt.rbacRole)
+			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, terratest, testUser, testPassword, r.terraformOptions, tt.rbacRole)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 		})
 	}

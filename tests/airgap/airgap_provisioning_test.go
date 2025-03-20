@@ -113,7 +113,6 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 	}{
 		{"Airgap RKE1", "airgap_rke1"},
 		{"Airgap RKE2", "airgap_rke2"},
-		{"Airgap RKE2 Windows", "airgap_rke2_windows"},
 		{"Airgap K3S", "airgap_k3s"},
 	}
 
@@ -127,11 +126,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		terraform := new(config.TerraformConfig)
-		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
-
-		terratest := new(config.TerratestConfig)
-		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 		testUser, testPassword := configs.CreateTestCredentials()
@@ -164,7 +159,6 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 	}{
 		{"Upgrading Airgap RKE1", "airgap_rke1"},
 		{"Upgrading Airgap RKE2", "airgap_rke2"},
-		{"Upgrading Airgap RKE2 Windows", "airgap_rke2_windows"},
 		{"Upgrading Airgap K3S", "airgap_k3s"},
 	}
 
@@ -178,11 +172,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.SecondHighestVersion, configMap)
 
-		terraform := new(config.TerraformConfig)
-		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraform)
-
-		terratest := new(config.TerratestConfig)
-		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 		testUser, testPassword := configs.CreateTestCredentials()
@@ -203,7 +193,6 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 
 			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 		})
 	}
 

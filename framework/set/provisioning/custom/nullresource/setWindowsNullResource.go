@@ -43,7 +43,7 @@ func SetWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.Ter
 
 	var regCommand hclwrite.Tokens
 
-	if terraformConfig.Proxy.ProxyBastion != "" {
+	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
 		regCommand = hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + defaults.Local + `.` + terraformConfig.ResourcePrefix + "_" + defaults.InsecureWindowsProxyNodeCommand + `}"]`)},
 		}

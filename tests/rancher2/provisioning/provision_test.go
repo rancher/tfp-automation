@@ -7,6 +7,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -50,8 +51,6 @@ func (p *ProvisionTestSuite) SetupSuite() {
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
-
-	provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 }
 
 func (p *ProvisionTestSuite) TestTfpProvision() {
@@ -65,10 +64,15 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	}
 
 	for _, tt := range tests {
-		terratestConfig := *p.terratestConfig
-		terratestConfig.Nodepools = tt.nodeRoles
+		configMap := []map[string]any{p.cattleConfig}
 
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
+		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+
+		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		testUser, testPassword := configs.CreateTestCredentials()
 
@@ -81,7 +85,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 
 			configMap := []map[string]any{p.cattleConfig}
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, &terratestConfig, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
 		})
@@ -100,6 +104,9 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 	}
 
 	for _, tt := range tests {
+		configMap := []map[string]any{p.cattleConfig}
+		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
 
 		testUser, testPassword := configs.CreateTestCredentials()

@@ -57,12 +57,12 @@ copyImagesWithSkopeo() {
     
     for PATTERN in "${!IMAGE_PATTERNS[@]}"; do
         if [ "${PATTERN}" == "rke2-runtime" ]; then
-            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt | sort -rV | head -n 2)
+            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt)
             for VERSION in "${VERSIONS[@]}"; do
-                skopeo copy -a docker://docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}-windows-amd64 docker://${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}-windows-amd64
+                skopeo copy -a docker://docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION} docker://${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}
             done
         else
-            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt | sort -rV | head -n 2)
+            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt)
             for VERSION in "${VERSIONS[@]}"; do
                 skopeo copy -a docker://docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION} docker://${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}
             done
@@ -92,6 +92,10 @@ else
                                                                   -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
                                                                   -p 443:443 \
                                                                   registry:2
+fi
+
+if [ -f /home/${USER}/rancher-images.txt ]; then
+    sudo rm -f /home/${USER}/rancher-*
 fi
 
 sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
