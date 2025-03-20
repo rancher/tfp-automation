@@ -1,0 +1,16 @@
+rancher:
+  host: ""
+  adminToken: ""
+
+# TERRAFORM CONFIG - ETCD
+terraform:
+  resourcePrefix: "snapshot"
+  etcd:
+    disableSnapshot: false
+    snapshotScheduleCron: "0 */5 * * *"
+    snapshotRetention: 3
+
+# TERRATEST CONFIG
+terratest:
+  snapshotInput:
+    snapshotRestore: "all"

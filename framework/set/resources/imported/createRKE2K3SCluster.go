@@ -163,7 +163,7 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 		}
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			version + " " + serverOnePrivateIP + " " + token + "'"
+			version + " " + serverOnePrivateIP + " " + dns + " " + token + "'"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("echo '" + string(script) + "' > /tmp/add-servers.sh"),
