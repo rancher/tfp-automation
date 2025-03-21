@@ -8,9 +8,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	apisV1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
-
-	"github.com/rancher/rancher/tests/v2/actions/services"
-	deploy "github.com/rancher/rancher/tests/v2/actions/workloads/deployment"
 	"github.com/rancher/shepherd/clients/rancher"
 	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/clusters"
@@ -19,6 +16,8 @@ import (
 	"github.com/rancher/shepherd/extensions/workloads"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
+	"github.com/rancher/tests/actions/services"
+	deploy "github.com/rancher/tests/actions/workloads/deployment"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
