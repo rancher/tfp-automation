@@ -52,8 +52,6 @@ func (r *RBACTestSuite) SetupSuite() {
 	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
-
-	provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 }
 
 func (r *RBACTestSuite) TestTfpRBAC() {
@@ -92,7 +90,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 
-			rb.RBAC(r.T(), r.client, r.rancherConfig, r.terraformConfig, terratest, testUser, testPassword, r.terraformOptions, tt.rbacRole)
+			rb.RBAC(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 		})
 	}

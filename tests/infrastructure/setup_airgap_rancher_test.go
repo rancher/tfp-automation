@@ -4,7 +4,9 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
@@ -17,6 +19,10 @@ import (
 
 type AirgapRancherTestSuite struct {
 	suite.Suite
+	client           *rancher.Client
+	session          *session.Session
+	cattleConfig     map[string]any
+	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -39,6 +45,11 @@ func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
 	logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)
 	logrus.Infof("Booststrap password: %s", i.terraformConfig.Standalone.BootstrapPassword)
 	logrus.Infof("Private registry: %s", registry)
+
+	testSession := session.NewSession()
+	i.session = testSession
+
+	AcceptEULA(i.T(), i.session, i.cattleConfig, i.rancherConfig, i.terraformConfig, i.terratestConfig, i.terraformConfig.Standalone.AirgapInternalFQDN)
 }
 
 func TestAirgapRancherTestSuite(t *testing.T) {

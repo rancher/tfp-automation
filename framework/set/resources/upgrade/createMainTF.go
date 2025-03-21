@@ -12,6 +12,7 @@ import (
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
+	sanityRancher "github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
 	"github.com/sirupsen/logrus"
 )
 
@@ -61,6 +62,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	case terraformConfig.Standalone.UpgradeProxyRancher:
 		logrus.Infof("Upgrading Proxy Rancher...")
 		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, serverNode, proxyNode)
+		if err != nil {
+			return err
+		}
+
+		terraform.InitAndApply(t, terraformOptions)
+	case terraformConfig.Standalone.UpgradeRancher:
+		logrus.Infof("Upgrading Rancher...")
+		_, err := sanityRancher.UpgradeRancher(file, newFile, rootBody, terraformConfig, serverNode)
 		if err != nil {
 			return err
 		}

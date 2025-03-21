@@ -27,7 +27,7 @@ const (
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server.
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig) error {
+	terratestConfig *config.TerratestConfig) (string, error) {
 	var file *os.File
 	file = OpenFile(file, keyPath)
 	defer file.Close()
@@ -43,7 +43,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	logrus.Infof("Creating AWS resources...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -57,7 +57,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -66,12 +66,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	return nil
+	return rke2ServerOnePublicDNS, nil
 }
 
 // OpenFile is a helper function that will open the main.tf file.
