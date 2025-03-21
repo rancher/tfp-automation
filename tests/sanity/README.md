@@ -98,7 +98,8 @@ export AWS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityTestSuite$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityUpgradeRancherTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 

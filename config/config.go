@@ -131,6 +131,7 @@ type Standalone struct {
 	RKE2Version                    string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
 	UpgradeAirgapRancher           bool   `json:"upgradeAirgapRancher,omitempty" yaml:"upgradeAirgapRancher,omitempty"`
 	UpgradeProxyRancher            bool   `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
+	UpgradeRancher                 bool   `json:"upgradeRancher,omitempty" yaml:"upgradeRancher,omitempty"`
 	UpgradedRancherChartRepository string `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`
 	UpgradedRancherImage           string `json:"upgradedRancherImage,omitempty" yaml:"upgradedRancherImage,omitempty"`
 	UpgradedRancherAgentImage      string `json:"upgradedRancherAgentImage,omitempty" yaml:"upgradedRancherAgentImage,omitempty"`
