@@ -18,7 +18,7 @@ const (
 
 // UpgradeProxiedRancher is a function that will upgrade the Rancher configurations in the main.tf file.
 func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2ServerOnePublicDNS, proxyNode string) (*os.File, error) {
+	proxyNode, proxyPrivateIP string) (*os.File, error) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -31,11 +31,11 @@ func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclw
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, upgradeRancher)
+	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, proxyNode, upgradeRancher)
 
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
-		terraformConfig.Standalone.UpgradedRancherImage + " " + proxyNode
+		terraformConfig.Standalone.UpgradedRancherImage + " " + proxyPrivateIP
 
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage

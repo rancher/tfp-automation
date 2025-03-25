@@ -110,9 +110,9 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 }
 
 // addAirgappedRKE2ServerNodes is a helper function that will add additional RKE2 server nodes to the initial RKE2 airgapped server.
-func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS,
-	rke2ServerThreePublicDNS, rke2Token, registryPublicDNS string, script []byte) {
-	instances := []string{rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS}
+func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP,
+	rke2ServerThreePrivateIP, rke2Token, registryPublicDNS string, script []byte) {
+	instances := []string{rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP}
 	hosts := []string{rke2ServerTwo, rke2ServerThree}
 
 	for i, instance := range instances {

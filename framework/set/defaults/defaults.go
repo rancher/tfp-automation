@@ -154,7 +154,7 @@ const (
 	LoadBalancerType        = "load_balancer_type"
 	LoadBalancerTargetGroup = "aws_lb_target_group"
 
-	LoadBalancreInternalTargetGroupAttachment = "aws_internal_lb_target_group_attachment"
+	LoadBalancerInternalTargetGroupAttachment = "aws_internal_lb_target_group_attachment"
 	LoadBalancerTargetGroupAttachment         = "aws_lb_target_group_attachment"
 
 	Port                  = "port"

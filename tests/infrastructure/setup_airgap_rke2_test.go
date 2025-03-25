@@ -10,8 +10,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
@@ -48,8 +48,9 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
+	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 	logrus.Infof("Creating AWS resources...")
-	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig)
+	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)

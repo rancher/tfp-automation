@@ -7,11 +7,11 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/squid"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,11 +21,11 @@ const (
 	rke2ServerTwo   = "rke2_server2"
 	rke2ServerThree = "rke2_server3"
 
-	rke2ServerOnePublicDNS   = "rke2_server1_public_dns"
 	rke2BastionPublicDNS     = "rke2_bastion_public_dns"
+	rke2BastionPrivateIP     = "rke2_bastion_private_ip"
 	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
-	rke2ServerTwoPublicDNS   = "rke2_server2_public_dns"
-	rke2ServerThreePublicDNS = "rke2_server3_public_dns"
+	rke2ServerTwoPrivateIP   = "rke2_server2_private_ip"
+	rke2ServerThreePrivateIP = "rke2_server3_private_ip"
 
 	terraformConst = "terraform"
 )
@@ -43,9 +43,8 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2Bastion, rke2ServerOne, rke2ServerTwo, rke2ServerThree}
-
-	logrus.Infof("Creating AWS resources...")
+	instances := []string{rke2Bastion}
+	logrus.Infof("Creating AWS resources ...")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratest, instances)
 	if err != nil {
 		return "", "", err
@@ -54,14 +53,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	rke2BastionPublicDNS := terraform.Output(t, terraformOptions, rke2BastionPublicDNS)
-	rke2ServerOnePublicDNS := terraform.Output(t, terraformOptions, rke2ServerOnePublicDNS)
+	rke2BastionPrivateIP := terraform.Output(t, terraformOptions, rke2BastionPrivateIP)
 	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPublicDNS := terraform.Output(t, terraformOptions, rke2ServerTwoPublicDNS)
-	rke2ServerThreePublicDNS := terraform.Output(t, terraformOptions, rke2ServerThreePublicDNS)
+	rke2ServerTwoPrivateIP := terraform.Output(t, terraformOptions, rke2ServerTwoPrivateIP)
+	rke2ServerThreePrivateIP := terraform.Output(t, terraformOptions, rke2ServerThreePrivateIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")
-	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS)
+	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", "", err
 	}
@@ -70,7 +69,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", "", err
 	}
@@ -79,12 +78,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2BastionPublicDNS)
+	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2BastionPrivateIP)
 	if err != nil {
 		return "", "", err
 	}
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	return rke2BastionPublicDNS, rke2ServerOnePublicDNS, nil
+	return rke2BastionPublicDNS, rke2BastionPrivateIP, nil
 }

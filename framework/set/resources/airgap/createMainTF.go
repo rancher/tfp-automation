@@ -7,15 +7,17 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/sirupsen/logrus"
 )
 
 const (
+	rancherRegistry = "registry"
+	rke2Bastion     = "rke2_bastion"
 	rke2ServerOne   = "rke2_server1"
 	rke2ServerTwo   = "rke2_server2"
 	rke2ServerThree = "rke2_server3"
@@ -44,8 +46,9 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
+	instances := []string{rke2Bastion, rancherRegistry}
 	logrus.Infof("Creating AWS resources...")
-	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
+	file, err := aws.CreateAirgappedAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return "", "", err
 	}

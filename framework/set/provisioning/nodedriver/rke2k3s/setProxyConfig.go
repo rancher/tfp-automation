@@ -13,13 +13,13 @@ func SetProxyConfig(clusterBlockBody *hclwrite.Body, terraformConfig *config.Ter
 	agentVarsOneBlockBody := agentVarsOneBlock.Body()
 
 	agentVarsOneBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(httpProxy))
-	agentVarsOneBlockBody.SetAttributeValue(defaults.Value, cty.StringVal("http://"+terraformConfig.Proxy.ProxyBastion+":3128"))
+	agentVarsOneBlockBody.SetAttributeValue(defaults.Value, cty.StringVal("http://"+terraformConfig.Proxy.ProxyBastion+":3228"))
 
 	agentVarsTwoBlock := clusterBlockBody.AppendNewBlock(defaults.AgentEnvVars, nil)
 	agentVarsTwoBlockBody := agentVarsTwoBlock.Body()
 
 	agentVarsTwoBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(httpsProxy))
-	agentVarsTwoBlockBody.SetAttributeValue(defaults.Value, cty.StringVal("http://"+terraformConfig.Proxy.ProxyBastion+":3128"))
+	agentVarsTwoBlockBody.SetAttributeValue(defaults.Value, cty.StringVal("http://"+terraformConfig.Proxy.ProxyBastion+":3228"))
 
 	agentVarsThreeBlock := clusterBlockBody.AppendNewBlock(defaults.AgentEnvVars, nil)
 	agentVarsThreeBlockBody := agentVarsThreeBlock.Body()

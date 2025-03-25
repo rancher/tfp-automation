@@ -3,7 +3,6 @@ package squid
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
@@ -19,7 +18,7 @@ const (
 
 // CreateSquidProxy is a function that will set the squid proxy configurations in the main.tf file.
 func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2BastionPublicDNS string) (*os.File, error) {
+	rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -33,21 +32,28 @@ func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 		return nil, err
 	}
 
+	privateKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
+	if err != nil {
+		return nil, err
+	}
+
 	squidConfContent, err := os.ReadFile(squidConf)
 	if err != nil {
 		return nil, err
 	}
 
-	escapedSquidConfContent := strings.ReplaceAll(string(squidConfContent), "%", "%%")
-
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installSquidProxy)
 
-	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.OSUser + " " + rke2BastionPublicDNS + " " +
-		terraformConfig.Standalone.BootstrapPassword + " || true'"
+	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		rke2BastionPublicDNS + " " + terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
+		terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.StandaloneRegistry.RegistryName + " " +
+		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2ServerTwoPrivateIP + " " +
+		rke2ServerThreePrivateIP + " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/setup.sh"),
-		cty.StringVal("printf '" + string(escapedSquidConfContent) + "' > /tmp/squid.conf"),
+		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/setup.sh"),
+		cty.StringVal("echo '" + string(squidConfContent) + "' > /tmp/squid.conf"),
+		cty.StringVal("echo '" + string(privateKey) + "' > /tmp/keyfile.pem"),
 		cty.StringVal("chmod +x /tmp/setup.sh"),
 		cty.StringVal(command),
 	}))

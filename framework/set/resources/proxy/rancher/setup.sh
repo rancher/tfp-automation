@@ -9,7 +9,7 @@ BOOTSTRAP_PASSWORD=$6
 RANCHER_IMAGE=$7
 BASTION=$8
 RANCHER_AGENT_IMAGE=${9}
-PROXY_PORT="3128"
+PROXY_PORT="3228"
 NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,.svc\\,.cluster.local\\,cattle-system.svc\\,169.254.169.254"
 
 set -ex

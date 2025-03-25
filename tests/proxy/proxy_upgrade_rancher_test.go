@@ -40,7 +40,7 @@ type TfpProxyUpgradeRancherTestSuite struct {
 	upgradeTerraformOptions    *terraform.Options
 	terraformOptions           *terraform.Options
 	proxyNode                  string
-	proxyServerNodeOne         string
+	proxyPrivateIP             string
 }
 
 func (p *TfpProxyUpgradeRancherTestSuite) TearDownSuite() {
@@ -59,11 +59,11 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.standaloneTerraformOptions = standaloneTerraformOptions
 
-	proxyNode, proxyServerNodeOne, err := resources.CreateMainTF(p.T(), p.standaloneTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig)
+	proxyNode, proxyPrivateIP, err := resources.CreateMainTF(p.T(), p.standaloneTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig)
 	require.NoError(p.T(), err)
 
 	p.proxyNode = proxyNode
-	p.proxyServerNodeOne = proxyServerNodeOne
+	p.proxyPrivateIP = proxyPrivateIP
 
 	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath)
 	upgradeTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
@@ -118,7 +118,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 	p.terraformConfig.Standalone.UpgradeProxyRancher = true
 
 	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath)
-	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyServerNodeOne, p.proxyNode, "", "")
+	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyPrivateIP, p.proxyNode, "", "")
 	require.NoError(p.T(), err)
 
 	p.provisionAndVerifyCluster("Post-Upgrade Proxy ")

@@ -23,7 +23,7 @@ const (
 
 // CreateRKE2Cluster is a helper function that will create the RKE2 cluster.
 func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2BastionPublicDNS, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS string) (*os.File, error) {
+	rke2BastionPublicDNS, rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -44,8 +44,8 @@ func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 	rke2Token := namegen.AppendRandomString(token)
 
-	createRKE2Server(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2Token, serverOneScriptContent)
-	addRKE2ServerNodes(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS, rke2Token, newServersScriptContent)
+	createRKE2Server(rootBody, terraformConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2Token, serverOneScriptContent)
+	addRKE2ServerNodes(rootBody, terraformConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP, rke2Token, newServersScriptContent)
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
@@ -58,12 +58,12 @@ func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 // createRKE2Server is a helper function that will create the RKE2 server.
 func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS,
-	rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2Token string, script []byte) {
-	_, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOne)
+	rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2Token string, script []byte) {
+	_, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-		rke2BastionPublicDNS + " || true'"
+		rke2BastionPrivateIP + " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -74,17 +74,17 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 
 // addRKE2ServerNodes is a helper function that will add additional RKE2 server nodes to the initial RKE2 server.
 func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS,
-	rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS, rke2Token string, script []byte) {
-	instances := []string{rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS}
+	rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP, rke2Token string, script []byte) {
+	instances := []string{rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP}
 	hosts := []string{rke2ServerTwo, rke2ServerThree}
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, instance, host)
+		nullResourceBlockBody, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-			rke2BastionPublicDNS + " || true'"
+			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " +
+			rke2BastionPrivateIP + " || true'"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	"github.com/sirupsen/logrus"
 )
 
