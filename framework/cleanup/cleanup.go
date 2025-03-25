@@ -18,6 +18,7 @@ func Cleanup(t *testing.T, terraformOptions *terraform.Options, keyPath string) 
 	if *rancherConfig.Cleanup {
 		logrus.Infof("Cleaning up Terraform resources...")
 		terraform.Destroy(t, terraformOptions)
-		TFFilesCleanup(keyPath)
+		err := TFFilesCleanup(keyPath)
+		logrus.Warning(err)
 	}
 }
