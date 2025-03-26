@@ -11,8 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
-	airgap "github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,7 +27,7 @@ func SetAirgapRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terraf
 	instances := []string{airgapNodeOne, airgapNodeTwo, airgapNodeThree}
 
 	for _, instance := range instances {
-		airgap.CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
+		aws.CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
 		rootBody.AppendNewline()
 	}
 

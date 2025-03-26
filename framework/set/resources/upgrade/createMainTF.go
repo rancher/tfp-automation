@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	airgap "github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
 	sanityRancher "github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
 	"github.com/sirupsen/logrus"
 )
@@ -61,7 +61,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		terraform.InitAndApply(t, terraformOptions)
 	case terraformConfig.Standalone.UpgradeProxyRancher:
 		logrus.Infof("Upgrading Proxy Rancher...")
-		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, serverNode, proxyNode)
+		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, proxyNode, serverNode)
 		if err != nil {
 			return err
 		}

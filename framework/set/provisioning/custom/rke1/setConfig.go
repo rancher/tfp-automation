@@ -7,7 +7,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/nullresource"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	"github.com/sirupsen/logrus"
 )
 

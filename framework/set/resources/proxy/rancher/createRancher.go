@@ -18,7 +18,7 @@ const (
 
 // CreateProxiedRancher is a function that will set the Rancher configurations in the main.tf file.
 func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2ServerOnePublicDNS, rke2BastionPublicDNS string) (*os.File, error) {
+	rke2BastionPublicDNS, rke2BastionPrivateIP string) (*os.File, error) {
 
 	userDir, err := os.UserHomeDir()
 	if err != nil {
@@ -32,13 +32,13 @@ func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, installRancher)
+	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installRancher)
 
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " +
-		rke2BastionPublicDNS
+		rke2BastionPrivateIP
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage

@@ -13,8 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
-	airgap "github.com/rancher/tfp-automation/framework/set/resources/airgap/aws"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/aws"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,12 +44,12 @@ func SetAirgapRKE2K3s(rancherConfig *rancher.Config, terraformConfig *config.Ter
 	}
 
 	for _, instance := range instances {
-		airgap.CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
+		aws.CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
 		rootBody.AppendNewline()
 	}
 
 	if strings.Contains(terraformConfig.Module, modules.AirgapRKE2Windows) {
-		airgap.CreateAirgappedWindowsAWSInstances(rootBody, terraformConfig, airgapWindowsNode)
+		aws.CreateAirgappedWindowsAWSInstances(rootBody, terraformConfig, airgapWindowsNode)
 		rootBody.AppendNewline()
 	}
 
