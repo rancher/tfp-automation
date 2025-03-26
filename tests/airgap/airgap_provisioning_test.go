@@ -113,6 +113,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 	}{
 		{"Airgap RKE1", "airgap_rke1"},
 		{"Airgap RKE2", "airgap_rke2"},
+		{"Airgap RKE2 Windows", "airgap_rke2_windows"},
 		{"Airgap K3S", "airgap_k3s"},
 	}
 
@@ -159,6 +160,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 	}{
 		{"Upgrading Airgap RKE1", "airgap_rke1"},
 		{"Upgrading Airgap RKE2", "airgap_rke2"},
+		{"Upgrading Airgap RKE2 Windows", "airgap_rke2_windows"},
 		{"Upgrading Airgap K3S", "airgap_k3s"},
 	}
 

@@ -136,6 +136,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	}{
 		{"RKE1", "airgap_rke1"},
 		{"RKE2", "airgap_rke2"},
+		{"RKE2 Windows", "airgap_rke2_windows"},
 		{"K3S", "airgap_k3s"},
 	}
 
