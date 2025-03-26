@@ -25,13 +25,19 @@ const (
 func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS,
 	registryPublicDNS string) (*os.File, error) {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	var err error
+	userDir := os.Getenv("GOROOT")
+	if userDir == "" {
+		userDir, err = os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		userDir = filepath.Join(userDir, "go/")
 	}
 
-	serverScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/rke2/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/rke2/add-servers.sh")
+	serverScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/rke2/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/rke2/add-servers.sh")
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
 	if err != nil {

@@ -44,6 +44,7 @@ func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
 
 	logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)
 	logrus.Infof("Booststrap password: %s", i.terraformConfig.Standalone.BootstrapPassword)
+	logrus.Infof("Proxy Address: %s:3228", i.terraformConfig.Proxy.ProxyBastion)
 
 	testSession := session.NewSession()
 	i.session = testSession

@@ -26,14 +26,20 @@ const (
 // CreateAirgapRKE2Cluster is a helper function that will create the RKE2 cluster.
 func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	var err error
+	userDir := os.Getenv("GOROOT")
+	if userDir == "" {
+		userDir, err = os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		userDir = filepath.Join(userDir, "go/")
 	}
 
-	bastionScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/bastion.sh")
-	serverScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/add-servers.sh")
+	bastionScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/bastion.sh")
+	serverScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/add-servers.sh")
 
 	bastionScriptContent, err := os.ReadFile(bastionScriptPath)
 	if err != nil {
