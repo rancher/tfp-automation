@@ -19,6 +19,8 @@ func Cleanup(t *testing.T, terraformOptions *terraform.Options, keyPath string) 
 		logrus.Infof("Cleaning up Terraform resources...")
 		terraform.Destroy(t, terraformOptions)
 		err := TFFilesCleanup(keyPath)
-		logrus.Warning(err)
+		if err != nil {
+			logrus.Warning(err)
+		}
 	}
 }
