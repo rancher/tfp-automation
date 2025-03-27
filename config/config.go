@@ -194,13 +194,10 @@ type Scaling struct {
 }
 
 type Snapshots struct {
-	CreateSnapshot               bool   `json:"createSnapshot,omitempty" yaml:"createSnapshot,omitempty"`
-	RestoreSnapshot              bool   `json:"restoreSnapshot,omitempty" yaml:"restoreSnapshot,omitempty"`
-	SnapshotName                 string `json:"snapshotName,omitempty" yaml:"snapshotName,omitempty"`
-	UpgradeKubernetesVersion     string `json:"upgradeKubernetesVersion,omitempty" yaml:"upgradeKubernetesVersion,omitempty"`
-	SnapshotRestore              string `json:"snapshotRestore,omitempty" yaml:"snapshotRestore,omitempty"`
-	ControlPlaneConcurrencyValue string `json:"controlPlaneConcurrencyValue,omitempty" yaml:"controlPlaneConcurrencyValue,omitempty"`
-	WorkerConcurrencyValue       string `json:"workerConcurrencyValue,omitempty" yaml:"workerConcurrencyValue,omitempty"`
+	CreateSnapshot  bool   `json:"createSnapshot,omitempty" yaml:"createSnapshot,omitempty"`
+	RestoreSnapshot bool   `json:"restoreSnapshot,omitempty" yaml:"restoreSnapshot,omitempty"`
+	SnapshotName    string `json:"snapshotName,omitempty" yaml:"snapshotName,omitempty"`
+	SnapshotRestore string `json:"snapshotRestore,omitempty" yaml:"snapshotRestore,omitempty"`
 }
 
 type TerratestConfig struct {

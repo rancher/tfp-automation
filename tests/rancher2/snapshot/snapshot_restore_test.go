@@ -101,46 +101,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, terratest, testUser, testPassword, s.terraformOptions, configMap)
-			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-		})
-	}
-
-	if s.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
-	}
-}
-
-func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestoreDynamicInput() {
-	if s.terratestConfig.SnapshotInput == (config.Snapshots{}) {
-		s.T().Skip()
-	}
-
-	tests := []struct {
-		name string
-	}{
-		{config.StandardClientName.String()},
-	}
-
-	for _, tt := range tests {
-		configMap := []map[string]any{s.cattleConfig}
-		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
-
-		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.terratestConfig.KubernetesVersion
-
-		testUser, testPassword := configs.CreateTestCredentials()
-
-		s.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
-			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
-
-			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
-			require.NoError(s.T(), err)
-
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, nil, false)
-			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-
-			snapshotRestore(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap)
+			snapshotRestore(s.T(), s.client, s.terraformConfig, testUser, testPassword, s.terraformOptions, configMap)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 		})
 	}
