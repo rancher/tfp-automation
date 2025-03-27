@@ -160,12 +160,6 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 		SetPrivateRegistryConfig(registryBlockBody, terraformConfig)
 	}
 
-	upgradeStrategyBlock := rkeConfigBlockBody.AppendNewBlock(upgradeStrategy, nil)
-	upgradeStrategyBlockBody := upgradeStrategyBlock.Body()
-
-	upgradeStrategyBlockBody.SetAttributeValue(controlPlaneConcurrency, cty.StringVal(("10%")))
-	upgradeStrategyBlockBody.SetAttributeValue(workerConcurrency, cty.StringVal(("10%")))
-
 	if terraformConfig.ETCD != nil {
 		setEtcdConfig(rkeConfigBlockBody, terraformConfig)
 	}
