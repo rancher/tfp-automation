@@ -39,38 +39,40 @@ action() {
     fi
 }
 
-copyImagesWithSkopeo() {
-    if skopeo -v > /dev/null 2>&1; then
-        echo -e "\nSkopeo is already installed"
-    else
-        . /etc/os-release
-
-        [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install skopeo
-        [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install skopeo -y
-        [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y skopeo
-    fi
+copyImagesWithCrane() {
+    sudo wget https://github.com/google/go-containerregistry/releases/download/v0.20.3/go-containerregistry_Linux_x86_64.tar.gz
+    sudo tar -xf go-containerregistry_Linux_x86_64.tar.gz
+    sudo chmod +x crane
+    sudo mv crane /usr/local/bin/crane
 
     declare -A IMAGE_PATTERNS=(
+        ["mirrored-pause"]="mirrored-pause"
         ["system-agent-installer-rke2"]="system-agent-installer-rke2"
         ["rke2-runtime"]="rke2-runtime"
     )
-    
+
     for PATTERN in "${!IMAGE_PATTERNS[@]}"; do
-        if [ "${PATTERN}" == "rke2-runtime" ]; then
-            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt)
-            for VERSION in "${VERSIONS[@]}"; do
-                skopeo copy -a docker://docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION} docker://${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}
-            done
-        else
-            mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt)
-            for VERSION in "${VERSIONS[@]}"; do
-                skopeo copy -a docker://docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION} docker://${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}
-            done
-        fi
+        mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt | tail -n 30)
+        for VERSION in "${VERSIONS[@]}"; do
+            SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+            DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+
+            crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all
+
+            if [ "${PATTERN}" == "rke2-runtime" ]; then
+                WINS_SUFFIX="-windows-amd64"
+                SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
+                DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
+
+                crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all
+            fi
+        done
     done
 
-    mapfile -t WINDOWS_IMAGES < <(grep -oP "wins:\K[^ ]+" /home/${USER}/rancher-windows-images.txt)
-    skopeo copy -a docker://docker.io/rancher/wins:${WINDOWS_IMAGES[0]} docker://${HOST}/rancher/wins:${WINDOWS_IMAGES[0]}
+    mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
+    for IMAGE in "${WINDOWS_IMAGES[@]}"; do
+        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure --platform all
+    done
 }
 
 echo "Checking if the private registry already exists..."
@@ -119,5 +121,5 @@ manageImages "pull"
 echo "Pushing the newly tagged images..."
 manageImages "push"
 
-echo "Copying needed Windows images with skopeo..."
-copyImagesWithSkopeo
+echo "Copying needed Windows images with Crane..."
+copyImagesWithCrane
