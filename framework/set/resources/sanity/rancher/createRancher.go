@@ -19,12 +19,18 @@ const (
 // CreateRancher is a function that will set the Rancher configurations in the main.tf file.
 func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2ServerOnePublicDNS string) (*os.File, error) {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	var err error
+	userDir := os.Getenv("GOROOT")
+	if userDir == "" {
+		userDir, err = os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		userDir = filepath.Join(userDir, "go/")
 	}
 
-	scriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher/setup.sh")
+	scriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher/setup.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

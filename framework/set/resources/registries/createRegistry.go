@@ -15,12 +15,18 @@ import (
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
 func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2AuthRegistryPublicDNS string) (*os.File, error) {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	var err error
+	userDir := os.Getenv("GOROOT")
+	if userDir == "" {
+		userDir, err = os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		userDir = filepath.Join(userDir, "go/")
 	}
 
-	registryScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/auth-registry.sh")
+	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/auth-registry.sh")
 
 	registryScriptContent, err := os.ReadFile(registryScriptPath)
 	if err != nil {
@@ -59,12 +65,18 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 // CreateNonAuthenticatedRegistry is a helper function that will create a non-authenticated registry.
 func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2NonAuthRegistryPublicDNS, registryType string) (*os.File, error) {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	var err error
+	userDir := os.Getenv("GOROOT")
+	if userDir == "" {
+		userDir, err = os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		userDir = filepath.Join(userDir, "go/")
 	}
 
-	registryScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/registries/non-auth-registry.sh")
+	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/non-auth-registry.sh")
 
 	registryScriptContent, err := os.ReadFile(registryScriptPath)
 	if err != nil {

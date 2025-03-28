@@ -85,5 +85,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	terraform.InitAndApply(t, terraformOptions)
 
+	terraformConfig.Proxy.ProxyBastion = rke2BastionPublicDNS
+
 	return rke2BastionPublicDNS, rke2BastionPrivateIP, nil
 }

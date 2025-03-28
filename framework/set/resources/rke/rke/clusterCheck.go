@@ -17,12 +17,18 @@ import (
 // CheckClusterStatus is a helper function that will check the status of the RKE1 cluster.
 func CheckClusterStatus(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rkeServerOnePublicIP, kubeConfig string) (*os.File, error) {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	var err error
+	userDir := os.Getenv("GOROOT")
+	if userDir == "" {
+		userDir, err = os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		userDir = filepath.Join(userDir, "go/")
 	}
 
-	scriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke/rke/cluster.sh")
+	scriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/rke/rke/cluster.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

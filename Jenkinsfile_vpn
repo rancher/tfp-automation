@@ -1,5 +1,5 @@
 #!groovy
-node {
+node ("vsphere-vpn-1") {
   def homePath = pwd() + "/"
   def rootPath = "/root/go/src/github.com/rancher/tfp-automation/"
   def testsDir = "github.com/rancher/tfp-automation/tests/${env.TEST_PACKAGE}"

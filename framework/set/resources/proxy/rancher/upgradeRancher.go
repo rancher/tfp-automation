@@ -18,13 +18,19 @@ const (
 
 // UpgradeProxiedRancher is a function that will upgrade the Rancher configurations in the main.tf file.
 func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	proxyNode, proxyPrivateIP string) (*os.File, error) {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	proxyPrivateIP, proxyNode string) (*os.File, error) {
+	var err error
+	userDir := os.Getenv("GOROOT")
+	if userDir == "" {
+		userDir, err = os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		userDir = filepath.Join(userDir, "go/")
 	}
 
-	scriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher/upgrade.sh")
+	scriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher/upgrade.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
