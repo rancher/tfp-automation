@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
-	"github.com/rancher/tfp-automation/framework/set/resources/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
 	"github.com/sirupsen/logrus"
@@ -40,8 +40,8 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 
-	logrus.Infof("Creating AWS resources...")
-	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
+	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
+	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return "", err
 	}

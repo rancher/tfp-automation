@@ -35,7 +35,7 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	logrus.Infof("Creating AWS resources...")
+	logrus.Infof("Creating resources using AWS")
 	file, err := aws.CreateAWSResources(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return "", err

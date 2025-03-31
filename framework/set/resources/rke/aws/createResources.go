@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/resources/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,6 +33,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	rootBody.AppendNewline()
 
 	instances := []string{rkeServerOne, rkeServerTwo, rkeServerThree}
+
 	for _, instance := range instances {
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 		rootBody.AppendNewline()
