@@ -13,7 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
-	"github.com/rancher/tfp-automation/framework/set/resources/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/sirupsen/logrus"
 )
 
