@@ -49,7 +49,7 @@ func (s *ScaleTestSuite) SetupSuite() {
 	s.cattleConfig = configMap[0]
 	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.terraformOptions = terraformOptions
 
@@ -94,7 +94,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
@@ -141,7 +141,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)

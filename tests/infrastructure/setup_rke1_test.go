@@ -29,7 +29,7 @@ func (i *CreateRKE1ClusterTestSuite) TestCreateRKE1Cluster() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath, i.terraformConfig)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 

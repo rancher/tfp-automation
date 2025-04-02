@@ -35,7 +35,7 @@ func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, i.terraformConfig)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
