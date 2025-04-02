@@ -25,7 +25,7 @@ func AuthConfig(testUser, testPassword string, configMap []map[string]any) error
 	authProvider := terraform.AuthProvider
 
 	var file *os.File
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 
 	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {

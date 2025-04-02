@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -18,7 +19,7 @@ const (
 
 // CreateProxiedRancher is a function that will set the Rancher configurations in the main.tf file.
 func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2BastionPublicDNS, rke2BastionPrivateIP string) (*os.File, error) {
+	rke2BastionPublicDNS, rke2BastionPrivateIP, linodeNodeBalancerHostname string) (*os.File, error) {
 
 	var err error
 	userDir := os.Getenv("GOROOT")
@@ -39,6 +40,10 @@ func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 	}
 
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installRancher)
+
+	if terraformConfig.NodeProvider == providers.Linode {
+		terraformConfig.Standalone.RancherHostname = linodeNodeBalancerHostname
+	}
 
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +

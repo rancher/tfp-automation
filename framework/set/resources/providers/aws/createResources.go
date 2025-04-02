@@ -12,7 +12,7 @@ import (
 // CreateAWSResources is a helper function that will create the AWS resources needed for the RKE2 cluster.
 func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, instances []string) (*os.File, error) {
-	CreateTerraformProviderBlock(tfBlockBody)
+	CreateAWSTerraformProviderBlock(tfBlockBody)
 	rootBody.AppendNewline()
 
 	CreateAWSProviderBlock(rootBody, terraformConfig)
@@ -31,28 +31,30 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 		}
 	}
 
-	CreateLocalBlock(rootBody, terraformConfig)
+	CreateAWSLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	ports := []int64{80, 443, 6443, 9345}
-	for _, port := range ports {
-		CreateTargetGroupAttachments(rootBody, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+	if terraformConfig.Standalone.RancherHostname != "" {
+		ports := []int64{80, 443, 6443, 9345}
+		for _, port := range ports {
+			CreateTargetGroupAttachments(rootBody, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+			rootBody.AppendNewline()
+		}
+
+		CreateLoadBalancer(rootBody, terraformConfig)
+		rootBody.AppendNewline()
+
+		for _, port := range ports {
+			CreateTargetGroups(rootBody, terraformConfig, port)
+			rootBody.AppendNewline()
+
+			CreateLoadBalancerListeners(rootBody, port)
+			rootBody.AppendNewline()
+		}
+
+		CreateRoute53Record(rootBody, terraformConfig)
 		rootBody.AppendNewline()
 	}
-
-	CreateLoadBalancer(rootBody, terraformConfig)
-	rootBody.AppendNewline()
-
-	for _, port := range ports {
-		CreateTargetGroups(rootBody, terraformConfig, port)
-		rootBody.AppendNewline()
-
-		CreateLoadBalancerListeners(rootBody, port)
-		rootBody.AppendNewline()
-	}
-
-	CreateRoute53Record(rootBody, terraformConfig)
-	rootBody.AppendNewline()
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
@@ -66,7 +68,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 // CreateAirgappedAWSResources is a helper function that will create the AWS resources needed for the airagpped RKE2 cluster.
 func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, instances []string) (*os.File, error) {
-	CreateTerraformProviderBlock(tfBlockBody)
+	CreateAWSTerraformProviderBlock(tfBlockBody)
 	rootBody.AppendNewline()
 
 	CreateAWSProviderBlock(rootBody, terraformConfig)
@@ -83,7 +85,7 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 		rootBody.AppendNewline()
 	}
 
-	CreateLocalBlock(rootBody, terraformConfig)
+	CreateAWSLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
 	ports := []int64{80, 443, 6443, 9345}

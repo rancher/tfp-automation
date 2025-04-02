@@ -44,7 +44,7 @@ type TfpAirgapUpgradeRancherTestSuite struct {
 }
 
 func (a *TfpAirgapUpgradeRancherTestSuite) TearDownSuite() {
-	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terraformConfig)
 	cleanup.Cleanup(a.T(), a.standaloneTerraformOptions, keyPath)
 }
 
@@ -52,7 +52,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 	a.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terraformConfig)
 	standaloneTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 	a.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -62,7 +62,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 	a.registry = registry
 	a.bastion = bastion
 
-	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath)
+	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, a.terraformConfig)
 	upgradeTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 
 	a.upgradeTerraformOptions = upgradeTerraformOptions
@@ -108,7 +108,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 
 	operations.ReplaceValue([]string{"rancher", "host"}, a.rancherConfig.Host, configMap[0])
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 	a.terraformOptions = terraformOptions
 
@@ -118,7 +118,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	a.terraformConfig.Standalone.UpgradeAirgapRancher = true
 
-	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, a.terraformConfig)
 	err := upgrade.CreateMainTF(a.T(), a.upgradeTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig, "", "", a.bastion, a.registry)
 	require.NoError(a.T(), err)
 
@@ -156,7 +156,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		a.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, false)

@@ -48,6 +48,8 @@ https_proxy=http://${BASTION}:${PORT}
 EOF
 }
 
+runSSH "${RKE2_NEW_SERVER_IP}" "sudo hostnamectl set-hostname ${RKE2_NEW_SERVER_IP}"
+
 configFunction=$(declare -f setupConfig)
 runSSH "${RKE2_NEW_SERVER_IP}" "${configFunction}; setupConfig"
 

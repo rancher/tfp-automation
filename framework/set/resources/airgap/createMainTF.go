@@ -47,7 +47,8 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlockBody := tfBlock.Body()
 
 	instances := []string{rke2Bastion, rancherRegistry}
-	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
+
+	providerTunnel := providers.TunnelToProvider(terraformConfig)
 	file, err := providerTunnel.CreateAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return "", "", err

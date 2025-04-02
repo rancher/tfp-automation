@@ -48,7 +48,7 @@ func (p *PSACTTestSuite) SetupSuite() {
 	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
 
@@ -83,7 +83,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)

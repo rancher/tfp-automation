@@ -29,7 +29,7 @@ import (
 func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole configuration.Role, configMap []map[string]any,
 	isWindows bool) ([]string, error) {
 	var file *os.File
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 
 	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {
@@ -146,7 +146,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 		}
 	}
 
-	keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath)
+	keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 
 	file, err = os.Create(keyPath + configs.MainTF)
 	if err != nil {

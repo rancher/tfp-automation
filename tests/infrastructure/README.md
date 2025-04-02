@@ -28,6 +28,8 @@ rancher:
 # TERRAFORM CONFIG
 #######################
 terraform:
+  cni: ""
+  nodeProvider: ""                                # REQUIRED - supported values are aws | linode
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   resourcePrefix: ""
   ##########################################
@@ -51,6 +53,20 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     timeout: "5m"
+  linodeCredentials:
+    linodeToken: ""  
+  linodeConfig:
+    clientConnThrottle: 20
+    domain: ""
+    linodeImage: ""
+    linodeRootPass: ""
+    privateIP: true
+    region: ""
+    soaEmail: ""
+    swapSize: 256
+    tags: [""]
+    timeout: "5m"
+    type: ""
   ###################################
   # STANDALONE CONFIG - RANCHER SETUP
   ###################################
@@ -69,13 +85,14 @@ terraform:
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
 ```
 
-Before running locally, be sure to run the following commands:
+Note: Depending on what `nodeProvider` is set to, only fill out the appropriate section. Before running locally, be sure to run the following commands:
 
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
 export AWS_PROVIDER_VERSION=""
+export LINODE_PROVIDER_VERSION=""
 ```
 
 See the below examples on how to run the test:
@@ -251,6 +268,8 @@ See below an example config on setting up a standalone RKE2 cluster:
 
 ```yaml
 terraform:
+  cni: ""
+  nodeProvider: ""                                # REQUIRED - supported values are aws | linode
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -270,6 +289,20 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     timeout: ""
+  linodeCredentials:
+    linodeToken: ""  
+  linodeConfig:
+    clientConnThrottle: 20
+    domain: ""
+    linodeImage: ""
+    linodeRootPass: ""
+    privateIP: true
+    region: ""
+    soaEmail: ""
+    swapSize: 256
+    tags: [""]
+    timeout: "5m"
+    type: ""
   standalone:
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
@@ -290,6 +323,7 @@ Before running, be sure to run the following commands:
 ```yaml
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export AWS_PROVIDER_VERSION=""
+export LINODE_PROVIDER_VERSION=""
 export LOCALS_PROVIDER_VERSION=""
 ```
 
@@ -357,6 +391,8 @@ See below an example config on setting up a standalone K3S cluster:
 
 ```yaml
 terraform:
+  cni: ""
+  nodeProvider: ""                                # REQUIRED - supported values are aws | linode
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -376,6 +412,20 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     timeout: ""
+  linodeCredentials:
+    linodeToken: ""  
+  linodeConfig:
+    clientConnThrottle: 20
+    domain: ""
+    linodeImage: ""
+    linodeRootPass: ""
+    privateIP: true
+    region: ""
+    soaEmail: ""
+    swapSize: 256
+    tags: [""]
+    timeout: "5m"
+    type: ""
   standalone:
     k3sVersion: ""                                # REQUIRED - the format MUST be in `v1.xx.x+k3s1` (i.e. v1.31.4+k3s1)
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
@@ -388,6 +438,7 @@ Before running, be sure to run the following commands:
 ```yaml
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export AWS_PROVIDER_VERSION=""
+export LINODE_PROVIDER_VERSION=""
 export LOCALS_PROVIDER_VERSION=""
 ```
 
