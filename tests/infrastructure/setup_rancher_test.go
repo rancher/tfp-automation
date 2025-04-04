@@ -35,7 +35,7 @@ func (i *RancherTestSuite) TestCreateRancher() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 

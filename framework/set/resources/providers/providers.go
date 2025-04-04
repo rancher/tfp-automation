@@ -8,6 +8,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers/harvester"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,6 +28,11 @@ func TunnelToProvider(provider string) ProviderResources {
 		return ProviderResources{
 			CreateAirgap:    aws.CreateAirgappedAWSResources,
 			CreateNonAirgap: aws.CreateAWSResources,
+		}
+	case defaults.Harvester:
+		logrus.Info("Using Harvester to create resources...")
+		return ProviderResources{
+			CreateNonAirgap: harvester.CreateHarvesterResources,
 		}
 	default:
 		panic(fmt.Sprintf("Provider %v not found", provider))

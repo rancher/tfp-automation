@@ -5,12 +5,12 @@ set -eu
 
 DEBUG="${DEBUG:-false}"
 TERRAFORM_VERSION="${TERRAFORM_VERSION:-}"
-EXTERNAL_ENCODED_VPN="${EXTERNAL_ENCODED_VPN:-}"
-VPN_ENCODED_LOGIN="${VPN_ENCODED_LOGIN:-}"
 RKE_PROVIDER_VERSION="${RKE_PROVIDER_VERSION:-}"
 RANCHER2_PROVIDER_VERSION="${RANCHER2_PROVIDER_VERSION:-}"
 LOCALS_PROVIDER_VERSION="${LOCALS_PROVIDER_VERSION:-}"
 AWS_PROVIDER_VERSION="${AWS_PROVIDER_VERSION:-}"
+HARVESTER_PROVIDER_VERSION="${HARVESTER_PROVIDER_VERSION:-}"
+KUBERNETES_PROVIDER_VERSION="${KUBERNETES_PROVIDER_VERSION:-}"
 
 TRIM_JOB_NAME=$(basename "$JOB_NAME")
 
@@ -27,8 +27,8 @@ while [[ 3 -gt $count ]]; do
                                                                     --build-arg RANCHER2_PROVIDER_VERSION="$RANCHER2_PROVIDER_VERSION" \
                                                                     --build-arg LOCALS_PROVIDER_VERSION="$LOCALS_PROVIDER_VERSION" \
                                                                     --build-arg AWS_PROVIDER_VERSION="$AWS_PROVIDER_VERSION" \
-                                                                    --build-arg EXTERNAL_ENCODED_VPN="$EXTERNAL_ENCODED_VPN" \
-                                                                    --build-arg VPN_ENCODED_LOGIN="$VPN_ENCODED_LOGIN" \
+                                                                    --build-arg HARVESTER_PROVIDER_VERSION="$HARVESTER_PROVIDER_VERSION" \
+                                                                    --build-arg KUBERNETES_PROVIDER_VERSION="$KUBERNETES_PROVIDER_VERSION" \
                                                                     -t tfp-automation-validation-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"
 
     if [[ $? -eq 0 ]]; then break; fi
