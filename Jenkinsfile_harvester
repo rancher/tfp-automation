@@ -33,6 +33,7 @@ node("harvester-vpn-1") {
                     string(credentialsId: 'RANCHER_LINODE_ACCESSKEY', variable: 'RANCHER_LINODE_ACCESSKEY'),
                     string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
                     string(credentialsId: 'AWS_SSH_KEY_NAME', variable: 'AWS_SSH_KEY_NAME'),
+                    string(credentialsId: 'AWS_SSH_RSA_KEY', variable: 'AWS_SSH_RSA_KEY'),
                     string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
   stage('Checkout') {
           deleteDir()
@@ -54,7 +55,7 @@ node("harvester-vpn-1") {
         def decoded = new String(env.AWS_SSH_PEM_KEY.decodeBase64())
         writeFile file: AWS_SSH_KEY_NAME, text: decoded
 
-        def decodedRsa = new String(AWS_SSH_RSA_KEY.decodeBase64())
+        def decodedRsa = new String(env.AWS_SSH_RSA_KEY.decodeBase64())
         writeFile file: JENKINS_RKE_VALIDATION, text: decodedRsa
       }
       
