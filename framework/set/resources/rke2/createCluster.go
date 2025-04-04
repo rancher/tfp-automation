@@ -76,7 +76,7 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	connectionBlockBody.SetAttributeValue(defaults.Host, cty.StringVal(instance))
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
 
-	if terraformConfig.NodeProvider == defaults.Aws {
+	if terraformConfig.Provider == defaults.Aws {
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
 		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
@@ -85,9 +85,11 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		}
 
 		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-	} else if terraformConfig.NodeProvider == defaults.Linode {
+	} else if terraformConfig.Provider == defaults.Linode {
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(linode.RootUser))
 		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
+	} else if terraformConfig.Provider == defaults.Harvester {
+		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.HarvesterConfig.SSHUser))
 	}
 
 	rootBody.AppendNewline()

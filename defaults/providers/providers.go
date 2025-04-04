@@ -1,6 +1,7 @@
 package providers
 
 const (
-	AWS    = "aws"
-	Linode = "linode"
+	AWS       = "aws"
+	Linode    = "linode"
+	Harvester = "harvester"
 )

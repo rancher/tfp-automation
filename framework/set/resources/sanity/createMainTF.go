@@ -45,7 +45,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 
-	providerTunnel := tunnel.TunnelToProvider(terraformConfig)
+	providerTunnel := tunnel.TunnelToProvider(terraformConfig.Provider)
 	file, err = providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return "", err
@@ -53,7 +53,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	if terraformConfig.NodeProvider == providers.Linode {
+	if terraformConfig.Provider == providers.Linode {
 		linodeNodeBalancerHostname = terraform.Output(t, terraformOptions, nodeBalancerHostname)
 	}
 

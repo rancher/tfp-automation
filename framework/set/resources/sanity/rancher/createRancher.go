@@ -40,7 +40,7 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, installRancher)
 
-	if terraformConfig.NodeProvider == providers.Linode {
+	if terraformConfig.Provider == providers.Linode {
 		terraformConfig.Standalone.RancherHostname = linodeNodeBalancerHostname
 	}
 

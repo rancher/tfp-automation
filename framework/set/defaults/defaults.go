@@ -67,6 +67,9 @@ const (
 
 	LogFile = "log_file"
 
+	Tags = "tags"
+	Type = "type"
+
 	Ami                      = "ami"
 	AssociatePublicIPAddress = "associate_public_ip_address"
 	Count                    = "count"
@@ -76,10 +79,9 @@ const (
 	VpcSecurityGroupIds      = "vpc_security_group_ids"
 	KeyName                  = "key_name"
 	AwsInstance              = "aws_instance"
-	Name                     = "Name"
+	Name                     = "name"
 	Nodes                    = "nodes"
 	RootBlockDevice          = "root_block_device"
-	Tags                     = "tags"
 	VolumeSize               = "volume_size"
 	Timeout                  = "timeout"
 
@@ -91,6 +93,53 @@ const (
 	LinodeTags         = "tags"
 	LinodeSwapSize     = "swap_size"
 	LinodePrivateIP    = "private_ip"
+	Harvester          = "harvester"
+	CPU                = "cpu"
+	Memory             = "memory"
+
+	Labels = "labels"
+
+	Disk                    = "disk"
+	EFI                     = "efi"
+	SecureBoot              = "secure_boot"
+	RunStrategy             = "run_strategy"
+	Hostname                = "hostname"
+	HarvesterSource         = "harvester/harvester"
+	SshUser                 = "ssh-user"
+	KubernetesSecret        = "kubernetes_secret"
+	HarvesterVirtualMachine = "harvester_virtualmachine"
+	HarvesterSSHKey         = "harvester_ssh_key"
+	RerunOnFailure          = "RerunOnFailure"
+	PublicKey               = "public_key"
+
+	NetworkName      = "network_name"
+	NetworkInterface = "network_interface"
+	NIC1             = "nic-1"
+	Model            = "model"
+	WaitForLease     = "wait_for_lease"
+	Virtio           = "virtio"
+	Bridge           = "bridge"
+
+	RestartAfterUpdate = "restart_after_update"
+	RootDisk           = "rootdisk"
+
+	Size        = "size"
+	BootOrder   = "boot_order"
+	Image       = "image"
+	AutoDelete  = "auto_delete"
+	Bus         = "bus"
+	Q35         = "q35"
+	MachineType = "machine_type"
+	Ubuntu      = "ubuntu"
+	Gi          = "Gi"
+
+	ModulePath       = "module_path"
+	ModuleRelPath    = "module_rel_path"
+	CodebaseRootPath = "codebase_root_path"
+
+	CloudInit          = "cloudinit"
+	UserDataSecretName = "user_data_secret_name"
+	NetworkData        = "network_data"
 
 	Locals                          = "locals"
 	RoleFlags                       = "role_flags"
@@ -122,7 +171,6 @@ const (
 	Provisioner      = "provisioner"
 	RemoteExec       = "remote-exec"
 	Ssh              = "ssh"
-	Type             = "type"
 	User             = "user"
 	Password         = "password"
 	Self             = "self"
@@ -146,7 +194,7 @@ const (
 	Local       = "local"
 	Kubernetes  = "kubernetes"
 
-	Hostname          = "hostname"
+	KubernetesSource  = "hashicorp/kubernetes"
 	Insecure          = "insecure"
 	LocalSource       = "hashicorp/local"
 	Provider          = "provider"

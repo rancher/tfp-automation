@@ -48,7 +48,7 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 	k.cattleConfig = configMap[0]
 	k.rancherConfig, k.terraformConfig, k.terratestConfig = config.LoadTFPConfigs(k.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(k.T(), k.terraformConfig, k.terratestConfig, keyPath)
 	k.terraformOptions = terraformOptions
 }
@@ -66,7 +66,7 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		k.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)

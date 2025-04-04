@@ -15,7 +15,7 @@ import (
 
 // BuildModule is a function that builds the Terraform module.
 func BuildModule(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any) error {
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 
 	_, err := framework.ConfigTF(nil, "", "", "", configMap, false)
 	if err != nil {

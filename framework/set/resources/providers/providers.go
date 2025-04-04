@@ -8,6 +8,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers/harvester"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/linode"
 	"github.com/sirupsen/logrus"
 )
@@ -21,8 +22,8 @@ type ProviderResources struct {
 }
 
 // TunnelToProvider returns an struct that allows a user to create resources from a given provider
-func TunnelToProvider(terraformConfig *config.TerraformConfig) ProviderResources {
-	switch terraformConfig.NodeProvider {
+func TunnelToProvider(provider string) ProviderResources {
+	switch provider {
 	case providers.AWS:
 		logrus.Infof("Creating AWS resources...")
 		return ProviderResources{
@@ -34,8 +35,13 @@ func TunnelToProvider(terraformConfig *config.TerraformConfig) ProviderResources
 		return ProviderResources{
 			CreateNonAirgap: linode.CreateLinodeResources,
 		}
+	case providers.Harvester:
+		logrus.Info("Using Harvester to create resources...")
+		return ProviderResources{
+			CreateNonAirgap: harvester.CreateHarvesterResources,
+		}
 	default:
-		panic(fmt.Sprintf("Unsupported provider: %s", terraformConfig.NodeProvider))
+		panic(fmt.Sprintf("Unsupported provider: %s", provider))
 	}
 
 }

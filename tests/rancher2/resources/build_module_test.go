@@ -24,7 +24,7 @@ type BuildModuleTestSuite struct {
 }
 
 func (r *BuildModuleTestSuite) TestBuildModule() {
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	defer cleanup.TFFilesCleanup(keyPath)
 
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))

@@ -177,7 +177,6 @@ type TerraformConfig struct {
 	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
-	NodeProvider                        string                       `json:"nodeProvider,omitempty" yaml:"nodeProvider,omitempty"`
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
 	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
 	Proxy                               *Proxy                       `json:"proxy,omitempty" yaml:"proxy,omitempty"`

@@ -28,7 +28,7 @@ type RKEProviderTestSuite struct {
 }
 
 func (t *RKEProviderTestSuite) TearDownSuite() {
-	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath, t.terraformConfig)
+	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath, t.terraformConfig.Provider)
 	cleanup.Cleanup(t.T(), t.terraformOptions, keyPath)
 }
 
@@ -39,7 +39,7 @@ func (t *RKEProviderTestSuite) TestCreateRKECluster() {
 	t.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, t.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath, t.terraformConfig)
+	keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath, t.terraformConfig.Provider)
 	terraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)
 	t.terraformOptions = terraformOptions
 

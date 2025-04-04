@@ -47,7 +47,7 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.K3sKeyPath, i.terraformConfig)
+	keyPath := rancher2.SetKeyPath(keypath.K3sKeyPath, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -63,7 +63,7 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 
 	instances := []string{k3sServerOne, k3sServerTwo, k3sServerThree}
 
-	providerTunnel := providers.TunnelToProvider(i.terraformConfig)
+	providerTunnel := providers.TunnelToProvider(i.terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 

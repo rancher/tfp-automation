@@ -52,8 +52,7 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
-
-	keyPath := rancher2.SetKeyPath(keypath.RKE2KeyPath, i.terraformConfig)
+	keyPath := rancher2.SetKeyPath(keypath.RKE2KeyPath, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -69,7 +68,7 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 
-	providerTunnel := providers.TunnelToProvider(i.terraformConfig)
+	providerTunnel := providers.TunnelToProvider(i.terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 
