@@ -8,6 +8,8 @@ RKE2_TOKEN=$5
 
 set -e
 
+sudo hostnamectl set-hostname ${RKE2_SERVER_IP}
+
 sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
 
@@ -22,6 +24,11 @@ sudo INSTALL_RKE2_VERSION=${K8S_VERSION} INSTALL_RKE2_TYPE='server' ./install.sh
 sudo systemctl enable rke2-server
 sudo systemctl start rke2-server
 
-sudo mkdir -p /home/${USER}/.kube
-sudo cp /etc/rancher/rke2/rke2.yaml /home/${USER}/.kube/config
-sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube
+if [[ "${USER}" == "root" ]]; then
+  sudo mkdir -p /root/.kube
+  sudo cp /etc/rancher/rke2/rke2.yaml /root/.kube/config
+else
+  sudo mkdir -p /home/${USER}/.kube
+  sudo cp /etc/rancher/rke2/rke2.yaml /home/${USER}/.kube/config
+  sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube
+fi

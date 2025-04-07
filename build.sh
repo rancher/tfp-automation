@@ -11,6 +11,7 @@ RKE_PROVIDER_VERSION="${RKE_PROVIDER_VERSION:-}"
 RANCHER2_PROVIDER_VERSION="${RANCHER2_PROVIDER_VERSION:-}"
 LOCALS_PROVIDER_VERSION="${LOCALS_PROVIDER_VERSION:-}"
 AWS_PROVIDER_VERSION="${AWS_PROVIDER_VERSION:-}"
+LINODE_PROVIDER_VERSION="${LINODE_PROVIDER_VERSION:-}"
 
 TRIM_JOB_NAME=$(basename "$JOB_NAME")
 
@@ -27,6 +28,7 @@ while [[ 3 -gt $count ]]; do
                                                                     --build-arg RANCHER2_PROVIDER_VERSION="$RANCHER2_PROVIDER_VERSION" \
                                                                     --build-arg LOCALS_PROVIDER_VERSION="$LOCALS_PROVIDER_VERSION" \
                                                                     --build-arg AWS_PROVIDER_VERSION="$AWS_PROVIDER_VERSION" \
+                                                                    --build-arg LINODE_PROVIDER_VERSION="$LINODE_PROVIDER_VERSION" \
                                                                     --build-arg EXTERNAL_ENCODED_VPN="$EXTERNAL_ENCODED_VPN" \
                                                                     --build-arg VPN_ENCODED_LOGIN="$VPN_ENCODED_LOGIN" \
                                                                     -t tfp-automation-validation-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"

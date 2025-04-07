@@ -11,6 +11,7 @@ In addition to the main purpose of testing the Rancher2 provider, `tfp-automatio
 # <p align="center"> :scroll: Table of contents </p>
 
 -   [Configurations](#configurations)
+    -   [Infrastructure](#configurations-infrastructure)
     -   [Rancher](#configurations-rancher)
     -   [Terraform](#configurations-terraform)
         -   [AKS](#configurations-terraform-aks)
@@ -47,12 +48,13 @@ In addition to the main purpose of testing the Rancher2 provider, `tfp-automatio
 
 ##### When testing locally, the following environment variables should be exported:
 ```yaml
-export RANCHER2_PROVIDER_VERSION=""                                    #Required
-export AWS_PROVIDER_VERSION=""                                         #Required for custom cluster provisioning
-export LOCALS_PROVIDER_VERSION=""                                      #Required for custom cluster provisioning
+export RANCHER2_PROVIDER_VERSION=""                                     # Required
+export AWS_PROVIDER_VERSION=""                                          # Required for custom cluster / infrastructure building
+export LINODE_PROVIDER_VERSION=""                                       # Required for custom cluster / infrastructure building
+export LOCALS_PROVIDER_VERSION=""                                       # Required for custom cluster / infrastructure building
 
-export QASE_AUTOMATION_TOKEN=""                                        #Required for local Qase reporting
-export QASE_TEST_RUN_ID=""                                             #Required for local Qase reporting
+export QASE_AUTOMATION_TOKEN=""                                         # Required for local Qase reporting
+export QASE_TEST_RUN_ID=""                                              # Required for local Qase reporting
 ```
 ##### These tests require an accurately configured `cattle-config.yaml` to successfully run.
 
@@ -67,6 +69,78 @@ terraform:
   
 terratest:
   # define test specific configs here
+```
+
+---
+
+<a name="configurations-infrastructure"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+As part of this framework, you have the ability to spin up a Rancher HA environment using various node providers. The `infrasturcture` folder hosts a series of different test files that explain further. As far as different configurations needed to make this happen, see below:
+
+##### Infrastructure
+
+```yaml
+terraform:
+  cni: "calico"
+  defaultClusterRoleForProjectMembers: "true"
+  enableNetworkPolicy: false
+  nodeProvider: ""                              # The following node providers are supported: aws | linode
+  privateKeyPath: ""
+  resourcePrefix: ""
+  windowsPrivateKeyPath: ""
+
+  # Fill out the AWS section if nodeProvider is set to aws.
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    region: ""
+    awsSecurityGroups: [""]
+    awsSecurityGroupNames: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: "a"
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    awsUser: ""
+    sshConnectionType: "ssh"
+    timeout: "5m"
+    windowsAMI: ""
+    windowsAwsUser: ""
+    windowsInstanceType: ""
+    windowsKeyName: ""
+
+  # Fill out the Linode section if nodeProvider is set to linode.
+  linodeCredentials:
+    linodeToken: ""  
+  linodeConfig:
+    clientConnThrottle: 20
+    domain: ""
+    linodeImage: ""
+    linodeRootPass: ""
+    privateIP: true
+    region: ""
+    soaEmail: ""
+    swapSize: 256
+    tags: [""]
+    timeout: "5m"
+    type: ""
+
+  standalone:
+    bootstrapPassword: ""
+    certManagerVersion: "v1.15.3"
+    osUser: ""
+    osGroup: ""
+    rancherChartRepository: "https://releases.rancher.com/server-charts/"
+    rancherHostname: ""
+    rancherImage: "rancher/rancher"
+    rancherTagVersion: "v2.11.0"
+    repo: "latest"
+    rke2Version: "v1.30.9+rke2r1"
 ```
 
 ---

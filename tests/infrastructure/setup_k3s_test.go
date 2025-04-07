@@ -31,11 +31,11 @@ const (
 	k3sServerTwo   = "k3s_server2"
 	k3sServerThree = "k3s_server3"
 
-	k3sServerOnePublicDNS   = "k3s_server1_public_dns"
+	k3sServerOnePublicIP    = "k3s_server1_public_ip"
 	k3sServerOnePrivateIP   = "k3s_server1_private_ip"
-	k3sServerTwoPublicDNS   = "k3s_server2_public_dns"
-	k3sServerThreePublicDNS = "k3s_server3_public_dns"
-	k3sBastionPublicDNS     = "k3s_bastion_public_dns"
+	k3sServerTwoPublicIP    = "k3s_server2_public_ip"
+	k3sServerThreePublicIP  = "k3s_server3_public_ip"
+	k3sBastionPublicIP      = "k3s_bastion_public_ip"
 	k3sServerTwoPrivateIP   = "k3s_server2_private_ip"
 	k3sServerThreePrivateIP = "k3s_server3_private_ip"
 )
@@ -47,7 +47,7 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.K3sKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.K3sKeyPath, i.terraformConfig)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -63,25 +63,25 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 
 	instances := []string{k3sServerOne, k3sServerTwo, k3sServerThree}
 
-	providerTunnel := providers.TunnelToProvider(i.terraformConfig.Provider)
+	providerTunnel := providers.TunnelToProvider(i.terraformConfig)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
-	k3sServerOnePublicDNS := terraform.Output(i.T(), terraformOptions, k3sServerOnePublicDNS)
+	k3sServerOnePublicIP := terraform.Output(i.T(), terraformOptions, k3sServerOnePublicIP)
 	k3sServerOnePrivateIP := terraform.Output(i.T(), terraformOptions, k3sServerOnePrivateIP)
-	k3sServerTwoPublicDNS := terraform.Output(i.T(), terraformOptions, k3sServerTwoPublicDNS)
-	k3sServerThreePublicDNS := terraform.Output(i.T(), terraformOptions, k3sServerThreePublicDNS)
+	k3sServerTwoPublicIP := terraform.Output(i.T(), terraformOptions, k3sServerTwoPublicIP)
+	k3sServerThreePublicIP := terraform.Output(i.T(), terraformOptions, k3sServerThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating K3s cluster...")
-	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, i.terraformConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS)
+	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, i.terraformConfig, k3sServerOnePublicIP, k3sServerOnePrivateIP, k3sServerTwoPublicIP, k3sServerThreePublicIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
-	logrus.Infof("Kubeconfig file is located in /home/%s/.kube in the node: %s", i.terraformConfig.Standalone.OSUser, k3sServerOnePublicDNS)
+	logrus.Infof("Kubeconfig file is located in /home/%s/.kube in the node: %s", i.terraformConfig.Standalone.OSUser, k3sServerOnePublicIP)
 }
 
 func TestCreateK3SClusterTestSuite(t *testing.T) {

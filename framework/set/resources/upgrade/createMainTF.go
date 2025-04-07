@@ -34,7 +34,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	aws.CreateTerraformProviderBlock(tfBlockBody)
+	aws.CreateAWSTerraformProviderBlock(tfBlockBody)
 	rootBody.AppendNewline()
 
 	aws.CreateAWSProviderBlock(rootBody, terraformConfig)

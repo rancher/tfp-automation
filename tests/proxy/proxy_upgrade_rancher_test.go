@@ -44,10 +44,10 @@ type TfpProxyUpgradeRancherTestSuite struct {
 }
 
 func (p *TfpProxyUpgradeRancherTestSuite) TearDownSuite() {
-	keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, p.terraformConfig)
 	cleanup.Cleanup(p.T(), p.standaloneTerraformOptions, keyPath)
 
-	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath)
+	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terraformConfig)
 	cleanup.Cleanup(p.T(), p.upgradeTerraformOptions, keyPath)
 }
 
@@ -55,7 +55,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, p.terraformConfig)
 	standaloneTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -65,7 +65,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	p.proxyNode = proxyNode
 	p.proxyPrivateIP = proxyPrivateIP
 
-	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath)
+	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terraformConfig)
 	upgradeTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 
 	p.upgradeTerraformOptions = upgradeTerraformOptions
@@ -107,7 +107,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 	err = pipeline.PostRancherInstall(p.client, p.client.RancherConfig.AdminPassword)
 	require.NoError(p.T(), err)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
 
@@ -117,7 +117,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 	p.terraformConfig.Standalone.UpgradeProxyRancher = true
 
-	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath)
+	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terraformConfig)
 	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyPrivateIP, p.proxyNode, "", "")
 	require.NoError(p.T(), err)
 
@@ -158,7 +158,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string)
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath)
+			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, nil)
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
 			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)

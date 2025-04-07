@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -22,7 +23,7 @@ const (
 
 // CreateRKE2Cluster is a helper function that will create the RKE2 cluster.
 func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS string) (*os.File, error) {
+	rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP string) (*os.File, error) {
 	var err error
 	userDir := os.Getenv("GOROOT")
 	if userDir == "" {
@@ -49,8 +50,8 @@ func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 	rke2Token := namegen.AppendRandomString(token)
 
-	createRKE2Server(rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2Token, serverOneScriptContent)
-	addRKE2ServerNodes(rootBody, terraformConfig, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS, rke2Token, newServersScriptContent)
+	createRKE2Server(rootBody, terraformConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2Token, serverOneScriptContent)
+	addRKE2ServerNodes(rootBody, terraformConfig, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP, rke2Token, newServersScriptContent)
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
@@ -74,14 +75,20 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	connectionBlockBody.SetAttributeValue(defaults.Host, cty.StringVal(instance))
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
-	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
-	keyPath := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
+	if terraformConfig.NodeProvider == defaults.Aws {
+		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+
+		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPath := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
+		}
+
+		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
+	} else if terraformConfig.NodeProvider == defaults.Linode {
+		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(linode.RootUser))
+		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
 	}
-
-	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
 
 	rootBody.AppendNewline()
 
@@ -89,9 +96,9 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 }
 
 // createRKE2Server is a helper function that will create the RKE2 server.
-func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP,
+func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP,
 	rke2Token string, script []byte) {
-	_, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOne)
+	_, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " || true'"
@@ -104,9 +111,9 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 }
 
 // addRKE2ServerNodes is a helper function that will add additional RKE2 server nodes to the initial RKE2 server.
-func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS,
-	rke2ServerThreePublicDNS, rke2Token string, script []byte) {
-	instances := []string{rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS}
+func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP,
+	rke2ServerThreePublicIP, rke2Token string, script []byte) {
+	instances := []string{rke2ServerTwoPublicIP, rke2ServerThreePublicIP}
 	hosts := []string{rke2ServerTwo, rke2ServerThree}
 
 	for i, instance := range instances {
@@ -114,7 +121,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		nullResourceBlockBody, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, instance, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " || true'"
+			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " || true'"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

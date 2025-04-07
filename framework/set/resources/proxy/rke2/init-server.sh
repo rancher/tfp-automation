@@ -46,6 +46,7 @@ https_proxy=http://${BASTION}:${PORT}
 EOF
 }
 
+runSSH "${RKE2_SERVER_ONE_IP}" "sudo hostnamectl set-hostname ${RKE2_SERVER_ONE_IP}"
 runSSH "${RKE2_SERVER_ONE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
 
 configFunction=$(declare -f setupConfig)

@@ -6,8 +6,9 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers/linode"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,16 +21,21 @@ type ProviderResources struct {
 }
 
 // TunnelToProvider returns an struct that allows a user to create resources from a given provider
-func TunnelToProvider(provider string) ProviderResources {
-	switch provider {
-	case defaults.Aws:
-		logrus.Info("Using AWS to create resources...")
+func TunnelToProvider(terraformConfig *config.TerraformConfig) ProviderResources {
+	switch terraformConfig.NodeProvider {
+	case providers.AWS:
+		logrus.Infof("Creating AWS resources...")
 		return ProviderResources{
 			CreateAirgap:    aws.CreateAirgappedAWSResources,
 			CreateNonAirgap: aws.CreateAWSResources,
 		}
+	case providers.Linode:
+		logrus.Infof("Creating Linode resources...")
+		return ProviderResources{
+			CreateNonAirgap: linode.CreateLinodeResources,
+		}
 	default:
-		panic(fmt.Sprintf("Provider %v not found", provider))
+		panic(fmt.Sprintf("Unsupported provider: %s", terraformConfig.NodeProvider))
 	}
 
 }
