@@ -29,7 +29,7 @@ rancher:
 #######################
 terraform:
   cni: ""
-  nodeProvider: ""                                # REQUIRED - supported values are aws | linode
+  provider: ""                                # REQUIRED - supported values are aws | linode | harvester
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   resourcePrefix: ""
   ##########################################
@@ -85,7 +85,7 @@ terraform:
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
 ```
 
-Note: Depending on what `nodeProvider` is set to, only fill out the appropriate section. Before running locally, be sure to run the following commands:
+Note: Depending on what `provider` is set to, only fill out the appropriate section. Before running locally, be sure to run the following commands:
 
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""
@@ -269,7 +269,7 @@ See below an example config on setting up a standalone RKE2 cluster:
 ```yaml
 terraform:
   cni: ""
-  nodeProvider: ""                                # REQUIRED - supported values are aws | linode
+  provider: ""                                # REQUIRED - supported values are aws | linode | harvester
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -392,7 +392,7 @@ See below an example config on setting up a standalone K3S cluster:
 ```yaml
 terraform:
   cni: ""
-  nodeProvider: ""                                # REQUIRED - supported values are aws | linode
+  provider: ""                                # REQUIRED - supported values are aws | linode | harvester
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:

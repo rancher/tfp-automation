@@ -85,12 +85,12 @@ terraform:
   cni: "calico"
   defaultClusterRoleForProjectMembers: "true"
   enableNetworkPolicy: false
-  nodeProvider: ""                              # The following node providers are supported: aws | linode
+  provider: ""                              # The following providers are supported: aws | linode | harvester
   privateKeyPath: ""
   resourcePrefix: ""
   windowsPrivateKeyPath: ""
 
-  # Fill out the AWS section if nodeProvider is set to aws.
+  # Fill out the AWS section if provider is set to aws.
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -114,7 +114,7 @@ terraform:
     windowsInstanceType: ""
     windowsKeyName: ""
 
-  # Fill out the Linode section if nodeProvider is set to linode.
+  # Fill out the Linode section if provider is set to linode.
   linodeCredentials:
     linodeToken: ""  
   linodeConfig:
@@ -129,6 +129,20 @@ terraform:
     tags: [""]
     timeout: "5m"
     type: ""
+  
+  # Fill out this Harvester section if provider is set to harvester.
+  harvesterCredentials:
+    clusterId: "c-m-g9j58vgt"
+    clusterType: "imported"
+    kubeconfigContent: ""
+  harvesterConfig:
+    diskSize: "30"
+    cpuCount: "4"
+    memorySize: "8"
+    networkNames: [""]
+    imageName: ""
+    vmNamespace: "default"
+    sshUser: ""
 
   standalone:
     bootstrapPassword: ""

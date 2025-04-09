@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	nodeBalancerHostname    = "linode_node_balancer_hostname"
+	linodeBalancerHostname  = "linode_node_balancer_hostname"
 	rke2ServerOne           = "rke2_server1"
 	rke2ServerTwo           = "rke2_server2"
 	rke2ServerThree         = "rke2_server3"
@@ -41,7 +41,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlockBody := tfBlock.Body()
 
 	var err error
-	var linodeNodeBalancerHostname string
+	var nodeBalancerHostname string
 
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
 
@@ -54,7 +54,9 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraform.InitAndApply(t, terraformOptions)
 
 	if terraformConfig.Provider == providers.Linode {
-		linodeNodeBalancerHostname = terraform.Output(t, terraformOptions, nodeBalancerHostname)
+		nodeBalancerHostname = terraform.Output(t, terraformOptions, linodeBalancerHostname)
+	} else if terraformConfig.Provider == providers.Harvester {
+		nodeBalancerHostname = terraform.Output(t, terraformOptions, rke2ServerOnePublicIP) + ".sslip.io"
 	}
 
 	rke2ServerOnePublicIP := terraform.Output(t, terraformOptions, rke2ServerOnePublicIP)
@@ -73,7 +75,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicIP, linodeNodeBalancerHostname)
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicIP, nodeBalancerHostname)
 	if err != nil {
 		return "", err
 	}
