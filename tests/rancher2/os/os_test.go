@@ -56,6 +56,9 @@ func (p *OSValidationTestSuite) SetupSuite() {
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
+	p.cattleConfig, err = config.LoadPackageDefaults(p.cattleConfig, "")
+	require.NoError(p.T(), err)
+
 	modulePermutation, err := permutationsdata.CreateModulePermutation(p.cattleConfig)
 	require.NoError(p.T(), err)
 

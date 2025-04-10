@@ -1,0 +1,12 @@
+rancher:
+  host: ""
+  adminToken: ""
+
+# TERRAFORM CONFIG 
+terraform:
+  resourcePrefix: "upgrading"
+
+# TERRATEST CONFIG - K8S VERSIONS
+terratest:
+  kubernetesVersion: ""
+  upgradedKubernetesVersion: ""
