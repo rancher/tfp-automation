@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -19,7 +18,7 @@ const (
 
 // CreateRancher is a function that will set the Rancher configurations in the main.tf file.
 func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2ServerOnePublicIP, linodeNodeBalancerHostname string) (*os.File, error) {
+	rke2ServerOnePublicIP, nodeBalancerHostname string) (*os.File, error) {
 	var err error
 	userDir := os.Getenv("GOROOT")
 	if userDir == "" {
@@ -40,8 +39,8 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 
 	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, installRancher)
 
-	if terraformConfig.NodeProvider == providers.Linode {
-		terraformConfig.Standalone.RancherHostname = linodeNodeBalancerHostname
+	if nodeBalancerHostname != "" {
+		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
 	}
 
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +

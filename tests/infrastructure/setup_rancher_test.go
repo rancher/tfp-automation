@@ -36,14 +36,14 @@ func (i *RancherTestSuite) TestCreateRancher() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, i.terraformConfig)
+	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
 	_, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
-	if i.terraformConfig.NodeProvider != providers.Linode {
+	if i.terraformConfig.Provider != providers.Linode {
 		logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)
 		logrus.Infof("Booststrap password: %s", i.terraformConfig.Standalone.BootstrapPassword)
 
