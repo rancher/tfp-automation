@@ -1,11 +1,10 @@
 #!/bin/bash
 
-USER=$1
-GROUP=$2
-K8S_VERSION=$3
-RKE2_SERVER_IP=$4
-RKE2_NEW_SERVER_IP=$5
-RKE2_TOKEN=$6
+K8S_VERSION=$1
+RKE2_SERVER_IP=$2
+RKE2_NEW_SERVER_IP=$3
+RKE2_TOKEN=$4
+CNI=$5
 
 set -e
 
@@ -15,6 +14,7 @@ sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
 
 echo "server: https://${RKE2_SERVER_IP}:9345
+cni: ${CNI}
 token: ${RKE2_TOKEN}
 tls-san:
   - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null

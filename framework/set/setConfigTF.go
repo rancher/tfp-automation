@@ -131,8 +131,8 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 			if err != nil {
 				return clusterNames, err
 			}
-		case module == modules.ImportEC2RKE2 || module == modules.ImportEC2K3s:
-			_, err = imported.SetImportedRKE2K3s(rancherConfig, terraform, terratest, newFile, rootBody, file)
+		case module == modules.ImportEC2RKE2 || module == modules.ImportEC2RKE2Windows || module == modules.ImportEC2K3s:
+			_, err = imported.SetImportedRKE2K3s(terraform, terratest, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, err
 			}

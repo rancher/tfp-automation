@@ -110,10 +110,10 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"No Proxy RKE1", nodeRolesDedicated, "ec2_rke1"},
-		{"No Proxy RKE2", nodeRolesDedicated, "ec2_rke2"},
-		{"No Proxy RKE2 Windows", nil, "ec2_rke2_windows_custom"},
-		{"No Proxy K3S", nodeRolesDedicated, "ec2_k3s"},
+		{"No Proxy RKE1", nodeRolesDedicated, modules.EC2RKE1},
+		{"No Proxy RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"No Proxy RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		{"No Proxy K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	for _, tt := range tests {
@@ -158,10 +158,10 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Proxy RKE1", nodeRolesDedicated, "ec2_rke1"},
-		{"Proxy RKE2", nodeRolesDedicated, "ec2_rke2"},
-		{"Proxy RKE2 Windows", nil, "ec2_rke2_windows_custom"},
-		{"Proxy K3S", nodeRolesDedicated, "ec2_k3s"},
+		{"Proxy RKE1", nodeRolesDedicated, modules.EC2RKE1},
+		{"Proxy RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"Proxy RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		{"Proxy K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	for _, tt := range tests {
