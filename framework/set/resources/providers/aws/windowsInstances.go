@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
@@ -78,6 +79,19 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo Connected!!!"),
 	}))
+
+	if terraformConfig.Module == modules.ImportEC2RKE2Windows {
+		serverTwoName := terraformConfig.ResourcePrefix + `_server2`
+		serverThreeName := terraformConfig.ResourcePrefix + `_server3`
+		dependsOnServer := `[` + defaults.NullResource + `.` + serverTwoName + `, ` + defaults.NullResource + `.` + serverThreeName + `]`
+
+		server := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
+		}
+
+		configBlockBody.AppendNewline()
+		configBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	}
 }
 
 // CreateAirgappedWindowsAWSInstances is a function that will set the Windows AWS instances configurations in the main.tf file.

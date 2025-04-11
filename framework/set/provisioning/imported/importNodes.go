@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/imported"
+	"github.com/rancher/tfp-automation/framework/set/resources/imported/nullresource"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -49,7 +49,7 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	// Need to first create a null resource block to copy the script to the node.
 	copyScriptName := terraformConfig.ResourcePrefix + `_` + copyScript
-	nullResourceBlockBody, provisionerBlockBody := imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, copyScriptName)
+	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, copyScriptName)
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/import-nodes.sh"),
@@ -62,6 +62,8 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 		addServerTwoName := addServer + terraformConfig.ResourcePrefix + `_` + serverTwo
 		addServerThreeName := addServer + terraformConfig.ResourcePrefix + `_` + serverThree
 		dependsOnServer = `[` + defaults.NullResource + `.` + addServerTwoName + `, ` + defaults.NullResource + `.` + addServerThreeName + `]`
+	} else if terraformConfig.Module == modules.ImportEC2RKE2Windows {
+		dependsOnServer = `[` + defaults.TimeSleep + `.` + defaults.TimeSleep + `-` + terraformConfig.ResourcePrefix + `]`
 	} else {
 		dependsOnServer = `[` + defaults.RKECluster + `.` + terraformConfig.ResourcePrefix + `]`
 	}
@@ -75,7 +77,7 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	// A second null resource block is needed to properly run the script on the node. This is because the cluster registration
 	// token and RKE1 kube config will be not passed correctly as Bash parameters.
 	importClusterName := terraformConfig.ResourcePrefix + `_` + importCluster
-	nullResourceBlockBody, provisionerBlockBody = imported.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName)
+	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName)
 
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},

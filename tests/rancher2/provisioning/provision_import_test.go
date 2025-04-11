@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -60,9 +61,10 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 		name   string
 		module string
 	}{
-		{"Importing TFP RKE1", "ec2_rke1_import"},
-		{"Importing TFP RKE2", "ec2_rke2_import"},
-		{"Importing TFP K3S", "ec2_k3s_import"},
+		{"Importing TFP RKE1", modules.ImportEC2RKE1},
+		{"Importing TFP RKE2", modules.ImportEC2RKE2},
+		{"Importing TFP RKE2 Windows", modules.ImportEC2RKE2Windows},
+		{"Importing TFP K3S", modules.ImportEC2K3s},
 	}
 
 	for _, tt := range tests {
@@ -70,6 +72,8 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 		configMap := []map[string]any{cattleConfig}
 
 		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		testUser, testPassword := configs.CreateTestCredentials()
 
@@ -80,7 +84,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 	}

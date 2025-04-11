@@ -5,6 +5,7 @@ GROUP=$2
 K8S_VERSION=$3
 RKE2_SERVER_IP=$4
 RKE2_TOKEN=$5
+CNI=$6
 
 set -e
 
@@ -13,7 +14,8 @@ sudo hostnamectl set-hostname ${RKE2_SERVER_IP}
 sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
 
-echo "token: ${RKE2_TOKEN}
+echo "cni: ${CNI}
+token: ${RKE2_TOKEN}
 tls-san:
   - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
 

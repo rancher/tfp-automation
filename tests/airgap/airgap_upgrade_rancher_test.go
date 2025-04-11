@@ -134,10 +134,10 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		name   string
 		module string
 	}{
-		{"RKE1", "airgap_rke1"},
-		{"RKE2", "airgap_rke2"},
-		{"RKE2 Windows", "airgap_rke2_windows"},
-		{"K3S", "airgap_k3s"},
+		{"RKE1", modules.AirgapRKE1},
+		{"RKE2", modules.AirgapRKE2},
+		{"RKE2 Windows", modules.AirgapRKE2Windows},
+		{"K3S", modules.AirgapK3S},
 	}
 
 	for _, tt := range tests {
