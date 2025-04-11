@@ -8,11 +8,10 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// SetWindowsAirgapNullResource is a function that will set the Windows airgap null_resource configurations in the main.tf
-// file, to register the nodes to the cluster
-func SetWindowsAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, description string,
-	dependsOn []string) (*hclwrite.Body, error) {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, description})
+// CreateImportedWindowsNullResource is a helper function that will create the null_resource for the Windows node.
+func CreateImportedWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+	publicDNS, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
+	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, resourceName})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
 	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
@@ -21,13 +20,19 @@ func SetWindowsAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *conf
 	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	bastionHostExpression := defaults.AwsInstance + `.` + bastion + `.` + defaults.PublicIp
+	var hostExpression string
 
-	bastionHost := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(bastionHostExpression)},
+	if terratestConfig.WindowsNodeCount == 1 {
+		hostExpression = `"${` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[0].` + defaults.PublicIp + `}"`
+	} else if terratestConfig.WindowsNodeCount > 1 {
+		hostExpression = `"${` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[` + defaults.Count + `.` + defaults.Index + `].` + defaults.PublicIp + `}"`
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.Host, bastionHost)
+	host := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
+	}
+
+	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
 
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.WinRM))
 	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
@@ -37,5 +42,5 @@ func SetWindowsAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *conf
 
 	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
 
-	return provisionerBlockBody, nil
+	return nullResourceBlockBody, provisionerBlockBody
 }

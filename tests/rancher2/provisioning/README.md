@@ -94,6 +94,7 @@ terraform:
   machineConfigName: ""
   nodeTemplateName: ""
   privateKeyPath: ""
+  windowsPrivateKeyPath: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -112,6 +113,11 @@ terraform:
     standaloneSecurityGroupNames: [""]
     sshConnectionType: "ssh"
     timeout: "5m"
+    windowsAMI: ""
+    windowsAWSUser: ""
+    windowsAWSPassword: ""
+    windowsInstanceType: ""
+    windowsKeyName: ""
   standalone:
     k3sVersion: ""                      # Ensure k3s1 suffix is appended (i.e. v1.30.9+k3s1)
     osGroup: ""
@@ -119,6 +125,8 @@ terraform:
     rke2Version: ""                     # Ensure rke2r1 suffix is appended (i.e. v1.30.9+rke2r1)
 terratest:
   tfLogging: true
+  nodeCount: 3
+  windowsNodeCount: 1
 ```
 
 In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.xx.x` defined for the RKE1 portion of the test.

@@ -39,6 +39,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  provider: "aws"
   proxy:
     proxyBastion: ""                              # REQUIRED - this will be set/unset during testing
   resourcePrefix: ""                              # REQUIRED - fill with desired value
@@ -65,7 +66,8 @@ terraform:
     sshConnectionType: "ssh"
     timeout: "5m"
     windowsAMI: ""
-    windowsAwsUser: "administrator"
+    windowsAWSUser: ""
+    windowsAWSPassword: ""
     windowsInstanceType: ""
     windowsKeyName: ""
   ###################################

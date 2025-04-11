@@ -107,10 +107,10 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Sanity RKE1", nodeRolesDedicated, "ec2_rke1"},
-		{"Sanity RKE2", nodeRolesDedicated, "ec2_rke2"},
-		{"Sanity RKE2 Windows", nil, "ec2_rke2_windows_custom"},
-		{"Sanity K3S", nodeRolesDedicated, "ec2_k3s"},
+		{"Sanity RKE1", nodeRolesDedicated, modules.EC2RKE1},
+		{"Sanity RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"Sanity RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		{"Sanity K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	for _, tt := range tests {

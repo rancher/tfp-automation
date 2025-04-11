@@ -136,10 +136,10 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string)
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE1", nodeRolesDedicated, "ec2_rke1"},
-		{"RKE2", nodeRolesDedicated, "ec2_rke2"},
-		{"RKE2 Windows", nil, "ec2_rke2_windows_custom"},
-		{"K3S", nodeRolesDedicated, "ec2_k3s"},
+		{"RKE1", nodeRolesDedicated, modules.EC2RKE1},
+		{"RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		{"K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	for _, tt := range tests {

@@ -74,7 +74,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		scaleUpNodeRoles   []config.Nodepool
 		scaleDownNodeRoles []config.Nodepool
 	}{
-		{"Scaling 3 nodes dedicated roles -> 8 nodes -> 6 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
+		{"Scaling 8 nodes dedicated roles -> 13 nodes -> 11 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
 	}
 
 	for _, tt := range tests {
