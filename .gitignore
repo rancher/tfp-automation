@@ -1,0 +1,7 @@
+.vscode/
+*.tfstate*
+*.terraform/
+*.lock*
+
+# ingore harvester yaml file
+local.yaml
