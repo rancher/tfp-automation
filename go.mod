@@ -27,8 +27,9 @@ require (
 require (
 	github.com/antihax/optional v1.0.0
 	github.com/gruntwork-io/terratest v0.42.0
-	github.com/rancher/norman v0.5.2
-	github.com/rancher/rancher v0.0.0-20250228094653-6e82729d08cf
+	github.com/imdario/mergo v0.3.16
+	github.com/rancher/norman v0.6.0
+	github.com/rancher/rancher v0.0.0-20250328200651-bdbb4ea81874
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/shepherd v0.0.0-20250313161034-078bebe708e3
 	github.com/rancher/tests/actions v0.0.0-20250320195836-4f66d3d9c503
@@ -44,9 +45,10 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/kr/fs v0.1.0 // indirect
+	github.com/kubereboot/kured v1.13.1 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
-	github.com/rancher/wrangler/v3 v3.2.0-rc.3 // indirect
+	github.com/rancher/wrangler/v3 v3.2.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.58.0 // indirect
@@ -93,8 +95,8 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/zclconf/go-cty v1.14.1
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.33.0
-	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/crypto v0.35.0
+	golang.org/x/net v0.36.0 // indirect
 	golang.org/x/oauth2 v0.26.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
@@ -149,14 +151,14 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/rancher/aks-operator v1.11.0-rc.4 // indirect
-	github.com/rancher/apiserver v0.5.2 // indirect
-	github.com/rancher/eks-operator v1.11.0-rc.3 // indirect
-	github.com/rancher/fleet/pkg/apis v0.12.0-alpha.2 // indirect
-	github.com/rancher/gke-operator v1.11.0-rc.2 // indirect
+	github.com/rancher/aks-operator v1.11.0 // indirect
+	github.com/rancher/apiserver v0.6.0 // indirect
+	github.com/rancher/eks-operator v1.11.0 // indirect
+	github.com/rancher/fleet/pkg/apis v0.12.0 // indirect
+	github.com/rancher/gke-operator v1.11.0 // indirect
 	github.com/rancher/lasso v0.2.1 // indirect
-	github.com/rancher/rke v1.8.0-rc.2 // indirect
-	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20240301001845-4eacc2dabbde // indirect
+	github.com/rancher/rke v1.8.0-rc.4 // indirect
+	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250306000150-b1a9781accab // indirect
 	github.com/rancher/wrangler v1.1.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/cobra v1.8.1 // indirect

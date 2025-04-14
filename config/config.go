@@ -1,9 +1,16 @@
 package config
 
 import (
+	"errors"
+	"fmt"
+	"path"
+	"runtime"
+
+	"github.com/imdario/mergo"
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config/authproviders"
 	aws "github.com/rancher/tfp-automation/config/nodeproviders/aws"
@@ -31,6 +38,9 @@ const (
 
 	RancherPrivileged PSACT = "rancher-privileged"
 	RancherRestricted PSACT = "rancher-restricted"
+
+	defaultFilename      = "defaults.yaml"
+	provisioningFilename = "provisioning.yaml"
 )
 
 var EtcdNodePool = Nodepool{
@@ -227,4 +237,42 @@ func LoadTFPConfigs(cattleConfig map[string]any) (*rancher.Config, *TerraformCon
 	operations.LoadObjectFromMap(TerratestConfigurationFileKey, cattleConfig, terratestConfig)
 
 	return rancherConfig, terraformConfig, terratestConfig
+}
+
+// LoadPackageDefaults loads the specified filename in the same package as the test
+func LoadPackageDefaults(cattleConfig map[string]any, filePath string) (map[string]any, error) {
+	if filePath == "" {
+		filePath = defaultFilename
+	}
+
+	defaultsConfig := shepherdConfig.LoadConfigFromFile(filePath)
+	err := mergo.Merge(&defaultsConfig, cattleConfig, mergo.WithOverride)
+	if err != nil {
+		return nil, err
+	}
+
+	return defaultsConfig, nil
+}
+
+// LoadProvisioningDefaults loads the provisioning.yaml file if it exists and merges values provided in the cattleConfig
+func LoadProvisioningDefaults(cattleConfig map[string]any, filename string) (map[string]any, error) {
+	if filename == "" {
+		filename = provisioningFilename
+	}
+
+	_, filePath, _, ok := runtime.Caller(0)
+	if !ok {
+		err := errors.New(fmt.Sprintf("Unable to locate directory of %s", filename))
+		return nil, err
+	}
+
+	configPath := path.Dir(filePath)
+
+	defaultsConfig := shepherdConfig.LoadConfigFromFile(configPath + "/" + filename)
+	err := mergo.Merge(&defaultsConfig, cattleConfig, mergo.WithOverride)
+	if err != nil {
+		return nil, err
+	}
+
+	return defaultsConfig, nil
 }

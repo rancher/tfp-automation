@@ -43,6 +43,13 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 	s.client = client
 
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	s.cattleConfig, err = config.LoadProvisioningDefaults(s.cattleConfig, "")
+	require.NoError(s.T(), err)
+
+	s.cattleConfig, err = config.LoadPackageDefaults(s.cattleConfig, "")
+	require.NoError(s.T(), err)
+
 	configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
 	require.NoError(s.T(), err)
 

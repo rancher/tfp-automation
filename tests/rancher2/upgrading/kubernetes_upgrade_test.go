@@ -42,6 +42,13 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 	k.client = client
 
 	k.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	k.cattleConfig, err = config.LoadProvisioningDefaults(k.cattleConfig, "")
+	require.NoError(k.T(), err)
+
+	k.cattleConfig, err = config.LoadPackageDefaults(k.cattleConfig, "")
+	require.NoError(k.T(), err)
+
 	configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
 	require.NoError(k.T(), err)
 
@@ -68,7 +75,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 
 		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 
-		provisioning.GetK8sVersion(k.T(), k.client, k.terratestConfig, k.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(k.T(), k.client, k.terratestConfig, k.terraformConfig, configs.SecondHighestVersion, configMap)
 
 		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 

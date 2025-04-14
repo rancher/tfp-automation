@@ -1,0 +1,64 @@
+rancher:
+  host: ""
+  adminToken: ""
+  insecure: true
+  cleanup: true
+
+# TERRAFORM CONFIG
+terraform:
+  module: ec2_rke2
+  cni: calico
+  resourcePrefix: "tfp"
+  privateKeyPath: ""
+
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  
+  awsConfig:
+    awsUser: ""
+    ami: ""
+    awsInstanceType: t2.medium
+    region: "us-east-2"
+    awsVolumeType: "gp2"
+    awsSecurityGroupNames: [""]
+    awsSecurityGroups: [""]
+    awsVpcID: ""
+    awsZoneLetter: a
+    awsRootSize: 100
+    awsKeyName: ""
+    sshConnectionType: "ssh"
+    timeout: "5m"
+    
+# AWS CONFIG - WINDOWS
+    windowsAMI: ""
+    windowsAwsUser: "administrator"
+    windowsInstanceType: "t3a.2xlarge"
+    windowsKeyName: ""
+  windowsPrivateKeyPath: ""
+
+# STANDALONE CONFIG - IMPORTED CLUSTERS
+  standalone:
+    rke2Version: "v1.32.3+rke2r1"
+    k3sVersion: "v1.32.3+k3s1"
+    osGroup: ""
+    osUser: ""
+
+# TERRATEST - NODE CONFIG
+terratest:
+  nodepools:
+    - quantity: 1
+      etcd: true
+      controlplane: false
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: true
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: false
+      worker: true
+  nodeCount: 3
+  kubernetesVersion: ""
+  windowsNodeCount: 1
