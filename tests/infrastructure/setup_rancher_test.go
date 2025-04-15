@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
@@ -20,10 +19,7 @@ import (
 
 type RancherTestSuite struct {
 	suite.Suite
-	client           *rancher.Client
 	session          *session.Session
-	cattleConfig     map[string]any
-	rancherConfig    *rancher.Config
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
 	terraformOptions *terraform.Options
@@ -50,7 +46,7 @@ func (i *RancherTestSuite) TestCreateRancher() {
 		testSession := session.NewSession()
 		i.session = testSession
 
-		AcceptEULA(i.T(), i.session, i.cattleConfig, i.rancherConfig, i.terraformConfig, i.terratestConfig, i.terraformConfig.Standalone.RancherHostname)
+		AcceptEULA(i.T(), i.session, i.terraformConfig.Standalone.RancherHostname)
 	}
 }
 
