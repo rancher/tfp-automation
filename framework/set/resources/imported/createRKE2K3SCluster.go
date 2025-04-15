@@ -6,26 +6,28 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/resources/imported/nullresource"
 	"github.com/zclconf/go-cty/cty"
 )
 
 const (
-	addServer     = "add_server"
-	copyScript    = "_copy_script_"
-	createCluster = "create_cluster"
-	serverOne     = "server1"
-	serverTwo     = "server2"
-	serverThree   = "server3"
-	token         = "token"
+	addServer      = "add_server"
+	addWindowsNode = "add_windows_node"
+	copyScript     = "_copy_script_"
+	createCluster  = "create_cluster"
+	serverOne      = "server1"
+	serverTwo      = "server2"
+	serverThree    = "server3"
+	windowsServer  = "windows_server"
+	token          = "token"
 )
 
 // CreateRKE2K3SImportedCluster is a helper function that will create the RKE2/K3S cluster to be imported into Rancher.
-func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePublicDNS, serverOnePrivateIP,
-	serverTwoPublicDNS, serverThreePublicDNS string) {
+func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePublicIP, serverOnePrivateIP,
+	serverTwoPublicIP, serverThreePublicIP, token string) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return
@@ -51,73 +53,29 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 		return
 	}
 
-	token := namegen.AppendRandomString(token)
-
-	createImportedRKE2K3SServer(rootBody, terraformConfig, serverOnePublicDNS, serverOnePrivateIP, token, serverOneScriptContent)
-	addImportedRKE2K3SServerNodes(rootBody, terraformConfig, serverOnePrivateIP, serverTwoPublicDNS, serverThreePublicDNS, token, newServersScriptContent)
-}
-
-// CreateImportedNullResource is a helper function that will create the null_resource for the cluster.
-func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, publicDNS, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, resourceName})
-	nullResourceBlockBody := nullResourceBlock.Body()
-
-	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
-	provisionerBlockBody := provisionerBlock.Body()
-
-	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
-	connectionBlockBody := connectionBlock.Body()
-
-	hostExpression := `"` + publicDNS + `"`
-
-	newHost := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
-	}
-
-	connectionBlockBody.SetAttributeRaw(defaults.Host, newHost)
-
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
-
-	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
-	keyPath := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
-	}
-
-	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-
-	serverOneName := terraformConfig.ResourcePrefix + `_` + serverOne
-	serverTwoName := terraformConfig.ResourcePrefix + `_` + serverTwo
-	serverThreeName := terraformConfig.ResourcePrefix + `_` + serverThree
-
-	dependsOnServer := `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
-	server := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
-	}
-
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
-
-	rootBody.AppendNewline()
-
-	return nullResourceBlockBody, provisionerBlockBody
+	createImportedRKE2K3SServer(rootBody, terraformConfig, serverOnePublicIP, serverOnePrivateIP, token, serverOneScriptContent)
+	addImportedRKE2K3SServerNodes(rootBody, terraformConfig, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP, token, newServersScriptContent)
 }
 
 // createImportedRKE2K3SServer is a helper function that will create the server to be imported into Rancher.
-func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePublicDNS, serverOnePrivateIP,
+func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePublicIP, serverOnePrivateIP,
 	token string, script []byte) {
 	copyScriptName := terraformConfig.ResourcePrefix + copyScript + serverOne
-	_, provisionerBlockBody := CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicDNS, copyScriptName)
+	_, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicIP, copyScriptName)
 
-	var version string
+	var version, command string
 
 	if terraformConfig.Module == modules.ImportEC2K3s {
 		version = terraformConfig.Standalone.K3SVersion
+
+		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+			terraformConfig.Standalone.K3SVersion + " " + serverOnePrivateIP + " " + token + "'"
 	} else {
 		version = terraformConfig.Standalone.RKE2Version
-	}
 
-	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-		version + " " + serverOnePrivateIP + " " + token + "'"
+		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+			version + " " + serverOnePrivateIP + " " + token + " " + terraformConfig.CNI + " || true'"
+	}
 
 	// For imported clusters, need to first put the script on the machine before running it.
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
@@ -126,7 +84,7 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 	}))
 
 	createClusterName := terraformConfig.ResourcePrefix + `_` + createCluster
-	nullResourceBlockBody, provisionerBlockBody := CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicDNS, createClusterName)
+	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicIP, createClusterName)
 
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
@@ -144,26 +102,29 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 }
 
 // addImportedServerNodes is a helper function that will add additional server nodes to the initial server.
-func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePrivateIP, serverTwoPublicDNS,
-	serverThreePublicDNS, token string, script []byte) {
-	dnsList := []string{serverTwoPublicDNS, serverThreePublicDNS}
+func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePrivateIP, serverTwoPublicIP,
+	serverThreePublicIP, token string, script []byte) {
+	instances := []string{serverTwoPublicIP, serverThreePublicIP}
 
 	createClusterName := terraformConfig.ResourcePrefix + `_` + createCluster
 	resourceNames := []string{serverTwo, serverThree}
-	for i, dns := range dnsList {
+	for i, instance := range instances {
 		resourceName := terraformConfig.ResourcePrefix + `_` + resourceNames[i]
-		nullResourceBlockBody, provisionerBlockBody := CreateImportedNullResource(rootBody, terraformConfig, dns, resourceName)
+		nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, instance, resourceName)
 
-		var version string
+		var version, command string
 
 		if terraformConfig.Module == modules.ImportEC2K3s {
 			version = terraformConfig.Standalone.K3SVersion
+
+			command = "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+				terraformConfig.Standalone.K3SVersion + " " + serverOnePrivateIP + " " + token + "'"
 		} else {
 			version = terraformConfig.Standalone.RKE2Version
-		}
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			version + " " + serverOnePrivateIP + " " + dns + " " + token + "'"
+			command = "bash -c '/tmp/add-servers.sh " + version + " " + serverOnePrivateIP + " " + instance + " " + token + " " +
+				terraformConfig.CNI + " || true'"
+		}
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("echo '" + string(script) + "' > /tmp/add-servers.sh"),
@@ -177,7 +138,7 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 
 		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
 
-		nullResourceBlockBody, provisionerBlockBody = CreateImportedNullResource(rootBody, terraformConfig, dns, addServer+"_"+resourceName)
+		nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedNullResource(rootBody, terraformConfig, instance, addServer+"_"+resourceName)
 
 		provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 			{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},

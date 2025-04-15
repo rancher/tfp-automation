@@ -50,7 +50,9 @@ In addition to the main purpose of testing the Rancher2 provider, `tfp-automatio
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""                                     # Required
 export AWS_PROVIDER_VERSION=""                                          # Required for custom cluster / infrastructure building
-export LINODE_PROVIDER_VERSION=""                                       # Required for custom cluster / infrastructure building
+export LINODE_PROVIDER_VERSION=""                                       # Required for infrastructure building using Linode
+export HARVESTER_PROVIDER_VERSION=""                                    # Required for infrastructure building using Harvester
+export KUBERNETES_PROVIDER_VERSION=""                                   # Required for infrastructure building using Harvester
 export LOCALS_PROVIDER_VERSION=""                                       # Required for custom cluster / infrastructure building
 
 export QASE_AUTOMATION_TOKEN=""                                         # Required for local Qase reporting
@@ -132,7 +134,7 @@ terraform:
   
   # Fill out this Harvester section if provider is set to harvester.
   harvesterCredentials:
-    clusterId: "c-m-g9j58vgt"
+    clusterId: ""
     clusterType: "imported"
     kubeconfigContent: ""
   harvesterConfig:

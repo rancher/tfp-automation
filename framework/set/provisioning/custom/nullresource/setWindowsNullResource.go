@@ -23,8 +23,11 @@ func SetWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
+	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.WinRM))
 	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
+	connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSPassword))
+	connectionBlockBody.SetAttributeValue(defaults.Insecure, cty.BoolVal(true))
+	connectionBlockBody.SetAttributeValue(defaults.UseNTLM, cty.BoolVal(true))
 
 	hostExpression := defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[` + defaults.Count + `.` + defaults.Index + `].` + defaults.PublicIp
 	host := hclwrite.Tokens{
@@ -32,14 +35,6 @@ func SetWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	}
 
 	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
-	connectionBlockBody.SetAttributeValue(defaults.TargetPlatform, cty.StringVal(defaults.Windows))
-
-	keyPathExpression := defaults.File + `("` + terraformConfig.WindowsPrivateKeyPath + `")`
-	keyPath := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
-	}
-
-	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
 
 	var regCommand hclwrite.Tokens
 

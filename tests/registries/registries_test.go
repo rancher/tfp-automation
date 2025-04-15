@@ -15,6 +15,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -113,9 +114,9 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Global RKE1", "ec2_rke1", nodeRolesDedicated},
-		{"Global RKE2", "ec2_rke2", nodeRolesDedicated},
-		{"Global K3S", "ec2_k3s", []config.Nodepool{nodeRolesAll}},
+		{"Global RKE1", modules.EC2RKE1, nodeRolesDedicated},
+		{"Global RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"Global K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
 	}
 
 	for _, tt := range tests {
@@ -161,9 +162,9 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Auth RKE1", "ec2_rke1", nodeRolesDedicated},
-		{"Auth RKE2", "ec2_rke2", nodeRolesDedicated},
-		{"Auth K3S", "ec2_k3s", []config.Nodepool{nodeRolesAll}},
+		{"Auth RKE1", modules.EC2RKE1, nodeRolesDedicated},
+		{"Auth RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"Auth K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
 	}
 
 	for _, tt := range tests {
@@ -207,9 +208,9 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Non Auth RKE1", "ec2_rke1", nodeRolesDedicated},
-		{"Non Auth RKE2", "ec2_rke2", nodeRolesDedicated},
-		{"Non Auth K3S", "ec2_k3s", []config.Nodepool{nodeRolesAll}},
+		{"Non Auth RKE1", modules.EC2RKE1, nodeRolesDedicated},
+		{"Non Auth RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"Non Auth K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
 	}
 
 	for _, tt := range tests {

@@ -21,6 +21,7 @@ type Config struct {
 	Timeout               string   `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 	WindowsAMI            string   `json:"windowsAMI,omitempty" yaml:"windowsAMI,omitempty"`
 	WindowsAWSUser        string   `json:"windowsAWSUser,omitempty" yaml:"windowsAWSUser,omitempty"`
+	WindowsAWSPassword    string   `json:"windowsAWSPassword,omitempty" yaml:"windowsAWSPassword,omitempty"`
 	WindowsInstanceType   string   `json:"windowsInstanceType,omitempty" yaml:"windowsInstanceType,omitempty"`
 	WindowsKeyName        string   `json:"windowsKeyName,omitempty" yaml:"windowsKeyName,omitempty"`
 	WindowsVolumeType     string   `json:"windowsVolumeType,omitempty" yaml:"windowsVolumeType,omitempty"`

@@ -47,49 +47,49 @@ var EtcdNodePool = Nodepool{
 	Etcd:         true,
 	Controlplane: false,
 	Worker:       false,
-	Quantity:     1,
+	Quantity:     3,
 }
 
 var ControlPlaneNodePool = Nodepool{
 	Etcd:         false,
 	Controlplane: true,
 	Worker:       false,
-	Quantity:     1,
+	Quantity:     2,
 }
 
 var WorkerNodePool = Nodepool{
 	Etcd:         false,
 	Controlplane: false,
 	Worker:       true,
-	Quantity:     1,
+	Quantity:     3,
 }
 
 var AllRolesNodePool = Nodepool{
 	Etcd:         true,
 	Controlplane: true,
 	Worker:       true,
-	Quantity:     1,
+	Quantity:     3,
 }
 
 var ScaleUpEtcdNodePool = Nodepool{
 	Etcd:         true,
 	Controlplane: false,
 	Worker:       false,
-	Quantity:     3,
+	Quantity:     5,
 }
 
 var ScaleUpControlPlaneNodePool = Nodepool{
 	Etcd:         false,
 	Controlplane: true,
 	Worker:       false,
-	Quantity:     2,
+	Quantity:     3,
 }
 
 var ScaleUpWorkerNodePool = Nodepool{
 	Etcd:         false,
 	Controlplane: false,
 	Worker:       true,
-	Quantity:     3,
+	Quantity:     5,
 }
 
 // String stringer for the TestClientName

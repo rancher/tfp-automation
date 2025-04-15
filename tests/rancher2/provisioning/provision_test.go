@@ -64,7 +64,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		name      string
 		nodeRoles []config.Nodepool
 	}{
-		{"3 nodes - 1 role per node " + config.StandardClientName.String(), nodeRolesDedicated},
+		{"8 nodes - 3 etcd, 2 cp, 3 worker " + config.StandardClientName.String(), nodeRolesDedicated},
 	}
 
 	for _, tt := range tests {

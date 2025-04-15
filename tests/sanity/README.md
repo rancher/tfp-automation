@@ -36,6 +36,7 @@ terraform:
   cni: ""                                         # REQUIRED - fill with desired value
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
+  provider: "aws"
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   resourcePrefix: ""                              # REQUIRED - fill with desired value
   windowsPrivateKeyPath: ""                       # REQUIRED - specify Windows private key that will be used to access created instances
@@ -61,7 +62,8 @@ terraform:
     sshConnectionType: "ssh"
     timeout: "5m"
     windowsAMI: ""
-    windowsAwsUser: "administrator"
+    windowsAWSUser: ""
+    windowsAWSPassword: ""
     windowsInstanceType: ""
     windowsKeyName: ""
   ###################################

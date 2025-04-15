@@ -85,9 +85,8 @@ func setCustomClusterLocalBlock(localsBlockBody *hclwrite.Body, name string, ter
 }
 
 func setProxyLocalBlock(localsBlockBody *hclwrite.Body, name string) error {
-	// Most Windows distros default to Powershell, but some may not. As such, this workaround does not assume
-	// that Powershell is the default shell. But set will work for cmd.exe and Powershell.
-	envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "set ")`, name)
+	// Terraform, by design, results to a .cmd file. Need to explictily call powershell.exe
+	envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "powershell.exe $env:")`, name)
 	curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)
 
 	proxyWindowsInsecureNodeCommand := hclwrite.Tokens{
