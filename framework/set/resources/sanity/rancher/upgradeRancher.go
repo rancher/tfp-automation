@@ -37,7 +37,7 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.Standalone.UpgradedRancherImage
 
-	if terraformConfig.Standalone.RancherAgentImage != "" {
+	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 	}
 
