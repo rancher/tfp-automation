@@ -17,7 +17,7 @@ helm repo add upgraded-rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
 
 echo "Upgrading Rancher"
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-    helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+    helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
@@ -27,7 +27,7 @@ if [ -n "$RANCHER_AGENT_IMAGE" ]; then
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 
 else
-    helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+    helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
