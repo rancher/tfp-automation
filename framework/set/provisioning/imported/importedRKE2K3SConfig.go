@@ -32,7 +32,7 @@ const (
 
 // // SetImportedRKE2K3s is a function that will set the imported RKE2/K3s cluster configurations in the main.tf file.
 func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File,
-	rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	SetImportedCluster(rootBody, terraformConfig.ResourcePrefix)
 
 	rootBody.AppendNewline()
@@ -81,16 +81,16 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 
 	err := importNodes(rootBody, terraformConfig, nodeOnePublicIP, "", importCommand[serverOneName])
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write imported RKE2/K3s configurations to main.tf file. Error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return file, nil
+	return newFile, file, nil
 }
 
 // getImportCommand is a helper function that will return the import command for the cluster

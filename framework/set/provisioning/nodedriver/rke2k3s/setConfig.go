@@ -16,7 +16,6 @@ import (
 	harvester "github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
-	"github.com/rancher/tfp-automation/framework/set/rbac"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -61,7 +60,8 @@ const (
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
 func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig, k8sVersion, psact string,
-	nodePools []config.Nodepool, snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*os.File, error) {
+	nodePools []config.Nodepool, snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
 	switch {
 	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
 		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
@@ -174,26 +174,11 @@ func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig,
 
 	rootBody.AppendNewline()
 
-	if rbacRole != "" {
-		user, err := rbac.SetUsers(newFile, rootBody, rbacRole)
-		if err != nil {
-			return nil, err
-		}
-
-		rootBody.AppendNewline()
-
-		if strings.Contains(string(rbacRole), project) {
-			rbac.AddProjectMember(client, newFile, rootBody, nil, rbacRole, user, terraformConfig.ResourcePrefix, false)
-		} else {
-			rbac.AddClusterRole(client, newFile, rootBody, nil, rbacRole, user, terraformConfig.ResourcePrefix, false)
-		}
-	}
-
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
-		logrus.Infof("Failed to write RKE2/K3S configurations to main.tf file. Error: %v", err)
-		return nil, err
+		logrus.Infof("Failed to write RKE2/K3s configurations to main.tf file. Error: %v", err)
+		return nil, nil, err
 	}
 
-	return file, nil
+	return newFile, file, nil
 }

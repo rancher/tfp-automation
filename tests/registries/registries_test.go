@@ -119,30 +119,47 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		{"Global K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
 		cattleConfig := r.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.globalRegistry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.globalRegistry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "password"}, "", configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "username"}, "", configMap[0])
-		operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, false, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.globalRegistry, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.globalRegistry, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "password"}, "", configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "username"}, "", configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, false, configMap[0])
+		require.NoError(r.T(), err)
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
@@ -167,28 +184,41 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		{"Auth K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
 		cattleConfig := r.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.authRegistry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.authRegistry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.authRegistry, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.authRegistry, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, configMap[0])
+		require.NoError(r.T(), err)
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
@@ -213,30 +243,47 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		{"Non Auth K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
 		cattleConfig := r.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.nonAuthRegistry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.nonAuthRegistry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "password"}, "", configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "username"}, "", configMap[0])
-		operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, false, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.nonAuthRegistry, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.nonAuthRegistry, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "password"}, "", configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "username"}, "", configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, false, configMap[0])
+		require.NoError(r.T(), err)
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})

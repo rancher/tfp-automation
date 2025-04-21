@@ -117,31 +117,41 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		{"Airgap K3S", modules.AirgapK3S},
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	customClusterNames := []string{}
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
 		cattleConfig := a.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(a.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
+		require.NoError(a.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
+		require.NoError(a.T(), err)
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		a.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, false)
+			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 
 			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
-				clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, true)
+				clusterIDs, _ = provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 				provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 			}
@@ -155,45 +165,55 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 	tests := []struct {
-		name   string
-		module string
+		name      string
+		module    string
+		isWindows bool
 	}{
-		{"Upgrading Airgap RKE1", modules.AirgapRKE1},
-		{"Upgrading Airgap RKE2", modules.AirgapRKE2},
-		{"Upgrading Airgap RKE2 Windows", modules.AirgapRKE2Windows},
-		{"Upgrading Airgap K3S", modules.AirgapK3S},
+		{"Upgrading Airgap RKE1", modules.AirgapRKE1, false},
+		{"Upgrading Airgap RKE2", modules.AirgapRKE2, false},
+		{"Upgrading Airgap RKE2 Windows", modules.AirgapRKE2Windows, true},
+		{"Upgrading Airgap K3S", modules.AirgapK3S, false},
 	}
+
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	customClusterNames := []string{}
+	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		cattleConfig := a.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(a.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
+		require.NoError(a.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
+		require.NoError(a.T(), err)
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.SecondHighestVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		a.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, false)
-			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows, false, true, customClusterNames)
 			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 
 			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
-				clusterIDs := provisioning.Provision(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, true)
+				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows, false, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 				provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 			}
 
-			provisioning.KubernetesUpgrade(a.T(), a.client, a.rancherConfig, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap)
+			clusterIDs, customClusterNames = provisioning.KubernetesUpgrade(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 		})
 	}

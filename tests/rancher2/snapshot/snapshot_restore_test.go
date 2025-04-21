@@ -47,9 +47,6 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 	s.cattleConfig, err = config.LoadProvisioningDefaults(s.cattleConfig, "")
 	require.NoError(s.T(), err)
 
-	s.cattleConfig, err = config.LoadPackageDefaults(s.cattleConfig, "")
-	require.NoError(s.T(), err)
-
 	configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
 	require.NoError(s.T(), err)
 
@@ -78,23 +75,28 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		{"Restore etcd only", nodeRolesDedicated, snapshotRestoreNone},
 	}
 
-	for _, tt := range tests {
-		configMap := []map[string]any{s.cattleConfig}
+	configMap := []map[string]any{s.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotRestore"}, tt.etcdSnapshot.SnapshotInput.SnapshotRestore, configMap[0])
+	for _, tt := range tests {
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
+
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(s.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotRestore"}, tt.etcdSnapshot.SnapshotInput.SnapshotRestore, configMap[0])
+		require.NoError(s.T(), err)
 
 		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		if strings.Contains(s.terraformConfig.Module, "rke1") {
 			s.T().Skip("RKE1 is not supported")
 		}
-
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		s.Run(tt.name, func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -103,12 +105,10 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			configMap := []map[string]any{s.cattleConfig}
-
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			snapshotRestore(s.T(), s.client, s.terraformConfig, testUser, testPassword, s.terraformOptions, configMap)
+			snapshotRestore(s.T(), s.client, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 		})
 	}

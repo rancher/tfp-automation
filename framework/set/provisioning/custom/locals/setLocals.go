@@ -44,7 +44,7 @@ func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *con
 	}
 
 	//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
-	if strings.Contains(terraformConfig.Module, "custom") || strings.Contains(terraformConfig.Module, "airgap") {
+	if strings.Contains(terraformConfig.Module, defaults.Custom) || strings.Contains(terraformConfig.Module, defaults.Airgap) {
 		setCustomClusterLocalBlock(localsBlockBody, terraformConfig.ResourcePrefix, terraformConfig)
 
 	}

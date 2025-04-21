@@ -1,6 +1,8 @@
 package rbac
 
 import (
+	"slices"
+
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
@@ -17,11 +19,5 @@ func SupportedAuthProviders(terraformConfig *config.TerraformConfig, terraformOp
 		authproviders.OpenLDAP,
 	}
 
-	for _, supportedAuthProvider := range supportedAuthProviders {
-		if authProvider == supportedAuthProvider {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supportedAuthProviders, authProvider)
 }

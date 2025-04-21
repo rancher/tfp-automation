@@ -40,6 +40,8 @@ terraform:
       folder: ""
       region: "us-east-2"
       skipSSLVerify: true
+terratest:
+  snapshotInput: {}
 ```
 
 To see what goes into the `terraform` block in addition to the `rancher`, please refer to the tfp-automation [README](../../README.md).

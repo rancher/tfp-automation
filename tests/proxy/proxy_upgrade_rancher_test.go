@@ -115,20 +115,26 @@ func (p *TfpProxyUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 }
 
 func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
+	var clusterIDs []string
+
+	p.provisionAndVerifyCluster("Pre-Upgrade Proxy ", clusterIDs, false)
+
 	p.terraformConfig.Standalone.UpgradeProxyRancher = true
 
 	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terraformConfig.Provider)
 	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyPrivateIP, p.proxyNode, "", "")
 	require.NoError(p.T(), err)
 
-	p.provisionAndVerifyCluster("Post-Upgrade Proxy ")
+	provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+
+	p.provisionAndVerifyCluster("Post-Upgrade Proxy ", clusterIDs, true)
 
 	if p.terratestConfig.LocalQaseReporting {
 		qase.ReportTest()
 	}
 }
 
-func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string) {
+func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool) []string {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -142,34 +148,48 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string)
 		{"K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	customClusterNames := []string{}
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
 		cattleConfig := p.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "proxy", "proxyBastion"}, p.proxyNode, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "proxy", "proxyBastion"}, p.proxyNode, configMap[0])
+		require.NoError(p.T(), err)
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
-			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
-
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs, customClusterNames = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 
 			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
-				clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, true)
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}
 		})
 	}
+
+	if deleteClusters {
+		keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+		cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
+	}
+
+	return clusterIDs
 }
 
 func TestTfpProxyUpgradeRancherTestSuite(t *testing.T) {

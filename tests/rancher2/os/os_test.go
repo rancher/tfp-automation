@@ -100,6 +100,11 @@ func (p *OSValidationTestSuite) TestDynamicOSValidation() {
 		configBatches[terraformConfig.AWSConfig.AMI] = append(configBatches[terraformConfig.AWSConfig.AMI], cattleConfig)
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	customClusterNames := []string{}
+
 	for ami, batch := range configBatches {
 		keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 		defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
@@ -121,7 +126,7 @@ func (p *OSValidationTestSuite) TestDynamicOSValidation() {
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
-			clusterIDs = provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, p.terraformOptions, batch, false)
+			clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, batch, newFile, rootBody, file, false, false, true, customClusterNames)
 			time.Sleep(2 * time.Minute)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 		})

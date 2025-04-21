@@ -18,7 +18,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
+	"github.com/rancher/tfp-automation/tests/extensions/rbac"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -66,20 +66,22 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		{"OpenLDAP", authproviders.OpenLDAP},
 	}
 
+	configMap := []map[string]any{r.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
-		configMap := []map[string]any{r.cattleConfig}
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
 
 		operations.ReplaceValue([]string{"terraform", "authProvider"}, tt.authProvider, configMap[0])
 
 		_, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
-		testUser, testPassword := configs.CreateTestCredentials()
-
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rb.AuthConfig(r.T(), terraform, r.terraformOptions, testUser, testPassword, configMap)
+			rbac.AuthConfig(r.T(), terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
 	}
 
@@ -99,10 +101,14 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		{r.terraformConfig.AuthProvider},
 	}
 
-	for _, tt := range tests {
-		configMap := []map[string]any{r.cattleConfig}
+	configMap := []map[string]any{r.cattleConfig}
 
-		operations.ReplaceValue([]string{"terraform", "authProvider"}, r.terraformConfig.AuthProvider, configMap[0])
+	for _, tt := range tests {
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
+
+		_, err := operations.ReplaceValue([]string{"terraform", "authProvider"}, r.terraformConfig.AuthProvider, configMap[0])
+		require.NoError(r.T(), err)
 
 		testUser, testPassword := configs.CreateTestCredentials()
 
@@ -110,7 +116,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rb.AuthConfig(r.T(), r.terraformConfig, r.terraformOptions, testUser, testPassword, configMap)
+			rbac.AuthConfig(r.T(), r.terraformConfig, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
 	}
 

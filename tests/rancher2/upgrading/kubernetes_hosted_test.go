@@ -66,7 +66,12 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		{config.StandardClientName.String()},
 	}
 
+	configMap := []map[string]any{k.cattleConfig}
+
 	for _, tt := range tests {
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
+
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.terratestConfig.KubernetesVersion
 
 		testUser, testPassword := configs.CreateTestCredentials()
@@ -78,13 +83,11 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
 			require.NoError(k.T(), err)
 
-			configMap := []map[string]any{k.cattleConfig}
-
-			clusterIDs := provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 			provisioning.VerifyWorkloads(k.T(), adminClient, clusterIDs)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap)
+			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
 
 			time.Sleep(4 * time.Minute)
 

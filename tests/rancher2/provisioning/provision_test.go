@@ -67,18 +67,20 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		{"8 nodes - 3 etcd, 2 cp, 3 worker " + config.StandardClientName.String(), nodeRolesDedicated},
 	}
 
+	configMap := []map[string]any{p.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
-		configMap := []map[string]any{p.cattleConfig}
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
 
 		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
-
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -87,9 +89,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			configMap := []map[string]any{p.cattleConfig}
-
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
 		})
@@ -107,8 +107,12 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 		{config.StandardClientName.String()},
 	}
 
+	configMap := []map[string]any{p.cattleConfig}
+
 	for _, tt := range tests {
-		configMap := []map[string]any{p.cattleConfig}
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
+
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
@@ -122,9 +126,7 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			configMap := []map[string]any{p.cattleConfig}
-
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
 		})

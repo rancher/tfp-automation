@@ -45,6 +45,9 @@ type TfpSanityUpgradeRancherTestSuite struct {
 func (s *TfpSanityUpgradeRancherTestSuite) TearDownSuite() {
 	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terraformConfig.Provider)
 	cleanup.Cleanup(s.T(), s.standaloneTerraformOptions, keyPath)
+
+	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
+	cleanup.Cleanup(s.T(), s.upgradeTerraformOptions, keyPath)
 }
 
 func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
@@ -110,20 +113,26 @@ func (s *TfpSanityUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 }
 
 func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
+	var clusterIDs []string
+
+	s.provisionAndVerifyCluster("Pre-Upgrade Sanity ", clusterIDs, false)
+
 	s.terraformConfig.Standalone.UpgradeRancher = true
 
 	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
 	err := upgrade.CreateMainTF(s.T(), s.upgradeTerraformOptions, keyPath, s.terraformConfig, s.terratestConfig, s.serverNodeOne, "", "", "")
 	require.NoError(s.T(), err)
 
-	s.provisionAndVerifyCluster("Post-Upgrade Sanity ")
+	provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
+
+	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, true)
 
 	if s.terratestConfig.LocalQaseReporting {
 		qase.ReportTest()
 	}
 }
 
-func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string) {
+func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool) []string {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -137,37 +146,45 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		{"K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	customClusterNames := []string{}
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
 		cattleConfig := s.TfpSetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(s.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(s.T(), err)
 
 		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		s.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
-			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
-
-			clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, false)
+			clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, rancher, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 
 			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
-				clusterIDs := provisioning.Provision(s.T(), s.client, s.rancherConfig, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, true)
+				clusterIDs, _ = provisioning.Provision(s.T(), s.client, rancher, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			}
 		})
 	}
 
-	if s.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+	if deleteClusters {
+		keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+		cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 	}
+
+	return clusterIDs
 }
 
 func TestTfpSanityUpgradeRancherTestSuite(t *testing.T) {

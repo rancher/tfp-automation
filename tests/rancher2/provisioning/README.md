@@ -48,8 +48,9 @@ terraform:
   cni: ""
   cloudCredentialName: ""
   enableNetworkPolicy: false
-  defaultClusterRoleForProjectMembers: user
+  defaultClusterRoleForProjectMembers: "user"
   privateKeyPath: ""
+  provider: "aws"
   windowsPrivateKeyPath: ""
   awsCredentials:
     awsAccessKey: ""
@@ -93,6 +94,7 @@ terraform:
   hostnamePrefix: ""
   machineConfigName: ""
   nodeTemplateName: ""
+  provider: "aws"
   privateKeyPath: ""
   windowsPrivateKeyPath: ""
   awsCredentials:

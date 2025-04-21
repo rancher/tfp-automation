@@ -15,7 +15,6 @@ import (
 	harvester "github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
-	"github.com/rancher/tfp-automation/framework/set/rbac"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -49,7 +48,7 @@ const (
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
 func SetRKE1(terraformConfig *config.TerraformConfig, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*os.File, error) {
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
 
 	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, terraformConfig.ResourcePrefix})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
@@ -146,30 +145,11 @@ func SetRKE1(terraformConfig *config.TerraformConfig, k8sVersion, psact string, 
 
 	rootBody.AppendNewline()
 
-	if rbacRole != "" {
-		user, err := rbac.SetUsers(newFile, rootBody, rbacRole)
-		if err != nil {
-			return nil, err
-		}
-
-		rootBody.AppendNewline()
-
-		cluster := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
-		}
-
-		if strings.Contains(string(rbacRole), project) {
-			rbac.AddProjectMember(nil, newFile, rootBody, cluster, rbacRole, user, "", true)
-		} else {
-			rbac.AddClusterRole(nil, newFile, rootBody, cluster, rbacRole, user, "", true)
-		}
-	}
-
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write RKE1 configurations to main.tf file. Error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return file, nil
+	return newFile, file, nil
 }

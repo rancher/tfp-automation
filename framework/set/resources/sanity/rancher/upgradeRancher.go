@@ -18,7 +18,7 @@ const (
 
 // UpgradeRancher is a function that will upgrade the Rancher configurations in the main.tf file.
 func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2ServerOnePublicDNS string) (*os.File, error) {
+	rke2ServerOnePublicIP string) (*os.File, error) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, upgradeRancher)
+	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, upgradeRancher)
 
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " +
