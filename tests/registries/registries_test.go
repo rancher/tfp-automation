@@ -106,7 +106,7 @@ func (r *TfpRegistriesTestSuite) TfpSetupSuite() map[string]any {
 }
 
 func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
-	nodeRolesAll := config.AllRolesNodePool
+	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -116,7 +116,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	}{
 		{"Global RKE1", modules.EC2RKE1, nodeRolesDedicated},
 		{"Global RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Global K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
+		{"Global K3S", modules.EC2K3s, nodeRolesAll},
 	}
 
 	newFile, rootBody, file := rancher2.InitializeMainTF()
@@ -171,7 +171,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 }
 
 func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
-	nodeRolesAll := config.AllRolesNodePool
+	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -181,7 +181,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 	}{
 		{"Auth RKE1", modules.EC2RKE1, nodeRolesDedicated},
 		{"Auth RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Auth K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
+		{"Auth K3S", modules.EC2K3s, nodeRolesAll},
 	}
 
 	newFile, rootBody, file := rancher2.InitializeMainTF()
@@ -230,7 +230,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 }
 
 func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
-	nodeRolesAll := config.AllRolesNodePool
+	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -240,7 +240,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 	}{
 		{"Non Auth RKE1", modules.EC2RKE1, nodeRolesDedicated},
 		{"Non Auth RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Non Auth K3S", modules.EC2K3s, []config.Nodepool{nodeRolesAll}},
+		{"Non Auth K3S", modules.EC2K3s, nodeRolesAll},
 	}
 
 	newFile, rootBody, file := rancher2.InitializeMainTF()
@@ -271,6 +271,72 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		require.NoError(r.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, false, configMap[0])
+		require.NoError(r.T(), err)
+
+		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+
+		r.Run((tt.name), func() {
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
+
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
+		})
+	}
+
+	if r.terratestConfig.LocalQaseReporting {
+		qase.ReportTest()
+	}
+}
+
+func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
+	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+
+	tests := []struct {
+		name      string
+		module    string
+		nodeRoles []config.Nodepool
+	}{
+		{"ECR RKE1", "ec2_rke1", nodeRolesDedicated},
+		{"ECR RKE2", "ec2_rke2", nodeRolesDedicated},
+	}
+
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	testUser, testPassword := configs.CreateTestCredentials()
+
+	for _, tt := range tests {
+		cattleConfig := r.TfpSetupSuite()
+		configMap := []map[string]any{cattleConfig}
+
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.terraformConfig.StandaloneRegistry.ECRURI, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.terraformConfig.StandaloneRegistry.ECRURI, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "username"}, r.terraformConfig.StandaloneRegistry.ECRUsername, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "password"}, r.terraformConfig.StandaloneRegistry.ECRPassword, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "authConfigSecretName"}, r.terraformConfig.PrivateRegistries.AuthConfigSecretName+"-ecr", configMap[0])
 		require.NoError(r.T(), err)
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)

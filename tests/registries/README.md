@@ -90,6 +90,10 @@ terraform:
     registryName: ""                              # REQUIRED (authenticated registry only)
     registryPassword: ""                          # REQUIRED (authenticated registry only)
     registryUsername: ""                          # REQUIRED (authenticated registry only)
+    ecrPassword: ""                               # REQUIRED (ecr registry only)
+    ecrUsername: ""                               # REQUIRED (ecr registry only)
+    ecrURI: ""                                    # REQUIRED (ecr registry only)
+    ecrAMI: ""                                    # REQUIRED (ecr registry only) - with Amazon ECR Credential Helper
 ```
 
 Before running, be sure to run the following commands:

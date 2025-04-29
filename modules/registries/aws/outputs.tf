@@ -10,6 +10,10 @@ output "global_registry_public_dns" {
   value = aws_instance.global_registry.public_dns
 }
 
+output "ecr_registry_public_dns" {
+  value = aws_instance.ecr_registry.public_dns
+}
+
 output "rke2_server1_public_dns" {
   value = aws_instance.rke2_server1.public_dns
 }
