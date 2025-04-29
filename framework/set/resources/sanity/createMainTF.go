@@ -16,15 +16,16 @@ import (
 )
 
 const (
-	linodeBalancerHostname  = "linode_node_balancer_hostname"
 	rke2ServerOne           = "rke2_server1"
 	rke2ServerTwo           = "rke2_server2"
 	rke2ServerThree         = "rke2_server3"
 	rke2ServerOnePublicIP   = "rke2_server1_public_ip"
 	rke2ServerOnePrivateIP  = "rke2_server1_private_ip"
+	linodeBalancerHostname  = "linode_node_balancer_hostname"
 	rke2ServerTwoPublicIP   = "rke2_server2_public_ip"
 	rke2ServerThreePublicIP = "rke2_server3_public_ip"
 	terraformConst          = "terraform"
+	sslipioSuffix           = ".sslip.io"
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server.
@@ -55,8 +56,10 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	if terraformConfig.Provider == providers.Linode {
 		nodeBalancerHostname = terraform.Output(t, terraformOptions, linodeBalancerHostname)
+		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
 	} else if terraformConfig.Provider == providers.Harvester {
-		nodeBalancerHostname = terraform.Output(t, terraformOptions, rke2ServerOnePublicIP) + ".sslip.io"
+		nodeBalancerHostname = terraform.Output(t, terraformOptions, rke2ServerOnePublicIP) + sslipioSuffix
+		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
 	}
 
 	rke2ServerOnePublicIP := terraform.Output(t, terraformOptions, rke2ServerOnePublicIP)

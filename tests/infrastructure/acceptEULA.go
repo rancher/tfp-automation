@@ -17,14 +17,18 @@ import (
 )
 
 // AcceptEULA accepts the EULA for the Rancher server post installation
-func AcceptEULA(t *testing.T, session *session.Session, cattleConfig map[string]any, rancherConfig *rancher.Config,
-	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, host string) {
-	cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+func AcceptEULA(t *testing.T, session *session.Session, host string) {
+	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	configMap, err := provisioning.UniquifyTerraform([]map[string]any{cattleConfig})
 	require.NoError(t, err)
 
 	cattleConfig = configMap[0]
-	rancherConfig, terraformConfig, terratestConfig = config.LoadTFPConfigs(cattleConfig)
+	rancherConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
+
+	if host != "" {
+		rancherConfig.Host = host
+		shepherdConfig.UpdateConfig("rancher", rancherConfig)
+	}
 
 	adminUser := &management.User{
 		Username: "admin",
@@ -35,6 +39,11 @@ func AcceptEULA(t *testing.T, session *session.Session, cattleConfig map[string]
 	require.NoError(t, err)
 
 	rancherConfig.AdminToken = userToken.Token
+
+	if host != "" {
+		rancherConfig.Host = host
+		shepherdConfig.UpdateConfig("rancher", rancherConfig)
+	}
 
 	client, err := rancher.NewClient(rancherConfig.AdminToken, session)
 	require.NoError(t, err)
