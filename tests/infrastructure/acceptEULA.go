@@ -25,7 +25,6 @@ func AcceptEULA(t *testing.T, session *session.Session, host string) {
 	cattleConfig = configMap[0]
 	rancherConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
 
-	// rancher client reads from the config file again, so we must write to the file
 	if host != "" {
 		rancherConfig.Host = host
 		shepherdConfig.UpdateConfig("rancher", rancherConfig)
@@ -41,7 +40,6 @@ func AcceptEULA(t *testing.T, session *session.Session, host string) {
 
 	rancherConfig.AdminToken = userToken.Token
 
-	// rancher client reads from the config file again, so we must write to the file
 	if host != "" {
 		rancherConfig.Host = host
 		shepherdConfig.UpdateConfig("rancher", rancherConfig)
