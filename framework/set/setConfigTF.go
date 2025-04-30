@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	configuration "github.com/rancher/tfp-automation/config"
@@ -20,6 +21,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	nodedriver "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke1"
 	nodedriverV2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
+	"github.com/rancher/tfp-automation/framework/set/rbac"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
@@ -27,27 +29,25 @@ import (
 
 // ConfigTF is a function that will set the main.tf file based on the module type.
 func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole configuration.Role, configMap []map[string]any,
-	isWindows bool) ([]string, error) {
-	var file *os.File
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters, customModule bool,
+	customClusterNames []string) ([]string, []string, error) {
+	var err error
 
-	file, err := os.Create(keyPath + configs.MainTF)
-	if err != nil {
-		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)
-		return nil, err
+	if !persistClusters {
+		newFile.Body().Clear()
 	}
 
-	defer file.Close()
-	newFile, rootBody := resources.SetProvidersAndUsersTF(testUser, testPassword, false, configMap)
+	if !strings.Contains(string(newFile.Bytes()), defaults.RequiredProviders) {
+		newFile, rootBody = resources.SetProvidersAndUsersTF(testUser, testPassword, false, newFile, rootBody, configMap, customModule)
+	}
 
 	rootBody.AppendNewline()
 
 	clusterNames := []string{}
-	customClusterNames := []string{}
 	containsCustomModule := false
 
 	for i, cattleConfig := range configMap {
-		rancherConfig, terraform, terratest := config.LoadTFPConfigs(cattleConfig)
+		_, terraform, terratest := config.LoadTFPConfigs(cattleConfig)
 
 		kubernetesVersion := terratest.KubernetesVersion
 		nodePools := terratest.Nodepools
@@ -62,103 +62,132 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 
 		clusterNames = append(clusterNames, terraform.ResourcePrefix)
 
-		if module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s || module == modules.CustomEC2RKE2Windows {
+		if module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s || module == modules.CustomEC2RKE2Windows ||
+			module == modules.AirgapRKE2 || module == modules.AirgapK3S || module == modules.AirgapRKE2Windows {
 			customClusterNames = append(customClusterNames, terraform.ResourcePrefix)
 		}
 
 		switch {
 		case module == clustertypes.AKS:
-			file, err = hosted.SetAKS(terraform, kubernetesVersion, nodePools, newFile, rootBody, file)
+			newFile, file, err = hosted.SetAKS(terraform, kubernetesVersion, nodePools, newFile, rootBody, file)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, nil, err
 			}
 		case module == clustertypes.EKS:
-			file, err = hosted.SetEKS(terraform, kubernetesVersion, nodePools, newFile, rootBody, file)
+			newFile, file, err = hosted.SetEKS(terraform, kubernetesVersion, nodePools, newFile, rootBody, file)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, nil, err
 			}
 		case module == clustertypes.GKE:
-			file, err = hosted.SetGKE(terraform, kubernetesVersion, nodePools, newFile, rootBody, file)
+			newFile, file, err = hosted.SetGKE(terraform, kubernetesVersion, nodePools, newFile, rootBody, file)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, nil, err
 			}
 		case strings.Contains(module, clustertypes.RKE1) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Import) && !strings.Contains(module, defaults.Airgap):
-			file, err = nodedriver.SetRKE1(terraform, kubernetesVersion, psact, nodePools, snapshotInput, newFile, rootBody, file, rbacRole)
+			newFile, file, err = nodedriver.SetRKE1(terraform, kubernetesVersion, psact, nodePools, snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, nil, err
+			}
+
+			if rbacRole != "" {
+				newFile, rootBody, err = rbac.RoleCheck(client, newFile, rootBody, file, terraform, rbacRole, true)
+				if err != nil {
+					return clusterNames, nil, err
+				}
 			}
 		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Import) && !strings.Contains(module, defaults.Airgap):
-			file, err = nodedriverV2.SetRKE2K3s(client, terraform, kubernetesVersion, psact, nodePools, snapshotInput, newFile, rootBody, file, rbacRole)
+			newFile, file, err = nodedriverV2.SetRKE2K3s(client, terraform, kubernetesVersion, psact, nodePools, snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, nil, err
+			}
+
+			if rbacRole != "" {
+				newFile, rootBody, err = rbac.RoleCheck(client, newFile, rootBody, file, terraform, rbacRole, false)
+				if err != nil {
+					return clusterNames, nil, err
+				}
 			}
 		case module == modules.CustomEC2RKE1:
-			file, err = custom.SetCustomRKE1(rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
+			newFile, file, err = custom.SetCustomRKE1(terraform, terratest, configMap, newFile, rootBody, file)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, customClusterNames, err
 			}
 		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s || module == modules.CustomEC2RKE2Windows:
-			file, err = customV2.SetCustomRKE2K3s(rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
-			if err != nil {
-				return clusterNames, err
+			if !isWindows {
+				newFile, file, err = customV2.SetCustomRKE2K3s(terraform, terratest, configMap, newFile, rootBody, file)
+				if err != nil {
+					return clusterNames, customClusterNames, err
+				}
 			}
 
 			if isWindows {
-				file, err = customV2.SetCustomRKE2Windows(client, rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
+				newFile, file, err = customV2.SetCustomRKE2Windows(terraform, terratest, configMap, newFile, rootBody, file)
 				if err != nil {
-					return clusterNames, err
+					return clusterNames, customClusterNames, err
 				}
 			}
 		case module == modules.AirgapRKE1:
-			_, err = airgap.SetAirgapRKE1(rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
+			newFile, file, err = airgap.SetAirgapRKE1(terraform, terratest, configMap, newFile, rootBody, file)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, customClusterNames, err
 			}
 		case module == modules.AirgapRKE2 || module == modules.AirgapK3S || module == modules.AirgapRKE2Windows:
-			_, err = airgap.SetAirgapRKE2K3s(rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
-			if err != nil {
-				return clusterNames, err
+			if !isWindows {
+				newFile, file, err = airgap.SetAirgapRKE2K3s(terraform, terratest, configMap, newFile, rootBody, file)
+				if err != nil {
+					return clusterNames, customClusterNames, err
+				}
 			}
 
 			if isWindows {
-				file, err = airgap.SetAirgapRKE2Windows(client, rancherConfig, terraform, terratest, configMap, newFile, rootBody, file)
+				newFile, file, err = airgap.SetAirgapRKE2Windows(terraform, terratest, configMap, newFile, rootBody, file)
 				if err != nil {
-					return clusterNames, err
+					return clusterNames, customClusterNames, err
 				}
 			}
 		case module == modules.ImportEC2RKE1:
-			_, err = imported.SetImportedRKE1(rancherConfig, terraform, terratest, newFile, rootBody, file)
+			_, _, err = imported.SetImportedRKE1(terraform, terratest, newFile, rootBody, file)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, nil, err
 			}
 		case module == modules.ImportEC2RKE2 || module == modules.ImportEC2RKE2Windows || module == modules.ImportEC2K3s:
-			_, err = imported.SetImportedRKE2K3s(terraform, terratest, newFile, rootBody, file)
+			_, _, err = imported.SetImportedRKE2K3s(terraform, terratest, newFile, rootBody, file)
 			if err != nil {
-				return clusterNames, err
+				return clusterNames, nil, err
 			}
 		default:
 			logrus.Errorf("Unsupported module: %v", module)
 		}
 
-		if i == len(configMap)-1 && containsCustomModule {
+		if i == len(configMap)-1 && containsCustomModule && !strings.Contains(module, defaults.Airgap) && !isWindows {
+			file, err = locals.SetLocals(rootBody, terraform, configMap, newFile, file, customClusterNames)
+			rootBody.AppendNewline()
+		}
+
+		if strings.Contains(module, defaults.Airgap) || isWindows {
+			localsBlock := newFile.Body().FirstMatchingBlock(defaults.Locals, nil)
+			if localsBlock != nil {
+				newFile.Body().RemoveBlock(localsBlock)
+			}
+
 			file, err = locals.SetLocals(rootBody, terraform, configMap, newFile, file, customClusterNames)
 			rootBody.AppendNewline()
 		}
 	}
 
-	keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, "")
-
+	// // This is needed to ensure there is no duplications in the main.tf file.
+	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	file, err = os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)
-		return clusterNames, err
+		return clusterNames, customClusterNames, err
 	}
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write configurations to main.tf file. Error: %v", err)
-		return clusterNames, err
+		return clusterNames, customClusterNames, err
 	}
 
-	return clusterNames, nil
+	return clusterNames, customClusterNames, nil
 }

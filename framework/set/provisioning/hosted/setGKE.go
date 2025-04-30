@@ -15,7 +15,8 @@ import (
 )
 
 // SetGKE is a function that will set the GKE configurations in the main.tf file.
-func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
+	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
@@ -52,7 +53,7 @@ func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 
 		_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		nodePoolsBlock := gkeConfigBlockBody.AppendNewBlock(google.NodePools, nil)
@@ -67,8 +68,8 @@ func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write GKE configurations to main.tf file. Error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return file, nil
+	return newFile, file, nil
 }

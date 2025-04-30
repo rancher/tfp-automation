@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
@@ -15,8 +14,8 @@ import (
 )
 
 // // SetImportedRKE1 is a function that will set the imported RKE1 cluster configurations in the main.tf file.
-func SetImportedRKE1(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+func SetImportedRKE1(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File,
+	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	SetImportedCluster(rootBody, terraformConfig.ResourcePrefix)
 
 	rootBody.AppendNewline()
@@ -31,16 +30,16 @@ func SetImportedRKE1(rancherConfig *rancher.Config, terraformConfig *config.Terr
 
 	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, kubeConfig, importCommand[serverOneName])
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write imported RKE1 configurations to main.tf file. Error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return file, nil
+	return newFile, file, nil
 }
 
 // createRKE1Cluster is a helper function that will create the RKE1 cluster.

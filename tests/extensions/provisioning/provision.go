@@ -1,9 +1,11 @@
 package provisioning
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/tfp-automation/config"
@@ -13,8 +15,8 @@ import (
 
 // Provision is a function that will run terraform init and apply Terraform resources to provision a cluster.
 func Provision(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options, configMap []map[string]any,
-	isWindows bool) []string {
+	testUser, testPassword string, terraformOptions *terraform.Options, configMap []map[string]any, newFile *hclwrite.File,
+	rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters, containsCustomModule bool, customClusterNames []string) ([]string, []string) {
 	var err error
 	var clusterNames []string
 	var clusterIDs []string
@@ -22,7 +24,7 @@ func Provision(t *testing.T, client *rancher.Client, rancherConfig *rancher.Conf
 	isSupported := SupportedModules(terraformOptions, configMap)
 	require.True(t, isSupported)
 
-	clusterNames, err = framework.ConfigTF(client, testUser, testPassword, "", configMap, isWindows)
+	clusterNames, customClusterNames, err = framework.ConfigTF(client, testUser, testPassword, "", configMap, newFile, rootBody, file, isWindows, persistClusters, containsCustomModule, customClusterNames)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)
@@ -34,5 +36,5 @@ func Provision(t *testing.T, client *rancher.Client, rancherConfig *rancher.Conf
 		clusterIDs = append(clusterIDs, clusterID)
 	}
 
-	return clusterIDs
+	return clusterIDs, customClusterNames
 }

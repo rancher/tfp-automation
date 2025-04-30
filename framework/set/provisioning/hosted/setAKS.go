@@ -17,7 +17,7 @@ import (
 
 // SetAKS is a function that will set the AKS configurations in the main.tf file.
 func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
-	rootBody *hclwrite.Body, file *os.File) (*os.File, error) {
+	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
@@ -65,7 +65,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 
 		_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		nodePoolsBlock := aksConfigBlockBody.AppendNewBlock(azure.NodePools, nil)
@@ -86,8 +86,8 @@ func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write AKS configurations to main.tf file. Error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return file, nil
+	return newFile, file, nil
 }

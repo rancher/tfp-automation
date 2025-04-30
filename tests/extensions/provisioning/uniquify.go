@@ -1,6 +1,9 @@
 package provisioning
 
 import (
+	"os"
+
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
@@ -26,12 +29,12 @@ func UniquifyTerraform(cattleConfigs []map[string]any) ([]map[string]any, error)
 }
 
 func uniquifyField(keyPath []string, cattleConfig map[string]any) (map[string]any, error) {
-	keyPathValue, err := operations.GetValue(keyPath, cattleConfig)
-	if err != nil {
-		return nil, err
-	}
+	cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	_, terraformConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
-	keyPathValue = namegen.AppendRandomString(keyPathValue.(string))
+	keyPathValue := terraformConfig.ResourcePrefix
+
+	keyPathValue = namegen.AppendRandomString(keyPathValue)
 
 	uniqueCattleConfig, err := operations.ReplaceValue(keyPath, keyPathValue, cattleConfig)
 	if err != nil {

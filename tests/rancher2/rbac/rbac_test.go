@@ -69,18 +69,21 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		{"Project Owner", config.ProjectOwner},
 	}
 
-	for _, tt := range tests {
-		configMap := []map[string]any{r.cattleConfig}
+	configMap := []map[string]any{r.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
+	for _, tt := range tests {
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
+
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
+		require.NoError(r.T(), err)
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + r.terraformConfig.Module
-
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -89,13 +92,9 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
 			require.NoError(r.T(), err)
 
-			configMap := []map[string]any{r.cattleConfig}
-
-			clusterIDs := provisioning.Provision(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(r.T(), adminClient, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
-
-			rb.RBAC(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole)
-			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
+			rb.RBAC(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
 		})
 	}
 

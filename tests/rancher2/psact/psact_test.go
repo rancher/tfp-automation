@@ -72,19 +72,24 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		{"Rancher Baseline " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-baseline"},
 	}
 
-	for _, tt := range tests {
-		configMap := []map[string]any{p.cattleConfig}
+	configMap := []map[string]any{p.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		operations.ReplaceValue([]string{"terratest", "psact"}, tt.psact, configMap[0])
+	for _, tt := range tests {
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
+
+		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "psact"}, tt.psact, configMap[0])
+		require.NoError(p.T(), err)
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
-
-		testUser, testPassword := configs.CreateTestCredentials()
 
 		p.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -93,9 +98,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			configMap := []map[string]any{p.cattleConfig}
-
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyClusterPSACT(p.T(), p.client, clusterIDs)
 		})

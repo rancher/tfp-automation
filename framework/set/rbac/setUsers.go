@@ -7,7 +7,6 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -58,8 +57,6 @@ func SetUsers(newFile *hclwrite.File, rootBody *hclwrite.Body, rbacRole config.R
 	}
 
 	globalRoleBindingBlockBody.SetAttributeRaw(userID, user)
-
-	logrus.Infof("Created new user: %s", testuser)
 
 	return testuser, nil
 }

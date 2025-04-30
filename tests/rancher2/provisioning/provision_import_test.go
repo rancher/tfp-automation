@@ -67,15 +67,19 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 		{"Importing TFP K3S", modules.ImportEC2K3s},
 	}
 
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	testUser, testPassword := configs.CreateTestCredentials()
+
 	for _, tt := range tests {
 		cattleConfig := p.SetupSuite()
 		configMap := []map[string]any{cattleConfig}
 
-		operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		_, err := operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(p.T(), err)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
-
-		testUser, testPassword := configs.CreateTestCredentials()
+		rancher, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
 		p.Run((tt.name), func() {
 			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -84,7 +88,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, false)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 	}
