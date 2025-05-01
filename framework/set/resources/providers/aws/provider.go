@@ -49,15 +49,21 @@ func CreateAWSLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	localBlock := rootBody.AppendNewBlock(locals, nil)
 	localBlockBody := localBlock.Body()
 
-	var instanceIds map[string]interface{}
-	if terraformConfig.Standalone.RKE2Version != "" {
-		instanceIds = map[string]interface{}{
+	var instanceIds map[string]any
+	if terraformConfig.Standalone.RKE2Version != "" && !terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		instanceIds = map[string]any{
 			rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne + ".id",
 			rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo + ".id",
 			rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree + ".id",
 		}
+	} else if terraformConfig.Standalone.RKE2Version != "" && terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		instanceIds = map[string]any{
+			rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne,
+			rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo,
+			rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree,
+		}
 	} else if terraformConfig.Standalone.K3SVersion != "" {
-		instanceIds = map[string]interface{}{
+		instanceIds = map[string]any{
 			k3sServerOne:   defaults.AwsInstance + "." + k3sServerOne + ".id",
 			k3sServerTwo:   defaults.AwsInstance + "." + k3sServerTwo + ".id",
 			k3sServerThree: defaults.AwsInstance + "." + k3sServerThree + ".id",

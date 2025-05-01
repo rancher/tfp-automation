@@ -37,7 +37,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	if terraformConfig.Standalone.RancherHostname != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
-			CreateTargetGroupAttachments(rootBody, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+			CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
 			rootBody.AppendNewline()
 		}
 
@@ -90,10 +90,10 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 
 	ports := []int64{80, 443, 6443, 9345}
 	for _, port := range ports {
-		CreateTargetGroupAttachments(rootBody, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+		CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
 		rootBody.AppendNewline()
 
-		CreateInternalTargetGroupAttachments(rootBody, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)
+		CreateInternalTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)
 		rootBody.AppendNewline()
 	}
 

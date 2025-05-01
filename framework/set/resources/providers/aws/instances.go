@@ -18,7 +18,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.AwsInstance, hostnamePrefix})
 	configBlockBody := configBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, "custom") {
+	if strings.Contains(terraformConfig.Module, defaults.Custom) {
 		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
 	}
 
@@ -32,10 +32,21 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	configBlockBody.AppendNewline()
 
+	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		configBlockBody.SetAttributeValue(defaults.EnablePrimaryIPv6, cty.BoolVal(true))
+		configBlockBody.SetAttributeValue(defaults.IPV6AddressCount, cty.NumberIntVal(1))
+
+		metadataOptionsBlock := configBlockBody.AppendNewBlock(metadataOptions, nil)
+		metadataOptionsBlockBody := metadataOptionsBlock.Body()
+
+		metadataOptionsBlockBody.SetAttributeValue(httpProtocolIPv6, cty.StringVal(terraformConfig.AWSConfig.HTTPProtocolIPv6))
+		configBlockBody.AppendNewline()
+	}
+
 	rootBlockDevice := configBlockBody.AppendNewBlock(defaults.RootBlockDevice, nil)
 	rootBlockDeviceBody := rootBlockDevice.Body()
 
-	if strings.Contains(hostnamePrefix, "registry") {
+	if strings.Contains(hostnamePrefix, defaults.Registry) {
 		rootBlockDeviceBody.SetAttributeValue(defaults.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.RegistryRootSize))
 	} else {
 		rootBlockDeviceBody.SetAttributeValue(defaults.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))
@@ -46,7 +57,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	tagsBlock := configBlockBody.AppendNewBlock(defaults.Tags+" =", nil)
 	tagsBlockBody := tagsBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, "custom") {
+	if strings.Contains(terraformConfig.Module, defaults.Custom) {
 		expression := fmt.Sprintf(`"%s-${`+defaults.Count+`.`+defaults.Index+`}"`, terraformConfig.ResourcePrefix+"-"+hostnamePrefix)
 		tags := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
@@ -110,6 +121,17 @@ func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *confi
 	configBlockBody.SetAttributeValue(defaults.KeyName, cty.StringVal(terraformConfig.AWSConfig.AWSKeyName))
 
 	configBlockBody.AppendNewline()
+
+	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		configBlockBody.SetAttributeValue(defaults.EnablePrimaryIPv6, cty.BoolVal(true))
+		configBlockBody.SetAttributeValue(defaults.IPV6AddressCount, cty.NumberIntVal(1))
+
+		metadataOptionsBlock := configBlockBody.AppendNewBlock(metadataOptions, nil)
+		metadataOptionsBlockBody := metadataOptionsBlock.Body()
+
+		metadataOptionsBlockBody.SetAttributeValue(httpProtocolIPv6, cty.StringVal(terraformConfig.AWSConfig.HTTPProtocolIPv6))
+		configBlockBody.AppendNewline()
+	}
 
 	rootBlockDevice := configBlockBody.AppendNewBlock(defaults.RootBlockDevice, nil)
 	rootBlockDeviceBody := rootBlockDevice.Body()
