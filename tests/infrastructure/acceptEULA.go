@@ -9,6 +9,7 @@ import (
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -25,11 +26,6 @@ func AcceptEULA(t *testing.T, session *session.Session, host string) {
 	cattleConfig = configMap[0]
 	rancherConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
 
-	if host != "" {
-		rancherConfig.Host = host
-		shepherdConfig.UpdateConfig("rancher", rancherConfig)
-	}
-
 	adminUser := &management.User{
 		Username: "admin",
 		Password: rancherConfig.AdminPassword,
@@ -40,17 +36,21 @@ func AcceptEULA(t *testing.T, session *session.Session, host string) {
 
 	rancherConfig.AdminToken = userToken.Token
 
-	if host != "" {
-		rancherConfig.Host = host
-		shepherdConfig.UpdateConfig("rancher", rancherConfig)
-	}
-
 	client, err := rancher.NewClient(rancherConfig.AdminToken, session)
 	require.NoError(t, err)
 
 	client.RancherConfig.AdminToken = rancherConfig.AdminToken
 	client.RancherConfig.AdminPassword = rancherConfig.AdminPassword
 	client.RancherConfig.Host = host
+
+	_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, rancherConfig.AdminToken, configMap[0])
+	require.NoError(t, err)
+
+	_, err = operations.ReplaceValue([]string{"rancher", "adminPassword"}, rancherConfig.AdminPassword, configMap[0])
+	require.NoError(t, err)
+
+	_, err = operations.ReplaceValue([]string{"rancher", "host"}, rancherConfig.Host, configMap[0])
+	require.NoError(t, err)
 
 	err = pipeline.PostRancherInstall(client, client.RancherConfig.AdminPassword)
 	require.NoError(t, err)

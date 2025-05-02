@@ -9,9 +9,11 @@ import (
 )
 
 const (
-	internal = "internal"
-	name     = "name"
-	network  = "network"
+	httpProtocolIPv6 = "http_protocol_ipv6"
+	internal         = "internal"
+	metadataOptions  = "metadata_options"
+	name             = "name"
+	network          = "network"
 )
 
 // CreateLoadBalancer is a function that will set the load balancer configurations in the main.tf file.
@@ -21,6 +23,7 @@ func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	loadBalancerGroupBlockBody.SetAttributeValue(internal, cty.BoolVal(false))
 	loadBalancerGroupBlockBody.SetAttributeValue(defaults.LoadBalancerType, cty.StringVal(network))
+	loadBalancerGroupBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.LoadBalancerType))
 
 	subnetList := format.ListOfStrings([]string{terraformConfig.AWSConfig.AWSSubnetID})
 	loadBalancerGroupBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)
@@ -34,6 +37,7 @@ func CreateInternalLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config
 
 	loadBalancerGroupBlockBody.SetAttributeValue(internal, cty.BoolVal(true))
 	loadBalancerGroupBlockBody.SetAttributeValue(defaults.LoadBalancerType, cty.StringVal(network))
+	loadBalancerGroupBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.LoadBalancerType))
 
 	subnetList := format.ListOfStrings([]string{terraformConfig.AWSConfig.AWSSubnetID})
 	loadBalancerGroupBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)

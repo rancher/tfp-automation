@@ -31,6 +31,8 @@ func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	targetGroupBlockBody.SetAttributeValue(defaults.Port, cty.NumberIntVal(port))
 	targetGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(TCP))
 	targetGroupBlockBody.SetAttributeValue(defaults.VpcId, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
+	targetGroupBlockBody.SetAttributeValue(defaults.TargetType, cty.StringVal(terraformConfig.AWSConfig.TargetType))
+	targetGroupBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.IPAddressType))
 	targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-tg-"+strconv.FormatInt(port, 10)))
 
 	healthCheckGroupBlock := targetGroupBlockBody.AppendNewBlock(defaults.HealthCheck, nil)
@@ -54,6 +56,8 @@ func CreateInternalTargetGroups(rootBody *hclwrite.Body, terraformConfig *config
 	targetGroupBlockBody.SetAttributeValue(defaults.Port, cty.NumberIntVal(port))
 	targetGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(TCP))
 	targetGroupBlockBody.SetAttributeValue(defaults.VpcId, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
+	targetGroupBlockBody.SetAttributeValue(defaults.TargetType, cty.StringVal(terraformConfig.AWSConfig.TargetType))
+	targetGroupBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.IPAddressType))
 	targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-internal-tg-"+strconv.FormatInt(port, 10)))
 
 	healthCheckGroupBlock := targetGroupBlockBody.AppendNewBlock(defaults.HealthCheck, nil)

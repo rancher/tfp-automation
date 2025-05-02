@@ -32,6 +32,7 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 		machineGlobalConfigValue := hclwrite.TokensForTraversal(hcl.Traversal{
 			hcl.TraverseRoot{Name: "<<EOF\ncni: " + terraformConfig.CNI + "\nEOF"},
 		})
+
 		rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, machineGlobalConfigValue)
 	}
 

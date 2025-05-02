@@ -3,6 +3,7 @@ package keypath
 const (
 	AirgapKeyPath     = "/src/github.com/rancher/tfp-automation/modules/airgap"
 	AirgapRKE2KeyPath = "/src/github.com/rancher/tfp-automation/modules/airgapRKE2"
+	IPv6KeyPath       = "/src/github.com/rancher/tfp-automation/modules/ipv6"
 	K3sKeyPath        = "/src/github.com/rancher/tfp-automation/modules/k3s"
 	ProxyKeyPath      = "/src/github.com/rancher/tfp-automation/modules/proxy"
 	RegistryKeyPath   = "/src/github.com/rancher/tfp-automation/modules/registries"
