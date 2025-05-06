@@ -42,7 +42,7 @@ type TfpRegistriesTestSuite struct {
 }
 
 func (r *TfpRegistriesTestSuite) TearDownSuite() {
-	keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terraformConfig.Provider)
 	cleanup.Cleanup(r.T(), r.standaloneTerraformOptions, keyPath)
 }
 
@@ -50,7 +50,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -98,7 +98,7 @@ func (r *TfpRegistriesTestSuite) TfpSetupSuite() map[string]any {
 	err = pipeline.PostRancherInstall(r.client, r.client.RancherConfig.AdminPassword)
 	require.NoError(r.T(), err)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 
@@ -156,7 +156,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
@@ -215,7 +215,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
@@ -280,7 +280,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)

@@ -87,7 +87,7 @@ func (p *OSValidationTestSuite) SetupSuite() {
 		DefaultRegion: terraformConfig.AWSConfig.Region,
 	}
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(p.T(), terraformConfig, terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
 }
@@ -106,7 +106,7 @@ func (p *OSValidationTestSuite) TestDynamicOSValidation() {
 	customClusterNames := []string{}
 
 	for ami, batch := range configBatches {
-		keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 		defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 		testUser, testPassword := configs.CreateTestCredentials()
 

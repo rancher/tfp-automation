@@ -6,8 +6,10 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -20,17 +22,7 @@ const (
 // CreateProxiedRancher is a function that will set the Rancher configurations in the main.tf file.
 func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2BastionPublicDNS, rke2BastionPrivateIP, linodeNodeBalancerHostname string) (*os.File, error) {
-
-	var err error
-	userDir := os.Getenv("GOROOT")
-	if userDir == "" {
-		userDir, err = os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-
-		userDir = filepath.Join(userDir, "go/")
-	}
+	userDir, _ := rancher2.SetKeyPath(keypath.ProxyKeyPath, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher/setup.sh")
 
