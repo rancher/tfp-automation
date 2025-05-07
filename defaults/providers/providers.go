@@ -4,4 +4,5 @@ const (
 	AWS       = "aws"
 	Linode    = "linode"
 	Harvester = "harvester"
+	Vsphere   = "vsphere"
 )

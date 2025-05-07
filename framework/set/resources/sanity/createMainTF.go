@@ -57,7 +57,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	if terraformConfig.Provider == providers.Linode {
 		nodeBalancerHostname = terraform.Output(t, terraformOptions, linodeBalancerHostname)
 		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
-	} else if terraformConfig.Provider == providers.Harvester {
+	} else if terraformConfig.Provider == providers.Harvester || terraformConfig.Provider == providers.Vsphere {
 		nodeBalancerHostname = terraform.Output(t, terraformOptions, rke2ServerOnePublicIP) + sslipioSuffix
 		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
 	}

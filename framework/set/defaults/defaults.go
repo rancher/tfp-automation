@@ -103,6 +103,19 @@ const (
 	CPU                = "cpu"
 	Memory             = "memory"
 
+	VsphereDatacenter             = "vsphere_datacenter"
+	VsphereDatastore              = "vsphere_datastore"
+	VsphereComputeCluster         = "vsphere_compute_cluster"
+	VsphereNetwork                = "vsphere_network"
+	VsphereServer                 = "vsphere_server"
+	VsphereVirutalMachine         = "vsphere_virtual_machine"
+	VsphereVirtualMachineTemplate = "vsphere_virtual_machine_template"
+	CDROM                         = "cdrom"
+	ExtraConfig                   = "extra_config"
+	NetworkID                     = "network_id"
+	NumCPUs                       = "num_cpus"
+
+	Label  = "label"
 	Labels = "labels"
 
 	Disk                    = "disk"
@@ -190,12 +203,14 @@ const (
 	PrivateIPAddress = "private_ip_address"
 	Length           = "length"
 
-	Aws    = "aws"
-	Linode = "linode"
+	Aws     = "aws"
+	Linode  = "linode"
+	Vsphere = "vsphere"
 
-	AwsSource    = "hashicorp/aws"
-	LinodeSource = "linode/linode"
-	RKESource    = "rancher/rke"
+	AwsSource     = "hashicorp/aws"
+	LinodeSource  = "linode/linode"
+	RKESource     = "rancher/rke"
+	VsphereSource = "hashicorp/vsphere"
 
 	ApiUrl      = "api_url"
 	Destination = "destination"

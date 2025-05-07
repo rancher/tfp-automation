@@ -12,6 +12,7 @@ AWS_PROVIDER_VERSION="${AWS_PROVIDER_VERSION:-}"
 LINODE_PROVIDER_VERSION="${LINODE_PROVIDER_VERSION:-}"
 HARVESTER_PROVIDER_VERSION="${HARVESTER_PROVIDER_VERSION:-}"
 KUBERNETES_PROVIDER_VERSION="${KUBERNETES_PROVIDER_VERSION:-}"
+VSPHERE_PROVIDER_VERSION="${VSPHERE_PROVIDER_VERSION:-}"
 
 TRIM_JOB_NAME=$(basename "$JOB_NAME")
 
@@ -31,6 +32,7 @@ while [[ 3 -gt $count ]]; do
                                                                     --build-arg LINODE_PROVIDER_VERSION="$LINODE_PROVIDER_VERSION" \
                                                                     --build-arg HARVESTER_PROVIDER_VERSION="$HARVESTER_PROVIDER_VERSION" \
                                                                     --build-arg KUBERNETES_PROVIDER_VERSION="$KUBERNETES_PROVIDER_VERSION" \
+                                                                    --build-arg VSPHERE_PROVIDER_VERSION="$VSPHERE_PROVIDER_VERSION" \
                                                                     -t tfp-automation-validation-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"
 
     if [[ $? -eq 0 ]]; then break; fi

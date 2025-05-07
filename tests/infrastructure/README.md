@@ -29,7 +29,7 @@ rancher:
 #######################
 terraform:
   cni: ""
-  provider: ""                                    # REQUIRED - supported values are aws | linode | harvester
+  provider: ""                                    # REQUIRED - supported values are aws | linode | harvester | vsphere
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   resourcePrefix: ""
   ##########################################
@@ -93,6 +93,9 @@ export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
 export AWS_PROVIDER_VERSION=""
 export LINODE_PROVIDER_VERSION=""
+export VSPHERE_PROVIDER_VERSION=""
+export HARVESTER_PROVIDER_VERSION=""
+export KUBERNETES_VERSION=""
 ```
 
 See the below examples on how to run the test:
