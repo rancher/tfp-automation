@@ -13,7 +13,7 @@ func InitializeMainTF() (*hclwrite.File, *hclwrite.Body, *os.File) {
 	newFile := hclwrite.NewEmptyFile()
 	rootBody := newFile.Body()
 
-	keyPath := SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := SetKeyPath(keypath.RancherKeyPath, "")
 	file, err := os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		return nil, nil, nil

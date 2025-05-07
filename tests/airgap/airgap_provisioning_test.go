@@ -41,7 +41,7 @@ type TfpAirgapProvisioningTestSuite struct {
 }
 
 func (a *TfpAirgapProvisioningTestSuite) TearDownSuite() {
-	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terraformConfig.Provider)
 	cleanup.Cleanup(a.T(), a.standaloneTerraformOptions, keyPath)
 }
 
@@ -49,7 +49,7 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	a.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 	a.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -99,7 +99,7 @@ func (a *TfpAirgapProvisioningTestSuite) TfpSetupSuite() map[string]any {
 
 	operations.ReplaceValue([]string{"rancher", "host"}, a.rancherConfig.Host, configMap[0])
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 	a.terraformOptions = terraformOptions
 
@@ -143,7 +143,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		a.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
 			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
@@ -201,7 +201,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		a.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
 			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows, false, true, customClusterNames)

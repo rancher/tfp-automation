@@ -6,7 +6,9 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -20,16 +22,7 @@ const (
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
 func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2AuthRegistryPublicDNS string) (*os.File, error) {
-	var err error
-	userDir := os.Getenv("GOROOT")
-	if userDir == "" {
-		userDir, err = os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-
-		userDir = filepath.Join(userDir, "go/")
-	}
+	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terraformConfig.Provider)
 
 	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/auth-registry.sh")
 
@@ -70,16 +63,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 // CreateNonAuthenticatedRegistry is a helper function that will create a non-authenticated registry.
 func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2NonAuthRegistryPublicDNS, registryType string) (*os.File, error) {
-	var err error
-	userDir := os.Getenv("GOROOT")
-	if userDir == "" {
-		userDir, err = os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-
-		userDir = filepath.Join(userDir, "go/")
-	}
+	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terraformConfig.Provider)
 
 	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/non-auth-registry.sh")
 

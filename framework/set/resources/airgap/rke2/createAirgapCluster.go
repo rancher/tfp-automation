@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -26,16 +28,7 @@ const (
 // CreateAirgapRKE2Cluster is a helper function that will create the RKE2 cluster.
 func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
-	var err error
-	userDir := os.Getenv("GOROOT")
-	if userDir == "" {
-		userDir, err = os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-
-		userDir = filepath.Join(userDir, "go/")
-	}
+	userDir, _ := rancher2.SetKeyPath(keypath.AirgapKeyPath, terraformConfig.Provider)
 
 	bastionScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/bastion.sh")
 	serverScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/init-server.sh")

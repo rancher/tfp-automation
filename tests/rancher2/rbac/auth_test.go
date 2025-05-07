@@ -50,7 +50,7 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 	r.cattleConfig = configMap[0]
 	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 }
@@ -78,7 +78,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		_, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			rbac.AuthConfig(r.T(), terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
@@ -113,7 +113,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		r.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			rbac.AuthConfig(r.T(), r.terraformConfig, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)

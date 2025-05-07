@@ -34,7 +34,7 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.AirgapRKE2KeyPath, i.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.AirgapRKE2KeyPath, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 

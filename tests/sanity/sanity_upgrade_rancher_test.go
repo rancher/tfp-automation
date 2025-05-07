@@ -43,10 +43,10 @@ type TfpSanityUpgradeRancherTestSuite struct {
 }
 
 func (s *TfpSanityUpgradeRancherTestSuite) TearDownSuite() {
-	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terraformConfig.Provider)
 	cleanup.Cleanup(s.T(), s.standaloneTerraformOptions, keyPath)
 
-	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
+	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
 	cleanup.Cleanup(s.T(), s.upgradeTerraformOptions, keyPath)
 }
 
@@ -54,7 +54,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -63,7 +63,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
 
 	s.serverNodeOne = serverNodeOne
 
-	keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
+	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
 	upgradeTerraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 
 	s.upgradeTerraformOptions = upgradeTerraformOptions
@@ -105,7 +105,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) TfpSetupSuite() map[string]any {
 	err = pipeline.PostRancherInstall(s.client, s.client.RancherConfig.AdminPassword)
 	require.NoError(s.T(), err)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.terraformOptions = terraformOptions
 
@@ -119,7 +119,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 
 	s.terraformConfig.Standalone.UpgradeRancher = true
 
-	keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terraformConfig.Provider)
 	err := upgrade.CreateMainTF(s.T(), s.upgradeTerraformOptions, keyPath, s.terraformConfig, s.terratestConfig, s.serverNodeOne, "", "", "")
 	require.NoError(s.T(), err)
 
@@ -180,7 +180,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	}
 
 	if deleteClusters {
-		keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 		cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 	}
 

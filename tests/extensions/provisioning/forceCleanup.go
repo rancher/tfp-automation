@@ -11,7 +11,7 @@ import (
 
 // ForceCleanup is a function that will forcibly run terraform destroy and cleanup Terraform resources.
 func ForceCleanup(t *testing.T) error {
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: keyPath,

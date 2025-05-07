@@ -52,7 +52,7 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 	k.cattleConfig = configMap[0]
 	k.rancherConfig, k.terraformConfig, k.terratestConfig = config.LoadTFPConfigs(k.cattleConfig)
 
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(k.T(), k.terraformConfig, k.terratestConfig, keyPath)
 	k.terraformOptions = terraformOptions
 }
@@ -84,7 +84,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		k.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
@@ -123,7 +123,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.terratestConfig.KubernetesVersion
 
 		k.Run((tt.name), func() {
-			keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)

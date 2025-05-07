@@ -176,7 +176,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 	}
 
 	// // This is needed to ensure there is no duplications in the main.tf file.
-	keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	file, err = os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)
