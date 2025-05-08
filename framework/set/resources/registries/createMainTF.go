@@ -20,10 +20,12 @@ const (
 	authRegistryPublicDNS    = "auth_registry_public_dns"
 	nonAuthRegistryPublicDNS = "non_auth_registry_public_dns"
 	globalRegistryPublicDNS  = "global_registry_public_dns"
+	ecrRegistryPublicDNS     = "ecr_registry_public_dns"
 
 	authRegistry    = "auth_registry"
 	nonAuthRegistry = "non_auth_registry"
 	globalRegistry  = "global_registry"
+	ecrRegistry     = "ecr_registry"
 
 	rke2ServerOne            = "rke2_server1"
 	rke2ServerTwo            = "rke2_server2"
@@ -49,7 +51,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree, authRegistry, nonAuthRegistry, globalRegistry}
+	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree, authRegistry, nonAuthRegistry, globalRegistry, ecrRegistry}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratest, instances)
@@ -62,6 +64,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
 	nonAuthRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthRegistryPublicDNS)
 	globalRegistryPublicDNS := terraform.Output(t, terraformOptions, globalRegistryPublicDNS)
+	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
 	rke2ServerOnePublicDNS := terraform.Output(t, terraformOptions, rke2ServerOnePublicDNS)
 	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
 	rke2ServerTwoPublicDNS := terraform.Output(t, terraformOptions, rke2ServerTwoPublicDNS)
@@ -70,7 +73,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	// Will create the authenticated registry, unauthenticated registry, and global registry in parallel using goroutines.
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
-	wg.Add(3)
+	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
@@ -108,6 +111,19 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, globalRegistryPublicDNS, globalRegistry)
 		if err != nil {
 			logrus.Fatalf("Error creating global registry: %v", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mutex.Lock()
+		defer mutex.Unlock()
+
+		file = sanity.OpenFile(file, keyPath)
+		logrus.Infof("Creating ecr registry...")
+		file, err = registry.CreateEcrRegistry(file, newFile, rootBody, terraformConfig, ecrRegistryPublicDNS)
+		if err != nil {
+			logrus.Fatalf("Error creating ecr registry: %v", err)
 		}
 	}()
 

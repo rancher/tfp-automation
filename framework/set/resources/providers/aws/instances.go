@@ -12,6 +12,10 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+const (
+	ecrRegistry = "ecr_registry"
+)
+
 // CreateAWSInstances is a function that will set the AWS instances configurations in the main.tf file.
 func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	hostnamePrefix string) {
@@ -22,7 +26,14 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
 	}
 
-	configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))
+	if hostnamePrefix == ecrRegistry {
+		configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.StandaloneRegistry.ECRAMI))
+	}
+
+	if hostnamePrefix != ecrRegistry {
+		configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))
+	}
+
 	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
 	configBlockBody.SetAttributeValue(defaults.SubnetId, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))
 

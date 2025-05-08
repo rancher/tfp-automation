@@ -17,6 +17,7 @@ import (
 const (
 	authRegistry    = "auth_registry"
 	nonAuthRegistry = "non_auth_registry"
+	ecrRegistry     = "ecr_registry"
 )
 
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
@@ -101,6 +102,45 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/non-auth-registry.sh"),
 		cty.StringVal("chmod +x /tmp/non-auth-registry.sh"),
+		cty.StringVal(command),
+	}))
+
+	_, err = file.Write(newFile.Bytes())
+	if err != nil {
+		logrus.Infof("Failed to append configurations to main.tf file. Error: %v", err)
+		return nil, err
+	}
+
+	return file, nil
+}
+
+// CreateEcrRegistry is a helper function that will create an authenticated ECR registry.
+func CreateEcrRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
+	rke2EcrRegistryPublicDNS string) (*os.File, error) {
+	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terraformConfig.Provider)
+
+	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/ecr-registry.sh")
+
+	registryScriptContent, err := os.ReadFile(registryScriptPath)
+	if err != nil {
+		return nil, err
+	}
+
+	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2EcrRegistryPublicDNS, ecrRegistry)
+
+	command := "bash -c '/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " +
+		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.RancherImage + " " +
+		terraformConfig.Standalone.OSUser + " " + terraformConfig.StandaloneRegistry.AssetsPath
+
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
+	}
+
+	command += " || true'"
+
+	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/ecr-registry.sh"),
+		cty.StringVal("chmod +x /tmp/ecr-registry.sh"),
 		cty.StringVal(command),
 	}))
 
