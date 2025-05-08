@@ -15,6 +15,7 @@ type Config struct {
 	DatastoreCluster       string   `json:"datastoreCluster,omitempty" yaml:"datastoreCluster,omitempty"`
 	DiskSize               string   `json:"diskSize,omitempty" yaml:"diskSize,omitempty"`
 	Folder                 string   `json:"folder,omitempty" yaml:"folder,omitempty"`
+	GuestID                string   `json:"guestID,omitempty" yaml:"guestID,omitempty"`
 	HostSystem             string   `json:"hostSystem,omitempty" yaml:"hostSystem,omitempty"`
 	MemorySize             string   `json:"memorySize,omitempty" yaml:"memorySize,omitempty"`
 	Network                []string `json:"network,omitempty" yaml:"network,omitempty"`
@@ -24,6 +25,7 @@ type Config struct {
 	SSHPort                string   `json:"sshPort,omitempty" yaml:"sshPort,omitempty"`
 	SSHUser                string   `json:"sshUser,omitempty" yaml:"sshUser,omitempty"`
 	SSHUserGroup           string   `json:"sshUserGroup,omitempty" yaml:"sshUserGroup,omitempty"`
+	StandaloneNetwork      string   `json:"standaloneNetwork,omitempty" yaml:"standaloneNetwork,omitempty"`
 	Tag                    []string `json:"tag,omitempty" yaml:"tag,omitempty"`
 	VappIpallocationpolicy string   `json:"vappIpallocationpolicy,omitempty" yaml:"vappIpallocationpolicy,omitempty"`
 	VappIpprotocol         string   `json:"vappIpprotocol,omitempty" yaml:"vappIpprotocol,omitempty"`

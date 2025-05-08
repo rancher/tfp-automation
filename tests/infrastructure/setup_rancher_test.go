@@ -39,7 +39,7 @@ func (i *RancherTestSuite) TestCreateRancher() {
 	_, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
-	if i.terraformConfig.Provider != providers.Linode {
+	if i.terraformConfig.Provider != providers.Linode && i.terraformConfig.Provider != providers.Vsphere {
 		logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)
 		logrus.Infof("Booststrap password: %s", i.terraformConfig.Standalone.BootstrapPassword)
 

@@ -78,13 +78,20 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		}
 
 		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-
 	} else if terraformConfig.Provider == defaults.Linode {
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(linode.RootUser))
 		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
-
 	} else if terraformConfig.Provider == defaults.Harvester {
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.HarvesterConfig.SSHUser))
+
+		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPath := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
+		}
+
+		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
+	} else if terraformConfig.Provider == defaults.Vsphere {
+		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.Standalone.OSUser))
 
 		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{

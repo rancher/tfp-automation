@@ -54,6 +54,7 @@ export LINODE_PROVIDER_VERSION=""                                       # Requir
 export HARVESTER_PROVIDER_VERSION=""                                    # Required for infrastructure building using Harvester
 export KUBERNETES_PROVIDER_VERSION=""                                   # Required for infrastructure building using Harvester
 export LOCALS_PROVIDER_VERSION=""                                       # Required for custom cluster / infrastructure building
+export VSPHERE_PROVIDER_VERSION=""                                      # Required for infrastructure building using vSphere
 
 export QASE_AUTOMATION_TOKEN=""                                         # Required for local Qase reporting
 export QASE_TEST_RUN_ID=""                                              # Required for local Qase reporting
@@ -145,6 +146,24 @@ terraform:
     imageName: ""
     vmNamespace: "default"
     sshUser: ""
+
+  # Fill out this vSphere section if provider is set to vsphere.
+  vsphereCredentials:
+    password: ""
+    username: ""
+    vcenter: ""
+  vsphereConfig:  
+    cloneFrom: ""
+    cpuCount: ""
+    datacenter: ""
+    datastore: ""
+    datastoreCluster: ""
+    diskSize: ""
+    guestID: "ubuntu64Guest"      # This will change depending on the OS you're using
+    folder: ""
+    hostSystem: ""
+    memorySize: ""
+    standaloneNetwork: ""
 
   standalone:
     bootstrapPassword: ""

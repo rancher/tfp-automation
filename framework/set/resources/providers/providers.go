@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/harvester"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/linode"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,9 +37,14 @@ func TunnelToProvider(provider string) ProviderResources {
 			CreateNonAirgap: linode.CreateLinodeResources,
 		}
 	case providers.Harvester:
-		logrus.Info("Using Harvester to create resources...")
+		logrus.Infof("Creating Harvester resources...")
 		return ProviderResources{
 			CreateNonAirgap: harvester.CreateHarvesterResources,
+		}
+	case providers.Vsphere:
+		logrus.Infof("Creating vSphere resources...")
+		return ProviderResources{
+			CreateNonAirgap: vsphere.CreateVsphereResources,
 		}
 	default:
 		panic(fmt.Sprintf("Unsupported provider: %s", provider))
