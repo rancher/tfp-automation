@@ -23,14 +23,14 @@ const (
 
 // CreateAWSTerraformProviderBlock will up the terraform block with the required aws provider.
 func CreateAWSTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
-	awsProviderVersion := os.Getenv("AWS_PROVIDER_VERSION")
+	cloudProviderVersion := os.Getenv("CLOUD_PROVIDER_VERSION")
 
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
 	reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
 		defaults.Source:  cty.StringVal(defaults.AwsSource),
-		defaults.Version: cty.StringVal(awsProviderVersion),
+		defaults.Version: cty.StringVal(cloudProviderVersion),
 	}))
 }
 

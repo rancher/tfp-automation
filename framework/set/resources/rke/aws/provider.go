@@ -12,9 +12,9 @@ import (
 
 // createTerraformProviderBlock will up the terraform block with the required aws provider.
 func createTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
-	awsProviderVersion := os.Getenv(awsProviderEnvVar)
-	if awsProviderVersion == "" {
-		logrus.Fatalf("Expected env var not set %s", awsProviderEnvVar)
+	cloudProviderVersion := os.Getenv(cloudProviderEnvVar)
+	if cloudProviderVersion == "" {
+		logrus.Fatalf("Expected env var not set %s", cloudProviderEnvVar)
 	}
 
 	rkeProviderVersion := os.Getenv(rkeProviderEnvVar)
@@ -27,7 +27,7 @@ func createTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
 
 	reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
 		defaults.Source:  cty.StringVal(defaults.AwsSource),
-		defaults.Version: cty.StringVal(awsProviderVersion),
+		defaults.Version: cty.StringVal(cloudProviderVersion),
 	}))
 
 	source := "rancher/rke"

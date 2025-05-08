@@ -49,9 +49,7 @@ In addition to the main purpose of testing the Rancher2 provider, `tfp-automatio
 ##### When testing locally, the following environment variables should be exported:
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""                                     # Required
-export AWS_PROVIDER_VERSION=""                                          # Required for custom cluster / infrastructure building
-export LINODE_PROVIDER_VERSION=""                                       # Required for infrastructure building using Linode
-export HARVESTER_PROVIDER_VERSION=""                                    # Required for infrastructure building using Harvester
+export CLOUD_PROVIDER_VERSION=""                                        # Required for custom cluster / infrastructure building
 export KUBERNETES_PROVIDER_VERSION=""                                   # Required for infrastructure building using Harvester
 export LOCALS_PROVIDER_VERSION=""                                       # Required for custom cluster / infrastructure building
 export VSPHERE_PROVIDER_VERSION=""                                      # Required for infrastructure building using vSphere

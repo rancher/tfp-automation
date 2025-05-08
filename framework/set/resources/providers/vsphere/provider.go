@@ -25,14 +25,13 @@ const (
 
 // CreateVsphereTerraformProviderBlock will up the terraform block with the required vsphere provider.
 func CreateVsphereTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
-	vsphereProviderVersion := os.Getenv("VSPHERE_PROVIDER_VERSION")
-
+	cloudProviderVersion := os.Getenv("CLOUD_PROVIDER_VERSION")
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
 	reqProvsBlockBody.SetAttributeValue(defaults.Vsphere, cty.ObjectVal(map[string]cty.Value{
 		defaults.Source:  cty.StringVal(defaults.VsphereSource),
-		defaults.Version: cty.StringVal(vsphereProviderVersion),
+		defaults.Version: cty.StringVal(cloudProviderVersion),
 	}))
 }
 

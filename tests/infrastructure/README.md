@@ -91,12 +91,8 @@ Note: Depending on what `provider` is set to, only fill out the appropriate sect
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
-export AWS_PROVIDER_VERSION=""
-export LINODE_PROVIDER_VERSION=""
-export VSPHERE_PROVIDER_VERSION=""
-export HARVESTER_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 export KUBERNETES_VERSION=""
-```
 
 See the below examples on how to run the test:
 
@@ -227,7 +223,7 @@ Before running, be sure to run the following commands:
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
-export AWS_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 ```
 
 See the below examples on how to run the test:
@@ -286,7 +282,7 @@ Before running, be sure to run the following commands:
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
-export AWS_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 ```
 
 See the below examples on how to run the tests:
@@ -327,7 +323,7 @@ Before running, be sure to run the following commands:
 ```yaml
 export RKE_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export AWS_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 ```
 
 See the below examples on how to run the tests:
@@ -394,8 +390,7 @@ Before running, be sure to run the following commands:
 
 ```yaml
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export AWS_PROVIDER_VERSION=""
-export LINODE_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 export LOCALS_PROVIDER_VERSION=""
 ```
 
@@ -449,7 +444,7 @@ Before running, be sure to run the following commands:
 
 ```yaml
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export AWS_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 export LOCALS_PROVIDER_VERSION=""
 ```
 
@@ -509,8 +504,7 @@ Before running, be sure to run the following commands:
 
 ```yaml
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export AWS_PROVIDER_VERSION=""
-export LINODE_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 export LOCALS_PROVIDER_VERSION=""
 ```
 

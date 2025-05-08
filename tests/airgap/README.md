@@ -101,7 +101,7 @@ Before running, be sure to run the following commands:
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
-export AWS_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 ```
 
 See the below examples on how to run the tests:
