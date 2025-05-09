@@ -63,7 +63,7 @@ Before running, be sure to run the following commands:
 ```yaml
 export RKE_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export AWS_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
 ```
 
 See the below examples on how to run the tests:

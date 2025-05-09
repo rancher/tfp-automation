@@ -25,14 +25,14 @@ const (
 
 // CreateLinodeTerraformProviderBlock will up the terraform block with the required linode provider.
 func CreateLinodeTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
-	linodeProviderVersion := os.Getenv("LINODE_PROVIDER_VERSION")
+	cloudProviderVersion := os.Getenv("CLOUD_PROVIDER_VERSION")
 
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
 	reqProvsBlockBody.SetAttributeValue(defaults.Linode, cty.ObjectVal(map[string]cty.Value{
 		defaults.Source:  cty.StringVal(defaults.LinodeSource),
-		defaults.Version: cty.StringVal(linodeProviderVersion),
+		defaults.Version: cty.StringVal(cloudProviderVersion),
 	}))
 }
 

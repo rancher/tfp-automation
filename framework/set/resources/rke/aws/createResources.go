@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	awsProviderEnvVar = "AWS_PROVIDER_VERSION"
-	rc                = "-rc"
-	requiredProviders = "required_providers"
-	rkeProviderEnvVar = "RKE_PROVIDER_VERSION"
-	rkeServerOne      = "rke_server1"
-	rkeServerTwo      = "rke_server2"
-	rkeServerThree    = "rke_server3"
-	rkeLogFile        = "rke_debug.log"
+	cloudProviderEnvVar = "CLOUD_PROVIDER_VERSION"
+	rc                  = "-rc"
+	requiredProviders   = "required_providers"
+	rkeProviderEnvVar   = "RKE_PROVIDER_VERSION"
+	rkeServerOne        = "rke_server1"
+	rkeServerTwo        = "rke_server2"
+	rkeServerThree      = "rke_server3"
+	rkeLogFile          = "rke_debug.log"
 )
 
 // CreateAWSResources is a helper function that will create the AWS resources needed for the RKE1 cluster.
