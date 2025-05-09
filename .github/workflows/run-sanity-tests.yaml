@@ -1,0 +1,151 @@
+name: Run Sanity Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  HOSTNAME_PREFIX: tfp-sanity
+  RANCHER_VERSION: v2.11-head
+  RKE2_VERSION: v1.31.7+rke2r1
+  RANCHER2_PROVIDER_VERSION: '7.0.0'
+  TERRAFORM_VERSION: '1.9.5'
+  RKE_PROVIDER_VERSION: '1.7.0'
+  AWS_PROVIDER_VERSION: '5.95.0'
+  LOCALS_PROVIDER_VERSION: '2.5.2'
+  QASE_TEST_RUN_ID: ''
+
+jobs:
+  run-sanity-tests:
+    name: Run Sanity Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Mask sensitive variables
+        run: |
+          echo "::add-mask::${{ secrets.TFP_RANCHER_ADMIN_PASSWORD }}"
+          echo "::add-mask::${{ secrets.TFP_BOOTSTRAP_PASSWORD }}"
+          echo "::add-mask::${{ secrets.TFP_SSH_PRIVATE_KEY }}"
+          echo "::add-mask::${{ secrets.TFP_SSH_PRIVATE_KEY_PATH }}"
+          echo "::add-mask::${{ secrets.TFP_WINDOWS_SSH_PRIVATE_KEY }}"
+          echo "::add-mask::${{ secrets.TFP_WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+          echo "::add-mask::${{ secrets.TFP_AWS_AMI }}"
+          echo "::add-mask::${{ secrets.TFP_AWS_KEY_NAME }}"
+          echo "::add-mask::${{ secrets.TFP_AWS_SECURITY_GROUPS }}"
+          echo "::add-mask::${{ secrets.TFP_AWS_SECURITY_GROUP_NAMES }}"
+          echo "::add-mask::${{ secrets.TFP_AWS_SUBNET_ID }}"
+          echo "::add-mask::${{ secrets.TFP_AWS_VPC_ID }}"
+          echo "::add-mask::${{ secrets.TFP_WINDOWS_AMI }}"
+          echo "::add-mask::${{ secrets.TFP_WINDOWS_KEY_NAME }}"
+          echo "::add-mask::${{ secrets.TFP_WINDOWS_AWS_PASSWORD }}"
+          echo "::add-mask::${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "::add-mask::${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
+      - name: Start ssh-agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.TFP_SSH_PRIVATE_KEY }}
+            ${{ secrets.TFP_WINDOWS_SSH_PRIVATE_KEY }}
+
+      - name: Set up SSH keys
+        run: |
+          mkdir -p .ssh
+
+          echo "${{ secrets.TFP_SSH_PRIVATE_KEY }}" > .ssh/${{ secrets.TFP_SSH_PRIVATE_KEY_PATH }}.pem
+          chmod 600 .ssh/${{ secrets.TFP_SSH_PRIVATE_KEY_PATH }}.pem
+
+          echo "${{ secrets.TFP_WINDOWS_SSH_PRIVATE_KEY }}" > .ssh/${{ secrets.TFP_WINDOWS_SSH_PRIVATE_KEY_PATH }}.pem
+          chmod 600 .ssh/${{ secrets.TFP_WINDOWS_SSH_PRIVATE_KEY_PATH }}.pem
+
+      - name: Create config.yaml
+        run: |
+          cat > config.yaml <<EOF
+          rancher:
+            host: "${{ env.HOSTNAME_PREFIX }}.qa.rancher.space"
+            adminPassword: "${{ secrets.TFP_RANCHER_ADMIN_PASSWORD }}"
+            insecure: true
+          terraform:
+            cni: "calico"
+            defaultClusterRoleForProjectMembers: "true"
+            enableNetworkPolicy: false
+            provider: "aws"
+            privateKeyPath: "${{ secrets.TFP_SSH_PRIVATE_KEY_PATH }}"
+            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
+            windowsPrivateKeyPath: "${{ secrets.TFP_WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            awsCredentials:
+              awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+              awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+            awsConfig:
+              ami: "${{ secrets.TFP_AWS_AMI }}"
+              awsKeyName: "${{ secrets.TFP_AWS_KEY_NAME }}"
+              awsInstanceType: "t3a.xlarge"
+              region: "us-east-2"
+              awsSecurityGroups: ["${{ secrets.TFP_AWS_SECURITY_GROUPS }}"]
+              awsSecurityGroupNames: ["${{ secrets.TFP_AWS_SECURITY_GROUP_NAMES }}"]
+              awsSubnetID: "${{ secrets.TFP_AWS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.TFP_AWS_VPC_ID }}"
+              awsZoneLetter: "a"
+              awsRootSize: 100
+              awsRoute53Zone: "qa.rancher.space"
+              awsUser: "ubuntu"
+              sshConnectionType: "ssh"
+              timeout: "10m"
+              windowsAMI: "${{ secrets.TFP_WINDOWS_AMI }}"
+              windowsAWSUser: "Administrator"
+              windowsAWSPassword: "${{ secrets.TFP_WINDOWS_AWS_PASSWORD }}"
+              windowsInstanceType: "t3a.2xlarge"
+              windowsKeyName: "${{ secrets.TFP_WINDOWS_KEY_NAME }}"
+            standalone:
+              bootstrapPassword: "${{ secrets.TFP_BOOTSTRAP_PASSWORD }}"
+              certManagerVersion: "v1.15.3"
+              osUser: "ubuntu"
+              osGroup: "ubuntu"
+              rancherChartRepository: "https://releases.rancher.com/server-charts/"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.qa.rancher.space"
+              rancherImage: "rancher/rancher"
+              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              repo: "latest"
+              rke2Version: "${{ env.RKE2_VERSION }}"
+          terratest:
+            tfLogging: true
+            nodeCount: 3
+            windowsNodeCount: 1
+          EOF
+
+      - name: Export CATTLE_TEST_CONFIG
+        run: echo "CATTLE_TEST_CONFIG=${{ github.workspace }}/config.yaml" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: './go.mod'
+
+      - name: Build Packages
+        run: ./.github/scripts/build-packages.sh
+
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@latest
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Run Sanity Test Suite
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          gotestsum \
+            --format standard-verbose \
+            --packages=github.com/rancher/tfp-automation/tests/sanity \
+            --junitfile results.xml \
+            --jsonfile results.json \
+            -- -timeout=2h -v -run "TestTfpSanityProvisioningTestSuite$"
