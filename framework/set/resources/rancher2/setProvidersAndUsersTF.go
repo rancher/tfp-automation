@@ -18,6 +18,7 @@ import (
 
 const (
 	apiURL              = "api_url"
+	allowUnverifiedSSL  = "allow_unverified_ssl"
 	ec2                 = "ec2"
 	globalRoleBinding   = "rancher2_global_role_binding"
 	globalRoleID        = "global_role_id"
@@ -34,6 +35,7 @@ const (
 	testPassword        = "password"
 	tokenKey            = "token_key"
 	version             = "version"
+	vsphere             = "vsphere"
 	user                = "user"
 	userID              = "user_id"
 	username            = "username"
@@ -95,6 +97,13 @@ func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any
 		}))
 	}
 
+	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Vsphere && customModule {
+		reqProvsBlockBody.SetAttributeValue(defaults.Vsphere, cty.ObjectVal(map[string]cty.Value{
+			defaults.Source:  cty.StringVal(defaults.VsphereSource),
+			defaults.Version: cty.StringVal(cloudProviderVersion),
+		}))
+	}
+
 	if localProviderVersion != "" {
 		reqProvsBlockBody.SetAttributeValue(defaults.Local, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(defaults.LocalSource),
@@ -138,6 +147,20 @@ func createProvider(rootBody *hclwrite.Body, configMap []map[string]any, customM
 		linodeProvBlockBody := linodeProvBlock.Body()
 
 		linodeProvBlockBody.SetAttributeValue(defaults.Token, cty.StringVal(terraformConfig.LinodeCredentials.LinodeToken))
+
+		rootBody.AppendNewline()
+		rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Local})
+		rootBody.AppendNewline()
+	}
+
+	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Vsphere && customModule {
+		vsphereProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Vsphere})
+		vsphereProvBlockBody := vsphereProvBlock.Body()
+
+		vsphereProvBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereCredentials.Username))
+		vsphereProvBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.VsphereCredentials.Password))
+		vsphereProvBlockBody.SetAttributeValue(defaults.VsphereServer, cty.StringVal(terraformConfig.VsphereCredentials.Vcenter))
+		vsphereProvBlockBody.SetAttributeValue(allowUnverifiedSSL, cty.BoolVal(true))
 
 		rootBody.AppendNewline()
 		rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Local})

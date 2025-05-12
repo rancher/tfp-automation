@@ -30,7 +30,7 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, installRancher)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, installRancher)
 
 	if nodeBalancerHostname != "" {
 		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname

@@ -109,6 +109,49 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 	}
 }
 
+func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
+	tests := []struct {
+		name string
+	}{
+		{config.StandardClientName.String()},
+	}
+
+	newFile, rootBody, file := rancher2.InitializeMainTF()
+	defer file.Close()
+
+	customClusterNames := []string{}
+	testUser, testPassword := configs.CreateTestCredentials()
+
+	for _, tt := range tests {
+		cattleConfig := p.SetupSuite()
+		configMap := []map[string]any{cattleConfig}
+
+		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
+
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
+
+		p.Run((tt.name), func() {
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
+
+			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
+			require.NoError(p.T(), err)
+
+			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
+
+			if strings.Contains(p.terraformConfig.Module, modules.CustomEC2RKE2Windows) {
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
+			}
+		})
+	}
+
+	if p.terratestConfig.LocalQaseReporting {
+		qase.ReportTest()
+	}
+}
+
 func TestTfpProvisionCustomTestSuite(t *testing.T) {
 	suite.Run(t, new(ProvisionCustomTestSuite))
 }

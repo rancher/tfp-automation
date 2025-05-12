@@ -56,7 +56,7 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 
 	encodedPEMFile := base64.StdEncoding.EncodeToString([]byte(privateKey))
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2Bastion)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2Bastion)
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
@@ -82,7 +82,7 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 // createAirgappedRKE2Server is a helper function that will create the RKE2 server.
 func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP,
 	rke2Token, registryPublicDNS string, script []byte) {
-	nullResourceBlockBody, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
+	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " + terraformConfig.Standalone.RancherImage + " " +
@@ -116,7 +116,7 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
+		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " +

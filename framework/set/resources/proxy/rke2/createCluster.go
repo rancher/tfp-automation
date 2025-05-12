@@ -58,7 +58,7 @@ func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 // createRKE2Server is a helper function that will create the RKE2 server.
 func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS,
 	rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2Token string, script []byte) {
-	_, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
+	_, provisionerBlockBody := sanity.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
@@ -79,7 +79,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := sanity.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
+		nullResourceBlockBody, provisionerBlockBody := sanity.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " +

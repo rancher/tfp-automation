@@ -12,17 +12,21 @@ import (
 )
 
 const (
-	clientDevice   = "client_device"
-	clone          = "clone"
-	cluster        = "cluster"
-	datacenterID   = "datacenter_id"
-	datastoreID    = "datastore_id"
-	diskEnableUUID = "disk_enable_uuid"
-	guestID        = "guest_id"
-	network        = "network"
-	resourcePoolID = "resource_pool_id"
-	template       = "template"
-	templateUUID   = "template_uuid"
+	adapterType           = "adapter_type"
+	clientDevice          = "client_device"
+	clone                 = "clone"
+	cluster               = "cluster"
+	datacenterID          = "datacenter_id"
+	datastoreID           = "datastore_id"
+	diskEnableUUID        = "disk_enable_uuid"
+	domain                = "domain"
+	guestID               = "guest_id"
+	hostName              = "host_name"
+	network               = "network"
+	networkInterfaceTypes = "network_interface_types"
+	resourcePoolID        = "resource_pool_id"
+	template              = "template"
+	templateUUID          = "template_uuid"
 )
 
 // CreateVsphereResources is a helper function that will create the vSphere resources needed for the RKE2 cluster.
@@ -55,7 +59,7 @@ func CreateVsphereResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 	rootBody.AppendNewline()
 
 	for _, instance := range instances {
-		CreateVsphereVirtualMachine(rootBody, terraformConfig, instance)
+		CreateVsphereVirtualMachine(rootBody, terraformConfig, terratestConfig, instance)
 		rootBody.AppendNewline()
 	}
 

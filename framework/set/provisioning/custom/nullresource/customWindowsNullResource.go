@@ -8,9 +8,9 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// SetWindowsNullResource is a function that will set the Windows null_resource configurations in the main.tf file,
+// CustomWindowsNullResource is a function that will set the Windows null_resource configurations in the main.tf file,
 // to register the nodes to the cluster
-func SetWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
+func CustomWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
 	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, defaults.RegisterNodes + "-" + terraformConfig.ResourcePrefix + "-windows"})
 	nullResourceBlockBody := nullResourceBlock.Body()
 

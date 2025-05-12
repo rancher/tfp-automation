@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/imported/nullresource"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
 	"github.com/zclconf/go-cty/cty"
 )
 

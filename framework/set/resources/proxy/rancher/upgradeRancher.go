@@ -30,7 +30,7 @@ func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclw
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, proxyNode, upgradeRancher)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, proxyNode, upgradeRancher)
 
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
