@@ -31,7 +31,7 @@ func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, bastionNode, upgradeRancher)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, bastionNode, upgradeRancher)
 
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " +

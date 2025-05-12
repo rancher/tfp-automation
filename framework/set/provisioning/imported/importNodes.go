@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/imported/nullresource"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
 	"github.com/zclconf/go-cty/cty"
 )
 

@@ -31,7 +31,7 @@ func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installRancher)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installRancher)
 
 	if terraformConfig.Provider == providers.Linode {
 		terraformConfig.Standalone.RancherHostname = linodeNodeBalancerHostname

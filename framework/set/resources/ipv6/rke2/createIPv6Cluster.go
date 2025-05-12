@@ -56,7 +56,7 @@ func CreateIPv6Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 	encodedPEMFile := base64.StdEncoding.EncodeToString([]byte(privateKey))
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2Bastion)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2Bastion)
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
@@ -82,7 +82,7 @@ func CreateIPv6Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 // createIPv6RKE2Server is a helper function that will create the IPv6 RKE2 server.
 func createIPv6RKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP,
 	rke2Token string, script []byte) {
-	nullResourceBlockBody, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
+	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		rke2ServerOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.AirgapInternalFQDN + " " +
@@ -113,7 +113,7 @@ func addIPv6RKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Ter
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
+		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			rke2ServerOnePrivateIP + " " + instance + " " + terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.AirgapInternalFQDN +

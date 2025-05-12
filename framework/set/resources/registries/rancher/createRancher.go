@@ -30,7 +30,7 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, installRancher)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, installRancher)
 
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +

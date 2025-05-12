@@ -107,12 +107,12 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 					return clusterNames, nil, err
 				}
 			}
-		case module == modules.CustomEC2RKE1:
+		case strings.Contains(module, clustertypes.RKE1) && strings.Contains(module, defaults.Custom):
 			newFile, file, err = custom.SetCustomRKE1(terraform, terratest, configMap, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, customClusterNames, err
 			}
-		case module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s || module == modules.CustomEC2RKE2Windows:
+		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && strings.Contains(module, defaults.Custom):
 			if !isWindows {
 				newFile, file, err = customV2.SetCustomRKE2K3s(terraform, terratest, configMap, newFile, rootBody, file)
 				if err != nil {
@@ -160,7 +160,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 		}
 
 		if i == len(configMap)-1 && containsCustomModule && !strings.Contains(module, defaults.Airgap) && !isWindows {
-			file, err = locals.SetLocals(rootBody, terraform, configMap, newFile, file, customClusterNames)
+			file, err = locals.SetLocals(rootBody, terraform, terratest, configMap, newFile, file, customClusterNames)
 			rootBody.AppendNewline()
 		}
 
@@ -170,7 +170,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 				newFile.Body().RemoveBlock(localsBlock)
 			}
 
-			file, err = locals.SetLocals(rootBody, terraform, configMap, newFile, file, customClusterNames)
+			file, err = locals.SetLocals(rootBody, terraform, terratest, configMap, newFile, file, customClusterNames)
 			rootBody.AppendNewline()
 		}
 	}

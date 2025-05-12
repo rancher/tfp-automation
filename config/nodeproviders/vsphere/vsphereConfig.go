@@ -31,4 +31,5 @@ type Config struct {
 	VappIpprotocol         string   `json:"vappIpprotocol,omitempty" yaml:"vappIpprotocol,omitempty"`
 	VappProperty           []string `json:"vappProperty,omitempty" yaml:"vappProperty,omitempty"`
 	VappTransport          string   `json:"vappTransport,omitempty" yaml:"vappTransport,omitempty"`
+	VsphereUser            string   `json:"vsphereUser,omitempty" yaml:"vsphereUser,omitempty"`
 }

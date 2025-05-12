@@ -52,8 +52,6 @@ export RANCHER2_PROVIDER_VERSION=""                                     # Requir
 export CLOUD_PROVIDER_VERSION=""                                        # Required for custom cluster / infrastructure building
 export KUBERNETES_PROVIDER_VERSION=""                                   # Required for infrastructure building using Harvester
 export LOCALS_PROVIDER_VERSION=""                                       # Required for custom cluster / infrastructure building
-export VSPHERE_PROVIDER_VERSION=""                                      # Required for infrastructure building using vSphere
-
 export QASE_AUTOMATION_TOKEN=""                                         # Required for local Qase reporting
 export QASE_TEST_RUN_ID=""                                              # Required for local Qase reporting
 ```
@@ -162,6 +160,7 @@ terraform:
     hostSystem: ""
     memorySize: ""
     standaloneNetwork: ""
+    vsphereUser: ""
 
   standalone:
     bootstrapPassword: ""

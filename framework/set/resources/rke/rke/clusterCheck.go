@@ -31,7 +31,7 @@ func CheckClusterStatus(file *os.File, newFile *hclwrite.File, rootBody *hclwrit
 	encodedKubeConfig := base64.StdEncoding.EncodeToString([]byte(kubeConfig))
 	command := fmt.Sprintf("bash -c \"/tmp/cluster.sh '%s'\"", encodedKubeConfig)
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rkeServerOnePublicIP, rkeServerOne)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rkeServerOnePublicIP, rkeServerOne)
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/cluster.sh"),

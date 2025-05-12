@@ -38,20 +38,15 @@ For provisioning with custom clusters, reference the example config block below:
 
 ```yaml
 terraform:
-  etcd:
-    disableSnapshot: false
-    snapshotCron: "0 */5 * * *"
-    snapshotRetention: 3
-  module: # select from: ec2_rke1_custom, ec2_rke2_custom or ec2_k3s_custom
-  hostnamePrefix: ""
-  machineConfigName: ""
   cni: ""
-  cloudCredentialName: ""
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: "user"
+  module:                       # ec2_rke1_custom, ec2_rke2_custom, ec2_k3s_custom, vsphere_rke1_custom, vsphere_rke2_custom, vsphere_k3s_custom
   privateKeyPath: ""
-  provider: "aws"
+  provider: ""                  # aws or vsphere
   windowsPrivateKeyPath: ""
+  
+  # Set if provider: aws
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -60,8 +55,7 @@ terraform:
     ami: ""
     awsInstanceType: ""
     region: ""
-    awsSecurityGroupNames:
-      - ""
+    awsSecurityGroupNames: [""]
     awsSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
@@ -74,6 +68,25 @@ terraform:
     windowsAWSUser: ""
     windowsInstanceType: ""
     windowsKeyName: ""
+  
+  # Set if provider: vsphere
+  vsphereCredentials:
+    password: ""
+    username: ""
+    vcenter: ""
+  vsphereConfig:  
+    cloneFrom: ""
+    cpuCount: ""
+    datacenter: ""
+    datastore: ""
+    datastoreCluster: ""
+    diskSize: ""
+    guestID: ""
+    folder: ""
+    hostSystem: ""
+    memorySize: ""
+    standaloneNetwork: ""
+    vsphereUser: ""
 terratest:
   nodeCount: 3
   windowsNodeCount: 1
@@ -87,13 +100,9 @@ rancher:
   adminToken: ""
   cleanup: true
 terraform:
-  cloudCredentialName: ""
   cni: ""
   defaultClusterRoleForProjectMembers: "true"
   enableNetworkPolicy: false
-  hostnamePrefix: ""
-  machineConfigName: ""
-  nodeTemplateName: ""
   provider: "aws"
   privateKeyPath: ""
   windowsPrivateKeyPath: ""
@@ -112,7 +121,6 @@ terraform:
     awsRootSize: 100
     region: ""
     awsUser: ""
-    standaloneSecurityGroupNames: [""]
     sshConnectionType: "ssh"
     timeout: "5m"
     windowsAMI: ""

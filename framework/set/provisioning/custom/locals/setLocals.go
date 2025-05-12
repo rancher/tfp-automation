@@ -19,7 +19,8 @@ const (
 )
 
 // SetLocals is a function that will set the locals configurations in the main.tf file.
-func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, configMap []map[string]any, newFile *hclwrite.File, file *os.File, customClusterNames []string) (*os.File, error) {
+func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+	configMap []map[string]any, newFile *hclwrite.File, file *os.File, customClusterNames []string) (*os.File, error) {
 	localsBlock := rootBody.AppendNewBlock(defaults.Locals, nil)
 	localsBlockBody := localsBlock.Body()
 
@@ -28,6 +29,13 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 		cty.StringVal(defaults.ControlPlaneRoleFlag),
 		cty.StringVal(defaults.WorkerRoleFlag),
 	}))
+
+	resourcePrefixExpression := fmt.Sprintf(`[for i in range(%d) : "%s-${i}"]`, terratestConfig.NodeCount, terraformConfig.ResourcePrefix)
+	resourcePrefixValue := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(resourcePrefixExpression)},
+	}
+
+	localsBlockBody.SetAttributeRaw(defaults.ResourcePrefix, resourcePrefixValue)
 
 	if !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 		setV2ClusterLocalBlock(localsBlockBody, terraformConfig, customClusterNames)

@@ -55,8 +55,8 @@ func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 	return file, nil
 }
 
-// CreateNullResource is a helper function that will create the null_resource for the RKE2 cluster.
-func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, instance, host string) (*hclwrite.Body, *hclwrite.Body) {
+// SSHNullResource is a helper function that will create the null_resource to SSH into the instance.
+func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, instance, host string) (*hclwrite.Body, *hclwrite.Body) {
 	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, host})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
@@ -91,7 +91,7 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
 	} else if terraformConfig.Provider == defaults.Vsphere {
-		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.Standalone.OSUser))
+		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
 
 		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{
@@ -109,7 +109,7 @@ func CreateNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 // createRKE2Server is a helper function that will create the RKE2 server.
 func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP,
 	rke2Token string, script []byte) {
-	_, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, rke2ServerOne)
+	_, provisionerBlockBody := SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " + terraformConfig.CNI + " || true'"
@@ -129,7 +129,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := CreateNullResource(rootBody, terraformConfig, instance, host)
+		nullResourceBlockBody, provisionerBlockBody := SSHNullResource(rootBody, terraformConfig, instance, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
 			instance + " " + rke2Token + " " + terraformConfig.CNI + " || true'"

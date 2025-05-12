@@ -32,7 +32,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2AuthRegistryPublicDNS, authRegistry)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2AuthRegistryPublicDNS, authRegistry)
 
 	command := "bash -c '/tmp/auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
 		terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.StandaloneRegistry.RegistryName + " " +
@@ -73,7 +73,7 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2NonAuthRegistryPublicDNS, registryType)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2NonAuthRegistryPublicDNS, registryType)
 
 	var command string
 
@@ -126,7 +126,7 @@ func CreateEcrRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.CreateNullResource(rootBody, terraformConfig, rke2EcrRegistryPublicDNS, ecrRegistry)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2EcrRegistryPublicDNS, ecrRegistry)
 
 	command := "bash -c '/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " +
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.RancherImage + " " +

@@ -3,6 +3,7 @@ package vsphere
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -12,11 +13,23 @@ import (
 )
 
 // CreateVsphereVirtualMachine is a function that will set the vSphere virtual machine configuration in the main.tf file.
-func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, hostnamePrefix string) {
+func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+	hostnamePrefix string) {
 	vmBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.VsphereVirutalMachine, hostnamePrefix})
 	vmBlockBody := vmBlock.Body()
 
-	vmBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(hostnamePrefix))
+	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+		vmBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
+
+		vmNameExpression := fmt.Sprintf(` "%s-${%s.%s}"`, hostnamePrefix, defaults.Count, defaults.Index)
+		vmNameValue := hclwrite.Tokens{
+			{Type: hclsyntax.TokenStringLit, Bytes: []byte(vmNameExpression)},
+		}
+
+		vmBlockBody.SetAttributeRaw(defaults.ResourceName, vmNameValue)
+	} else {
+		vmBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(hostnamePrefix))
+	}
 
 	resourcePoolExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereComputeCluster + `.` + defaults.VsphereComputeCluster + `.` + resourcePoolID)
 	resourcePoolValue := hclwrite.Tokens{
@@ -70,7 +83,16 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 	diskBlock := vmBlockBody.AppendNewBlock(defaults.Disk, nil)
 	diskBlockBody := diskBlock.Body()
 
-	diskBlockBody.SetAttributeValue(defaults.Label, cty.StringVal(hostnamePrefix))
+	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+		diskSizeExpression := fmt.Sprintf(` "%s-${%s.%s}"`, hostnamePrefix, defaults.Count, defaults.Index)
+		diskSizeValue := hclwrite.Tokens{
+			{Type: hclsyntax.TokenStringLit, Bytes: []byte(diskSizeExpression)},
+		}
+
+		diskBlockBody.SetAttributeRaw(defaults.Label, diskSizeValue)
+	} else {
+		diskBlockBody.SetAttributeValue(defaults.Label, cty.StringVal(hostnamePrefix))
+	}
 
 	diskSize, err := strconv.ParseInt(terraformConfig.VsphereConfig.DiskSize, 10, 64)
 	if err != nil {

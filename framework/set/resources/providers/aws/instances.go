@@ -28,9 +28,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	if hostnamePrefix == ecrRegistry {
 		configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.StandaloneRegistry.ECRAMI))
-	}
-
-	if hostnamePrefix != ecrRegistry {
+	} else {
 		configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))
 	}
 
