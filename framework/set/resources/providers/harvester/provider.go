@@ -25,7 +25,7 @@ const (
 
 // CreateTerraformProviderBlock will up the terraform block with the required harvester provider.
 func CreateTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
-	harvesterProviderVersion := os.Getenv("HARVESTER_PROVIDER_VERSION")
+	cloudProviderVersion := os.Getenv("CLOUD_PROVIDER_VERSION")
 	kubernetesProviderVersion := os.Getenv("KUBERNETES_PROVIDER_VERSION")
 
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
@@ -33,7 +33,7 @@ func CreateTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
 
 	reqProvsBlockBody.SetAttributeValue("harvester", cty.ObjectVal(map[string]cty.Value{
 		defaults.Source:  cty.StringVal(defaults.HarvesterSource),
-		defaults.Version: cty.StringVal(harvesterProviderVersion),
+		defaults.Version: cty.StringVal(cloudProviderVersion),
 	}))
 
 	reqProvsBlockBody.SetAttributeValue("kubernetes", cty.ObjectVal(map[string]cty.Value{

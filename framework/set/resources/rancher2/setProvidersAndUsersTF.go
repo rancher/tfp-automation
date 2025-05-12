@@ -38,7 +38,7 @@ const (
 	userID              = "user_id"
 	username            = "username"
 	providerEnvVar      = "RANCHER2_PROVIDER_VERSION"
-	awsProviderEnvVar   = "AWS_PROVIDER_VERSION"
+	cloudProviderEnvVar = "CLOUD_PROVIDER_VERSION"
 	localProviderEnvVar = "LOCALS_PROVIDER_VERSION"
 	rkeEnvVar           = "RKE_PROVIDER_VERSION"
 )
@@ -72,7 +72,7 @@ func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any
 	terraformConfig := new(config.TerraformConfig)
 	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraformConfig)
 
-	source, rancherProviderVersion, awsProviderVersion, linodeProviderVersion, localProviderVersion, rkeProviderVersion := getRequiredProviderVersions(configMap)
+	source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion := getRequiredProviderVersions(configMap)
 
 	if rancherProviderVersion != "" {
 		reqProvsBlockBody.SetAttributeValue(rancher2, cty.ObjectVal(map[string]cty.Value{
@@ -81,17 +81,17 @@ func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any
 		}))
 	}
 
-	if awsProviderVersion != "" && terraformConfig.Provider == defaults.Aws && customModule {
+	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Aws && customModule {
 		reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(defaults.AwsSource),
-			defaults.Version: cty.StringVal(awsProviderVersion),
+			defaults.Version: cty.StringVal(cloudProviderVersion),
 		}))
 	}
 
-	if linodeProviderVersion != "" && terraformConfig.Provider == defaults.Linode && customModule {
+	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Linode && customModule {
 		reqProvsBlockBody.SetAttributeValue(defaults.Linode, cty.ObjectVal(map[string]cty.Value{
 			defaults.Source:  cty.StringVal(defaults.LinodeSource),
-			defaults.Version: cty.StringVal(linodeProviderVersion),
+			defaults.Version: cty.StringVal(cloudProviderVersion),
 		}))
 	}
 
@@ -112,7 +112,7 @@ func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any
 
 // createProvider creates a provider block for the given rancher config.
 func createProvider(rootBody *hclwrite.Body, configMap []map[string]any, customModule bool) {
-	_, _, awsProviderVersion, linodeProviderVersion, _, _ := getRequiredProviderVersions(configMap)
+	_, _, cloudProviderVersion, _, _ := getRequiredProviderVersions(configMap)
 
 	terraformConfig := new(config.TerraformConfig)
 	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraformConfig)
@@ -120,7 +120,7 @@ func createProvider(rootBody *hclwrite.Body, configMap []map[string]any, customM
 	rancherConfig := new(rancher.Config)
 	operations.LoadObjectFromMap(configs.Rancher, configMap[0], rancherConfig)
 
-	if awsProviderVersion != "" && terraformConfig.Provider == defaults.Aws && customModule {
+	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Aws && customModule {
 		awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
 		awsProvBlockBody := awsProvBlock.Body()
 
@@ -133,7 +133,7 @@ func createProvider(rootBody *hclwrite.Body, configMap []map[string]any, customM
 		rootBody.AppendNewline()
 	}
 
-	if linodeProviderVersion != "" && terraformConfig.Provider == defaults.Linode && customModule {
+	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Linode && customModule {
 		linodeProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Linode})
 		linodeProvBlockBody := linodeProvBlock.Body()
 
@@ -184,7 +184,7 @@ func createGlobalRoleBinding(rootBody *hclwrite.Body, testUser string, userID st
 
 // Determines the required providers from the list of configs.
 func getRequiredProviderVersions(configMap []map[string]any) (source, rancherProviderVersion, rkeProviderVersion, localProviderVersion,
-	awsProviderVersion, linodeProviderVersion string) {
+	cloudProviderVersion string) {
 	for _, cattleConfig := range configMap {
 		terraformConfig := new(config.TerraformConfig)
 		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, terraformConfig)
@@ -209,9 +209,9 @@ func getRequiredProviderVersions(configMap []map[string]any) (source, rancherPro
 
 		if strings.Contains(module, defaults.Custom) || strings.Contains(module, defaults.Import) || strings.Contains(module, defaults.Airgap) ||
 			strings.Contains(module, ec2) {
-			awsProviderVersion = os.Getenv(awsProviderEnvVar)
-			if awsProviderVersion == "" {
-				logrus.Fatalf("Expected env var not set %s", awsProviderEnvVar)
+			cloudProviderVersion = os.Getenv(cloudProviderEnvVar)
+			if cloudProviderVersion == "" {
+				logrus.Fatalf("Expected env var not set %s", cloudProviderEnvVar)
 			}
 
 			localProviderVersion = os.Getenv(localProviderEnvVar)
@@ -220,5 +220,6 @@ func getRequiredProviderVersions(configMap []map[string]any) (source, rancherPro
 			}
 		}
 	}
-	return source, rancherProviderVersion, awsProviderVersion, linodeProviderVersion, localProviderVersion, rkeProviderVersion
+
+	return source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion
 }

@@ -13,7 +13,7 @@ import (
 
 // SetCustomProviders is a helper function that will set the general Terraform provider configurations in the main.tf file.
 func SetCustomProviders(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig) (*hclwrite.File, *hclwrite.Body) {
-	awsProviderVersion := os.Getenv("AWS_PROVIDER_VERSION")
+	cloudProviderVersion := os.Getenv("CLOUD_PROVIDER_VERSION")
 	localProviderVersion := os.Getenv("LOCALS_PROVIDER_VERSION")
 	rancher2ProviderVersion := os.Getenv("RANCHER2_PROVIDER_VERSION")
 
@@ -33,7 +33,7 @@ func SetCustomProviders(rancherConfig *rancher.Config, terraformConfig *config.T
 
 	reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
 		defaults.Source:  cty.StringVal(defaults.AwsSource),
-		defaults.Version: cty.StringVal(awsProviderVersion),
+		defaults.Version: cty.StringVal(cloudProviderVersion),
 	}))
 
 	reqProvsBlockBody.SetAttributeValue(defaults.Local, cty.ObjectVal(map[string]cty.Value{
