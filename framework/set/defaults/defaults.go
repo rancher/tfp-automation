@@ -108,7 +108,7 @@ const (
 	VsphereComputeCluster         = "vsphere_compute_cluster"
 	VsphereNetwork                = "vsphere_network"
 	VsphereServer                 = "vsphere_server"
-	VsphereVirutalMachine         = "vsphere_virtual_machine"
+	VsphereVirtualMachine         = "vsphere_virtual_machine"
 	VsphereVirtualMachineTemplate = "vsphere_virtual_machine_template"
 	CDROM                         = "cdrom"
 	Customize                     = "customize"

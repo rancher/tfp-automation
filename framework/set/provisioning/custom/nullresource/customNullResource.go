@@ -22,7 +22,7 @@ func CustomNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	if strings.Contains(terraformConfig.Provider, defaults.Aws) {
 		countExpression = defaults.Length + `(` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `)`
 	} else if strings.Contains(terraformConfig.Provider, defaults.Vsphere) {
-		countExpression = defaults.Length + `(` + defaults.VsphereVirutalMachine + `.` + terraformConfig.ResourcePrefix + `)`
+		countExpression = defaults.Length + `(` + defaults.VsphereVirtualMachine + `.` + terraformConfig.ResourcePrefix + `)`
 	}
 
 	nullResourceBlockBody.SetAttributeRaw(defaults.Count, hclwrite.TokensForIdentifier(countExpression))
@@ -64,7 +64,7 @@ func CustomNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, defaults.AwsInstance, terraformConfig.ResourcePrefix, defaults.Count, defaults.Index, defaults.PublicIp)
 	} else if terraformConfig.Provider == defaults.Vsphere {
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
-		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, defaults.VsphereVirutalMachine, terraformConfig.ResourcePrefix, defaults.Count, defaults.Index, defaults.DefaultIPAddress)
+		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, defaults.VsphereVirtualMachine, terraformConfig.ResourcePrefix, defaults.Count, defaults.Index, defaults.DefaultIPAddress)
 	}
 
 	host := hclwrite.Tokens{

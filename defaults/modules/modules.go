@@ -28,6 +28,10 @@ const (
 	ImportEC2RKE2Windows = "ec2_rke2_windows_import"
 	ImportEC2K3s         = "ec2_k3s_import"
 
+	ImportVsphereRKE1 = "vsphere_rke1_import"
+	ImportVsphereRKE2 = "vsphere_rke2_import"
+	ImportVsphereK3s  = "vsphere_k3s_import"
+
 	LinodeRKE1 = "linode_rke1"
 	LinodeRKE2 = "linode_rke2"
 	LinodeK3s  = "linode_k3s"

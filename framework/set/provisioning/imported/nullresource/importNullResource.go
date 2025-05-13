@@ -34,7 +34,12 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 	connectionBlockBody.SetAttributeRaw(defaults.Host, newHost)
 
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+
+	if terraformConfig.Provider == defaults.Aws {
+		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+	} else if terraformConfig.Provider == defaults.Vsphere {
+		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
+	}
 
 	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
 	keyPath := hclwrite.Tokens{
@@ -47,7 +52,13 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 	serverTwoName := terraformConfig.ResourcePrefix + `_` + serverTwo
 	serverThreeName := terraformConfig.ResourcePrefix + `_` + serverThree
 
-	dependsOnServer := `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
+	var dependsOnServer string
+	if terraformConfig.Provider == defaults.Aws {
+		dependsOnServer = `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
+	} else if terraformConfig.Provider == defaults.Vsphere {
+		dependsOnServer = `[` + defaults.VsphereVirtualMachine + `.` + serverOneName + `, ` + defaults.VsphereVirtualMachine + `.` + serverTwoName + `, ` + defaults.VsphereVirtualMachine + `.` + serverThreeName + `]`
+	}
+
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}

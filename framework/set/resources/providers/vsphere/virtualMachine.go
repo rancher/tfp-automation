@@ -15,7 +15,7 @@ import (
 // CreateVsphereVirtualMachine is a function that will set the vSphere virtual machine configuration in the main.tf file.
 func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	hostnamePrefix string) {
-	vmBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.VsphereVirutalMachine, hostnamePrefix})
+	vmBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.VsphereVirtualMachine, hostnamePrefix})
 	vmBlockBody := vmBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, defaults.Custom) {
@@ -105,7 +105,7 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 	cloneBlock := vmBlockBody.AppendNewBlock(clone, nil)
 	cloneBlockBody := cloneBlock.Body()
 
-	templateUUIDExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereVirutalMachine + `.` + defaults.VsphereVirtualMachineTemplate + `.id`)
+	templateUUIDExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereVirtualMachine + `.` + defaults.VsphereVirtualMachineTemplate + `.id`)
 	templateUUIDValue := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(templateUUIDExpression)},
 	}

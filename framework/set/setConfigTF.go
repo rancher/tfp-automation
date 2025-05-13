@@ -145,12 +145,12 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 					return clusterNames, customClusterNames, err
 				}
 			}
-		case module == modules.ImportEC2RKE1:
+		case strings.Contains(module, clustertypes.RKE1) && strings.Contains(module, defaults.Import):
 			_, _, err = imported.SetImportedRKE1(terraform, terratest, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, nil, err
 			}
-		case module == modules.ImportEC2RKE2 || module == modules.ImportEC2RKE2Windows || module == modules.ImportEC2K3s:
+		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && strings.Contains(module, defaults.Import):
 			_, _, err = imported.SetImportedRKE2K3s(terraform, terratest, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, nil, err

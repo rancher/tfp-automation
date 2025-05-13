@@ -58,6 +58,9 @@ func verifyModule(module string) bool {
 		modules.ImportEC2RKE2,
 		modules.ImportEC2RKE2Windows,
 		modules.ImportEC2K3s,
+		modules.ImportVsphereRKE1,
+		modules.ImportVsphereRKE2,
+		modules.ImportVsphereK3s,
 	}
 
 	return slices.Contains(supportedModules, module)

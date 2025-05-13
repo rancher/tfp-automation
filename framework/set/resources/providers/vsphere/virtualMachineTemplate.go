@@ -9,7 +9,7 @@ import (
 
 // CreateVsphereVirtualMachineTemplate is a function that will set the vSphere virtual machine template configuration in the main.tf file.
 func CreateVsphereVirtualMachineTemplate(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, dataCenterValue hclwrite.Tokens) {
-	vmTemplateBlock := rootBody.AppendNewBlock(defaults.Data, []string{defaults.VsphereVirutalMachine, defaults.VsphereVirtualMachineTemplate})
+	vmTemplateBlock := rootBody.AppendNewBlock(defaults.Data, []string{defaults.VsphereVirtualMachine, defaults.VsphereVirtualMachineTemplate})
 	vmTemplateBlockBody := vmTemplateBlock.Body()
 
 	vmTemplateBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.VsphereConfig.CloneFrom))
