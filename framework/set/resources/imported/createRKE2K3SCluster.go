@@ -3,11 +3,12 @@ package imported
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
 	"github.com/zclconf/go-cty/cty"
@@ -35,10 +36,10 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 
 	var serverScriptPath, newServersScriptPath string
 
-	if terraformConfig.Module == modules.ImportEC2K3s {
+	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
 		serverScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/k3s/init-server.sh")
 		newServersScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/k3s/add-servers.sh")
-	} else {
+	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
 		serverScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke2/init-server.sh")
 		newServersScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke2/add-servers.sh")
 	}
@@ -65,12 +66,12 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 
 	var version, command string
 
-	if terraformConfig.Module == modules.ImportEC2K3s {
+	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
 		version = terraformConfig.Standalone.K3SVersion
 
 		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.K3SVersion + " " + serverOnePrivateIP + " " + token + "'"
-	} else {
+	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
 		version = terraformConfig.Standalone.RKE2Version
 
 		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
@@ -105,21 +106,21 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePrivateIP, serverTwoPublicIP,
 	serverThreePublicIP, token string, script []byte) {
 	instances := []string{serverTwoPublicIP, serverThreePublicIP}
-
 	createClusterName := terraformConfig.ResourcePrefix + `_` + createCluster
 	resourceNames := []string{serverTwo, serverThree}
+
 	for i, instance := range instances {
 		resourceName := terraformConfig.ResourcePrefix + `_` + resourceNames[i]
 		nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, instance, resourceName)
 
 		var version, command string
 
-		if terraformConfig.Module == modules.ImportEC2K3s {
+		if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
 			version = terraformConfig.Standalone.K3SVersion
 
 			command = "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-				terraformConfig.Standalone.K3SVersion + " " + serverOnePrivateIP + " " + token + "'"
-		} else {
+				terraformConfig.Standalone.K3SVersion + " " + serverOnePrivateIP + " " + instance + " " + token + "'"
+		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
 			version = terraformConfig.Standalone.RKE2Version
 
 			command = "bash -c '/tmp/add-servers.sh " + version + " " + serverOnePrivateIP + " " + instance + " " + token + " " +

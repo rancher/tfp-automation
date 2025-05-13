@@ -103,12 +103,16 @@ terraform:
   cni: ""
   defaultClusterRoleForProjectMembers: "true"
   enableNetworkPolicy: false
-  provider: "aws"
+  module:                          # ec2_rke1_import, ec2_rke2_import, ec2_k3s_import, vsphere_rke1_import, vsphere_rke2_import, vsphere_k3s_import
   privateKeyPath: ""
+  provider: ""                     # aws or vsphere
   windowsPrivateKeyPath: ""
+
+  # Set if provider: aws
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
+
   awsConfig:
     ami: ""
     awsKeyName: ""
@@ -128,18 +132,40 @@ terraform:
     windowsAWSPassword: ""
     windowsInstanceType: ""
     windowsKeyName: ""
+
+  # Set if provider: vsphere
+  vsphereCredentials:
+    password: ""
+    username: ""
+    vcenter: ""
+
+  vsphereConfig:  
+    cloneFrom: ""
+    cpuCount: ""
+    datacenter: ""
+    datastore: ""
+    datastoreCluster: ""
+    diskSize: ""
+    guestID: ""
+    folder: ""
+    hostSystem: ""
+    memorySize: ""
+    standaloneNetwork: ""
+    vsphereUser: ""
+
   standalone:
-    k3sVersion: ""                      # Ensure k3s1 suffix is appended (i.e. v1.30.9+k3s1)
+    k3sVersion: ""                      # Ensure k3s1 suffix is appended (i.e. v1.xx.x+k3s1)
     osGroup: ""
     osUser: ""
-    rke2Version: ""                     # Ensure rke2r1 suffix is appended (i.e. v1.30.9+rke2r1)
+    rke2Version: ""                     # Ensure rke2r1 suffix is appended (i.e. v1.xx.x+rke2r1)
+
 terratest:
   tfLogging: true
   nodeCount: 3
   windowsNodeCount: 1
 ```
 
-In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.xx.x` defined for the RKE1 portion of the test.
+In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.x.x` defined for the RKE1 portion of the test.
 
 See the below examples on how to run the tests:
 
@@ -149,11 +175,13 @@ See the below examples on how to run the tests:
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionTestSuite/TestTfpProvisionDynamicInput$"`
 
 ### Custom
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionCustomTestSuite/TestTfpProvisionCustom$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionCustomTestSuite/TestTfpProvisionCustom$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionCustomTestSuite/TestTfpProvisionCustomDynamicInput$"`
 
 ### Imported
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionImportTestSuite/TestTfpProvisionImport$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionImportTestSuite/TestTfpProvisionImport$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionImportTestSuite/TestTfpProvisionImportDynamicInput$"`
 
 ### Hosted
 

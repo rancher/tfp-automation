@@ -8,6 +8,8 @@ K3S_TOKEN=$5
 
 set -e
 
+sudo hostnamectl set-hostname ${K3S_SERVER_IP}
+
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} sh -s - server --cluster-init
 
 sudo mkdir -p /home/${USER}/.kube

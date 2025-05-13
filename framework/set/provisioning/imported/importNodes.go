@@ -4,10 +4,12 @@ import (
 	"encoding/base64"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
@@ -41,7 +43,7 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	command := "bash -c '/tmp/import-nodes.sh " + encodedPEMFile + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.OSGroup + " " + nodeOnePublicDNS + " " + importCommand
 
-	if terraformConfig.Module == modules.ImportEC2RKE1 {
+	if strings.Contains(terraformConfig.Module, clustertypes.RKE1) && strings.Contains(terraformConfig.Module, defaults.Import) {
 		command += " " + kubeConfig
 	}
 
@@ -58,7 +60,8 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	var dependsOnServer string
 
-	if terraformConfig.Module == modules.ImportEC2K3s || terraformConfig.Module == modules.ImportEC2RKE2 {
+	if strings.Contains(terraformConfig.Module, defaults.Import) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) &&
+		!strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {
 		addServerTwoName := addServer + terraformConfig.ResourcePrefix + `_` + serverTwo
 		addServerThreeName := addServer + terraformConfig.ResourcePrefix + `_` + serverThree
 		dependsOnServer = `[` + defaults.NullResource + `.` + addServerTwoName + `, ` + defaults.NullResource + `.` + addServerThreeName + `]`

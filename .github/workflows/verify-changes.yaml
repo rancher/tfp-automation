@@ -17,7 +17,7 @@ jobs:
           submodules: recursive
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version-file: './go.mod'
 
@@ -37,5 +37,5 @@ jobs:
       - name: Golangci Lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.60.1
+          version: v1.64.3
           skip-cache: true

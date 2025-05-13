@@ -9,8 +9,8 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -223,7 +223,7 @@ func getRequiredProviderVersions(configMap []map[string]any) (source, rancherPro
 			source = "terraform.local/local/rancher2"
 		}
 
-		if module == modules.ImportEC2RKE1 {
+		if strings.Contains(module, defaults.Import) && strings.Contains(module, clustertypes.RKE1) {
 			rkeProviderVersion = os.Getenv(rkeEnvVar)
 			if rkeProviderVersion == "" {
 				logrus.Fatalf("Expected env var not set %s", rkeEnvVar)

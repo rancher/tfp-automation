@@ -54,15 +54,15 @@ func CreateVsphereLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Te
 	var instanceIds map[string]any
 	if terraformConfig.Standalone.RKE2Version != "" {
 		instanceIds = map[string]any{
-			rke2ServerOne:   defaults.VsphereVirutalMachine + "." + rke2ServerOne + ".id",
-			rke2ServerTwo:   defaults.VsphereVirutalMachine + "." + rke2ServerTwo + ".id",
-			rke2ServerThree: defaults.VsphereVirutalMachine + "." + rke2ServerThree + ".id",
+			rke2ServerOne:   defaults.VsphereVirtualMachine + "." + rke2ServerOne + ".id",
+			rke2ServerTwo:   defaults.VsphereVirtualMachine + "." + rke2ServerTwo + ".id",
+			rke2ServerThree: defaults.VsphereVirtualMachine + "." + rke2ServerThree + ".id",
 		}
 	} else if terraformConfig.Standalone.K3SVersion != "" {
 		instanceIds = map[string]any{
-			k3sServerOne:   defaults.VsphereVirutalMachine + "." + k3sServerOne + ".id",
-			k3sServerTwo:   defaults.VsphereVirutalMachine + "." + k3sServerTwo + ".id",
-			k3sServerThree: defaults.VsphereVirutalMachine + "." + k3sServerThree + ".id",
+			k3sServerOne:   defaults.VsphereVirtualMachine + "." + k3sServerOne + ".id",
+			k3sServerTwo:   defaults.VsphereVirtualMachine + "." + k3sServerTwo + ".id",
+			k3sServerThree: defaults.VsphereVirtualMachine + "." + k3sServerThree + ".id",
 		}
 	}
 

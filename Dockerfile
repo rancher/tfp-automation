@@ -1,4 +1,4 @@
-FROM registry.suse.com/bci/golang:1.23
+FROM registry.suse.com/bci/golang:1.24
 
 ENV GOPATH /root/go
 ENV PATH ${PATH}:/root/go/bin

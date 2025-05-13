@@ -10,4 +10,5 @@ const (
 	K3S     = "k3s"
 	RANCHER = "-rancher"
 	CUSTOM  = "custom"
+	WINDOWS = "windows"
 )
