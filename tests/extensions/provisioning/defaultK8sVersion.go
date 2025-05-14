@@ -18,7 +18,8 @@ import (
 
 // GetK8sVersion is a function that will set the Kubernetes version if the user has not specified one. It
 // will get the latest version or the second latest version based on the versionType.
-func GetK8sVersion(t *testing.T, client *rancher.Client, terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig, versionType string, configMap []map[string]any) {
+func GetK8sVersion(t *testing.T, client *rancher.Client, terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig,
+	versionType string, configMap []map[string]any) {
 	var defaultVersion string
 
 	terraform := new(config.TerraformConfig)
@@ -81,7 +82,8 @@ func GetK8sVersion(t *testing.T, client *rancher.Client, terratestConfig *config
 
 // DefaultUpgradedK8sVersion is a function that will set the default Kubernetes upgrade version
 // if the user has not specified one.
-func DefaultUpgradedK8sVersion(t *testing.T, client *rancher.Client, terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig, configMap []map[string]any) {
+func DefaultUpgradedK8sVersion(t *testing.T, client *rancher.Client, terratestConfig *config.TerratestConfig, terraformConfig *config.TerraformConfig,
+	configMap []map[string]any) {
 	var defaultVersion string
 
 	if terratestConfig.UpgradedKubernetesVersion == "" {
@@ -104,6 +106,7 @@ func DefaultUpgradedK8sVersion(t *testing.T, client *rancher.Client, terratestCo
 	} else {
 		terratest := new(config.TerratestConfig)
 		operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+
 		defaultVersion = terratest.UpgradedKubernetesVersion
 	}
 

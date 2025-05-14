@@ -10,7 +10,6 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -46,13 +45,13 @@ const (
 )
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
-func SetProvidersAndUsersTF(testUser, testPassword string, authProvider bool, newFile *hclwrite.File, rootBody *hclwrite.Body,
+func SetProvidersAndUsersTF(client *rancher.Client, testUser, testPassword string, authProvider bool, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	configMap []map[string]any, customModule bool) (*hclwrite.File, *hclwrite.Body) {
 	createRequiredProviders(rootBody, configMap, customModule)
 
 	rootBody.AppendNewline()
 
-	createProvider(rootBody, configMap, customModule)
+	createProvider(client, rootBody, configMap, customModule)
 
 	createUser(rootBody, testUser, testPassword)
 
@@ -120,14 +119,11 @@ func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any
 }
 
 // createProvider creates a provider block for the given rancher config.
-func createProvider(rootBody *hclwrite.Body, configMap []map[string]any, customModule bool) {
+func createProvider(client *rancher.Client, rootBody *hclwrite.Body, configMap []map[string]any, customModule bool) {
 	_, _, cloudProviderVersion, _, _ := getRequiredProviderVersions(configMap)
 
 	terraformConfig := new(config.TerraformConfig)
 	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraformConfig)
-
-	rancherConfig := new(rancher.Config)
-	operations.LoadObjectFromMap(configs.Rancher, configMap[0], rancherConfig)
 
 	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Aws && customModule {
 		awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
@@ -170,9 +166,9 @@ func createProvider(rootBody *hclwrite.Body, configMap []map[string]any, customM
 	rancher2ProvBlock := rootBody.AppendNewBlock(provider, []string{rancher2})
 	rancher2ProvBlockBody := rancher2ProvBlock.Body()
 
-	rancher2ProvBlockBody.SetAttributeValue(apiURL, cty.StringVal("https://"+rancherConfig.Host))
-	rancher2ProvBlockBody.SetAttributeValue(tokenKey, cty.StringVal(rancherConfig.AdminToken))
-	rancher2ProvBlockBody.SetAttributeValue(insecure, cty.BoolVal(*rancherConfig.Insecure))
+	rancher2ProvBlockBody.SetAttributeValue(apiURL, cty.StringVal("https://"+client.RancherConfig.Host))
+	rancher2ProvBlockBody.SetAttributeValue(tokenKey, cty.StringVal(client.RancherConfig.AdminToken))
+	rancher2ProvBlockBody.SetAttributeValue(insecure, cty.BoolVal(*client.RancherConfig.Insecure))
 
 	rootBody.AppendNewline()
 }

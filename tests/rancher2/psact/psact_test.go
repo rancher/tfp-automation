@@ -42,21 +42,11 @@ func (p *PSACTTestSuite) SetupSuite() {
 	p.client = client
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-
-	p.cattleConfig, err = config.LoadProvisioningDefaults(p.cattleConfig, "")
-	require.NoError(p.T(), err)
-
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-	require.NoError(p.T(), err)
-
-	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
-
-	provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 }
 
 func (p *PSACTTestSuite) TestTfpPSACT() {
@@ -72,14 +62,16 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		{"Rancher Baseline " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-baseline"},
 	}
 
-	configMap := []map[string]any{p.cattleConfig}
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
 
-		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 		require.NoError(p.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terratest", "psact"}, tt.psact, configMap[0])
@@ -98,7 +90,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.rancherConfig, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyClusterPSACT(p.T(), p.client, clusterIDs)
 		})

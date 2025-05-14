@@ -43,14 +43,6 @@ func (r *RBACTestSuite) SetupSuite() {
 	r.client = client
 
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-
-	r.cattleConfig, err = config.LoadProvisioningDefaults(r.cattleConfig, "")
-	require.NoError(r.T(), err)
-
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
-	require.NoError(r.T(), err)
-
-	r.cattleConfig = configMap[0]
 	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -69,19 +61,21 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		{"Project Owner", config.ProjectOwner},
 	}
 
-	configMap := []map[string]any{r.cattleConfig}
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
 
-		_, err := operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
 		require.NoError(r.T(), err)
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + r.terraformConfig.Module
 
@@ -92,7 +86,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
 			require.NoError(r.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), adminClient, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), adminClient, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 			rb.RBAC(r.T(), r.client, r.rancherConfig, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
 		})

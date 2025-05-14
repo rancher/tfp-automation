@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
@@ -59,8 +58,8 @@ const (
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
-func SetRKE2K3s(client *rancher.Client, terraformConfig *config.TerraformConfig, k8sVersion, psact string,
-	nodePools []config.Nodepool, snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body,
+func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact string, nodePools []config.Nodepool,
+	snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
 	switch {
 	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
