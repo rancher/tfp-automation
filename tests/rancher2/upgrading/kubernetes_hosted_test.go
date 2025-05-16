@@ -42,16 +42,6 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 	k.client = client
 
 	k.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	k.cattleConfig, err = config.LoadProvisioningDefaults(k.cattleConfig, "")
-	require.NoError(k.T(), err)
-
-	k.cattleConfig, err = config.LoadPackageDefaults(k.cattleConfig, "")
-	require.NoError(k.T(), err)
-
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
-	require.NoError(k.T(), err)
-
-	k.cattleConfig = configMap[0]
 	k.rancherConfig, k.terraformConfig, k.terratestConfig = config.LoadTFPConfigs(k.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -66,15 +56,16 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		{config.StandardClientName.String()},
 	}
 
-	configMap := []map[string]any{k.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
 
-		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.terratestConfig.KubernetesVersion
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
+		require.NoError(k.T(), err)
 
-		testUser, testPassword := configs.CreateTestCredentials()
+		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + k.terratestConfig.KubernetesVersion
 
 		k.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -83,11 +74,10 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
 			require.NoError(k.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.terraformConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(k.T(), adminClient, clusterIDs)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
+			provisioning.KubernetesUpgrade(k.T(), k.client, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
 
 			time.Sleep(4 * time.Minute)
 

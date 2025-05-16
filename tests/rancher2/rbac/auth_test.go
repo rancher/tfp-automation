@@ -44,10 +44,6 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 	r.client = client
 
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
-	require.NoError(r.T(), err)
-
-	r.cattleConfig = configMap[0]
 	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -66,14 +62,17 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		{"OpenLDAP", authproviders.OpenLDAP},
 	}
 
-	configMap := []map[string]any{r.cattleConfig}
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
 
-		operations.ReplaceValue([]string{"terraform", "authProvider"}, tt.authProvider, configMap[0])
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, tt.authProvider, configMap[0])
+		require.NoError(r.T(), err)
 
 		_, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
@@ -81,7 +80,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
+			rbac.AuthConfig(r.T(), r.client, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
 	}
 
@@ -101,22 +100,25 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		{r.terraformConfig.AuthProvider},
 	}
 
-	configMap := []map[string]any{r.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
 
-		_, err := operations.ReplaceValue([]string{"terraform", "authProvider"}, r.terraformConfig.AuthProvider, configMap[0])
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
 		require.NoError(r.T(), err)
 
-		testUser, testPassword := configs.CreateTestCredentials()
+		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, r.terraformConfig.AuthProvider, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), r.terraformConfig, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
+			rbac.AuthConfig(r.T(), r.client, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
 	}
 

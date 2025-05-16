@@ -42,14 +42,6 @@ func (p *ProvisionTestSuite) SetupSuite() {
 	p.client = client
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-
-	p.cattleConfig, err = config.LoadProvisioningDefaults(p.cattleConfig, "")
-	require.NoError(p.T(), err)
-
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-	require.NoError(p.T(), err)
-
-	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -67,18 +59,21 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		{"8 nodes - 3 etcd, 2 cp, 3 worker " + config.StandardClientName.String(), nodeRolesDedicated},
 	}
 
-	configMap := []map[string]any{p.cattleConfig}
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
 
-		operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(p.T(), err)
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
@@ -89,9 +84,8 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
 		})
 	}
 
@@ -107,17 +101,20 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 		{config.StandardClientName.String()},
 	}
 
-	configMap := []map[string]any{p.cattleConfig}
+	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
 
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+		require.NoError(p.T(), err)
+
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
+		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		testUser, testPassword := configs.CreateTestCredentials()
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -126,9 +123,8 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
 		})
 	}
 

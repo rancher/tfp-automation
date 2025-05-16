@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type TfpSanityProvisioningTestSuite struct {
+type TfpSanityRKE1ProvisioningTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
 	session                    *session.Session
@@ -37,12 +37,12 @@ type TfpSanityProvisioningTestSuite struct {
 	terraformOptions           *terraform.Options
 }
 
-func (s *TfpSanityProvisioningTestSuite) TearDownSuite() {
+func (s *TfpSanityRKE1ProvisioningTestSuite) TearDownSuite() {
 	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terraformConfig.Provider)
 	cleanup.Cleanup(s.T(), s.standaloneTerraformOptions, keyPath)
 }
 
-func (s *TfpSanityProvisioningTestSuite) SetupSuite() {
+func (s *TfpSanityRKE1ProvisioningTestSuite) SetupSuite() {
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
 
@@ -66,7 +66,7 @@ func (s *TfpSanityProvisioningTestSuite) SetupSuite() {
 	s.terraformOptions = terraformOptions
 }
 
-func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
+func (s *TfpSanityRKE1ProvisioningTestSuite) TestTfpRKE1ProvisioningSanity() {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -74,9 +74,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Sanity RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Sanity RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
-		{"Sanity K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"Sanity RKE1", nodeRolesDedicated, modules.EC2RKE1},
 	}
 
 	customClusterNames := []string{}
@@ -120,6 +118,6 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 	}
 }
 
-func TestTfpSanityProvisioningTestSuite(t *testing.T) {
-	suite.Run(t, new(TfpSanityProvisioningTestSuite))
+func TestTfpSanityRKE1ProvisioningTestSuite(t *testing.T) {
+	suite.Run(t, new(TfpSanityRKE1ProvisioningTestSuite))
 }

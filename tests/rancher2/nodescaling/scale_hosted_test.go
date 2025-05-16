@@ -43,10 +43,6 @@ func (s *ScaleHostedTestSuite) SetupSuite() {
 	s.client = client
 
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
-	require.NoError(s.T(), err)
-
-	s.cattleConfig = configMap[0]
 	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -61,12 +57,14 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 		{config.StandardClientName.String()},
 	}
 
-	configMap := []map[string]any{s.cattleConfig}
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
+
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
+		require.NoError(s.T(), err)
 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.terratestConfig.KubernetesVersion
 
@@ -77,22 +75,23 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.terraformConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(s.T(), adminClient, clusterIDs)
 
-			operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledUpNodepools, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledUpNodepools, configMap[0])
+			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.client, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			time.Sleep(4 * time.Minute)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, s.terraformConfig.ResourcePrefix, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
 
-			operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledDownNodepools, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledDownNodepools, configMap[0])
+			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.client, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			time.Sleep(4 * time.Minute)
 

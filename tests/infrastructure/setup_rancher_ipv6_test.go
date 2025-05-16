@@ -44,7 +44,8 @@ func (i *RancherIPv6TestSuite) TestCreateRancherIPv6() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	AcceptEULA(i.T(), i.session, i.terraformConfig.Standalone.AirgapInternalFQDN)
+	_, err = AcceptEULA(i.T(), i.session, i.terraformConfig.Standalone.AirgapInternalFQDN, true, false)
+	require.NoError(i.T(), err)
 }
 
 func TestRancherIPv6TestSuite(t *testing.T) {

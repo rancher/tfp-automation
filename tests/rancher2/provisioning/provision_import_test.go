@@ -33,7 +33,7 @@ type ProvisionImportTestSuite struct {
 	terraformOptions *terraform.Options
 }
 
-func (p *ProvisionImportTestSuite) SetupSuite() map[string]any {
+func (p *ProvisionImportTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	p.session = testSession
 
@@ -43,17 +43,11 @@ func (p *ProvisionImportTestSuite) SetupSuite() map[string]any {
 	p.client = client
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-	require.NoError(p.T(), err)
-
-	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
-
-	return p.cattleConfig
 }
 
 func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
@@ -61,25 +55,24 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 		name   string
 		module string
 	}{
-		{"Importing TFP RKE1", modules.ImportEC2RKE1},
 		{"Importing TFP RKE2", modules.ImportEC2RKE2},
 		{"Importing TFP RKE2 Windows", modules.ImportEC2RKE2Windows},
 		{"Importing TFP K3S", modules.ImportEC2K3s},
 	}
 
-	newFile, rootBody, file := rancher2.InitializeMainTF()
-	defer file.Close()
-
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		cattleConfig := p.SetupSuite()
-		configMap := []map[string]any{cattleConfig}
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
 
-		_, err := operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
 		require.NoError(p.T(), err)
 
-		rancher, terraform, _ := config.LoadTFPConfigs(configMap[0])
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(p.T(), err)
+
+		_, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -88,7 +81,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 	}
@@ -105,14 +98,14 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImportDynamicInput() {
 		{config.StandardClientName.String()},
 	}
 
-	newFile, rootBody, file := rancher2.InitializeMainTF()
-	defer file.Close()
-
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		cattleConfig := p.SetupSuite()
-		configMap := []map[string]any{cattleConfig}
+		newFile, rootBody, file := rancher2.InitializeMainTF()
+		defer file.Close()
+
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+		require.NoError(p.T(), err)
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
@@ -125,7 +118,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImportDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 	}

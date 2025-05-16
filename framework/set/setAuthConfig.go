@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/ad"
@@ -17,10 +18,10 @@ import (
 )
 
 // AuthConfig is a function that will set the main.tf file based on the auth provider.
-func AuthConfig(testUser, testPassword string, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
+func AuthConfig(client *rancher.Client, testUser, testPassword string, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
 	var err error
 
-	newFile, rootBody = resources.SetProvidersAndUsersTF(testUser, testPassword, true, newFile, rootBody, configMap, false)
+	newFile, rootBody = resources.SetProvidersAndUsersTF(client, testUser, testPassword, true, newFile, rootBody, configMap, false)
 
 	rancherConfig, terraform, _ := config.LoadTFPConfigs(configMap[0])
 	authProvider := terraform.AuthProvider

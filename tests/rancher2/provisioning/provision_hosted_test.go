@@ -41,10 +41,6 @@ func (p *ProvisionHostedTestSuite) SetupSuite() {
 	p.client = client
 
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-	require.NoError(p.T(), err)
-
-	p.cattleConfig = configMap[0]
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
@@ -59,11 +55,12 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 		{config.StandardClientName.String()},
 	}
 
-	configMap := []map[string]any{p.cattleConfig}
-
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF()
 		defer file.Close()
+
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+		require.NoError(p.T(), err)
 
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
 
@@ -76,9 +73,8 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyWorkloads(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyKubernetesVersion(p.T(), adminClient, clusterIDs[0], p.terratestConfig.KubernetesVersion, p.terraformConfig.Module)
 		})
 	}

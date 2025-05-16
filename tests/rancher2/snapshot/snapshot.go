@@ -129,7 +129,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, terraformConfig *config
 	_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotName"}, snapshotName, configMap[0])
 	require.NoError(t, err)
 
-	_, _, err = framework.ConfigTF(nil, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
+	_, _, err = framework.ConfigTF(client, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

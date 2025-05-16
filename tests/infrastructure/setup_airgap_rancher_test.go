@@ -45,7 +45,8 @@ func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	AcceptEULA(i.T(), i.session, i.terraformConfig.Standalone.AirgapInternalFQDN)
+	_, err = AcceptEULA(i.T(), i.session, i.terraformConfig.Standalone.AirgapInternalFQDN, true, true)
+	require.NoError(i.T(), err)
 }
 
 func TestAirgapRancherTestSuite(t *testing.T) {

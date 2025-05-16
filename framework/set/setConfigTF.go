@@ -28,8 +28,8 @@ import (
 )
 
 // ConfigTF is a function that will set the main.tf file based on the module type.
-func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole configuration.Role, configMap []map[string]any,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters, customModule bool,
+func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole configuration.Role,
+	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters, customModule bool,
 	customClusterNames []string) ([]string, []string, error) {
 	var err error
 
@@ -38,7 +38,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 	}
 
 	if !strings.Contains(string(newFile.Bytes()), defaults.RequiredProviders) {
-		newFile, rootBody = resources.SetProvidersAndUsersTF(testUser, testPassword, false, newFile, rootBody, configMap, customModule)
+		newFile, rootBody = resources.SetProvidersAndUsersTF(client, testUser, testPassword, false, newFile, rootBody, configMap, customModule)
 	}
 
 	rootBody.AppendNewline()
@@ -62,8 +62,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 
 		clusterNames = append(clusterNames, terraform.ResourcePrefix)
 
-		if module == modules.CustomEC2RKE2 || module == modules.CustomEC2K3s || module == modules.CustomEC2RKE2Windows ||
-			module == modules.AirgapRKE2 || module == modules.AirgapK3S || module == modules.AirgapRKE2Windows {
+		if (strings.Contains(module, defaults.Custom) || strings.Contains(module, defaults.Airgap)) && !strings.Contains(module, clustertypes.RKE1) {
 			customClusterNames = append(customClusterNames, terraform.ResourcePrefix)
 		}
 
@@ -96,7 +95,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 				}
 			}
 		case (strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S)) && !strings.Contains(module, defaults.Custom) && !strings.Contains(module, defaults.Import) && !strings.Contains(module, defaults.Airgap):
-			newFile, file, err = nodedriverV2.SetRKE2K3s(client, terraform, kubernetesVersion, psact, nodePools, snapshotInput, newFile, rootBody, file, rbacRole)
+			newFile, file, err = nodedriverV2.SetRKE2K3s(terraform, kubernetesVersion, psact, nodePools, snapshotInput, newFile, rootBody, file, rbacRole)
 			if err != nil {
 				return clusterNames, nil, err
 			}

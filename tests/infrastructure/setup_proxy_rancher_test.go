@@ -45,7 +45,8 @@ func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	AcceptEULA(i.T(), i.session, i.terraformConfig.Standalone.RancherHostname)
+	_, err = AcceptEULA(i.T(), i.session, i.terraformConfig.Standalone.RancherHostname, true, false)
+	require.NoError(i.T(), err)
 }
 
 func TestProxyRancherTestSuite(t *testing.T) {
