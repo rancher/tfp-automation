@@ -71,7 +71,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	p.session = testSession
 
-	client, err := infrastructure.AcceptEULA(p.T(), testSession, p.terraformConfig.Standalone.RancherHostname, false, false)
+	client, err := infrastructure.PostRancherSetup(p.T(), testSession, p.terraformConfig.Standalone.RancherHostname, false, false)
 	require.NoError(p.T(), err)
 
 	p.client = client
@@ -92,10 +92,10 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyPrivateIP, p.proxyNode, "", "")
 	require.NoError(p.T(), err)
 
-	client, err := p.client.ReLogin()
+	p.client, err = infrastructure.PostRancherSetup(p.T(), p.session, p.terraformConfig.Standalone.RancherHostname, false, false)
 	require.NoError(p.T(), err)
 
-	provisioning.VerifyClustersState(p.T(), client, clusterIDs)
+	provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 
 	p.provisionAndVerifyCluster("Post-Upgrade Proxy ", clusterIDs, true)
 
@@ -127,6 +127,9 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
 		require.NoError(p.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, p.client.RancherConfig.AdminToken, configMap[0])
+		require.NoError(p.T(), err)
+
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 		require.NoError(p.T(), err)
 
@@ -138,16 +141,16 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		p.Run((tt.name), func() {
-			clusterIDs, customClusterNames = provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
+			clusterIDs, customClusterNames = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 
 			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
-				clusterIDs, _ = provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}
 		})

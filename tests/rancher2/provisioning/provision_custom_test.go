@@ -76,7 +76,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
@@ -87,11 +87,11 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 
 			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
-				clusterIDs, _ = provisioning.Provision(p.T(), p.client, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			}
 		})
@@ -121,6 +121,8 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
+		rancher, terraform, _ := config.LoadTFPConfigs(configMap[0])
+
 		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
 
 		p.Run((tt.name), func() {
@@ -130,11 +132,11 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 
 			if strings.Contains(p.terraformConfig.Module, modules.CustomEC2RKE2Windows) {
-				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.terraformConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			}
 		})

@@ -73,12 +73,15 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
 		require.NoError(s.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, s.rancherConfig.AdminToken, configMap[0])
+		require.NoError(s.T(), err)
+
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 		require.NoError(s.T(), err)
 
 		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		var scaledUpCount, scaledDownCount int64
 
@@ -99,13 +102,13 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.scaleUpNodeRoles, configMap[0])
 			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, terraform.ResourcePrefix, terraform, scaledUpCount)
@@ -113,7 +116,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.scaleDownNodeRoles, configMap[0])
 			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, terraform.ResourcePrefix, s.terraformConfig, scaledDownCount)
@@ -143,7 +146,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 
 		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
@@ -154,12 +157,12 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 			operations.ReplaceValue([]string{"terratest", "nodepools"}, terratest.ScalingInput.ScaledUpNodepools, configMap[0])
 
-			provisioning.Scale(s.T(), s.client, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			time.Sleep(2 * time.Minute)
 
@@ -168,7 +171,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 
 			operations.ReplaceValue([]string{"terratest", "nodepools"}, terratest.ScalingInput.ScaledDownNodepools, configMap[0])
 
-			provisioning.Scale(s.T(), s.client, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			time.Sleep(2 * time.Minute)
 

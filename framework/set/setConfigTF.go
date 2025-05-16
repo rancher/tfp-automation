@@ -28,7 +28,7 @@ import (
 )
 
 // ConfigTF is a function that will set the main.tf file based on the module type.
-func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole configuration.Role,
+func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, testUser, testPassword string, rbacRole configuration.Role,
 	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters, customModule bool,
 	customClusterNames []string) ([]string, []string, error) {
 	var err error
@@ -38,7 +38,7 @@ func ConfigTF(client *rancher.Client, testUser, testPassword string, rbacRole co
 	}
 
 	if !strings.Contains(string(newFile.Bytes()), defaults.RequiredProviders) {
-		newFile, rootBody = resources.SetProvidersAndUsersTF(client, testUser, testPassword, false, newFile, rootBody, configMap, customModule)
+		newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, false, newFile, rootBody, configMap, customModule)
 	}
 
 	rootBody.AppendNewline()

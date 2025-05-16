@@ -13,12 +13,12 @@ import (
 )
 
 // AuthConfig is a function that will run terraform apply to setup authentication providers.
-func AuthConfig(t *testing.T, client *rancher.Client, terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, testUser, testPassword string,
+func AuthConfig(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, terraformOptions *terraform.Options, testUser, testPassword string,
 	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) {
 	isSupported := SupportedAuthProviders(terraformConfig, terraformOptions)
 	require.True(t, isSupported)
 
-	err := framework.AuthConfig(client, testUser, testPassword, configMap, newFile, rootBody, file)
+	err := framework.AuthConfig(rancherConfig, testUser, testPassword, configMap, newFile, rootBody, file)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)

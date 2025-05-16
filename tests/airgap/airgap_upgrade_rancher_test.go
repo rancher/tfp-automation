@@ -71,7 +71,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	a.session = testSession
 
-	client, err := infrastructure.AcceptEULA(a.T(), testSession, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
+	client, err := infrastructure.PostRancherSetup(a.T(), testSession, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
 	require.NoError(a.T(), err)
 
 	a.client = client
@@ -92,10 +92,10 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	err := upgrade.CreateMainTF(a.T(), a.upgradeTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig, "", "", a.bastion, a.registry)
 	require.NoError(a.T(), err)
 
-	client, err := a.client.ReLogin()
+	a.client, err = infrastructure.PostRancherSetup(a.T(), a.session, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
 	require.NoError(a.T(), err)
 
-	provisioning.VerifyClustersState(a.T(), client, clusterIDs)
+	provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 
 	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, true)
 
@@ -124,6 +124,9 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
 		require.NoError(a.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, a.client.RancherConfig.AdminToken, configMap[0])
+		require.NoError(a.T(), err)
+
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(a.T(), err)
 
@@ -135,17 +138,17 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		a.Run((tt.name), func() {
-			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
+			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 
 			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
-				clusterIDs, _ = provisioning.Provision(a.T(), a.client, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(a.T(), a.client, rancher, terraform, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 				provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 			}

@@ -100,7 +100,7 @@ Before running, be sure to run the following commands:
 
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""
-'export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""`
 ```

@@ -81,7 +81,7 @@ terraform:
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
-    stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
 ```
 
@@ -161,7 +161,7 @@ terraform:
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
-    stagingRancherAgentImage: ""                  # OPTIONAL - fill out only if you are using staging registry
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.3)
 ```
 

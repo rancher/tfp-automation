@@ -73,7 +73,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 
 		provisioning.GetK8sVersion(k.T(), k.client, k.terratestConfig, k.terraformConfig, configs.SecondHighestVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
@@ -84,10 +84,10 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
 			require.NoError(k.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, terraform, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, rancher, terraform, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
+			provisioning.KubernetesUpgrade(k.T(), k.client, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 			provisioning.VerifyKubernetesVersion(k.T(), k.client, clusterIDs[0], terratest.KubernetesVersion, k.terraformConfig.Module)
 		})
@@ -116,7 +116,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 
 		provisioning.GetK8sVersion(k.T(), k.client, k.terratestConfig, k.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		_, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
@@ -127,10 +127,10 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
 			require.NoError(k.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, terraform, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, rancher, terraform, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
+			provisioning.KubernetesUpgrade(k.T(), k.client, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 			provisioning.VerifyKubernetesVersion(k.T(), k.client, clusterIDs[0], terratest.KubernetesVersion, k.terraformConfig.Module)
 		})
