@@ -90,10 +90,10 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 	err := upgrade.CreateMainTF(s.T(), s.upgradeTerraformOptions, keyPath, s.terraformConfig, s.terratestConfig, s.serverNodeOne, "", "", "")
 	require.NoError(s.T(), err)
 
-	client, err := s.client.ReLogin()
+	adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 	require.NoError(s.T(), err)
 
-	provisioning.VerifyClustersState(s.T(), client, clusterIDs)
+	provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, true)
 

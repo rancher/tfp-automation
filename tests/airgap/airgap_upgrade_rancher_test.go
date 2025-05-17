@@ -92,10 +92,10 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	err := upgrade.CreateMainTF(a.T(), a.upgradeTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig, "", "", a.bastion, a.registry)
 	require.NoError(a.T(), err)
 
-	client, err := a.client.ReLogin()
+	adminClient, err := provisioning.FetchAdminClient(a.T(), a.client)
 	require.NoError(a.T(), err)
 
-	provisioning.VerifyClustersState(a.T(), client, clusterIDs)
+	provisioning.VerifyClustersState(a.T(), adminClient, clusterIDs)
 
 	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, true)
 
