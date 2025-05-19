@@ -17,7 +17,7 @@ import (
 func Scale(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options, configMap []map[string]any,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) {
-	_, _, err := framework.ConfigTF(client, rancherConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
+	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

@@ -47,7 +47,7 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.K3sKeyPath, i.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.K3sKeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -76,7 +76,7 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating K3s cluster...")
-	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, i.terraformConfig, k3sServerOnePublicIP, k3sServerOnePrivateIP, k3sServerTwoPublicIP, k3sServerThreePublicIP)
+	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, k3sServerOnePublicIP, k3sServerOnePrivateIP, k3sServerTwoPublicIP, k3sServerThreePublicIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)

@@ -27,35 +27,37 @@ const (
 )
 
 // CreateRKE2K3SImportedCluster is a helper function that will create the RKE2/K3S cluster to be imported into Rancher.
-func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, serverOnePublicIP, serverOnePrivateIP,
-	serverTwoPublicIP, serverThreePublicIP, token string) {
+func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+	serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP, token string) error {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
-		return
+		return err
 	}
 
 	var serverScriptPath, newServersScriptPath string
 
 	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
-		serverScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/k3s/init-server.sh")
-		newServersScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/k3s/add-servers.sh")
+		serverScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
+		newServersScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
 	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
-		serverScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke2/init-server.sh")
-		newServersScriptPath = filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke2/add-servers.sh")
+		serverScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/rke2/init-server.sh")
+		newServersScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-servers.sh")
 	}
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
 	if err != nil {
-		return
+		return err
 	}
 
 	newServersScriptContent, err := os.ReadFile(newServersScriptPath)
 	if err != nil {
-		return
+		return err
 	}
 
 	createImportedRKE2K3SServer(rootBody, terraformConfig, serverOnePublicIP, serverOnePrivateIP, token, serverOneScriptContent)
 	addImportedRKE2K3SServerNodes(rootBody, terraformConfig, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP, token, newServersScriptContent)
+
+	return nil
 }
 
 // createImportedRKE2K3SServer is a helper function that will create the server to be imported into Rancher.

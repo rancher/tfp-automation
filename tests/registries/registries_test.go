@@ -40,7 +40,7 @@ type TfpRegistriesTestSuite struct {
 }
 
 func (r *TfpRegistriesTestSuite) TearDownSuite() {
-	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terratestConfig.PathToRepo, r.terraformConfig.Provider)
 	cleanup.Cleanup(r.T(), r.standaloneTerraformOptions, keyPath)
 }
 
@@ -48,7 +48,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terratestConfig.PathToRepo, r.terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -67,7 +67,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 
 	r.client = client
 
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 }
@@ -88,7 +88,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF()
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
@@ -125,17 +125,17 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -155,7 +155,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF()
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
@@ -186,17 +186,17 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -216,7 +216,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF()
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
@@ -253,17 +253,17 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -281,7 +281,7 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF()
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
@@ -321,17 +321,17 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(r.terratestConfig)
 	}
 }
 

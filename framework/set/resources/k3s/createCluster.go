@@ -8,9 +8,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -25,11 +23,14 @@ const (
 
 // CreateK3SCluster is a helper function that will create the K3S cluster.
 func CreateK3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.K3sKeyPath, terraformConfig.Provider)
+	terratestConfig *config.TerratestConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS string) (*os.File, error) {
+	userDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 
-	serverScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/k3s/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/k3s/add-servers.sh")
+	serverScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
 	if err != nil {

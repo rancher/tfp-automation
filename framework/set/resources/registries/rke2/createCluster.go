@@ -8,9 +8,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -25,12 +23,15 @@ const (
 
 // CreateRKE2Cluster is a helper function that will create the RKE2 cluster.
 func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS,
+	terratestConfig *config.TerratestConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS,
 	registryPublicDNS string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terraformConfig.Provider)
+	userDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 
-	serverScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/rke2/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/rke2/add-servers.sh")
+	serverScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/registries/rke2/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/registries/rke2/add-servers.sh")
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
 	if err != nil {

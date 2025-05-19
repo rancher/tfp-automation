@@ -6,7 +6,7 @@ import (
 )
 
 // SetKeyPath is a function that will set the path to the key file.
-func SetKeyPath(keyPath, provider string) (string, string) {
+func SetKeyPath(keyPath, pathToRepo, provider string) (string, string) {
 	var err error
 	userDir := os.Getenv("GOPATH")
 	if userDir == "" {
@@ -18,7 +18,7 @@ func SetKeyPath(keyPath, provider string) (string, string) {
 		userDir = filepath.Join(userDir, "go/")
 	}
 
-	keyPath = filepath.Join(userDir, keyPath)
+	keyPath = filepath.Join(userDir, pathToRepo, keyPath)
 
 	if provider != "" {
 		keyPath = filepath.Join(keyPath, "/", provider)

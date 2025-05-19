@@ -42,10 +42,10 @@ type TfpProxyUpgradeRancherTestSuite struct {
 }
 
 func (p *TfpProxyUpgradeRancherTestSuite) TearDownSuite() {
-	_, keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, p.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, p.terratestConfig.PathToRepo, p.terraformConfig.Provider)
 	cleanup.Cleanup(p.T(), p.standaloneTerraformOptions, keyPath)
 
-	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terraformConfig.Provider)
+	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terratestConfig.PathToRepo, p.terraformConfig.Provider)
 	cleanup.Cleanup(p.T(), p.upgradeTerraformOptions, keyPath)
 }
 
@@ -53,7 +53,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, p.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, p.terratestConfig.PathToRepo, p.terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.standaloneTerraformOptions = standaloneTerraformOptions
 
@@ -63,7 +63,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	p.proxyNode = proxyNode
 	p.proxyPrivateIP = proxyPrivateIP
 
-	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terraformConfig.Provider)
+	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terratestConfig.PathToRepo, p.terraformConfig.Provider)
 	upgradeTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 
 	p.upgradeTerraformOptions = upgradeTerraformOptions
@@ -76,7 +76,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 
 	p.client = client
 
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.terraformOptions = terraformOptions
 }
@@ -88,7 +88,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 
 	p.terraformConfig.Standalone.UpgradeProxyRancher = true
 
-	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, p.terratestConfig.PathToRepo, p.terraformConfig.Provider)
 	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyPrivateIP, p.proxyNode, "", "")
 	require.NoError(p.T(), err)
 
@@ -100,7 +100,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 	p.provisionAndVerifyCluster("Post-Upgrade Proxy ", clusterIDs, true)
 
 	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(p.terratestConfig)
 	}
 }
 
@@ -117,7 +117,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 		{"K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
-	newFile, rootBody, file := rancher2.InitializeMainTF()
+	newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
 	defer file.Close()
 
 	customClusterNames := []string{}
@@ -146,18 +146,18 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion
 
 		p.Run((tt.name), func() {
-			clusterIDs, customClusterNames = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
+			clusterIDs, customClusterNames = provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 
 			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
-				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}
 		})
 	}
 
 	if deleteClusters {
-		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 		cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 	}
 

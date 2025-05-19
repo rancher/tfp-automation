@@ -34,7 +34,7 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.AirgapRKE2KeyPath, i.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.AirgapRKE2KeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -64,14 +64,14 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating registry...")
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, i.terraformConfig, registryPublicIP, nonAuthRegistry)
+	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, registryPublicIP, nonAuthRegistry)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating airgap RKE2 cluster...")
-	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, i.terraformConfig, rke2BastionPublicIP, registryPublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, rke2BastionPublicIP, registryPublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)

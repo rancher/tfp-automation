@@ -756,6 +756,7 @@ Test specific fields to configure in this section are as follows:
 
 ```yaml
 terratest:
+  pathToRepo: # REQUIRED - path to repo from user's go directory i.e. ../go/<path/to/repo/tfp-automation>
   nodepools:
     - quantity: 1
       etcd: true
@@ -804,6 +805,7 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
 
 ```yaml
 terratest:
+  pathToRepo: # REQUIRED - path to repo from user's go directory i.e. ../go/<path/to/repo/tfp-automation>
   kubernetesVersion: ""
   nodeCount: 3
   scaledUpNodeCount: 8
@@ -860,6 +862,7 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
 
 ```yaml
 terratest:
+  pathToRepo: # REQUIRED - path to repo from user's go directory i.e. ../go/<path/to/repo/tfp-automation>
   nodepools:
     - quantity: 1
       etcd: true
@@ -888,6 +891,7 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
 
 ```yaml
 terratest:
+  pathToRepo: # REQUIRED - path to repo from user's go directory i.e. ../go/<path/to/repo/tfp-automation>
   snapshotInput:
     snapshotRestore: "none"
     upgradeKubernetesVersion: ""

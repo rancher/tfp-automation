@@ -36,7 +36,7 @@ func SetAirgapRKE1(terraformConfig *config.TerraformConfig, terratestConfig *con
 
 	rootBody.AppendNewline()
 
-	err = copyScript(provisionerBlockBody)
+	err = copyScript(provisionerBlockBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return nil, nil, err
 	}

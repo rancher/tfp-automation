@@ -36,7 +36,7 @@ func SetImportedRKE1(terraformConfig *config.TerraformConfig, terratestConfig *c
 
 	kubeConfig := fmt.Sprintf("${%s.%s.kube_config_yaml}", defaults.RKECluster, terraformConfig.ResourcePrefix)
 
-	err := importNodes(rootBody, terraformConfig, nodeOnePublicDNS, kubeConfig, importCommand[serverOneName])
+	err := importNodes(rootBody, terraformConfig, terratestConfig, nodeOnePublicDNS, kubeConfig, importCommand[serverOneName])
 	if err != nil {
 		return nil, nil, err
 	}

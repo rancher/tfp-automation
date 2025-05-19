@@ -55,9 +55,9 @@ const (
 
 // snapshotRestore creates workloads, takes a snapshot of the cluster, restores the cluster and verifies the workloads created after
 // a snapshot no longer are present in the cluster
-func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, testUser,
-	testPassword string, terraformOptions *terraform.Options, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body,
-	file *os.File) {
+func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options, configMap []map[string]any,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) {
 	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
 
 	clusterID, err := clusters.GetClusterIDByName(client, terraformConfig.ResourcePrefix)
@@ -71,10 +71,10 @@ func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *ranche
 
 	deploymentResp, serviceResp := createWorkloads(t, client, clusterID, podTemplate, initialWorkloadName, isCattleLabeled, DeploymentSteveType)
 
-	snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, podTemplate, testUser, testPassword, clusterID, terraformOptions, configMap, newFile, rootBody, file)
+	snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, testUser, testPassword, clusterID, terraformOptions, configMap, newFile, rootBody, file)
 	require.NoError(t, err)
 
-	restoreV2Prov(t, client, rancherConfig, terraformConfig, snapshotName, testUser, testPassword, clusterID, terraformOptions, configMap, newFile, rootBody, file)
+	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, testUser, testPassword, clusterID, terraformOptions, configMap, newFile, rootBody, file)
 
 	_, err = steveclient.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
 	require.Error(t, err)
@@ -92,12 +92,13 @@ func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *ranche
 
 // snapshotV2Prov takes a snapshot of the cluster and creates a deployment and service in the cluster.
 func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	podTemplate corev1.PodTemplateSpec, testUser, testPassword, clusterID string, terraformOptions *terraform.Options, configMap []map[string]any,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
+	terratestConfig *config.TerratestConfig, podTemplate corev1.PodTemplateSpec, testUser, testPassword, clusterID string,
+	terraformOptions *terraform.Options, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File) (string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
 	_, err := operations.ReplaceValue([]string{"terratest", "snapshotInput", "createSnapshot"}, true, configMap[0])
 	require.NoError(t, err)
 
-	_, _, err = framework.ConfigTF(client, rancherConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
+	_, _, err = framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -118,9 +119,9 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 }
 
 // restoreV2Prov restores the cluster to the previous state after a snapshot is taken.
-func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig, snapshotName,
-	testUser, testPassword string, clusterID string, terraformOptions *terraform.Options, configMap []map[string]any, newFile *hclwrite.File,
-	rootBody *hclwrite.Body, file *os.File) {
+func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig, snapshotName, testUser, testPassword string, clusterID string, terraformOptions *terraform.Options,
+	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) {
 	_, err := operations.ReplaceValue([]string{"terratest", "snapshotInput", "createSnapshot"}, false, configMap[0])
 	require.NoError(t, err)
 
@@ -130,7 +131,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 	_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotName"}, snapshotName, configMap[0])
 	require.NoError(t, err)
 
-	_, _, err = framework.ConfigTF(client, rancherConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
+	_, _, err = framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

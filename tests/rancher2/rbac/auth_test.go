@@ -46,7 +46,7 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 }
@@ -65,7 +65,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF()
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
@@ -77,7 +77,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		rancher, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
 		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
@@ -85,7 +85,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -103,7 +103,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF()
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
@@ -115,7 +115,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		rancher, terraform, _ := config.LoadTFPConfigs(configMap[0])
 
 		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
@@ -123,7 +123,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(r.terratestConfig)
 	}
 }
 

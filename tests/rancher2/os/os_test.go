@@ -45,90 +45,90 @@ type OSValidationTestSuite struct {
 	awsCredentials   cloudcredentials.AmazonEC2CredentialConfig
 }
 
-func (p *OSValidationTestSuite) SetupSuite() {
+func (o *OSValidationTestSuite) SetupSuite() {
 	testSession := session.NewSession()
-	p.session = testSession
+	o.session = testSession
 
 	client, err := rancher.NewClient("", testSession)
-	require.NoError(p.T(), err)
+	require.NoError(o.T(), err)
 
-	p.client = client
+	o.client = client
 
-	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	o.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
-	p.cattleConfig, err = config.LoadPackageDefaults(p.cattleConfig, "")
-	require.NoError(p.T(), err)
+	o.cattleConfig, err = config.LoadPackageDefaults(o.cattleConfig, "")
+	require.NoError(o.T(), err)
 
-	modulePermutation, err := permutationsdata.CreateModulePermutation(p.cattleConfig)
-	require.NoError(p.T(), err)
+	modulePermutation, err := permutationsdata.CreateModulePermutation(o.cattleConfig)
+	require.NoError(o.T(), err)
 
-	modulePermutation.KeyPathValueRelationships, err = permutationsdata.CreateAMIRelationships(p.cattleConfig)
-	require.NoError(p.T(), err)
+	modulePermutation.KeyPathValueRelationships, err = permutationsdata.CreateAMIRelationships(o.cattleConfig)
+	require.NoError(o.T(), err)
 
-	k8sRelationships, err := permutationsdata.CreateK8sRelationships(p.cattleConfig)
-	require.NoError(p.T(), err)
+	k8sRelationships, err := permutationsdata.CreateK8sRelationships(o.cattleConfig)
+	require.NoError(o.T(), err)
 
 	modulePermutation.KeyPathValueRelationships = append(modulePermutation.KeyPathValueRelationships, k8sRelationships...)
 
-	cniPermutation, err := permutationsdata.CreateCNIPermutation(p.cattleConfig)
-	require.NoError(p.T(), err)
+	cniPermutation, err := permutationsdata.CreateCNIPermutation(o.cattleConfig)
+	require.NoError(o.T(), err)
 
-	permutedConfigs, err := permutations.Permute([]permutations.Permutation{*modulePermutation, *cniPermutation}, p.cattleConfig)
-	require.NoError(p.T(), err)
+	permutedConfigs, err := permutations.Permute([]permutations.Permutation{*modulePermutation, *cniPermutation}, o.cattleConfig)
+	require.NoError(o.T(), err)
 
-	p.permutedConfigs, err = provisioning.UniquifyTerraform(permutedConfigs)
-	require.NoError(p.T(), err)
+	o.permutedConfigs, err = provisioning.UniquifyTerraform(permutedConfigs)
+	require.NoError(o.T(), err)
 
-	_, terraformConfig, terratestConfig := config.LoadTFPConfigs(p.permutedConfigs[0])
+	_, terraformConfig, terratestConfig := config.LoadTFPConfigs(o.permutedConfigs[0])
 
-	p.awsCredentials = cloudcredentials.AmazonEC2CredentialConfig{
+	o.awsCredentials = cloudcredentials.AmazonEC2CredentialConfig{
 		AccessKey:     terraformConfig.AWSCredentials.AWSAccessKey,
 		SecretKey:     terraformConfig.AWSCredentials.AWSSecretKey,
 		DefaultRegion: terraformConfig.AWSConfig.Region,
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
-	terraformOptions := framework.Setup(p.T(), terraformConfig, terratestConfig, keyPath)
-	p.terraformOptions = terraformOptions
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, o.terratestConfig.PathToRepo, "")
+	terraformOptions := framework.Setup(o.T(), terraformConfig, terratestConfig, keyPath)
+	o.terraformOptions = terraformOptions
 }
 
-func (p *OSValidationTestSuite) TestDynamicOSValidation() {
+func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 	//Batch configs so that not all AMIs run in parallel
 	configBatches := map[string][]map[string]any{}
-	for _, cattleConfig := range p.permutedConfigs {
+	for _, cattleConfig := range o.permutedConfigs {
 		_, terraformConfig, _ := config.LoadTFPConfigs(cattleConfig)
 		configBatches[terraformConfig.AWSConfig.AMI] = append(configBatches[terraformConfig.AWSConfig.AMI], cattleConfig)
 	}
 
-	newFile, rootBody, file := rancher2.InitializeMainTF()
+	newFile, rootBody, file := rancher2.InitializeMainTF(o.terratestConfig)
 	defer file.Close()
 
 	customClusterNames := []string{}
 
 	for ami, batch := range configBatches {
-		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
-		defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
+		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, o.terratestConfig.PathToRepo, "")
+		defer cleanup.Cleanup(o.T(), o.terraformOptions, keyPath)
 		testUser, testPassword := configs.CreateTestCredentials()
 
 		var clusterIDs []string
 
-		amiInfo, err := ec2.GetAMI(p.client, &p.awsCredentials, ami)
-		require.NoError(p.T(), err)
+		amiInfo, err := ec2.GetAMI(o.client, &o.awsCredentials, ami)
+		require.NoError(o.T(), err)
 
 		testName := "Parallel_Provisioning_" + *amiInfo.Images[0].Name
-		p.Run(testName, func() {
+		o.Run(testName, func() {
 			for _, cattleConfig := range batch {
 				cattleConfig, err = operations.ReplaceValue([]string{"terraform", "awsConfig", "awsVolumeType"}, *amiInfo.Images[0].BlockDeviceMappings[0].Ebs.VolumeType, cattleConfig)
-				require.NoError(p.T(), err)
+				require.NoError(o.T(), err)
 
 				_, terraformConfig, terratestConfig := config.LoadTFPConfigs(cattleConfig)
 
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
-			clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, testUser, testPassword, p.terraformOptions, batch, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, customClusterNames)
 			time.Sleep(2 * time.Minute)
-			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+			provisioning.VerifyClustersState(o.T(), o.client, clusterIDs)
 		})
 
 		workloadTests := []struct {
@@ -147,15 +147,15 @@ func (p *OSValidationTestSuite) TestDynamicOSValidation() {
 		}
 
 		for _, workloadTest := range workloadTests {
-			p.Run(workloadTest.name, func() {
+			o.Run(workloadTest.name, func() {
 				for _, clusterID := range clusterIDs {
-					clusterName, err := clusterExtensions.GetClusterNameByID(p.client, clusterID)
-					require.NoError(p.T(), err)
+					clusterName, err := clusterExtensions.GetClusterNameByID(o.client, clusterID)
+					require.NoError(o.T(), err)
 
 					logrus.Infof("Running %s on cluster %s", workloadTest.name, clusterName)
 					retries := 3
 					for i := 0; i+1 < retries; i++ {
-						err := workloadTest.validationFunc(p.client, clusterID)
+						err := workloadTest.validationFunc(o.client, clusterID)
 						if err != nil {
 							logrus.Info(err)
 							logrus.Infof("Retry %v / %v", i+1, retries)
@@ -169,8 +169,8 @@ func (p *OSValidationTestSuite) TestDynamicOSValidation() {
 		}
 	}
 
-	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+	if o.terratestConfig.LocalQaseReporting {
+		qase.ReportTest(o.terratestConfig)
 	}
 }
 

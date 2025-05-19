@@ -15,21 +15,22 @@ import (
 
 // AddWindowsNodeToImportedCluster is a helper function that will add an additional Windows node to the initial server.
 func AddWindowsNodeToImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	serverOnePrivateIP,
-	windowsNodePublicDNS, token string) {
+	serverOnePrivateIP, windowsNodePublicDNS, token string) error {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
-		return
+		return err
 	}
 
-	serverScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/rke2/add-wins.ps1")
+	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-wins.ps1")
 
-	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
+	serverOneScriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
-		return
+		return err
 	}
 
 	addImportedWindowsNode(rootBody, terraformConfig, terratestConfig, serverOnePrivateIP, windowsNodePublicDNS, token, serverOneScriptContent)
+
+	return nil
 }
 
 // addImportedWindowsNode is a helper function that will add an additional Windows node to the initial server.

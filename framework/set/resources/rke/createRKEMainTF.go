@@ -63,7 +63,7 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 
 	file = resources.OpenFile(file, keyPath)
 	logrus.Infof("Checking RKE cluster status...")
-	file, err = rke.CheckClusterStatus(file, newFile, rootBody, terraformConfig, rkeServerOnePublicIP, kubeConfigContent)
+	file, err = rke.CheckClusterStatus(file, newFile, rootBody, terraformConfig, terratestConfig, rkeServerOnePublicIP, kubeConfigContent)
 	if err != nil {
 		return "", err
 	}

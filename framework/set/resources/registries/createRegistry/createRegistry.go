@@ -6,9 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -22,12 +20,15 @@ const (
 
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
 func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2AuthRegistryPublicDNS string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terraformConfig.Provider)
+	terratestConfig *config.TerratestConfig, rke2AuthRegistryPublicDNS string) (*os.File, error) {
+	userDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 
-	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/auth-registry.sh")
+	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/auth-registry.sh")
 
-	registryScriptContent, err := os.ReadFile(registryScriptPath)
+	registryScriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +64,15 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 
 // CreateNonAuthenticatedRegistry is a helper function that will create a non-authenticated registry.
 func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2NonAuthRegistryPublicDNS, registryType string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terraformConfig.Provider)
+	terratestConfig *config.TerratestConfig, rke2NonAuthRegistryPublicDNS, registryType string) (*os.File, error) {
+	userDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 
-	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/non-auth-registry.sh")
+	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/non-auth-registry.sh")
 
-	registryScriptContent, err := os.ReadFile(registryScriptPath)
+	registryScriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +120,15 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 
 // CreateEcrRegistry is a helper function that will create an authenticated ECR registry.
 func CreateEcrRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2EcrRegistryPublicDNS string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terraformConfig.Provider)
+	terratestConfig *config.TerratestConfig, rke2EcrRegistryPublicDNS string) (*os.File, error) {
+	userDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 
-	registryScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry/ecr-registry.sh")
+	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/ecr-registry.sh")
 
-	registryScriptContent, err := os.ReadFile(registryScriptPath)
+	registryScriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
 		return nil, err
 	}
