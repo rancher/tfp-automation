@@ -45,7 +45,7 @@ func (r *RBACTestSuite) SetupSuite() {
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.terraformOptions = terraformOptions
 }
@@ -64,7 +64,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF()
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
@@ -80,20 +80,20 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		tt.name = tt.name + " Module: " + r.terraformConfig.Module
 
 		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
 			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
 			require.NoError(r.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), adminClient, rancher, terraform, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), adminClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
 		})
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest()
+		qase.ReportTest(r.terratestConfig)
 	}
 }
 

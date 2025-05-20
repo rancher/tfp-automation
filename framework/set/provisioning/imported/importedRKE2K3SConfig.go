@@ -45,7 +45,7 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 
 	token := namegen.AppendRandomString(defaults.Import)
 
-	imported.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, nodeOnePublicIP, nodeOnePrivateIP, nodeTwoPublicIP, nodeThreePublicIP, token)
+	imported.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, nodeOnePublicIP, nodeOnePrivateIP, nodeTwoPublicIP, nodeThreePublicIP, token)
 	rootBody.AppendNewline()
 
 	if terraformConfig.Module == modules.ImportEC2RKE2Windows {
@@ -65,7 +65,7 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 
 	importCommand := getImportCommand(terraformConfig.ResourcePrefix)
 
-	err := importNodes(rootBody, terraformConfig, nodeOnePublicIP, "", importCommand[serverOneName])
+	err := importNodes(rootBody, terraformConfig, terratestConfig, nodeOnePublicIP, "", importCommand[serverOneName])
 	if err != nil {
 		return nil, nil, err
 	}

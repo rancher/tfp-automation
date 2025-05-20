@@ -9,9 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
-	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -27,12 +25,16 @@ const (
 
 // CreateAirgapRKE2Cluster is a helper function that will create the RKE2 cluster.
 func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.AirgapKeyPath, terraformConfig.Provider)
+	terratestConfig *config.TerratestConfig, rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP,
+	rke2ServerThreePrivateIP string) (*os.File, error) {
+	userDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
 
-	bastionScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/bastion.sh")
-	serverScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2/add-servers.sh")
+	bastionScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/bastion.sh")
+	serverScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/add-servers.sh")
 
 	bastionScriptContent, err := os.ReadFile(bastionScriptPath)
 	if err != nil {

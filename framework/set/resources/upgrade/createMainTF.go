@@ -23,7 +23,7 @@ const (
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server behind a proxy.
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratest *config.TerratestConfig, serverNode, proxyNode, bastionNode, registryNode string) error {
+	terratestConfig *config.TerratestConfig, serverNode, proxyNode, bastionNode, registryNode string) error {
 	var file *os.File
 	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
@@ -44,7 +44,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	switch {
 	case terraformConfig.Standalone.UpgradeAirgapRancher:
 		logrus.Infof("Updating private registry...")
-		_, err := registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, registryNode, nonAuthRegistry)
+		_, err := registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryNode, nonAuthRegistry)
 		if err != nil {
 			return err
 		}
@@ -53,7 +53,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 		file = sanity.OpenFile(file, keyPath)
 		logrus.Infof("Upgrading Airgap Rancher...")
-		file, err = airgap.UpgradeAirgapRancher(file, newFile, rootBody, terraformConfig, registryNode, bastionNode)
+		file, err = airgap.UpgradeAirgapRancher(file, newFile, rootBody, terraformConfig, terratestConfig, registryNode, bastionNode)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		terraform.InitAndApply(t, terraformOptions)
 	case terraformConfig.Standalone.UpgradeProxyRancher:
 		logrus.Infof("Upgrading Proxy Rancher...")
-		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, proxyNode, serverNode)
+		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, proxyNode, serverNode)
 		if err != nil {
 			return err
 		}
@@ -69,7 +69,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		terraform.InitAndApply(t, terraformOptions)
 	case terraformConfig.Standalone.UpgradeRancher:
 		logrus.Infof("Upgrading Rancher...")
-		_, err := sanityRancher.UpgradeRancher(file, newFile, rootBody, terraformConfig, serverNode)
+		_, err := sanityRancher.UpgradeRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverNode)
 		if err != nil {
 			return err
 		}

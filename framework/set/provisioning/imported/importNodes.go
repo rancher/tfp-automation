@@ -10,20 +10,19 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // importNodes is a function that will import the nodes to the cluster
-func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodeOnePublicDNS, kubeConfig, importCommand string) error {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
+func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, nodeOnePublicDNS, kubeConfig, importCommand string) error {
+	userDir, _ := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	scriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/provisioning/imported/import-nodes.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/provisioning/imported/import-nodes.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

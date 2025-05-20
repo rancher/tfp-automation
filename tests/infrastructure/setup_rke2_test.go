@@ -52,7 +52,7 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
-	_, keyPath := rancher2.SetKeyPath(keypath.RKE2KeyPath, i.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.RKE2KeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -81,7 +81,7 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, i.terraformConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)

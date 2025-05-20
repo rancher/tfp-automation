@@ -5,19 +5,19 @@ import (
 	"path/filepath"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // copyScript is a function that will copy the register scripts to the bastion node
-func copyScript(provisionerBlockBody *hclwrite.Body) error {
-	userDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil
-	}
+func copyScript(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) error {
+	userDir, _ := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	nodesScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/provisioning/airgap/register-nodes.sh")
-	windowsScriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/provisioning/airgap/register-windows-nodes.sh")
+	nodesScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/provisioning/airgap/register-nodes.sh")
+	windowsScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/provisioning/airgap/register-windows-nodes.sh")
 
 	nodesScriptContent, err := os.ReadFile(nodesScriptPath)
 	if err != nil {

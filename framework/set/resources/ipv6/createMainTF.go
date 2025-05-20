@@ -60,7 +60,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateIPv6Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = rke2.CreateIPv6Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +69,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	logrus.Infof("Creating Rancher server...")
 	file = sanity.OpenFile(file, keyPath)
-	file, err = rancher.CreateIPv6Rancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS)
+	file, err = rancher.CreateIPv6Rancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS)
 	if err != nil {
 		return "", err
 	}

@@ -24,7 +24,7 @@ func KubernetesUpgrade(t *testing.T, client *rancher.Client, rancherConfig *ranc
 
 	DefaultUpgradedK8sVersion(t, client, terratestConfig, terraformConfig, configMap)
 
-	clusterNames, customClusterNames, err := framework.ConfigTF(client, rancherConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, isWindows, false, false, nil)
+	clusterNames, customClusterNames, err := framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, isWindows, false, false, nil)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)

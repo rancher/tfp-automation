@@ -28,7 +28,7 @@ import (
 )
 
 // ConfigTF is a function that will set the main.tf file based on the module type.
-func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, testUser, testPassword string, rbacRole configuration.Role,
+func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestConfig *config.TerratestConfig, testUser, testPassword string, rbacRole configuration.Role,
 	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters, customModule bool,
 	customClusterNames []string) ([]string, []string, error) {
 	var err error
@@ -175,7 +175,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, testUser, t
 	}
 
 	// // This is needed to ensure there is no duplications in the main.tf file.
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, "")
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	file, err = os.Create(keyPath + configs.MainTF)
 	if err != nil {
 		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)

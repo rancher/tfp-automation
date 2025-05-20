@@ -35,7 +35,7 @@ const (
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server behind a proxy.
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratest *config.TerratestConfig) (string, string, error) {
+	terratestConfig *config.TerratestConfig) (string, string, error) {
 	var file *os.File
 	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
@@ -52,7 +52,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	instances := []string{rke2Bastion}
 
 	providerTunnel := tunnel.TunnelToProvider(terraformConfig.Provider)
-	file, err = providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratest, instances)
+	file, err = providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return "", "", err
 	}
@@ -71,7 +71,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")
-	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", "", err
 	}
@@ -80,7 +80,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", "", err
 	}
@@ -89,7 +89,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, linodeNodeBalancerHostname)
+	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, linodeNodeBalancerHostname)
 	if err != nil {
 		return "", "", err
 	}

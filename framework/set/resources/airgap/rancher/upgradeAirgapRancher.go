@@ -18,13 +18,13 @@ const (
 
 // UpgradeAirgapRancher is a function that will upgrade the Rancher configurations in the main.tf file.
 func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	registryPublicDNS, bastionNode string) (*os.File, error) {
+	terratestConfig *config.TerratestConfig, registryPublicDNS, bastionNode string) (*os.File, error) {
 	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/src/github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher/upgrade.sh")
+	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rancher/upgrade.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

@@ -40,7 +40,7 @@ const (
 
 // CreateMainTF is a helper function that will create the main.tf file for creating an Airgapped-Rancher server.
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratest *config.TerratestConfig) (string, string, string, error) {
+	terratestConfig *config.TerratestConfig) (string, string, string, error) {
 	var file *os.File
 	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
@@ -54,7 +54,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree, authRegistry, nonAuthRegistry, globalRegistry, ecrRegistry}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
-	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratest, instances)
+	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -82,7 +82,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 		file = sanity.OpenFile(file, keyPath)
 		logrus.Infof("Creating authenticated registry...")
-		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, authRegistryPublicDNS)
+		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS)
 		if err != nil {
 			logrus.Fatalf("Error creating authenticated registry: %v", err)
 		}
@@ -95,7 +95,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 		file = sanity.OpenFile(file, keyPath)
 		logrus.Infof("Creating non-authenticated registry...")
-		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, nonAuthRegistryPublicDNS, nonAuthRegistry)
+		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, nonAuthRegistryPublicDNS, nonAuthRegistry)
 		if err != nil {
 			logrus.Fatalf("Error creating unauthenticated registry: %v", err)
 		}
@@ -108,7 +108,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 		file = sanity.OpenFile(file, keyPath)
 		logrus.Infof("Creating global registry...")
-		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, globalRegistryPublicDNS, globalRegistry)
+		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry)
 		if err != nil {
 			logrus.Fatalf("Error creating global registry: %v", err)
 		}
@@ -121,7 +121,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 		file = sanity.OpenFile(file, keyPath)
 		logrus.Infof("Creating ecr registry...")
-		file, err = registry.CreateEcrRegistry(file, newFile, rootBody, terraformConfig, ecrRegistryPublicDNS)
+		file, err = registry.CreateEcrRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, ecrRegistryPublicDNS)
 		if err != nil {
 			logrus.Fatalf("Error creating ecr registry: %v", err)
 		}
@@ -133,7 +133,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP,
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP,
 		rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS, globalRegistryPublicDNS)
 	if err != nil {
 		return "", "", "", err
@@ -143,7 +143,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, rke2ServerOnePublicDNS, globalRegistryPublicDNS)
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicDNS, globalRegistryPublicDNS)
 	if err != nil {
 		return "", "", "", err
 	}

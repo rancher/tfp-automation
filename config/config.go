@@ -220,6 +220,7 @@ type TerratestConfig struct {
 	LocalQaseReporting        bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
 	NodeCount                 int64      `json:"nodeCount,omitempty" yaml:"nodeCount,omitempty"`
 	Nodepools                 []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
+	PathToRepo                string     `json:"pathToRepo,omitempty" yaml:"pathToRepo,omitempty"`
 	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
 	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
 	SnapshotInput             Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
