@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// AcceptEULA accepts the EULA for the Rancher server post installation
-func AcceptEULA(t *testing.T, session *session.Session, host string, showToken, isAirgap bool) (*rancher.Client, error) {
+// PostRancherSetup is a helper function that creates a Rancher client and accepts the EULA, if needed
+func PostRancherSetup(t *testing.T, session *session.Session, host string, showToken, isAirgap bool) (*rancher.Client, error) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	rancherConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
 

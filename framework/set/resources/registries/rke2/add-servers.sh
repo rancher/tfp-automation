@@ -8,8 +8,7 @@ RKE2_TOKEN=$5
 RANCHER_IMAGE=$6
 RANCHER_TAG_VERSION=$7
 REGISTRY=$8
-STAGING_RANCHER_AGENT_IMAGE=${9:-}
-PRIME_RANCHER_AGENT_IMAGE=${10:-}
+RANCHER_AGENT_IMAGE=${9}
 
 set -e
 
@@ -47,16 +46,8 @@ EOF
 
 sudo systemctl restart docker && sudo systemctl daemon-reload
 
-if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ] || [ -n "$PRIME_RANCHER_AGENT_IMAGE" ]; then
+if [ -n "$RANCHER_AGENT_IMAGE" ]; then
   sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}
-
-  if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
-    sudo docker pull ${REGISTRY}/${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}
-  fi
-
-  if [ -n "$PRIME_RANCHER_AGENT_IMAGE" ]; then
-    sudo docker pull ${REGISTRY}/${PRIME_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}
-  fi
-
+  sudo docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}
   sudo systemctl restart rke2-server
 fi

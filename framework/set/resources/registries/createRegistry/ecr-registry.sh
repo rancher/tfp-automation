@@ -9,6 +9,35 @@ RANCHER_AGENT_IMAGE=${6}
 
 set -e
 
+manageImages() {
+    ACTION=$1
+    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
+    PARALLEL_ACTIONS=10
+
+    COUNTER=0
+    for IMAGE in "${IMAGES[@]}"; do
+        action "${ACTION}" "${IMAGE}"
+        COUNTER=$((COUNTER+1))
+        
+        if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
+            wait
+        fi
+    done
+
+    wait
+}
+
+action() {
+    ACTION=$1
+    IMAGE=$2
+    
+    if [ "$ACTION" == "pull" ]; then
+        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${ECR}/${IMAGE} &
+    elif [ "$ACTION" == "push" ]; then
+        sudo docker push ${ECR}/${IMAGE} &
+    fi
+}
+
 . /etc/os-release
 
 [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt install -y unzip
@@ -49,26 +78,12 @@ chmod +x rancher-save-images.sh
 ./rancher-save-images.sh --image-list ./rancher-images.txt
 
 if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
-    docker pull ${RANCHER_IMAGE}
-    docker pull ${RANCHER_AGENT_IMAGE}
+    sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
+    sudo sed -i "s|rancher/rancher-agent:|${RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
 fi
 
-echo "Tagging the images..."
-for IMAGE in $(cat rancher-images.txt); do
-    docker tag ${IMAGE} ${ECR}/${IMAGE}
-done
+echo "Pulling the images..."
+manageImages "pull"
 
-if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
-    docker tag ${RANCHER_IMAGE} ${ECR}/${RANCHER_IMAGE}
-    docker tag ${RANCHER_AGENT_IMAGE} ${ECR}/${RANCHER_AGENT_IMAGE}
-fi
-
-echo "Pushing the newly tagged images ECR..."
-for IMAGE in $(cat rancher-images.txt); do
-    docker push ${ECR}/${IMAGE}
-done
-
-if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
-    docker push ${ECR}/${RANCHER_IMAGE}
-    docker push ${ECR}/${RANCHER_AGENT_IMAGE}
-fi
+echo "Pushing the newly tagged images..."
+manageImages "push"

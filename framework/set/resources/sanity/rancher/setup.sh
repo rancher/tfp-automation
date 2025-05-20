@@ -7,7 +7,7 @@ HOSTNAME=$4
 RANCHER_TAG_VERSION=$5
 BOOTSTRAP_PASSWORD=$6
 RANCHER_IMAGE=$7
-STAGING_RANCHER_AGENT_IMAGE=${8}
+RANCHER_AGENT_IMAGE=${8}
 
 set -ex
 
@@ -38,13 +38,13 @@ echo "Waiting 1 minute for Rancher"
 sleep 60
 
 echo "Installing Rancher"
-if [ -n "$STAGING_RANCHER_AGENT_IMAGE" ]; then
+if [ -n "$RANCHER_AGENT_IMAGE" ]; then
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                  --set hostname=${HOSTNAME} \
                                                                                  --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                  --set rancherImage=${RANCHER_IMAGE} \
                                                                                  --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                 --set "extraEnv[0].value=${STAGING_RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                 --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                  --set bootstrapPassword=${BOOTSTRAP_PASSWORD} --devel
 
 else
