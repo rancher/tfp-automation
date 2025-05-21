@@ -32,9 +32,9 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 		return nil, err
 	}
 
-	bastionScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/bastion.sh")
-	serverScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/add-servers.sh")
+	bastionScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/bastion.sh")
+	serverScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/airgap/rke2/add-servers.sh")
 
 	bastionScriptContent, err := os.ReadFile(bastionScriptPath)
 	if err != nil {

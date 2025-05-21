@@ -24,7 +24,7 @@ func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/airgap/rancher/upgrade.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/airgap/rancher/upgrade.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

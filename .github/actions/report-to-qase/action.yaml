@@ -1,0 +1,17 @@
+name: Report Results to Qase
+description: Builds reporter and reports to Qase
+inputs:
+  qase-test-run-id:
+    description: "Qase Test Run ID"
+    required: true
+  qase-automation-token:
+    description: "Qase Automation Token"
+    required: true
+runs:
+  using: composite
+  steps:
+    - run: |
+        export QASE_TEST_RUN_ID=${{ inputs.qase-test-run-id }}; \
+        export QASE_AUTOMATION_TOKEN=${{ inputs.qase-automation-token }}; \
+        ./pipeline/scripts/build_qase_reporter.sh; ./reporter
+      shell: bash

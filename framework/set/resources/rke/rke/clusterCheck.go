@@ -22,7 +22,7 @@ func CheckClusterStatus(file *os.File, newFile *hclwrite.File, rootBody *hclwrit
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/rke/rke/cluster.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke/rke/cluster.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

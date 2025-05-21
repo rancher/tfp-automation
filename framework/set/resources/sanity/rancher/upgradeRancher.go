@@ -24,7 +24,7 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/sanity/rancher/upgrade.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/sanity/rancher/upgrade.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

@@ -14,8 +14,6 @@ func SetKeyPath(keyPath, pathToRepo, provider string) (string, string) {
 		if err != nil {
 			return "", ""
 		}
-
-		userDir = filepath.Join(userDir, "go/")
 	}
 
 	keyPath = filepath.Join(userDir, pathToRepo, keyPath)

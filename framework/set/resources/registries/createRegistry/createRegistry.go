@@ -26,7 +26,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/auth-registry.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/auth-registry.sh")
 
 	registryScriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

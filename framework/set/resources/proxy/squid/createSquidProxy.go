@@ -24,8 +24,8 @@ func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/proxy/squid/setup.sh")
-	squidConf := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/proxy/squid/squid.conf")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/proxy/squid/setup.sh")
+	squidConf := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/proxy/squid/squid.conf")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
