@@ -1,0 +1,175 @@
+name: Sanity Test
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  HOSTNAME_PREFIX: tfp-sanity-gha
+  RANCHER_VERSION: v2.11-head
+  RKE2_VERSION: v1.31.7+rke2r1
+  RANCHER2_PROVIDER_VERSION: '7.0.0'
+  TERRAFORM_VERSION: '1.9.5'
+  RKE_PROVIDER_VERSION: '1.7.0'
+  CLOUD_PROVIDER_VERSION: '5.95.0'
+  LOCALS_PROVIDER_VERSION: '2.5.2'
+  QASE_TEST_RUN_ID: '4476'
+
+jobs:
+  sanity-tests:
+    name: Sanity Test
+    runs-on: ubuntu-latest
+    environment: latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Mask sensitive variables
+        run: |
+          echo "::add-mask::${{ secrets.SSH_PRIVATE_KEY }}"
+          echo "::add-mask::${{ secrets.SSH_PRIVATE_KEY_NAME }}"
+          echo "::add-mask::${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}"
+          echo "::add-mask::${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}"
+          echo "::add-mask::${{ secrets.SSH_PRIVATE_KEY_PATH }}"
+          echo "::add-mask::${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+          echo "::add-mask::${{ secrets.AWS_ROUTE_53_ZONE }}"
+          echo "::add-mask::${{ secrets.RANCHER_ADMIN_PASSWORD }}"
+          echo "::add-mask::${{ secrets.CNI }}"
+          echo "::add-mask::${{ secrets.PROVIDER_AMAZON }}"
+          echo "::add-mask::${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "::add-mask::${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          echo "::add-mask::${{ secrets.AWS_AMI }}"
+          echo "::add-mask::${{ secrets.AWS_INSTANCE_TYPE }}"
+          echo "::add-mask::${{ secrets.AWS_VOLUME_TYPE }}"
+          echo "::add-mask::${{ secrets.AWS_REGION }}"
+          echo "::add-mask::${{ secrets.AWS_SECURITY_GROUPS }}"
+          echo "::add-mask::${{ secrets.AWS_SECURITY_GROUP_NAMES }}"
+          echo "::add-mask::${{ secrets.AWS_SUBNET_ID }}"
+          echo "::add-mask::${{ secrets.AWS_VPC_ID }}"
+          echo "::add-mask::${{ secrets.AWS_ZONE_LETTER }}"
+          echo "::add-mask::${{ secrets.AWS_ROOT_SIZE }}"
+          echo "::add-mask::${{ secrets.AWS_USER }}"
+          echo "::add-mask::${{ secrets.SSH_CONNECTION_TYPE }}"
+          echo "::add-mask::${{ secrets.TIMEOUT }}"
+          echo "::add-mask::${{ secrets.WINDOWS_AMI }}"
+          echo "::add-mask::${{ secrets.AWS_WINDOWS_USER }}"
+          echo "::add-mask::${{ secrets.AWS_WINDOWS_PASSWORD }}"
+          echo "::add-mask::${{ secrets.AWS_WINDOWS_INSTANCE_TYPE }}"
+          echo "::add-mask::${{ secrets.IP_ADDRESS_TYPE }}"
+          echo "::add-mask::${{ secrets.LOAD_BALANCER_TYPE }}"
+          echo "::add-mask::${{ secrets.TARGET_TYPE }}"
+          echo "::add-mask::${{ secrets.CERT_MANAGER_VERSION }}"
+          echo "::add-mask::${{ secrets.OS_USER }}"
+          echo "::add-mask::${{ secrets.OS_GROUP }}"
+          echo "::add-mask::${{ secrets.RANCHER_HELM_CHART_URL }}"
+          echo "::add-mask::${{ secrets.RANCHER_IMAGE }}"
+          echo "::add-mask::${{ secrets.RANCHER_REPO }}"
+          echo "::add-mask::${{ secrets.PATH_TO_REPO }}"
+          echo "::add-mask::${{ secrets.TERRAFORM_LOGGING }}"
+          echo "::add-mask::${{ secrets.NODE_COUNT }}"
+          echo "::add-mask::${{ secrets.WINDOWS_NODE_COUNT }}"
+
+      - name: Set up SSH keys
+        run: |
+          mkdir -p .ssh
+
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > .ssh/${{ secrets.SSH_PRIVATE_KEY_NAME }}.pem
+          chmod 600 .ssh/${{ secrets.SSH_PRIVATE_KEY_NAME }}.pem
+
+          echo "${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}" > .ssh/${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}.pem
+          chmod 600 .ssh/${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}.pem
+
+      - name: Create config.yaml
+        run: |
+          cat > config.yaml <<EOF
+          rancher:
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
+            insecure: true
+          terraform:
+            cni: "${{ secrets.CNI }}"
+            defaultClusterRoleForProjectMembers: "true"
+            enableNetworkPolicy: false
+            provider: "${{ secrets.PROVIDER_AMAZON }}"
+            privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
+            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
+            windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            awsCredentials:
+              awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+              awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+            awsConfig:
+              ami: "${{ secrets.AWS_AMI }}"
+              awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
+              awsInstanceType: "${{ secrets.AWS_INSTANCE_TYPE }}"
+              awsVolumeType: "${{ secrets.AWS_VOLUME_TYPE }}"
+              region: "${{ secrets.AWS_REGION }}"
+              awsSecurityGroups: ["${{ secrets.AWS_SECURITY_GROUPS }}"]
+              awsSecurityGroupNames: ["${{ secrets.AWS_SECURITY_GROUP_NAMES }}"]
+              awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
+              awsZoneLetter: "${{ secrets.AWS_ZONE_LETTER }}"
+              awsRootSize: ${{ secrets.AWS_ROOT_SIZE }}
+              awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
+              awsUser: "${{ secrets.AWS_USER }}"
+              sshConnectionType: "${{ secrets.SSH_CONNECTION_TYPE }}" 
+              timeout: "${{ secrets.TIMEOUT }}"
+              windowsAMI: "${{ secrets.WINDOWS_AMI }}"
+              windowsAWSUser: "${{ secrets.AWS_WINDOWS_USER }}" 
+              windowsAWSPassword: "${{ secrets.AWS_WINDOWS_PASSWORD }}"
+              windowsInstanceType: "${{ secrets.AWS_WINDOWS_INSTANCE_TYPE }}"
+              windowsKeyName: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}"
+              ipAddressType: "${{ secrets.IP_ADDRESS_TYPE }}"
+              loadBalancerType: "${{ secrets.LOAD_BALANCER_TYPE }}"
+              targetType: "${{ secrets.TARGET_TYPE }}"
+            standalone:
+              bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
+              certManagerVersion: "${{ secrets.CERT_MANAGER_VERSION }}"
+              osUser: "${{ secrets.OS_USER }}"
+              osGroup: "${{ secrets.OS_GROUP }}"
+              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherImage: "${{ secrets.RANCHER_IMAGE }}"
+              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              repo: "${{ secrets.RANCHER_REPO }}"
+              rke2Version: "${{ env.RKE2_VERSION }}"
+          terratest:
+            pathToRepo: "${{ secrets.PATH_TO_REPO }}"
+            tfLogging: ${{ secrets.TERRAFORM_LOGGING }}
+            nodeCount: ${{ secrets.NODE_COUNT }}
+            windowsNodeCount: ${{ secrets.WINDOWS_NODE_COUNT }}
+          EOF
+
+      - name: Export CATTLE_TEST_CONFIG
+        run: echo "CATTLE_TEST_CONFIG=${{ github.workspace }}/config.yaml" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: './go.mod'
+
+      - name: Build Packages
+        run: ./.github/scripts/build-packages.sh
+
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@latest
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Run Sanity Test Suite
+        run: |
+          gotestsum \
+            --format standard-verbose \
+            --packages=github.com/rancher/tfp-automation/tests/sanity \
+            --junitfile results.xml \
+            --jsonfile results.json \
+            -- -timeout=2h -v -run "TestTfpSanityProvisioningTestSuite$"
