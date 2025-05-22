@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+  schedule:
+    - cron: "0 7 * * 1-5"
   workflow_dispatch:
 
 env:
@@ -18,7 +20,7 @@ env:
   SUITE: TestTfpSanityProvisioningTestSuite$
   TERRAFORM_VERSION: "1.9.5"
   TIMEOUT: 2h
-  QASE_TEST_RUN_ID: "4476"
+  QASE_TEST_RUN_ID: "4512"
 
 jobs:
   sanity-tests:
