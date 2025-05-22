@@ -21,7 +21,7 @@ func AddWindowsNodeToImportedCluster(rootBody *hclwrite.Body, terraformConfig *c
 		return err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-wins.ps1")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-wins.ps1")
 
 	serverOneScriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

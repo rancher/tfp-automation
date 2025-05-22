@@ -1,0 +1,26 @@
+name: Run Test Suite
+description: runs test suite
+inputs:
+  package:
+    description: "Package to test"
+    required: true
+  path-to-repo:
+    description: "Path from userDir to tfp-automation repo"
+    required: true
+  suite:
+    description: "Suite to test"
+    required: true
+  timeout:
+    description: "Timeout"
+    required: true
+runs:
+  using: composite
+  steps:
+    - run: |
+        gotestsum \
+        --format standard-verbose \
+        --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }} \
+        --junitfile /home/runner/${{ inputs.path-to-repo }}/results.xml \
+        --jsonfile /home/runner/${{ inputs.path-to-repo }}/results.json \
+        -- -timeout=${{ inputs.timeout }} -v -run "${{ inputs.suite }}"
+      shell: bash

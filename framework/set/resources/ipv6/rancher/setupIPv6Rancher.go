@@ -24,7 +24,7 @@ func CreateIPv6Rancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/ipv6/rancher/setup.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/ipv6/rancher/setup.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

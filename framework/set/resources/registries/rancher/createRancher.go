@@ -24,7 +24,7 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/registries/rancher/setup.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/rancher/setup.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

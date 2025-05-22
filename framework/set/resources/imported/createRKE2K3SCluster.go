@@ -37,11 +37,11 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 	var serverScriptPath, newServersScriptPath string
 
 	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
-		serverScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
-		newServersScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
+		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
+		newServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
 	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
-		serverScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/rke2/init-server.sh")
-		newServersScriptPath = filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-servers.sh")
+		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/init-server.sh")
+		newServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-servers.sh")
 	}
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)

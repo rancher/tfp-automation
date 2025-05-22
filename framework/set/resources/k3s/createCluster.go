@@ -29,8 +29,8 @@ func CreateK3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 		return nil, err
 	}
 
-	serverScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
+	serverScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
 	if err != nil {

@@ -3,7 +3,6 @@ package results
 import (
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
 
 	"github.com/rancher/tfp-automation/config"
@@ -18,12 +17,12 @@ func ReportTest(terratestConfig *config.TerratestConfig) error {
 		return nil
 	}
 
-	user, err := user.Current()
+	userDir, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
 
-	reporterPath := filepath.Join(user.HomeDir, "go", terratestConfig.PathToRepo, "/pipeline/scripts/build_qase_reporter.sh")
+	reporterPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/pipeline/scripts/build_qase_reporter.sh")
 
 	cmd := exec.Command(reporterPath)
 	output, err := cmd.Output()

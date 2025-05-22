@@ -24,7 +24,7 @@ func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclw
 		return nil, err
 	}
 
-	scriptPath := filepath.Join(userDir, "go/", terratestConfig.PathToRepo, "/framework/set/resources/proxy/rancher/upgrade.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/proxy/rancher/upgrade.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
