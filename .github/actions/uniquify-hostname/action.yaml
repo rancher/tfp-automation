@@ -1,0 +1,8 @@
+name: "Uniquify HOSTNAME_PREFIX"
+description: "Appends random alphanumeric characters to HOSTNAME_PREFIX"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        echo "HOSTNAME_PREFIX=${HOSTNAME_PREFIX}-$(head /dev/urandom | tr -dc a-z0-9 | head -c4)" >> "$GITHUB_ENV"

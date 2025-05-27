@@ -1,0 +1,16 @@
+name: "Set Environment Variable"
+description: "Dynamically sets an environment variable by key and value"
+inputs:
+  key:
+    description: "Key of the environment variable to set"
+    required: true
+  value:
+    description: "Value to assign to the environment variable"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        echo "${{ inputs.key }}=${{ inputs.value }}" >> "$GITHUB_ENV"
