@@ -24,7 +24,11 @@ env:
   SUITE: TestTfpSanityProvisioningTestSuite$
   TERRAFORM_VERSION: "1.9.5"
   TIMEOUT: 2h
-  QASE_TEST_RUN_ID: "4512"
+  QASE_TEST_RUN_ID: ""
+  QASE_TEST_RUN_ID_2_9: "4540"
+  QASE_TEST_RUN_ID_2_10: "4542"
+  QASE_TEST_RUN_ID_2_11: "4541"
+  QASE_TEST_RUN_ID_2_12: "4512"
 
 jobs:
   v2-12-head:
@@ -49,17 +53,23 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set RANCHER_VERSION
+      - name: Set Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
           value: head
 
-      - name: Set RKE2_VERSION
+      - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
           value: ${{ env.RKE2_VERSION_2_12 }}
+
+      - name: Set Qase Test Run ID
+        uses: ./.github/actions/set-env-var
+        with:
+          key: QASE_TEST_RUN_ID
+          value: ${{ env.QASE_TEST_RUN_ID_2_12 }}
 
       - name: Create config.yaml
         run: |
@@ -184,17 +194,23 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set RANCHER_VERSION
+      - name: Set Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
           value: v2.11-head
 
-      - name: Set RKE2_VERSION
+      - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
           value: ${{ env.RKE2_VERSION_2_11 }}
+
+      - name: Set Qase Test Run ID
+        uses: ./.github/actions/set-env-var
+        with:
+          key: QASE_TEST_RUN_ID
+          value: ${{ env.QASE_TEST_RUN_ID_2_11 }}
 
       - name: Create config.yaml
         run: |
@@ -319,17 +335,23 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set RANCHER_VERSION
+      - name: Set Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
           value: v2.10-head
 
-      - name: Set RKE2_VERSION
+      - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
           value: ${{ env.RKE2_VERSION_2_10 }}
+
+      - name: Set Qase Test Run ID
+        uses: ./.github/actions/set-env-var
+        with:
+          key: QASE_TEST_RUN_ID
+          value: ${{ env.QASE_TEST_RUN_ID_2_10 }}
 
       - name: Create config.yaml
         run: |
@@ -455,17 +477,23 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set RANCHER_VERSION
+      - name: Set Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
           value: v2.9-head
 
-      - name: Set RKE2_VERSION
+      - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
           value: ${{ env.RKE2_VERSION_2_9 }}
+
+      - name: Set Qase Test Run ID
+        uses: ./.github/actions/set-env-var
+        with:
+          key: QASE_TEST_RUN_ID
+          value: ${{ env.QASE_TEST_RUN_ID_2_9 }}
 
       - name: Create config.yaml
         run: |
