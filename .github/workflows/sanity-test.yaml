@@ -135,3 +135,10 @@ jobs:
         with:
           qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
+
+      - name: Reporting Results to Slack
+        uses: ./.github/actions/report-to-slack
+        with:
+          job-status: ${{ job.status }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL }}
+          slack-token: ${{ secrets.SLACK_TOKEN }}
