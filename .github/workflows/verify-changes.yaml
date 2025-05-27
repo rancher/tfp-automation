@@ -7,7 +7,7 @@ on:
 
 jobs:
   verify-changes:
-    name: verify-changes
+    name: golang-ci-lint
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
