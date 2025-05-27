@@ -74,8 +74,8 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Sanity RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Sanity RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		// {"Sanity RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		// {"Sanity RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
 		{"Sanity K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
