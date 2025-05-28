@@ -1,11 +1,8 @@
-name: Sanity Test
+name: Sanity Upgrade Test
 
 on:
-  pull_request:
-    branches:
-      - main
   schedule:
-    - cron: "0 7 * * 1-5"
+    - cron: "0 8 * * 1"
   workflow_dispatch:
 
 env:
@@ -21,9 +18,10 @@ env:
   RKE2_VERSION_2_10: v1.31.8+rke2r1
   RKE2_VERSION_2_11: v1.32.4+rke2r1
   RKE2_VERSION_2_12: v1.32.4+rke2r1
-  SUITE: TestTfpSanityProvisioningTestSuite$
+  SUITE: TestTfpSanityUpgradeRancherTestSuite$
   TERRAFORM_VERSION: "1.12.1"
   TIMEOUT: 2h
+  UPGRADED_RANCHER_VERSION: ""
   QASE_TEST_RUN_ID: ""
   QASE_TEST_RUN_ID_2_9: "4540"
   QASE_TEST_RUN_ID_2_10: "4542"
@@ -32,7 +30,7 @@ env:
 
 jobs:
   v2-12-head:
-    name: v2.12-head
+    name: v2.11.2 -> v2.12-head
     runs-on: ubuntu-latest
     environment: latest
 
@@ -57,6 +55,12 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
+          value: v2.11.2
+
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
           value: head
 
       - name: Set RKE2 version
@@ -124,6 +128,10 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION}}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -151,7 +159,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -173,7 +181,7 @@ jobs:
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
   v2-11-head:
-    name: v2.11-head
+    name: v2.11.2 -> v2.11-head
     runs-on: ubuntu-latest
     environment: latest
 
@@ -198,6 +206,12 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
+          value: v2.11.2
+
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
           value: v2.11-head
 
       - name: Set RKE2 version
@@ -265,6 +279,10 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION}}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -292,7 +310,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -314,9 +332,9 @@ jobs:
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
   v2-10-head:
-    name: v2.10-head
+    name: v2.10.6 -> v2.10-head
     runs-on: ubuntu-latest
-    environment: staging-alpha
+    environment: upgrade-prime-staging
 
     steps:
       - name: Checkout repository
@@ -339,6 +357,12 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
+          value: v2.10.6
+
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
           value: v2.10-head
 
       - name: Set RKE2 version
@@ -400,13 +424,18 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
+              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION}}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -434,7 +463,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -456,9 +485,9 @@ jobs:
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
   v2-9-head:
-    name: v2.9-head
+    name: v2.9.10 -> v2.9-head
     runs-on: ubuntu-latest
-    environment: staging-alpha
+    environment: upgrade-prime-staging
 
     steps:
       - name: Checkout repository
@@ -481,6 +510,12 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
+          value: v2.9.10
+
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
           value: v2.9-head
 
       - name: Set RKE2 version
@@ -542,13 +577,18 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
+              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION}}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -576,7 +616,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
