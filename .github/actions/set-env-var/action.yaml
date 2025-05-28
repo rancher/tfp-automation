@@ -1,3 +1,4 @@
+---
 name: "Set Environment Variable"
 description: "Dynamically sets an environment variable by key and value"
 inputs:

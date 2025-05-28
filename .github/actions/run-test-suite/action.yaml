@@ -1,5 +1,6 @@
+---
 name: Run Test Suite
-description: runs test suite
+description: "Runs test suite"
 inputs:
   package:
     description: "Package to test"

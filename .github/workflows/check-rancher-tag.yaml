@@ -1,0 +1,66 @@
+---
+name: Check Rancher Tag
+
+on:
+  schedule:
+    - cron: "0 */4 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  check-latest-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      latest_tag: ${{ steps.check-rancher-tag.outputs.LATEST_TAG }}
+      is_tag_new: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache prior Rancher tag
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tag
+          key: rancher-tag
+
+      - name: Get latest Rancher tag
+        id: get-latest-tag
+        uses: ./.github/actions/get-rancher-tag
+        with:
+          release_lines: "v2.11 v2.10 v2.9"
+
+      - name: Check for new Rancher tag
+        id: check-rancher-tag
+        uses: ./.github/actions/check-rancher-tag
+        with:
+          latest-tag: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+
+      - name: Cache updated Rancher tag
+        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW == 'true' }}
+        uses: actions/cache@v4
+        with:
+          path: tag
+          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          restore-keys: |
+            rancher-tag
+
+  trigger-tests:
+    needs: check-latest-tag
+    if: ${{ needs.check-latest-tag.outputs.is_tag_new == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        workflow:
+          - post-release-sanity-test.yaml
+          - post-release-sanity-upgrade-test.yaml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger workflow dispatch for ${{ matrix.workflow }}
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          workflow: ${{ matrix.workflow }}
+          tag: ${{ needs.check-latest-tag.outputs.latest_tag }}

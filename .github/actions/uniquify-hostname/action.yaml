@@ -1,3 +1,4 @@
+---
 name: "Uniquify HOSTNAME_PREFIX"
 description: "Appends random alphanumeric characters to HOSTNAME_PREFIX"
 runs:

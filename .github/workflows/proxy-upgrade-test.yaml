@@ -48,21 +48,29 @@ env:
   LOCALS_PROVIDER_VERSION: "2.5.2"
   PACKAGE: "proxy"
   RANCHER_VERSION: ""
-  RANCHER_VERSION_2_9: "v2.9.10"
-  RANCHER_VERSION_2_10: "v2.10.6"
   RANCHER_VERSION_2_11: "v2.11.2"
+  RANCHER_VERSION_2_10: "v2.10.6"
+  RANCHER_VERSION_2_9: "v2.9.10"
+  UPGRADED_RANCHER_VERSION_2_12: "head"
+  UPGRADED_RANCHER_VERSION_2_11: "v2.11-head"
+  UPGRADED_RANCHER_VERSION_2_10: "v2.10-head"
+  UPGRADED_RANCHER_VERSION_2_9: "v2.9-head"
   RANCHER2_PROVIDER_VERSION: "7.0.0"
   RKE_PROVIDER_VERSION: "1.7.0"
   RKE2_VERSION: ""
-  RKE2_VERSION_2_9: "v1.30.12"
-  RKE2_VERSION_2_10: "v1.31.8"
-  RKE2_VERSION_2_11: "v1.32.4"
   RKE2_VERSION_2_12: "v1.32.4"
+  RKE2_VERSION_2_11: "v1.32.4"
+  RKE2_VERSION_2_10: "v1.31.8"
+  RKE2_VERSION_2_9: "v1.30.12"
   SUITE: "^TestTfpProxyUpgradeRancherTestSuite$"
   TERRAFORM_VERSION: "1.12.1"
   TIMEOUT: "2h"
   UPGRADED_RANCHER_VERSION: ""
   QASE_TEST_RUN_ID: ""
+  QASE_TEST_RUN_ID_2_12: "4512"
+  QASE_TEST_RUN_ID_2_11: "4541"
+  QASE_TEST_RUN_ID_2_10: "4542"
+  QASE_TEST_RUN_ID_2_9: "4540"
 
 jobs:
   v2-12:
@@ -104,7 +112,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: ${{ github.event.inputs.upgraded-rancher-version-2-12 }}
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-12 || env.UPGRADED_RANCHER_VERSION_2_12 }}
 
       - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
@@ -116,7 +124,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-12 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-12 || env.QASE_TEST_RUN_ID_2_12 }}
 
       - name: Create config.yaml
         run: |
@@ -220,7 +228,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-12 || env.QASE_TEST_RUN_ID_2_12 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -275,7 +283,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: ${{ github.event.inputs.upgraded-rancher-version-2-11 }}
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-11 || env.UPGRADED_RANCHER_VERSION_2_11 }}
 
       - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
@@ -287,7 +295,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-11 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-11 || env.QASE_TEST_RUN_ID_2_11 }}
 
       - name: Create config.yaml
         run: |
@@ -391,7 +399,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-11 || env.QASE_TEST_RUN_ID_2_11 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -446,7 +454,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: ${{ github.event.inputs.upgraded-rancher-version-2-10 }}
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-10 || env.UPGRADED_RANCHER_VERSION_2_10 }}
 
       - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
@@ -458,7 +466,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-10 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-10 || env.QASE_TEST_RUN_ID_2_10 }}
 
       - name: Create config.yaml
         run: |
@@ -564,7 +572,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-10 || env.QASE_TEST_RUN_ID_2_10 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -619,7 +627,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: ${{ github.event.inputs.upgraded-rancher-version-2-9 }}
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-9 || env.UPGRADED_RANCHER_VERSION_2_9 }}
 
       - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
@@ -631,7 +639,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-9 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-9 || env.QASE_TEST_RUN_ID_2_9 }}
 
       - name: Create config.yaml
         run: |
@@ -737,7 +745,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-9 || env.QASE_TEST_RUN_ID_2_9 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack

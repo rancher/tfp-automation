@@ -1,3 +1,4 @@
+---
 name: "Report to Slack"
 description: "Send build status to Slack"
 inputs:
