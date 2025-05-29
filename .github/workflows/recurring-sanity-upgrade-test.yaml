@@ -1,4 +1,4 @@
-name: Sanity Upgrade Test
+name: Recurring Sanity Upgrade Test
 
 on:
   schedule:
