@@ -61,7 +61,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		terraform.InitAndApply(t, terraformOptions)
 	case terraformConfig.Standalone.UpgradeProxyRancher:
 		logrus.Infof("Upgrading Proxy Rancher...")
-		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, proxyNode, serverNode)
+		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverNode, proxyNode)
 		if err != nil {
 			return err
 		}
