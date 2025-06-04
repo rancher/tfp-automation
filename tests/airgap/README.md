@@ -66,6 +66,9 @@ terraform:
     registryRootSize: 500
     sshConnectionType: "ssh"
     timeout: "5m"
+    ipAddressType: "ipv4"
+    loadBalancerType: "ipv4"
+    targetType: "instance"
     windowsAMI: ""
     windowsAWSUser: ""
     windowsAWSPassword: ""

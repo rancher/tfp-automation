@@ -58,9 +58,9 @@ func CreateAWSLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 		}
 	} else if terraformConfig.Standalone.RKE2Version != "" && terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 		instanceIds = map[string]any{
-			rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne,
-			rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo,
-			rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree,
+			rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne + ".ipv6_addresses[0]",
+			rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo + ".ipv6_addresses[0]",
+			rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree + ".ipv6_addresses[0]",
 		}
 	} else if terraformConfig.Standalone.K3SVersion != "" {
 		instanceIds = map[string]any{

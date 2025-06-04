@@ -12,7 +12,6 @@ import (
 
 const (
 	eachValue       = "each.value"
-	ipv6EachValue   = "each.value.ipv6_addresses[0]"
 	forEach         = "for_each"
 	rke2InstanceIDs = "rke2_instance_ids"
 )
@@ -37,17 +36,8 @@ func CreateTargetGroupAttachments(rootBody *hclwrite.Body, terraformConfig *conf
 
 	targetGroupBlockBody.SetAttributeRaw(defaults.TargetGroupARN, values)
 
-	var targetIDExpression string
-	if !terraformConfig.AWSConfig.EnablePrimaryIPv6 {
-		targetIDExpression = eachValue
-		values = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(targetIDExpression)},
-		}
-	} else {
-		targetIDExpression = ipv6EachValue
-		values = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(targetIDExpression)},
-		}
+	values = hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(eachValue)},
 	}
 
 	targetGroupBlockBody.SetAttributeRaw(defaults.TargetID, values)
@@ -74,17 +64,8 @@ func CreateInternalTargetGroupAttachments(rootBody *hclwrite.Body, terraformConf
 
 	targetGroupBlockBody.SetAttributeRaw(defaults.TargetGroupARN, values)
 
-	var targetIDExpression string
-	if !terraformConfig.AWSConfig.EnablePrimaryIPv6 {
-		targetIDExpression = eachValue
-		values = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(targetIDExpression)},
-		}
-	} else {
-		targetIDExpression = ipv6EachValue
-		values = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(targetIDExpression)},
-		}
+	values = hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(eachValue)},
 	}
 
 	targetGroupBlockBody.SetAttributeRaw(defaults.TargetID, values)

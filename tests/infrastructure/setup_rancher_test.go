@@ -46,7 +46,7 @@ func (i *RancherTestSuite) TestCreateRancher() {
 		testSession := session.NewSession()
 		i.session = testSession
 
-		_, err = PostRancherSetup(i.T(), i.session, i.terraformConfig.Standalone.RancherHostname, true, false)
+		_, err = PostRancherSetup(i.T(), i.session, i.terraformConfig.Standalone.RancherHostname, false, false)
 		require.NoError(i.T(), err)
 	}
 }

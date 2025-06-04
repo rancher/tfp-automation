@@ -53,6 +53,9 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     timeout: "5m"
+    ipAddressType: "ipv4"
+    loadBalancerType: "ipv4"
+    targetType: "instance"
   linodeCredentials:
     linodeToken: ""  
   linodeConfig:
@@ -135,12 +138,11 @@ terraform:
     awsZoneLetter: ""
     awsRootSize: 100
     awsRoute53Zone: ""
-    clusterCIDR: ""
-    serviceCIDR: ""
     enablePrimaryIPv6: true
     httpProtocolIPv6: "enabled"
     ipAddressType: "ipv6"
     loadBalancerType: "dualstack"
+    targetType: "ip"
     region: ""
     prefix: ""
     awsUser: ""
@@ -150,7 +152,6 @@ terraform:
   # STANDALONE CONFIG - RANCHER SETUP
   ###################################
   standalone:
-    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
@@ -196,6 +197,9 @@ terraform:
     registryRootSize: 500
     sshConnectionType: "ssh"
     timeout: "5m"
+    ipAddressType: "ipv4"
+    loadBalancerType: "ipv4"
+    targetType: "instance"
   standalone:
     airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
@@ -255,6 +259,9 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     timeout: "5m"
+    ipAddressType: "ipv4"
+    loadBalancerType: "ipv4"
+    targetType: "instance"
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
