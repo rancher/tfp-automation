@@ -18,7 +18,7 @@ env:
   RKE2_VERSION_2_10: v1.31.8+rke2r1
   RKE2_VERSION_2_11: v1.32.4+rke2r1
   RKE2_VERSION_2_12: v1.32.4+rke2r1
-  SUITE: TestTfpSanityProvisioningTestSuite$
+  SUITE: ^TestTfpSanityProvisioningTestSuite$
   TERRAFORM_VERSION: "1.12.1"
   TIMEOUT: 2h
   QASE_TEST_RUN_ID: ""
@@ -313,7 +313,7 @@ jobs:
   v2-10-head:
     name: v2.10-head
     runs-on: ubuntu-latest
-    environment: staging-alpha
+    environment: staging-latest
 
     steps:
       - name: Checkout repository
@@ -455,7 +455,7 @@ jobs:
   v2-9-head:
     name: v2.9-head
     runs-on: ubuntu-latest
-    environment: staging-alpha
+    environment: staging-latest
 
     steps:
       - name: Checkout repository

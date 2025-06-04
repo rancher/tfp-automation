@@ -1,0 +1,89 @@
+name: "Whitelist Runner IP"
+description: "Add runner IP to AWS prefix list"
+inputs:
+  prefix-list-id:
+    description: "AWS prefix list ID"
+    required: true
+  region:
+    description: "AWS region"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+
+        RUNNER_IPV4=$(curl -4 -s https://checkip.amazonaws.com)
+        REGION="${{ inputs.region }}"
+        PREFIX_LIST_ID="${{ inputs.prefix-list-id }}"
+
+        echo "::add-mask::$RUNNER_IPV4"
+        echo "::add-mask::$PREFIX_LIST_ID"
+
+        add_ip_to_prefix_list() {
+          local prefix_list_id=$1
+          local cidr=$2
+
+          local max_retries=10
+          local attempt=1
+
+          while true; do
+            current_version=$(aws ec2 describe-managed-prefix-lists \
+              --prefix-list-ids "$prefix_list_id" \
+              --region "$REGION" \
+              --query "PrefixLists[0].Version" --output text)
+
+            ip_exists=$(aws ec2 get-managed-prefix-list-entries \
+              --prefix-list-id "$prefix_list_id" \
+              --region "$REGION" \
+              --query "Entries[?Cidr=='$cidr'] | length(@)" \
+              --output text)
+
+            if [[ "$ip_exists" == "0" ]]; then
+              echo "Adding runner to prefix list (attempt $attempt)..."
+              set +e
+              output=$(aws ec2 modify-managed-prefix-list \
+                --prefix-list-id "$prefix_list_id" \
+                --region "$REGION" \
+                --current-version "$current_version" \
+                --add-entries "Cidr=$cidr,Description=TFP_GitHubRunner" 2>&1)
+              exit_code=$?
+
+              if [[ $exit_code -eq 0 ]]; then
+                prefix_list_id_out=$(echo "$output" | jq -r '.PrefixList.PrefixListId')
+                prefix_list_arn_out=$(echo "$output" | jq -r '.PrefixList.PrefixListArn')
+
+                echo "::add-mask::$prefix_list_id_out"
+                echo "::add-mask::$prefix_list_arn_out"
+
+                echo "Runner successfully added to prefix list."
+                break
+              else
+                if echo "$output" | grep -q "PrefixListVersionMismatch"; then
+                  echo "Version mismatch detected, retrying..."
+                  ((attempt++))
+                elif echo "$output" | grep -q "IncorrectState"; then
+                  echo "Prefix list modify in progress, retrying..."
+                  ((attempt++))
+                else
+                  echo "Error adding runner: $output"
+                  exit $exit_code
+                fi
+
+                if (( attempt > max_retries )); then
+                  echo "Max retries reached, failed."
+                  exit $exit_code
+                fi
+
+                sleep 5
+                continue
+              fi
+            else
+              echo "Runner already present in prefix list. Skipping..."
+              break
+            fi
+          done
+        }
+
+        add_ip_to_prefix_list "$PREFIX_LIST_ID" "$RUNNER_IPV4/32"
