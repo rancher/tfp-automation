@@ -1,3 +1,4 @@
+---
 name: Recurring Proxy Upgrade Test
 
 on:
@@ -183,6 +184,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase
+        if: always()
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
@@ -353,6 +355,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase
+        if: always()
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
@@ -525,6 +528,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase
+        if: always()
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
@@ -697,6 +701,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase
+        if: always()
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
