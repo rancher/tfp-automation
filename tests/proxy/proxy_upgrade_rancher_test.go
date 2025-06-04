@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
@@ -143,7 +144,8 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+		currentDate := time.Now().Format("2006-01-02 03:04PM")
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		p.Run((tt.name), func() {
 			clusterIDs, customClusterNames = provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
