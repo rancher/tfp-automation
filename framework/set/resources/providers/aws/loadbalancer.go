@@ -18,28 +18,34 @@ const (
 
 // CreateLoadBalancer is a function that will set the load balancer configurations in the main.tf file.
 func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	loadBalancerGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancer, defaults.LoadBalancer})
-	loadBalancerGroupBlockBody := loadBalancerGroupBlock.Body()
+	loadBalancerBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancer, defaults.LoadBalancer})
+	loadBalancerBlockBody := loadBalancerBlock.Body()
 
-	loadBalancerGroupBlockBody.SetAttributeValue(internal, cty.BoolVal(false))
-	loadBalancerGroupBlockBody.SetAttributeValue(defaults.LoadBalancerType, cty.StringVal(network))
-	loadBalancerGroupBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.LoadBalancerType))
+	loadBalancerBlockBody.SetAttributeValue(internal, cty.BoolVal(false))
+	loadBalancerBlockBody.SetAttributeValue(defaults.LoadBalancerType, cty.StringVal(network))
+	loadBalancerBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.LoadBalancerType))
+
+	securityGroups := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroups)
+	loadBalancerBlockBody.SetAttributeRaw(defaults.SecurityGroups, securityGroups)
 
 	subnetList := format.ListOfStrings([]string{terraformConfig.AWSConfig.AWSSubnetID})
-	loadBalancerGroupBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)
-	loadBalancerGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
+	loadBalancerBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)
+	loadBalancerBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
 }
 
 // CreateInternalLoadBalancer is a function that will set the internal load balancer configurations in the main.tf file.
 func CreateInternalLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	loadBalancerGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancer, defaults.InternalLoadBalancer})
-	loadBalancerGroupBlockBody := loadBalancerGroupBlock.Body()
+	loadBalancerBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LoadBalancer, defaults.InternalLoadBalancer})
+	loadBalancerBlockBody := loadBalancerBlock.Body()
 
-	loadBalancerGroupBlockBody.SetAttributeValue(internal, cty.BoolVal(true))
-	loadBalancerGroupBlockBody.SetAttributeValue(defaults.LoadBalancerType, cty.StringVal(network))
-	loadBalancerGroupBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.LoadBalancerType))
+	loadBalancerBlockBody.SetAttributeValue(internal, cty.BoolVal(true))
+	loadBalancerBlockBody.SetAttributeValue(defaults.LoadBalancerType, cty.StringVal(network))
+	loadBalancerBlockBody.SetAttributeValue(defaults.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.LoadBalancerType))
+
+	securityGroups := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroups)
+	loadBalancerBlockBody.SetAttributeRaw(defaults.SecurityGroups, securityGroups)
 
 	subnetList := format.ListOfStrings([]string{terraformConfig.AWSConfig.AWSSubnetID})
-	loadBalancerGroupBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)
-	loadBalancerGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-"+internal))
+	loadBalancerBlockBody.SetAttributeRaw(defaults.Subnets, subnetList)
+	loadBalancerBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-"+internal))
 }

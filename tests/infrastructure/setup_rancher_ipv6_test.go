@@ -40,12 +40,6 @@ func (i *RancherIPv6TestSuite) TestCreateRancherIPv6() {
 
 	logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)
 	logrus.Infof("Booststrap password: %s", i.terraformConfig.Standalone.BootstrapPassword)
-
-	testSession := session.NewSession()
-	i.session = testSession
-
-	_, err = PostRancherSetup(i.T(), i.session, i.terraformConfig.Standalone.AirgapInternalFQDN, true, false)
-	require.NoError(i.T(), err)
 }
 
 func TestRancherIPv6TestSuite(t *testing.T) {
