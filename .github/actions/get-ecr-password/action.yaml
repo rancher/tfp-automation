@@ -1,0 +1,16 @@
+---
+name: "Retrieve ECR Password"
+description: "Grabs ECR password and sets it as an output"
+outputs:
+  password:
+    description: "ECR password"
+    value: ${{ steps.get-ecr-password.outputs.password }}
+runs:
+  using: "composite"
+  steps:
+    - id: get-ecr-password
+      shell: bash
+      run: |
+        PASSWORD=$(aws ecr get-login-password)
+        echo "::add-mask::$PASSWORD"
+        echo "password=$PASSWORD" >> "$GITHUB_OUTPUT"
