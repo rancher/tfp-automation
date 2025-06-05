@@ -1,39 +1,66 @@
 ---
-name: Recurring Proxy Test
+name: Sanity Testing
 
 on:
   schedule:
-    - cron: "0 9 * * 1"
+    - cron: "0 7 * * 1-5"
   workflow_dispatch:
+    inputs:
+      rancher-version-2-12:
+        description: "Rancher version for v2.12.x"
+        required: true
+        default: "head"
+      rancher-version-2-11:
+        description: "Rancher version for v2.11.x"
+        required: true
+        default: "v2.11.2"
+      rancher-version-2-10:
+        description: "Rancher version for v2.10.x"
+        required: true
+        default: "v2.10.6"
+      rancher-version-2-9:
+        description: "Rancher version for v2.9.x"
+        required: true
+        default: "v2.9.10"
+      qase-test-run-id-2-12:
+        description: "Qase Test Run ID for v2.12.x"
+        required: true
+        default: "4512"
+      qase-test-run-id-2-11:
+        description: "Qase Test Run ID for v2.11.x"
+        required: true
+        default: "4541"
+      qase-test-run-id-2-10:
+        description: "Qase Test Run ID for v2.10.x"
+        required: true
+        default: "4542"
+      qase-test-run-id-2-9:
+        description: "Qase Test Run ID for v2.9.x"
+        required: true
+        default: "4540"
 
 env:
-  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-  AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-  AWS_DEFAULT_REGION: "${{ secrets.AWS_REGION }}"
   CLOUD_PROVIDER_VERSION: "5.95.0"
-  HOSTNAME_PREFIX: tfp-proxy
+  HOSTNAME_PREFIX: "tfp-sanity"
   LOCALS_PROVIDER_VERSION: "2.5.2"
-  PACKAGE: proxy
+  PACKAGE: "sanity"
   RANCHER_VERSION: ""
   RANCHER2_PROVIDER_VERSION: "7.0.0"
   RKE_PROVIDER_VERSION: "1.7.0"
   RKE2_VERSION: ""
-  RKE2_VERSION_2_9: v1.30.12
-  RKE2_VERSION_2_10: v1.31.8
-  RKE2_VERSION_2_11: v1.32.4
-  RKE2_VERSION_2_12: v1.32.4
-  SUITE: ^TestTfpProxyProvisioningTestSuite$
+  RKE2_VERSION_2_9: "v1.30.12+rke2r1"
+  RKE2_VERSION_2_10: "v1.31.8+rke2r1"
+  RKE2_VERSION_2_11: "v1.32.4+rke2r1"
+  RKE2_VERSION_2_12: "v1.32.4+rke2r1"
+  SUITE: "^TestTfpSanityProvisioningTestSuite$"
   TERRAFORM_VERSION: "1.12.1"
-  TIMEOUT: 2h
+  TIMEOUT: "2h"
   QASE_TEST_RUN_ID: ""
-  QASE_TEST_RUN_ID_2_9: "4540"
-  QASE_TEST_RUN_ID_2_10: "4542"
-  QASE_TEST_RUN_ID_2_11: "4541"
-  QASE_TEST_RUN_ID_2_12: "4512"
 
 jobs:
-  v2-12-head:
-    name: v2.12-head
+  v2-12:
+    if: ${{ github.event_name == 'schedule' }}
+    name: ${{ github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -42,12 +69,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Whitelist Runner IP
-        uses: ./.github/actions/whitelist-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -64,7 +85,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: head
+          value: ${{ github.event.inputs.rancher-version-2-12 }}
 
       - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
@@ -76,7 +97,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_12 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-12 }}
 
       - name: Create config.yaml
         run: |
@@ -93,8 +114,6 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            proxy:
-              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -104,7 +123,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -133,10 +152,6 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
-            standaloneRegistry:
-              registryName: "${{ secrets.REGISTRY_NAME }}"
-              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
-              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -164,7 +179,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Proxy Test Suite
+      - name: Run Sanity Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -176,7 +191,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -186,15 +201,9 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-      - name: Revoke Runner IP
-        if: always()
-        uses: ./.github/actions/revoke-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
-  v2-11-head:
-    name: v2.11-head
+  v2-11:
+    if: ${{ github.event_name == 'schedule' }}
+    name: ${{ github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -204,12 +213,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Whitelist Runner IP
-        uses: ./.github/actions/whitelist-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
@@ -221,13 +224,13 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set RANCHER_VERSION
+      - name: Set Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.11-head
+          value: ${{ github.event.inputs.rancher-version-2-11 }}
 
-      - name: Set RKE2_VERSION
+      - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
@@ -237,7 +240,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_11 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-11 }}
 
       - name: Create config.yaml
         run: |
@@ -254,8 +257,6 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            proxy:
-              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -265,7 +266,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -294,10 +295,6 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
-            standaloneRegistry:
-              registryName: "${{ secrets.REGISTRY_NAME }}"
-              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
-              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -325,7 +322,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Proxy Test Suite
+      - name: Run Sanity Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -337,7 +334,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -347,15 +344,9 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-      - name: Revoke Runner IP
-        if: always()
-        uses: ./.github/actions/revoke-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
-  v2-10-head:
-    name: v2.10-head
+  v2-10:
+    if: ${{ github.event_name == 'schedule' }}
+    name: ${{ github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
     environment: staging-latest
 
@@ -364,12 +355,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Whitelist Runner IP
-        uses: ./.github/actions/whitelist-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -382,13 +367,13 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set RANCHER_VERSION
+      - name: Set Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.10-head
+          value: ${{ github.event.inputs.rancher-version-2-10 }}
 
-      - name: Set RKE2_VERSION
+      - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
@@ -398,7 +383,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_10 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-10 }}
 
       - name: Create config.yaml
         run: |
@@ -415,8 +400,6 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            proxy:
-              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -426,7 +409,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -456,10 +439,6 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
-            standaloneRegistry:
-              registryName: "${{ secrets.REGISTRY_NAME }}"
-              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
-              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -487,7 +466,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Proxy Test Suite
+      - name: Run Sanity Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -499,7 +478,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -509,15 +488,9 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-      - name: Revoke Runner IP
-        if: always()
-        uses: ./.github/actions/revoke-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
-  v2-9-head:
-    name: v2.9-head
+  v2-9:
+    if: ${{ github.event_name == 'schedule' }}
+    name: ${{ github.event.inputs.rancher-version-2-9 }}
     runs-on: ubuntu-latest
     environment: staging-latest
 
@@ -526,12 +499,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Whitelist Runner IP
-        uses: ./.github/actions/whitelist-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -544,13 +511,13 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set RANCHER_VERSION
+      - name: Set Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.9-head
+          value: ${{ github.event.inputs.rancher-version-2-9 }}
 
-      - name: Set RKE2_VERSION
+      - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
@@ -560,7 +527,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_9 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-9 }}
 
       - name: Create config.yaml
         run: |
@@ -577,8 +544,6 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            proxy:
-              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -588,7 +553,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -618,10 +583,6 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
-            standaloneRegistry:
-              registryName: "${{ secrets.REGISTRY_NAME }}"
-              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
-              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -649,7 +610,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Proxy Test Suite
+      - name: Run Sanity Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -661,7 +622,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -670,10 +631,3 @@ jobs:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
-
-      - name: Revoke Runner IP
-        if: always()
-        uses: ./.github/actions/revoke-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
