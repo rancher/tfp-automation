@@ -1,37 +1,70 @@
 ---
-name: Recurring Sanity Upgrade Test
+name: Sanity Upgrade Testing
 
 on:
   schedule:
     - cron: "0 8 * * 1"
   workflow_dispatch:
+    inputs:
+      upgraded-rancher-version-2-12:
+        description: "Upgraded Rancher version for v2.12.x"
+        required: true
+        default: "head"
+      upgraded-rancher-version-2-11:
+        description: "Upgraded Rancher version for v2.11.x"
+        required: true
+        default: "v2.11-head"
+      upgraded-rancher-version-2-10:
+        description: "Upgraded Rancher version for v2.10.x"
+        required: true
+        default: "v2.10-head"
+      upgraded-rancher-version-2-9:
+        description: "Upgraded Rancher version for v2.9.x"
+        required: true
+        default: "v2.9-head"
+      qase-test-run-id-2-12:
+        description: "Qase Test Run ID for v2.12.x"
+        required: true
+        default: "4512"
+      qase-test-run-id-2-11:
+        description: "Qase Test Run ID for v2.11.x"
+        required: true
+        default: "4541"
+      qase-test-run-id-2-10:
+        description: "Qase Test Run ID for v2.10.x"
+        required: true
+        default: "4542"
+      qase-test-run-id-2-9:
+        description: "Qase Test Run ID for v2.9.x"
+        required: true
+        default: "4540"
 
 env:
   CLOUD_PROVIDER_VERSION: "5.95.0"
-  HOSTNAME_PREFIX: tfp-sanity
+  HOSTNAME_PREFIX: "tfp-sanity-up"
   LOCALS_PROVIDER_VERSION: "2.5.2"
-  PACKAGE: sanity
+  PACKAGE: "sanity"
   RANCHER_VERSION: ""
+  RANCHER_VERSION_2_9: "v2.9.10"
+  RANCHER_VERSION_2_10: "v2.10.6"
+  RANCHER_VERSION_2_11: "v2.11.2"
   RANCHER2_PROVIDER_VERSION: "7.0.0"
   RKE_PROVIDER_VERSION: "1.7.0"
   RKE2_VERSION: ""
-  RKE2_VERSION_2_9: v1.30.12+rke2r1
-  RKE2_VERSION_2_10: v1.31.8+rke2r1
-  RKE2_VERSION_2_11: v1.32.4+rke2r1
-  RKE2_VERSION_2_12: v1.32.4+rke2r1
-  SUITE: ^TestTfpSanityUpgradeRancherTestSuite$
+  RKE2_VERSION_2_9: "v1.30.12+rke2r1"
+  RKE2_VERSION_2_10: "v1.31.8+rke2r1"
+  RKE2_VERSION_2_11: "v1.32.4+rke2r1"
+  RKE2_VERSION_2_12: "v1.32.4+rke2r1"
+  SUITE: "^TestTfpSanityUpgradeRancherTestSuite$"
   TERRAFORM_VERSION: "1.12.1"
-  TIMEOUT: 2h
+  TIMEOUT: "2h"
   UPGRADED_RANCHER_VERSION: ""
   QASE_TEST_RUN_ID: ""
-  QASE_TEST_RUN_ID_2_9: "4540"
-  QASE_TEST_RUN_ID_2_10: "4542"
-  QASE_TEST_RUN_ID_2_11: "4541"
-  QASE_TEST_RUN_ID_2_12: "4512"
 
 jobs:
-  v2-12-head:
-    name: v2.11.2 -> v2.12-head
+  v2-12:
+    if: ${{ github.event_name == 'schedule' }}
+    name: v2.11.2 -> ${{ github.event.inputs.upgraded-rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -56,13 +89,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.11.2
+          value: ${{ env.RANCHER_VERSION_2_11 }}
 
       - name: Set upgraded Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: head
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-12 }}
 
       - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
@@ -74,7 +107,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_12 }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
 
       - name: Create config.yaml
         run: |
@@ -172,7 +205,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -182,8 +215,8 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-  v2-11-head:
-    name: v2.11.2 -> v2.11-head
+  v2-11:
+    name: v2.11.2 -> ${{ github.event.inputs.upgraded-rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -208,13 +241,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.11.2
+          value: ${{ env.RANCHER_VERSION_2_11 }}
 
       - name: Set upgraded Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: v2.11-head
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-11 }}
 
       - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
@@ -226,7 +259,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_11 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-11 }}
 
       - name: Create config.yaml
         run: |
@@ -334,8 +367,8 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-  v2-10-head:
-    name: v2.10.6 -> v2.10-head
+  v2-10:
+    name: v2.10.6 -> ${{ github.event.inputs.upgraded-rancher-version-2-10 }}
     runs-on: ubuntu-latest
     environment: upgrade-prime-staging
 
@@ -360,13 +393,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.10.6
+          value: ${{ env.RANCHER_VERSION_2_10 }}
 
       - name: Set upgraded Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: v2.10-head
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-10 }}
 
       - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
@@ -378,7 +411,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_10 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-10 }}
 
       - name: Create config.yaml
         run: |
@@ -488,8 +521,8 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-  v2-9-head:
-    name: v2.9.10 -> v2.9-head
+  v2-9:
+    name: v2.9.10 -> ${{ github.event.inputs.upgraded-rancher-version-2-9 }}
     runs-on: ubuntu-latest
     environment: upgrade-prime-staging
 
@@ -514,13 +547,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.9.10
+          value: ${{ env.RANCHER_VERSION_2_9 }}
 
       - name: Set upgraded Rancher version
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: v2.9-head
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-9 }}
 
       - name: Set RKE2 version
         uses: ./.github/actions/set-env-var
@@ -532,7 +565,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_9 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-9 }}
 
       - name: Create config.yaml
         run: |

@@ -1,36 +1,73 @@
 ---
-name: Recurring Sanity Test
+name: Proxy Upgrade Testing
 
 on:
   schedule:
-    - cron: "0 7 * * 1-5"
+    - cron: "0 9 * * 1"
   workflow_dispatch:
+    inputs:
+      upgraded-rancher-version-2-12:
+        description: "Upgraded Rancher version for v2.12.x"
+        required: true
+        default: "head"
+      upgraded-rancher-version-2-11:
+        description: "Upgraded Rancher version for v2.11.x"
+        required: true
+        default: "v2.11-head"
+      upgraded-rancher-version-2-10:
+        description: "Upgraded Rancher version for v2.10.x"
+        required: true
+        default: "v2.10-head"
+      upgraded-rancher-version-2-9:
+        description: "Upgraded Rancher version for v2.9.x"
+        required: true
+        default: "v2.9-head"
+      qase-test-run-id-2-12:
+        description: "Qase Test Run ID for v2.12.x"
+        required: true
+        default: "4512"
+      qase-test-run-id-2-11:
+        description: "Qase Test Run ID for v2.11.x"
+        required: true
+        default: "4541"
+      qase-test-run-id-2-10:
+        description: "Qase Test Run ID for v2.10.x"
+        required: true
+        default: "4542"
+      qase-test-run-id-2-9:
+        description: "Qase Test Run ID for v2.9.x"
+        required: true
+        default: "4540"
 
 env:
+  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+  AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+  AWS_DEFAULT_REGION: "${{ secrets.AWS_REGION }}"
   CLOUD_PROVIDER_VERSION: "5.95.0"
-  HOSTNAME_PREFIX: tfp-sanity
+  HOSTNAME_PREFIX: "tfp-proxy-up"
   LOCALS_PROVIDER_VERSION: "2.5.2"
-  PACKAGE: sanity
+  PACKAGE: "proxy"
   RANCHER_VERSION: ""
+  RANCHER_VERSION_2_9: "v2.9.10"
+  RANCHER_VERSION_2_10: "v2.10.6"
+  RANCHER_VERSION_2_11: "v2.11.2"
   RANCHER2_PROVIDER_VERSION: "7.0.0"
   RKE_PROVIDER_VERSION: "1.7.0"
   RKE2_VERSION: ""
-  RKE2_VERSION_2_9: v1.30.12+rke2r1
-  RKE2_VERSION_2_10: v1.31.8+rke2r1
-  RKE2_VERSION_2_11: v1.32.4+rke2r1
-  RKE2_VERSION_2_12: v1.32.4+rke2r1
-  SUITE: ^TestTfpSanityProvisioningTestSuite$
+  RKE2_VERSION_2_9: "v1.30.12"
+  RKE2_VERSION_2_10: "v1.31.8"
+  RKE2_VERSION_2_11: "v1.32.4"
+  RKE2_VERSION_2_12: "v1.32.4"
+  SUITE: "^TestTfpProxyUpgradeRancherTestSuite$"
   TERRAFORM_VERSION: "1.12.1"
-  TIMEOUT: 2h
+  TIMEOUT: "2h"
+  UPGRADED_RANCHER_VERSION: ""
   QASE_TEST_RUN_ID: ""
-  QASE_TEST_RUN_ID_2_9: "4540"
-  QASE_TEST_RUN_ID_2_10: "4542"
-  QASE_TEST_RUN_ID_2_11: "4541"
-  QASE_TEST_RUN_ID_2_12: "4512"
 
 jobs:
-  v2-12-head:
-    name: v2.12-head
+  v2-12:
+    if: ${{ github.event_name == 'schedule' }}
+    name: v2.11.2 -> ${{ github.event.inputs.upgraded-rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -39,6 +76,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -55,9 +98,15 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: head
+          value: ${{ env.RANCHER_VERSION_2_11 }}
 
-      - name: Set RKE2 version
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-12 }}
+
+      - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
@@ -67,7 +116,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_12 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-12 }}
 
       - name: Create config.yaml
         run: |
@@ -84,6 +133,8 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            proxy:
+              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -93,7 +144,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -122,6 +173,14 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
+            standaloneRegistry:
+              registryName: "${{ secrets.REGISTRY_NAME }}"
+              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
+              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -149,7 +208,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Proxy Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -161,7 +220,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -171,8 +230,15 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-  v2-11-head:
-    name: v2.11-head
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
+
+  v2-11:
+    name: v2.11.2 -> ${{ github.event.inputs.upgraded-rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -182,6 +248,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
+
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
@@ -197,9 +269,15 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.11-head
+          value: ${{ env.RANCHER_VERSION_2_11 }}
 
-      - name: Set RKE2 version
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-11 }}
+
+      - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
@@ -209,7 +287,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_11 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-11 }}
 
       - name: Create config.yaml
         run: |
@@ -226,6 +304,8 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            proxy:
+              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -235,7 +315,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -264,6 +344,14 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
+            standaloneRegistry:
+              registryName: "${{ secrets.REGISTRY_NAME }}"
+              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
+              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -291,7 +379,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Proxy Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -303,7 +391,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -313,16 +401,29 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-  v2-10-head:
-    name: v2.10-head
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
+
+  v2-10:
+    name: v2.10.6 -> ${{ github.event.inputs.upgraded-rancher-version-2-10 }}
     runs-on: ubuntu-latest
-    environment: staging-latest
+    environment: upgrade-prime-staging
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -339,9 +440,15 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.10-head
+          value: ${{ env.RANCHER_VERSION_2_10 }}
 
-      - name: Set RKE2 version
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-10 }}
+
+      - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
@@ -351,7 +458,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_10 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-10 }}
 
       - name: Create config.yaml
         run: |
@@ -368,6 +475,8 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            proxy:
+              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -377,7 +486,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -407,6 +516,15 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
+            standaloneRegistry:
+              registryName: "${{ secrets.REGISTRY_NAME }}"
+              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
+              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -434,7 +552,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Proxy Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -446,7 +564,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -456,16 +574,29 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
-  v2-9-head:
-    name: v2.9-head
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
+
+  v2-9:
+    name: v2.9.10 -> ${{ github.event.inputs.upgraded-rancher-version-2-9 }}
     runs-on: ubuntu-latest
-    environment: staging-latest
+    environment: upgrade-prime-staging
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -482,9 +613,15 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: v2.9-head
+          value: ${{ env.RANCHER_VERSION_2_9 }}
 
-      - name: Set RKE2 version
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
+          value: ${{ github.event.inputs.upgraded-rancher-version-2-9 }}
+
+      - name: Set RKE2_VERSION
         uses: ./.github/actions/set-env-var
         with:
           key: RKE2_VERSION
@@ -494,7 +631,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ env.QASE_TEST_RUN_ID_2_9 }}
+          value: ${{ github.event.inputs.qase-test-run-id-2-9 }}
 
       - name: Create config.yaml
         run: |
@@ -511,6 +648,8 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            proxy:
+              proxyBastion: ""
             awsCredentials:
               awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
               awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -520,7 +659,7 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PROXY }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -550,6 +689,15 @@ jobs:
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ env.RKE2_VERSION }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
+            standaloneRegistry:
+              registryName: "${{ secrets.REGISTRY_NAME }}"
+              registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
+              registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -577,7 +725,7 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
-      - name: Run Sanity Test Suite
+      - name: Run Proxy Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -589,7 +737,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -598,3 +746,10 @@ jobs:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
+
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
