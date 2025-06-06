@@ -29,6 +29,7 @@ jobs:
         uses: ./.github/actions/get-latest-rancher-tag
         with:
           release_lines: "v2.11 v2.10 v2.9"
+          prime_artifacts_path: ${{ secrets.PRIME_ARTIFACTS_PATH }}
 
       - name: Check for new Rancher tag
         id: check-rancher-tag
