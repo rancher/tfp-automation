@@ -1,3 +1,4 @@
+---
 name: "Revoke Runner IP"
 description: "Remove runner IP from AWS prefix list"
 inputs:

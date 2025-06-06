@@ -1,0 +1,53 @@
+---
+name: Get latest Rancher tag
+description: Gets the latest Rancher tag for the specified release lines
+inputs:
+  release_lines:
+    description: "List Rancher release lines"
+    required: true
+runs:
+  using: composite
+  steps:
+    - run: |
+        RELEASE_LINES="${{ inputs.release_lines }}"
+        TAGS=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name')
+        INDEX=0
+
+        for RELEASE_LINE in $RELEASE_LINES; do
+          GA_RELEASE=$(echo "$TAGS" | grep "^$RELEASE_LINE" | grep -Ev -- '-(rc|alpha|hotfix)' | sort -V | tail -n 1)
+          if [ -n "$GA_RELEASE" ]; then
+            LATEST="$GA_RELEASE"
+          else
+            LATEST=$(echo "$TAGS" | grep "^v$RELEASE_LINE" | sort -V | tail -n 1)
+          fi
+
+          echo "LATEST_TAG_$RELEASE_LINE=$LATEST"
+
+          if [[ "$INDEX" -eq 0 ]]; then
+            RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST")
+            ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
+
+            echo "Asset count for $LATEST: $ASSET_COUNT"
+
+            if [[ "$LATEST" != *hotfix* ]]; then
+              if [ "$ASSET_COUNT" -ne 20 ]; then
+                echo "Asset count: $ASSET_COUNT. Expected 20 assets..."
+                exit 1
+              fi
+            fi
+          else
+            RELEASE_JSON=$(curl -s $PRIME_ARTIFACTS_PATH/$RELEASE_LINE/rancher-images.txt)
+
+            if [[ $? -ne 0 ]]; then
+              echo "Unable to reach: $PRIME_ARTIFACTS_PATH"
+              exit 1
+            fi
+          fi
+
+          INDEX=$((INDEX + 1))
+
+          #echo "LATEST_TAG_$RELEASE_LINE=$LATEST" >> $GITHUB_OUTPUT
+        done
+      shell: bash
+      env:
+        PRIME_ARTIFACTS_PATH: ${{ secrets.PRIME_ARTIFACTS_PATH }}

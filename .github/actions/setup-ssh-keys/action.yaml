@@ -1,5 +1,6 @@
+---
 name: Setup SSH Keys
-description: Sets up SSH keys for Linux and Windows.
+description: "Sets up SSH keys for Linux and Windows"
 inputs:
   ssh-private-key:
     description: "SSH Private Key"

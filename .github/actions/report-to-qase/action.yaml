@@ -1,5 +1,6 @@
+---
 name: Report Results to Qase
-description: Builds reporter and reports to Qase
+description: "Builds reporter and reports to Qase"
 inputs:
   qase-test-run-id:
     description: "Qase Test Run ID"

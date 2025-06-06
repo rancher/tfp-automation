@@ -1,3 +1,4 @@
+---
 name: "Whitelist Runner IP"
 description: "Add runner IP to AWS prefix list"
 inputs:

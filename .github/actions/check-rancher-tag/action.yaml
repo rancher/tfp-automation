@@ -1,0 +1,29 @@
+---
+name: Check Rancher tag
+description: "Checks the latest Rancher tag"
+inputs:
+  latest-tag:
+    required: true
+runs:
+  using: composite
+  steps:
+    - run: |
+        mkdir -p tag
+        CACHED_FILE="tag/tag.txt"
+        LATEST_TAG="none"
+
+        if [ -f "$CACHED_FILE" ]; then
+          LATEST_TAG=$(cat "$CACHED_FILE")
+        fi
+
+        echo "Current Rancher tag: ${{ inputs.latest-tag }}"
+
+        if [ "$LATEST_TAG" != "${{ inputs.latest-tag }}" ]; then
+          echo "New tag: ${{ inputs.latest-tag }}"
+          echo "IS_TAG_NEW=true" >> $GITHUB_OUTPUT
+          echo "${{ inputs.latest-tag }}" > "$CACHED_FILE"
+        else
+          echo "No new tag found yet..."
+          echo "IS_TAG_NEW=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
