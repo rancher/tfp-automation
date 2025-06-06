@@ -5,6 +5,9 @@ inputs:
   release_lines:
     description: "List Rancher release lines"
     required: true
+  prime_artifacts_path:
+    description: "Path to prime artifacts"
+    required: true
 runs:
   using: composite
   steps:
@@ -36,10 +39,10 @@ runs:
               fi
             fi
           else
-            RELEASE_JSON=$(curl -s $PRIME_ARTIFACTS_PATH/$RELEASE_LINE/rancher-images.txt)
+            RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)
 
             if [[ $? -ne 0 ]]; then
-              echo "Unable to reach: $PRIME_ARTIFACTS_PATH"
+              echo "Unable to reach: ${{ inputs.prime_artifacts_path }}"
               exit 1
             fi
           fi
@@ -49,5 +52,3 @@ runs:
           #echo "LATEST_TAG_$RELEASE_LINE=$LATEST" >> $GITHUB_OUTPUT
         done
       shell: bash
-      env:
-        PRIME_ARTIFACTS_PATH: ${{ secrets.PRIME_ARTIFACTS_PATH }}
