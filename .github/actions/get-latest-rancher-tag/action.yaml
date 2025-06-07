@@ -49,6 +49,6 @@ runs:
 
           INDEX=$((INDEX + 1))
 
-          #echo "LATEST_TAG_$RELEASE_LINE=$LATEST" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG_$RELEASE_LINE=$LATEST" >> $GITHUB_OUTPUT
         done
       shell: bash

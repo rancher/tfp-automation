@@ -3,6 +3,7 @@ package registries
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
@@ -122,7 +123,8 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+		currentDate := time.Now().Format("2006-01-02 03:04PM")
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
@@ -183,7 +185,8 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+		currentDate := time.Now().Format("2006-01-02 03:04PM")
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
@@ -250,7 +253,8 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+		currentDate := time.Now().Format("2006-01-02 03:04PM")
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
@@ -318,7 +322,8 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+		currentDate := time.Now().Format("2006-01-02 03:04PM")
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")

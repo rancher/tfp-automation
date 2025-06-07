@@ -55,6 +55,7 @@ jobs:
         workflow:
           - post-release-sanity-test.yaml
           - post-release-sanity-upgrade-test.yaml
+          - registry-test.yaml
 
     steps:
       - name: Checkout repository

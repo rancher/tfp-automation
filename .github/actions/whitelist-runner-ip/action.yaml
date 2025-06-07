@@ -42,7 +42,7 @@ runs:
               --output text)
 
             if [[ "$ip_exists" == "0" ]]; then
-              echo "Adding runner to prefix list (attempt $attempt)..."
+              echo "Adding runner to prefix list [attempt $attempt]..."
               set +e
               output=$(aws ec2 modify-managed-prefix-list \
                 --prefix-list-id "$prefix_list_id" \

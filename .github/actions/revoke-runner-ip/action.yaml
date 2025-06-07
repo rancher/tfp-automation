@@ -45,7 +45,7 @@ runs:
               echo "Runner IP not present in prefix list, Skipping..."
               break
             else
-              echo "Removing runner from prefix list (attempt $attempt)..."
+              echo "Removing runner from prefix list [attempt $attempt]..."
               set +e
               output=$(aws ec2 modify-managed-prefix-list \
                 --prefix-list-id "$prefix_list_id" \
