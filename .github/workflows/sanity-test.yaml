@@ -6,6 +6,9 @@ on:
     - cron: "0 7 * * 1-5"
   workflow_dispatch:
     inputs:
+      rancher_version:
+        description: "Rancher tag version provided from check-rancher-tag workflow"
+        required: true
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
         required: true
@@ -42,33 +45,18 @@ on:
 env:
   CLOUD_PROVIDER_VERSION: "5.95.0"
   HOSTNAME_PREFIX: "tfp-sanity"
-  LOCALS_PROVIDER_VERSION: "2.5.2"
+  LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "sanity"
   RANCHER_VERSION: ""
-  RANCHER_VERSION_2_12: "head"
-  RANCHER_VERSION_2_11: "v2.11-head"
-  RANCHER_VERSION_2_10: "v2.10-head"
-  RANCHER_VERSION_2_9: "v2.9-head"
-  RANCHER2_PROVIDER_VERSION: "7.0.0"
-  RKE_PROVIDER_VERSION: "1.7.0"
-  RKE2_VERSION: ""
-  RKE2_VERSION_2_12: "v1.32.4+rke2r1"
-  RKE2_VERSION_2_11: "v1.32.4+rke2r1"
-  RKE2_VERSION_2_10: "v1.31.8+rke2r1"
-  RKE2_VERSION_2_9: "v1.30.12+rke2r1"
+  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION }}"
+  RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpSanityProvisioningTestSuite$"
-  TERRAFORM_VERSION: "1.12.1"
   TIMEOUT: "2h"
-  QASE_TEST_RUN_ID: ""
-  QASE_TEST_RUN_ID_2_12: "4512"
-  QASE_TEST_RUN_ID_2_11: "4541"
-  QASE_TEST_RUN_ID_2_10: "4542"
-  QASE_TEST_RUN_ID_2_9: "4540"
 
 jobs:
   v2-12:
-    if: ${{ github.event_name == 'schedule' }}
-    name: ${{ github.event.inputs.rancher-version-2-12 }}
+    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.12.')) 
+    name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -93,19 +81,23 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher-version-2-12 || env.RANCHER_VERSION_2_12 }}
+          value: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
 
-      - name: Set RKE2 version
-        uses: ./.github/actions/set-env-var
+      - name: Get Release Qase ID
+        if: ${{ github.event.inputs.rancher_version }}
+        id: get-release-qase-id
+        uses: ./.github/actions/get-release-qase-id
         with:
-          key: RKE2_VERSION
-          value: ${{ env.RKE2_VERSION_2_12 }}
+          tag: ${{ github.event.inputs.rancher_version }}
+          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
+          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
+          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
 
       - name: Set Qase Test Run ID
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-12 || env.QASE_TEST_RUN_ID_2_12 }}
+          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-12 }}
 
       - name: Create config.yaml
         run: |
@@ -159,7 +151,7 @@ jobs:
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ env.RKE2_VERSION }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -184,7 +176,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
 
       - name: Run Sanity Test Suite
@@ -199,7 +191,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-12 || env.QASE_TEST_RUN_ID_2_12 }}
+          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -210,7 +202,7 @@ jobs:
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
   v2-11:
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.11.'))
     name: ${{ github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
@@ -236,19 +228,23 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher-version-2-11 || env.RANCHER_VERSION_2_11 }}
+          value: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
 
-      - name: Set RKE2 version
-        uses: ./.github/actions/set-env-var
+      - name: Get Release Qase ID
+        if: ${{ github.event.inputs.rancher_version }}
+        id: get-release-qase-id
+        uses: ./.github/actions/get-release-qase-id
         with:
-          key: RKE2_VERSION
-          value: ${{ env.RKE2_VERSION_2_11 }}
+          tag: ${{ github.event.inputs.rancher_version }}
+          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
+          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
+          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
 
       - name: Set Qase Test Run ID
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-11 || env.QASE_TEST_RUN_ID_2_11 }}
+          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-11 }}
 
       - name: Create config.yaml
         run: |
@@ -302,7 +298,7 @@ jobs:
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ env.RKE2_VERSION }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -327,7 +323,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
 
       - name: Run Sanity Test Suite
@@ -342,7 +338,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-11 || env.QASE_TEST_RUN_ID_2_11 }}
+          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -353,7 +349,7 @@ jobs:
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
   v2-10:
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.10.'))
     name: ${{ github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
     environment: staging-latest
@@ -379,19 +375,23 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher-version-2-10 || env.RANCHER_VERSION_2_10 }}
+          value: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
 
-      - name: Set RKE2 version
-        uses: ./.github/actions/set-env-var
+      - name: Get Release Qase ID
+        if: ${{ github.event.inputs.rancher_version }}
+        id: get-release-qase-id
+        uses: ./.github/actions/get-release-qase-id
         with:
-          key: RKE2_VERSION
-          value: ${{ env.RKE2_VERSION_2_10 }}
+          tag: ${{ github.event.inputs.rancher_version }}
+          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
+          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
+          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
 
       - name: Set Qase Test Run ID
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-10 || env.QASE_TEST_RUN_ID_2_10 }}
+          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-10 }}
 
       - name: Create config.yaml
         run: |
@@ -446,7 +446,7 @@ jobs:
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ env.RKE2_VERSION }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_10 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -471,7 +471,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
 
       - name: Run Sanity Test Suite
@@ -486,7 +486,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-10 || env.QASE_TEST_RUN_ID_2_10 }}
+          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -497,7 +497,7 @@ jobs:
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
   v2-9:
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.9.'))
     name: ${{ github.event.inputs.rancher-version-2-9 }}
     runs-on: ubuntu-latest
     environment: staging-latest
@@ -523,19 +523,23 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher-version-2-9 || env.RANCHER_VERSION_2_9 }}
+          value: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-9 }}
 
-      - name: Set RKE2 version
-        uses: ./.github/actions/set-env-var
+      - name: Get Release Qase ID
+        if: ${{ github.event.inputs.rancher_version }}
+        id: get-release-qase-id
+        uses: ./.github/actions/get-release-qase-id
         with:
-          key: RKE2_VERSION
-          value: ${{ env.RKE2_VERSION_2_9 }}
+          tag: ${{ github.event.inputs.rancher_version }}
+          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
+          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
+          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
 
       - name: Set Qase Test Run ID
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ github.event.inputs.qase-test-run-id-2-9 || env.QASE_TEST_RUN_ID_2_9 }}
+          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-9 }}
 
       - name: Create config.yaml
         run: |
@@ -590,7 +594,7 @@ jobs:
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ env.RKE2_VERSION }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_9 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -615,7 +619,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
 
       - name: Run Sanity Test Suite
@@ -630,7 +634,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ github.event.inputs.qase-test-run-id-2-9 || env.QASE_TEST_RUN_ID_2_9 }}
+          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack

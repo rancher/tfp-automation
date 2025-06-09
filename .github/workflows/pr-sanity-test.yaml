@@ -9,14 +9,11 @@ on:
 env:
   CLOUD_PROVIDER_VERSION: "5.95.0"
   HOSTNAME_PREFIX: tfp-sanity
-  LOCALS_PROVIDER_VERSION: "2.5.2"
+  LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: sanity
-  RANCHER_VERSION: ""
-  RANCHER2_PROVIDER_VERSION: "7.0.0"
-  RKE_PROVIDER_VERSION: "1.7.0"
-  RKE2_VERSION: "v1.32.4+rke2r1"
+  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION }}"
+  RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: ^TestTfpSanityProvisioningTestSuite$
-  TERRAFORM_VERSION: "1.12.1"
   TIMEOUT: 2h
   QASE_TEST_RUN_ID: "4512"
 
@@ -101,7 +98,7 @@ jobs:
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ env.RKE2_VERSION }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -126,7 +123,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
       - name: Run Sanity Test Suite
