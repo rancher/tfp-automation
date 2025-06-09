@@ -1,3 +1,4 @@
+---
 name: Registry Testing
 
 on:
@@ -21,20 +22,20 @@ on:
 
 env:
   CLOUD_PROVIDER_VERSION: "5.95.0"
-  HOSTNAME_PREFIX: tfp-registry
+  HOSTNAME_PREFIX: "tfp-registry"
   LOCALS_PROVIDER_VERSION: "2.5.2"
-  PACKAGE: registries
+  PACKAGE: "registries"
   RANCHER_VERSION: ""
   RANCHER2_PROVIDER_VERSION: "7.2.0"
   RKE_PROVIDER_VERSION: "1.7.0"
   RKE2_VERSION: ""
-  RKE2_VERSION_2_9: v1.30.12+rke2r1
-  RKE2_VERSION_2_10: v1.31.8+rke2r1
-  RKE2_VERSION_2_11: v1.32.4+rke2r1
-  SUITE: ^TestTfpRegistriesTestSuite$
+  RKE2_VERSION_2_9: "v1.30.12+rke2r1"
+  RKE2_VERSION_2_10: "v1.31.8+rke2r1"
+  RKE2_VERSION_2_11: "v1.32.4+rke2r1"
+  SUITE: "^TestTfpRegistriesTestSuite$"
   TERRAFORM_VERSION: "1.12.1"
-  SUITE_TIMEOUT: 7h
-  TIMEOUT: 30m
+  SUITE_TIMEOUT: "7h"
+  TIMEOUT: "30m"
   QASE_TEST_RUN_ID: ""
   QASE_TEST_RUN_ID_2_9: "4540"
   QASE_TEST_RUN_ID_2_10: "4542"
@@ -201,7 +202,7 @@ jobs:
 
   v2-10:
     if: (startsWith(inputs.rancher_version, 'v2.10.')) && !contains(inputs.rancher_version, '-rc') && !contains(inputs.rancher_version, '-hotfix') && contains(inputs.rancher_version, '-alpha')
-    name: ${{ github.event.inputs.rancher-version-2-10 }}
+    name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     needs: v2-11
     environment: staging-alpha
@@ -361,7 +362,7 @@ jobs:
 
   v2-9:
     if: (startsWith(inputs.rancher_version, 'v2.9.')) && !contains(inputs.rancher_version, '-rc') && !contains(inputs.rancher_version, '-hotfix') && contains(inputs.rancher_version, '-alpha')
-    name: ${{ github.event.inputs.rancher-version-2-9 }}
+    name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     needs: v2-10
     environment: staging-alpha

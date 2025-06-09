@@ -56,6 +56,8 @@ jobs:
           - post-release-sanity-test.yaml
           - post-release-sanity-upgrade-test.yaml
           - registry-test.yaml
+          - airgap-test.yaml
+          - airgap-upgrade-test.yaml
 
     steps:
       - name: Checkout repository
