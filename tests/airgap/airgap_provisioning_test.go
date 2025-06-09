@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
@@ -105,7 +106,8 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+		currentDate := time.Now().Format("2006-01-02 03:04PM")
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		a.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
@@ -165,7 +167,8 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
+		currentDate := time.Now().Format("2006-01-02 03:04PM")
+		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		a.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
