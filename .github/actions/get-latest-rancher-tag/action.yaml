@@ -25,7 +25,7 @@ runs:
 
           echo "LATEST_TAG_$RELEASE_LINE=$LATEST"
 
-          if [[ "$RELEASE_LINE" == "v2.11" || "$RELEASE_LINE" == "v2.12" ]]; then
+          if [[ "$RELEASE_LINE" == "v2.11" ]]; then
             RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST")
             ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
 
