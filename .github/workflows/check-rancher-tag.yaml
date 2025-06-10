@@ -53,8 +53,10 @@ jobs:
     strategy:
       matrix:
         workflow:
-          - post-release-sanity-test.yaml
-          - post-release-sanity-upgrade-test.yaml
+          - sanity-test.yaml
+          - sanity-upgrade-test.yaml
+          - proxy-test.yaml
+          - proxy-upgrade-test.yaml
           - registry-test.yaml
           - airgap-test.yaml
           - airgap-upgrade-test.yaml

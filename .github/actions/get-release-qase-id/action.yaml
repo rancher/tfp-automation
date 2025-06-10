@@ -1,0 +1,41 @@
+name: Get Release Qase ID
+description: "Accepts a rancher tag and returns the corresponding Qase ID for a release test run"
+inputs:
+  tag:
+    description: "Rancher server tag version"
+    required: true
+  qase_release_test_run_id_2_11:
+    description: "Qase ID for the v2.11 release test run"
+    required: true
+  qase_release_test_run_id_2_10:
+    description: "Qase ID for the v2.10 release test run"
+    required: true
+  qase_release_test_run_id_2_9:
+    description: "Qase ID for the v2.9 release test run"
+    required: true
+outputs:
+  id:
+    description: "Qase ID for the appropriate release test run, based on the provided Rancher tag"
+    value: ${{ steps.set-qase-id.outputs.id }}
+runs:
+  using: composite
+  steps:
+    - id: set-qase-id
+      run: |
+        TAG="${{ inputs.tag }}"
+        QASE_ID=""
+
+        if [[ "$TAG" == v2.11.* ]]; then
+          QASE_ID="${{ inputs.qase_release_test_run_id_2_11 }}"
+        elif [[ "$TAG" == v2.10.* ]]; then
+          QASE_ID="${{ inputs.qase_release_test_run_id_2_10 }}"
+        elif [[ "$TAG" == v2.9.* ]]; then
+          QASE_ID="${{ inputs.qase_release_test_run_id_2_9 }}"
+        else
+          echo "No matching Qase ID found for tag: $TAG"
+          exit 1
+        fi
+
+        echo "Qase ID for tag $TAG: $QASE_ID"
+        echo "id=$QASE_ID" >> $GITHUB_OUTPUT
+      shell: bash
