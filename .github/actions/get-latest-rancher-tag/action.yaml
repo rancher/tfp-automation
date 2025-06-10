@@ -20,7 +20,7 @@ runs:
           if [ -n "$GA_RELEASE" ]; then
             LATEST="$GA_RELEASE"
           else
-            LATEST=$(echo "$TAGS" | grep "^v$RELEASE_LINE" | sort -V | tail -n 1)
+            LATEST=$(echo "$TAGS" | grep "^$RELEASE_LINE" | sort -V | tail -n 1)
           fi
 
           echo "LATEST_TAG_$RELEASE_LINE=$LATEST"
@@ -31,11 +31,9 @@ runs:
 
             echo "Asset count for $LATEST: $ASSET_COUNT"
 
-            if [[ "$LATEST" != *hotfix* ]]; then
-              if [ "$ASSET_COUNT" -ne 20 ]; then
-                echo "Asset count: $ASSET_COUNT. Expected 20 assets..."
-                exit 1
-              fi
+            if [ "$ASSET_COUNT" -ne 20 ]; then
+              echo "Asset count: $ASSET_COUNT. Expected 20 assets..."
+              exit 1
             fi
           else
             RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)
