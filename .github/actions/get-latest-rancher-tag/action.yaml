@@ -14,7 +14,6 @@ runs:
     - run: |
         RELEASE_LINES="${{ inputs.release_lines }}"
         TAGS=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name')
-        INDEX=0
 
         for RELEASE_LINE in $RELEASE_LINES; do
           GA_RELEASE=$(echo "$TAGS" | grep "^$RELEASE_LINE" | grep -Ev -- '-(rc|alpha|hotfix)' | sort -V | tail -n 1)
@@ -26,7 +25,7 @@ runs:
 
           echo "LATEST_TAG_$RELEASE_LINE=$LATEST"
 
-          if [[ "$INDEX" -eq 0 ]]; then
+          if [[ "$RELEASE_LINE" == "v2.11" || "$RELEASE_LINE" == "v2.12" ]]; then
             RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST")
             ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
 
@@ -46,8 +45,6 @@ runs:
               exit 1
             fi
           fi
-
-          INDEX=$((INDEX + 1))
 
           echo "LATEST_TAG_$RELEASE_LINE=$LATEST" >> $GITHUB_OUTPUT
         done
