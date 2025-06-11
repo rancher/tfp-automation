@@ -47,7 +47,6 @@ env:
   HOSTNAME_PREFIX: "tfp-sanity"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "sanity"
-  RANCHER_VERSION: ""
   RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION }}"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpSanityProvisioningTestSuite$"
@@ -81,7 +80,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 || vars.RANCHER_VERSION_2_12_HEAD}}
+          value: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 || vars.RANCHER_VERSION_2_12_HEAD }}
 
       - name: Get Release Qase ID
         if: ${{ github.event.inputs.rancher_version }}
@@ -97,7 +96,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-12 || vars.QASE_DEFAULT_TEST_RUN_ID_2_12}}
+          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-12) || vars.QASE_DEFAULT_TEST_RUN_ID_2_12 }}
 
       - name: Create config.yaml
         run: |
@@ -244,7 +243,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-11 || vars.QASE_DEFAULT_TEST_RUN_ID_2_11 }}
+          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-11) || vars.QASE_DEFAULT_TEST_RUN_ID_2_11 }}
 
       - name: Create config.yaml
         run: |
@@ -391,7 +390,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-10 || vars.QASE_DEFAULT_TEST_RUN_ID_2_10 }}
+          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-10) || vars.QASE_DEFAULT_TEST_RUN_ID_2_10 }}
 
       - name: Create config.yaml
         run: |
@@ -539,7 +538,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || github.event.inputs.qase-test-run-id-2-9 || vars.QASE_DEFAULT_TEST_RUN_ID_2_9 }}
+          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-9) || vars.QASE_DEFAULT_TEST_RUN_ID_2_9 }}
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
