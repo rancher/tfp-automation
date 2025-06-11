@@ -155,7 +155,7 @@ jobs:
       - name: Reporting Results to Qase
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -301,7 +301,7 @@ jobs:
       - name: Reporting Results to Qase
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -447,7 +447,7 @@ jobs:
       - name: Reporting Results to Qase
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack

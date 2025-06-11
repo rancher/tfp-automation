@@ -96,7 +96,7 @@ jobs:
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              rancherTagVersion: "${{ vars.RANCHER_VERSION_2_12_HEAD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
@@ -138,7 +138,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ env.QASE_TEST_RUN_ID }}
+          qase-test-run-id: ${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_12 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
