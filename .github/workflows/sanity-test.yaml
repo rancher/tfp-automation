@@ -8,7 +8,6 @@ on:
     inputs:
       rancher_version:
         description: "Rancher tag version provided from check-rancher-tag workflow"
-        required: true
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
         required: true
