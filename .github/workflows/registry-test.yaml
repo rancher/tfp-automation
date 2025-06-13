@@ -9,6 +9,9 @@ on:
         required: true
 
 env:
+  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+  AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+  AWS_DEFAULT_REGION: "${{ secrets.AWS_REGION }}"
   CLOUD_PROVIDER_VERSION: "5.95.0"
   HOSTNAME_PREFIX: tfp-registry
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
@@ -31,6 +34,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -178,6 +187,13 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
+
   v2-10:
     if: (startsWith(inputs.rancher_version, 'v2.10.')) && !contains(inputs.rancher_version, '-rc') && !contains(inputs.rancher_version, '-hotfix') && contains(inputs.rancher_version, '-alpha')
     name: ${{ github.event.inputs.rancher_version }}
@@ -190,6 +206,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -338,6 +360,13 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
+
   v2-9:
     if: (startsWith(inputs.rancher_version, 'v2.9.')) && !contains(inputs.rancher_version, '-rc') && !contains(inputs.rancher_version, '-hotfix') && contains(inputs.rancher_version, '-alpha')
     name: ${{ github.event.inputs.rancher_version }}
@@ -350,6 +379,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -497,3 +532,10 @@ jobs:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
+
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ secrets.AWS_REGION }}"
