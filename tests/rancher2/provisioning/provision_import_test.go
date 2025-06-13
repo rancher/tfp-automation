@@ -15,6 +15,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -22,7 +23,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ProvisionImportTestSuite struct {
+type UpgradeImportedClusterTestSuite struct {
 	suite.Suite
 	client           *rancher.Client
 	session          *session.Session
@@ -33,7 +34,7 @@ type ProvisionImportTestSuite struct {
 	terraformOptions *terraform.Options
 }
 
-func (p *ProvisionImportTestSuite) SetupSuite() {
+func (p *UpgradeImportedClusterTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	p.session = testSession
 
@@ -50,14 +51,14 @@ func (p *ProvisionImportTestSuite) SetupSuite() {
 	p.terraformOptions = terraformOptions
 }
 
-func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
+func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 	tests := []struct {
 		name   string
 		module string
 	}{
-		{"Importing TFP RKE2", modules.ImportEC2RKE2},
-		{"Importing TFP RKE2 Windows", modules.ImportEC2RKE2Windows},
-		{"Importing TFP K3S", modules.ImportEC2K3s},
+		{"Upgrade Imported TFP RKE2", modules.ImportEC2RKE2},
+		{"Upgrade Imported TFP RKE2 Windows", modules.ImportEC2RKE2Windows},
+		{"Upgrade Imported TFP K3S", modules.ImportEC2K3s},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -83,6 +84,9 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 
 			clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
+
+			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
+			require.NoError(p.T(), err)
 		})
 	}
 
@@ -91,7 +95,7 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImport() {
 	}
 }
 
-func (p *ProvisionImportTestSuite) TestTfpProvisionImportDynamicInput() {
+func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicInput() {
 	tests := []struct {
 		name string
 	}{
@@ -122,6 +126,9 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImportDynamicInput() {
 
 			clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
+
+			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
+			require.NoError(p.T(), err)
 		})
 	}
 
@@ -130,6 +137,6 @@ func (p *ProvisionImportTestSuite) TestTfpProvisionImportDynamicInput() {
 	}
 }
 
-func TestTfpProvisionImportTestSuite(t *testing.T) {
-	suite.Run(t, new(ProvisionImportTestSuite))
+func TestTfpUpgradeImportedClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(UpgradeImportedClusterTestSuite))
 }

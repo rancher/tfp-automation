@@ -99,6 +99,11 @@ rancher:
   host: ""
   adminToken: ""
   cleanup: true
+
+upgradeInput:
+  clusters:
+    -  versionToUpgrade: ""         # Leave off the suffix; the test will add it for K3s and RKE2
+
 terraform:
   cni: ""
   defaultClusterRoleForProjectMembers: "true"
@@ -157,6 +162,7 @@ terraform:
     k3sVersion: ""                      # Ensure k3s1 suffix is appended (i.e. v1.xx.x+k3s1)
     osGroup: ""
     osUser: ""
+    rancherHostname: ""
     rke2Version: ""                     # Ensure rke2r1 suffix is appended (i.e. v1.xx.x+rke2r1)
 
 terratest:
@@ -165,7 +171,7 @@ terratest:
   windowsNodeCount: 1
 ```
 
-In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.x.x` defined for the RKE1 portion of the test.
+In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.x.x` defined for the RKE1 portion of the test. You also must ensure that you are not using the highest available K8s version as this test will perform an upgrade of the imported cluster.
 
 See the below examples on how to run the tests:
 
@@ -180,8 +186,8 @@ See the below examples on how to run the tests:
 
 ### Imported
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionImportTestSuite/TestTfpProvisionImport$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpProvisionImportTestSuite/TestTfpProvisionImportDynamicInput$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpUpgradeImportedClusterTestSuite/TestTfpUpgradeImportedCluster$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpUpgradeImportedClusterTestSuite/TestTfpUpgradeImportedClusterDynamicInput$"`
 
 ### Hosted
 

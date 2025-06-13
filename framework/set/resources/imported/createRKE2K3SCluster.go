@@ -72,13 +72,16 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 		version = terraformConfig.Standalone.K3SVersion
 
 		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			terraformConfig.Standalone.K3SVersion + " " + serverOnePrivateIP + " " + token + "'"
+			version + " " + serverOnePrivateIP + " " + token + "'"
 	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
 		version = terraformConfig.Standalone.RKE2Version
 
 		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			version + " " + serverOnePrivateIP + " " + token + " " + terraformConfig.CNI + " || true'"
+			version + " " + serverOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " + token + " " +
+			terraformConfig.CNI + "'"
 	}
+
+	command += " || true"
 
 	// For imported clusters, need to first put the script on the machine before running it.
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
@@ -121,13 +124,15 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 			version = terraformConfig.Standalone.K3SVersion
 
 			command = "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-				terraformConfig.Standalone.K3SVersion + " " + serverOnePrivateIP + " " + instance + " " + token + "'"
+				version + " " + serverOnePrivateIP + " " + instance + " " + token + "'"
 		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
 			version = terraformConfig.Standalone.RKE2Version
 
-			command = "bash -c '/tmp/add-servers.sh " + version + " " + serverOnePrivateIP + " " + instance + " " + token + " " +
-				terraformConfig.CNI + " || true'"
+			command = "bash -c '/tmp/add-servers.sh " + version + " " + serverOnePrivateIP + " " + instance + " " + terraformConfig.Standalone.RancherHostname +
+				" " + token + " " + terraformConfig.CNI + "'"
 		}
+
+		command += " || true"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("echo '" + string(script) + "' > /tmp/add-servers.sh"),
