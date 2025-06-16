@@ -26,5 +26,4 @@ PEM=/home/${USER}/key.pem
 sudo chmod 600 ${PEM}
 sudo chown ${USER}:${GROUP} ${PEM}
 
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$NODE_ONE_PUBLIC_DNS" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM $USER@$NODE_ONE_PUBLIC_DNS "$IMPORT_COMMAND"
+eval "$IMPORT_COMMAND"

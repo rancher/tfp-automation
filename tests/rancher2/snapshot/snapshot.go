@@ -53,9 +53,9 @@ const (
 	serviceType         = "service"
 )
 
-// snapshotRestore creates workloads, takes a snapshot of the cluster, restores the cluster and verifies the workloads created after
+// RestoreSnapshot creates workloads, takes a snapshot of the cluster, restores the cluster and verifies the workloads created after
 // a snapshot no longer are present in the cluster
-func snapshotRestore(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
+func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options, configMap []map[string]any,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) {
 	initialWorkloadName := namegen.AppendRandomString(initialWorkload)

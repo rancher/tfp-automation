@@ -23,20 +23,19 @@ rancher:
     insecure: true
     cleanup: true
 terraform:
-    cloudCredentialName: ""
+    resourcePrefix: ""
     defaultClusterRoleForProjectMembers: "true"
     enableNetworkPolicy: false
-    hostnamePrefix: ""
-    machineConfigName: ""
     module: "linode_k3s"
     cni: "canal"
-    nodeTemplateName: ""                # Needed for RKE1 clusters
     linodeCredentials:
         linodeToken: ""
     linodeConfig:
         linodeImage: "linode/ubuntu22.04"
         region: "us-east"
         linodeRootPass: ""
+terratest:
+    pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```
 
 See the below examples on how to run the tests:

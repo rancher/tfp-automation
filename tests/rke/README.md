@@ -56,6 +56,8 @@ terraform:
     timeout: "5m"
   standalone:
     osUser: ""
+terratest:
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```
 
 Before running, be sure to run the following commands:

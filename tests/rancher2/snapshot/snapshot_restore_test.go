@@ -103,7 +103,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
-			snapshotRestore(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			RestoreSnapshot(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 		})
 	}
