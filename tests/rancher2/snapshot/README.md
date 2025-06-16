@@ -16,8 +16,7 @@ Please see below for more details for your config. Please note that the config c
 
 ## Table of Contents
 1. [Getting Started](#Getting-Started)
-2. [ETCD Snapshots](#ETCD-Snapshots)
-3. [Local Qase Reporting](#Local-Qase-Reporting)
+2. [Local Qase Reporting](#Local-Qase-Reporting)
 
 ## Getting Started
 In your config file, set the following:
@@ -32,7 +31,7 @@ terraform:
     disableSnapshot: false
     snapshotCron: "0 */5 * * *"
     snapshotRetention: 3
-    s3:
+    s3:                               # Optional block, use if you want an S3 snapshot
       bucket: ""
       cloudCredentialName: ""
       endpoint: "s3.us-east-2.amazonaws.com"
@@ -41,23 +40,11 @@ terraform:
       region: "us-east-2"
       skipSSLVerify: true
 terratest:
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
   snapshotInput: {}
 ```
 
 To see what goes into the `terraform` block in addition to the `rancher`, please refer to the tfp-automation [README](../../README.md).
-
-## ETCD Snapshots
-Similar to the `provisioning` tests, the snapshot tests have static test cases as well as dynamicInput tests you can specify. In order to run the dynamicInput tests, you will need to define the `terratest` block in your config file. See an example below:
-
-```yaml
-terratest:
-  kubernetesVersion: ""
-  snapshotInput:
-    upgradeKubernetesVersion: "" # If left blank, the default version in Rancher will be used.
-    snapshotRestore: "all" # Options include none, kubernetesVersion, all. Option 'none' means that only the etcd will be restored.
-    controlPlaneConcurrencyValue: "15%"
-    workerConcurrencyValue: "20%"
-  ```
 
 See the below examples on how to run the tests:
 

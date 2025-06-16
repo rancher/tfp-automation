@@ -169,6 +169,7 @@ terratest:
   tfLogging: true
   nodeCount: 3
   windowsNodeCount: 1
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```
 
 In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.x.x` defined for the RKE1 portion of the test. You also must ensure that you are not using the highest available K8s version as this test will perform an upgrade of the imported cluster.

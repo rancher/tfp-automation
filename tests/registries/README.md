@@ -97,6 +97,8 @@ terraform:
     ecrUsername: ""                               # REQUIRED (ecr registry only)
     ecrURI: ""                                    # REQUIRED (ecr registry only)
     ecrAMI: ""                                    # REQUIRED (ecr registry only) - with Amazon ECR Credential Helper
+terratest:
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```
 
 Before running, be sure to run the following commands:

@@ -49,6 +49,7 @@ terraform:
     linodeRootPass: "<placeholder>"
 terratest:
   kubernetesVersion: ""
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
   ```
 
 See the below examples on how to run the tests:

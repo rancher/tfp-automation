@@ -36,6 +36,7 @@ Similar to the `provisioning` tests, the node scaling tests have static test cas
 
 ```yaml
 terratest:
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
   kubernetesVersion: ""
   nodeCount: 3
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`

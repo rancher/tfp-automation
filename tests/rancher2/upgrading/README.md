@@ -35,6 +35,7 @@ terratest:
   kubernetesVersion: ""
   upgradedKubernetesVersion: "" # If left blank or is omitted completely, the latest version in Rancher will be used. This is only for RKE1/RKE2/K3s. Hosted clusters MUST have this filled out.
   psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
   ```
 
 Additionally, you will need to ensure that the initial cluster version is NOT the latest version found in Rancher. This is because if you leave `upgradedKubernetesVersion` blank, then the test will automatically upgrade to the latest version found in Rancher.
