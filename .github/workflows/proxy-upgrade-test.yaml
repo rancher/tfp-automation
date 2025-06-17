@@ -67,6 +67,19 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -124,8 +137,8 @@ jobs:
             proxy:
               proxyBastion: ""
             awsCredentials:
-              awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-              awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+              awsAccessKey: "$AWS_ACCESS_KEY"
+              awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
               ami: "${{ secrets.AWS_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
@@ -237,6 +250,19 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -294,8 +320,8 @@ jobs:
             proxy:
               proxyBastion: ""
             awsCredentials:
-              awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-              awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+              awsAccessKey: "$AWS_ACCESS_KEY"
+              awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
               ami: "${{ secrets.AWS_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
@@ -406,6 +432,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
@@ -464,8 +503,8 @@ jobs:
             proxy:
               proxyBastion: ""
             awsCredentials:
-              awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-              awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+              awsAccessKey: "$AWS_ACCESS_KEY"
+              awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
               ami: "${{ secrets.AWS_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
@@ -579,6 +618,19 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -636,8 +688,8 @@ jobs:
             proxy:
               proxyBastion: ""
             awsCredentials:
-              awsAccessKey: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-              awsSecretKey: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+              awsAccessKey: "$AWS_ACCESS_KEY"
+              awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
               ami: "${{ secrets.AWS_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
