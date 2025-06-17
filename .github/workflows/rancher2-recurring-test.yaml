@@ -41,6 +41,10 @@ on:
         required: true
         default: "4540"
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
   AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -55,7 +59,7 @@ env:
 
 jobs:
   v2-12:
-    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.12.')) 
+    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.12.'))
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest

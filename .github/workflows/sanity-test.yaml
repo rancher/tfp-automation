@@ -41,6 +41,10 @@ on:
         required: true
         default: "4540"
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
   AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -56,7 +60,7 @@ env:
 
 jobs:
   v2-12:
-    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.12.')) 
+    if: ${{ github.event_name == 'schedule' }} || (startsWith(inputs.rancher_version, 'v2.12.'))
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
@@ -103,21 +107,13 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-12) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) }}
 
-      - name: Get Release Qase ID
-        if: ${{ github.event.inputs.rancher_version }}
-        id: get-release-qase-id
-        uses: ./.github/actions/get-release-qase-id
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
         with:
-          tag: ${{ github.event.inputs.rancher_version }}
-          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
-
-      - name: Set Qase Test Run ID
-        uses: ./.github/actions/set-env-var
-        with:
-          key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-12) || (github.event_name == 'schedule' && vars.QASE_DEFAULT_TEST_RUN_ID_2_12) }}
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}"
+          qase_recurring_id: "${{ github.event.inputs.rancher-version-2-12 }}"
 
       - name: Create config.yaml
         run: |
@@ -211,7 +207,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-12) || (github.event_name == 'schedule' && vars.QASE_DEFAULT_TEST_RUN_ID_2_12) }}
+          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -276,21 +272,13 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-11) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) }}
 
-      - name: Get Release Qase ID
-        if: ${{ github.event.inputs.rancher_version }}
-        id: get-release-qase-id
-        uses: ./.github/actions/get-release-qase-id
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
         with:
-          tag: ${{ github.event.inputs.rancher_version }}
-          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
-
-      - name: Set Qase Test Run ID
-        uses: ./.github/actions/set-env-var
-        with:
-          key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && (github.event_name == 'schedule' && github.event.inputs.qase-test-run-id-2-11) || vars.QASE_DEFAULT_TEST_RUN_ID_2_11) }}
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
+          qase_recurring_id: "${{ github.event.inputs.rancher-version-2-11 }}"
 
       - name: Create config.yaml
         run: |
@@ -384,7 +372,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-11) || (github.event_name == 'schedule' && vars.QASE_DEFAULT_TEST_RUN_ID_2_11) }}
+          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -449,21 +437,13 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-10) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_10_HEAD) }}
 
-      - name: Get Release Qase ID
-        if: ${{ github.event.inputs.rancher_version }}
-        id: get-release-qase-id
-        uses: ./.github/actions/get-release-qase-id
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
         with:
-          tag: ${{ github.event.inputs.rancher_version }}
-          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
-
-      - name: Set Qase Test Run ID
-        uses: ./.github/actions/set-env-var
-        with:
-          key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-10) || (github.event_name == 'schedule' && vars.QASE_DEFAULT_TEST_RUN_ID_2_10) }}
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
+          qase_recurring_id: "${{ github.event.inputs.rancher-version-2-10 }}"
 
       - name: Create config.yaml
         run: |
@@ -558,7 +538,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-10) || (github.event_name == 'schedule' && vars.QASE_DEFAULT_TEST_RUN_ID_2_10) }}
+          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -623,21 +603,14 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-9) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_9_HEAD) }}
 
-      - name: Get Release Qase ID
-        if: ${{ github.event.inputs.rancher_version }}
-        id: get-release-qase-id
-        uses: ./.github/actions/get-release-qase-id
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
         with:
-          tag: ${{ github.event.inputs.rancher_version }}
-          qase_test_run_id_2_11: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_test_run_id_2_10: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_test_run_id_2_9: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
+          qase_recurring_id: "${{ github.event.inputs.rancher-version-2-9 }}"
 
-      - name: Set Qase Test Run ID
-        uses: ./.github/actions/set-env-var
-        with:
-          key: QASE_TEST_RUN_ID
-          value: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-9) || (github.event_name == 'schedule' && vars.QASE_DEFAULT_TEST_RUN_ID_2_9) }}
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -731,7 +704,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-release-qase-id.outputs.id || (github.event_name == 'workflow_dispatch' && github.event.inputs.qase-test-run-id-2-9) || (github.event_name == 'schedule' && vars.QASE_DEFAULT_TEST_RUN_ID_2_9) }}
+          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
