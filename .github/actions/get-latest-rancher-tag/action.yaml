@@ -16,34 +16,37 @@ runs:
         TAGS=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name')
 
         for RELEASE_LINE in $RELEASE_LINES; do
-          GA_RELEASE=$(echo "$TAGS" | grep "^$RELEASE_LINE" | grep -Ev -- '-(rc|alpha|hotfix)' | sort -V | tail -n 1)
-          if [ -n "$GA_RELEASE" ]; then
-            LATEST="$GA_RELEASE"
+          VERSION=$(echo "$TAGS" | grep "^$RELEASE_LINE" | sort -V)
+          LATEST=$(echo "$VERSION" | tail -n 1)
+          GA_RELEASE=$(echo "$VERSION" | grep -Ev -- '-(rc|alpha|hotfix)' | tail -n 1)
+
+          if [ "$(printf "$GA_RELEASE\n$LATEST" | sort -V | tail -n 1)" == "$LATEST" ]; then
+            LATEST_VERSION="$LATEST"
           else
-            LATEST=$(echo "$TAGS" | grep "^$RELEASE_LINE" | sort -V | tail -n 1)
+            LATEST_VERSION="$GA_RELEASE"
           fi
 
-          echo "LATEST_TAG_$RELEASE_LINE=$LATEST"
+          echo "Latest tag for $RELEASE_LINE: $LATEST_VERSION"
 
           if [[ "$RELEASE_LINE" == "v2.11" ]]; then
-            RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST")
+            RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST_VERSION")
             ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
 
-            echo "Asset count for $LATEST: $ASSET_COUNT"
+            echo "Asset count for $LATEST_VERSION: $ASSET_COUNT"
 
             if [ "$ASSET_COUNT" -ne 20 ]; then
               echo "Asset count: $ASSET_COUNT. Expected 20 assets..."
-              exit 1
+              continue
             fi
           else
             RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)
 
             if [[ $? -ne 0 ]]; then
               echo "Unable to reach: ${{ inputs.prime_artifacts_path }}"
-              exit 1
+              continue
             fi
           fi
 
-          echo "LATEST_TAG_$RELEASE_LINE=$LATEST" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG_$RELEASE_LINE=$LATEST_VERSION" >> $GITHUB_OUTPUT
         done
       shell: bash
