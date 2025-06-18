@@ -8,10 +8,14 @@ inputs:
   prime_artifacts_path:
     description: "Path to prime artifacts"
     required: true
+outputs:
+  latest_version:
+    value: ${{ steps.get-tag.outputs.latest_version }}
 runs:
   using: composite
   steps:
-    - run: |
+    - id: get-tag
+      run: |
         RELEASE_LINES="${{ inputs.release_lines }}"
         TAGS=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name')
 
@@ -47,6 +51,6 @@ runs:
             fi
           fi
 
-          echo "LATEST_TAG_$RELEASE_LINE=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "Latest tag = $LATEST_VERSION" >> $GITHUB_OUTPUT
         done
       shell: bash

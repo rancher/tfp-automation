@@ -4,10 +4,16 @@ description: "Checks the latest Rancher tag"
 inputs:
   latest-tag:
     required: true
+outputs:
+  IS_TAG_NEW:
+    value: ${{ steps.check.outputs.IS_TAG_NEW }}
+  LATEST_TAG:
+    value: ${{ inputs.latest_version }}
 runs:
   using: composite
   steps:
-    - run: |
+    - id: check
+      run: |
         mkdir -p tag
         CACHED_FILE="tag/tag.txt"
         LATEST_TAG="none"

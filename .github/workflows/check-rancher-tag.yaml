@@ -1,4 +1,3 @@
----
 name: Check Rancher Tag
 
 on:
@@ -35,14 +34,14 @@ jobs:
         id: check-rancher-tag
         uses: ./.github/actions/check-rancher-tag
         with:
-          latest-tag: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          latest_version: ${{ steps.get-latest-tag.outputs.latest_version }}
 
       - name: Cache updated Rancher tag
         if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW == 'true' }}
         uses: actions/cache@v4
         with:
           path: tag
-          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          key: rancher-tag-${{ steps.get-latest-tag.outputs.latest_version }}
           restore-keys: |
             rancher-tag
 
