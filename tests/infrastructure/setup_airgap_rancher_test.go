@@ -1,10 +1,12 @@
 package infrastructure
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/clients/rancher"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -20,16 +22,15 @@ type AirgapRancherTestSuite struct {
 	suite.Suite
 	session          *session.Session
 	terraformConfig  *config.TerraformConfig
+	cattleConfig     map[string]any
+	rancherConfig    *rancher.Config
 	terratestConfig  *config.TerratestConfig
 	terraformOptions *terraform.Options
 }
 
 func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
-	i.terraformConfig = new(config.TerraformConfig)
-	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, i.terraformConfig)
-
-	i.terratestConfig = new(config.TerratestConfig)
-	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
+	i.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	i.rancherConfig, i.terraformConfig, i.terratestConfig = config.LoadTFPConfigs(i.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
@@ -45,7 +46,7 @@ func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	_, err = PostRancherSetup(i.T(), i.session, i.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
+	_, err = PostRancherSetup(i.T(), i.rancherConfig, i.session, i.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
 	require.NoError(i.T(), err)
 }
 

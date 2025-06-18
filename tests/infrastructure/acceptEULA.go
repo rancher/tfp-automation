@@ -1,25 +1,19 @@
 package infrastructure
 
 import (
-	"os"
 	"testing"
 
 	"github.com/rancher/rancher/tests/v2/actions/pipeline"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tfp-automation/config"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
 // PostRancherSetup is a helper function that creates a Rancher client and accepts the EULA, if needed
-func PostRancherSetup(t *testing.T, session *session.Session, host string, showToken, isAirgap bool) (*rancher.Client, error) {
-	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	rancherConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
-
+func PostRancherSetup(t *testing.T, rancherConfig *rancher.Config, session *session.Session, host string, showToken, isAirgap bool) (*rancher.Client, error) {
 	adminUser := &management.User{
 		Username: "admin",
 		Password: rancherConfig.AdminPassword,
