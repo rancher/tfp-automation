@@ -72,7 +72,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	a.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(a.T(), testSession, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
+	client, err := infrastructure.PostRancherSetup(a.T(), a.rancherConfig, testSession, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
 	require.NoError(a.T(), err)
 
 	a.client = client
@@ -93,7 +93,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	err := upgrade.CreateMainTF(a.T(), a.upgradeTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig, "", "", a.bastion, a.registry)
 	require.NoError(a.T(), err)
 
-	a.client, err = infrastructure.PostRancherSetup(a.T(), a.session, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
+	a.client, err = infrastructure.PostRancherSetup(a.T(), a.rancherConfig, a.session, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
 	require.NoError(a.T(), err)
 
 	provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)

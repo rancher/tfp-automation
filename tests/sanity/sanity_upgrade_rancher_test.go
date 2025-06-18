@@ -70,7 +70,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(s.T(), testSession, s.terraformConfig.Standalone.RancherHostname, false, false)
+	client, err := infrastructure.PostRancherSetup(s.T(), s.rancherConfig, testSession, s.terraformConfig.Standalone.RancherHostname, false, false)
 	require.NoError(s.T(), err)
 
 	s.client = client
@@ -91,7 +91,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 	err := upgrade.CreateMainTF(s.T(), s.upgradeTerraformOptions, keyPath, s.terraformConfig, s.terratestConfig, s.serverNodeOne, "", "", "")
 	require.NoError(s.T(), err)
 
-	s.client, err = infrastructure.PostRancherSetup(s.T(), s.session, s.terraformConfig.Standalone.RancherHostname, false, false)
+	s.client, err = infrastructure.PostRancherSetup(s.T(), s.rancherConfig, s.session, s.terraformConfig.Standalone.RancherHostname, false, false)
 	require.NoError(s.T(), err)
 
 	provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)

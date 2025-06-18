@@ -1,10 +1,13 @@
 package infrastructure
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/rancher/shepherd/clients/rancher"
 	ranchFrame "github.com/rancher/shepherd/pkg/config"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -21,12 +24,14 @@ type ProxyRancherTestSuite struct {
 	session          *session.Session
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
+	cattleConfig     map[string]any
+	rancherConfig    *rancher.Config
 	terraformOptions *terraform.Options
 }
 
 func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
-	i.terraformConfig = new(config.TerraformConfig)
-	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, i.terraformConfig)
+	i.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	i.rancherConfig, i.terraformConfig, i.terratestConfig = config.LoadTFPConfigs(i.cattleConfig)
 
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
@@ -45,7 +50,7 @@ func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	_, err = PostRancherSetup(i.T(), i.session, i.terraformConfig.Standalone.RancherHostname, false, false)
+	_, err = PostRancherSetup(i.T(), i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, false, false)
 	require.NoError(i.T(), err)
 }
 

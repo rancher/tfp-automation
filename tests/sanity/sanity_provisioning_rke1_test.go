@@ -56,7 +56,7 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(s.T(), testSession, s.terraformConfig.Standalone.RancherHostname, false, false)
+	client, err := infrastructure.PostRancherSetup(s.T(), s.rancherConfig, testSession, s.terraformConfig.Standalone.RancherHostname, false, false)
 	require.NoError(s.T(), err)
 
 	s.client = client
