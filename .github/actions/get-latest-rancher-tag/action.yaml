@@ -49,6 +49,6 @@ runs:
 
           SUFFIX=$(echo "$RELEASE_LINE" | tr -d '.')
           OUTPUT_NAME="LATEST_TAG_${SUFFIX}"
-          echo "$OUTPUT_NAME=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "$OUTPUT_NAME=$LATEST_VERSION" >> $GITHUB_ENV
         done
       shell: bash
