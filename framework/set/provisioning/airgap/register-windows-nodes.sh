@@ -1,49 +1,35 @@
 #!/bin/bash
 
-PEM_FILE=$1
-WINS_PEM_FILE=$2
-USER=$3
-GROUP=$4
-WINS_USER=$5
-BASTION_IP=$6
-NODE_PRIVATE_IP=$7
-REGISTRATION_COMMAND=$8
-REGISTRY=$9
+WINS_PEM_FILE=$1
+USER=$2
+GROUP=$3
+WINS_USER=$4
+NODE_PRIVATE_IP=$5
+REGISTRATION_COMMAND=$6
+REGISTRY=$7
 
 set -e
 
-echo ${PEM_FILE} | base64 -d | sudo tee /home/${USER}/airgap.pem > /dev/null
 echo ${WINS_PEM_FILE} | base64 -d | sudo tee /home/${USER}/wins.pem > /dev/null
-
 echo "powershell.exe ${REGISTRATION_COMMAND}" > /home/${USER}/wins_registration_command.txt
+echo "{ \"insecure-registries\" : [ \"${REGISTRY}\" ] }" | sudo tee /tmp/daemon.json
 
 REGISTRATION_COMMAND=$(cat /home/$USER/wins_registration_command.txt)
-
-PEM=/home/${USER}/airgap.pem
 WINS_PEM=/home/${USER}/wins.pem
 
-sudo chmod 600 ${PEM}
-sudo chmod 600 /home/${USER}/wins.pem
-sudo chown ${USER}:${GROUP} ${PEM} 
-sudo chown ${USER}:${GROUP} /home/${USER}/wins.pem
+sudo chmod 600 ${WINS_PEM}
+sudo chown ${USER}:${GROUP} ${WINS_PEM}
 
-DOCKER_DAEMON="{ \"\\\"insecure-registries\\\"\" : [ \"\\\"${REGISTRY}\\\"\" ] }"
+runSSH() {
+  local server="$1"
+  local cmd="$2"
+  
+  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$WINS_PEM" "$WINS_USER@$server" \
+  "$cmd"
+}
 
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $WINS_PEM $WINS_USER@$NODE_PRIVATE_IP \
-    powershell.exe -Command New-Item -Path C:\\ProgramData\\docker\\config -ItemType Directory -Force
-
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $WINS_PEM $WINS_USER@$NODE_PRIVATE_IP \
-    icacls C:\\ProgramData\\docker\\config /grant "Everyone:(F)"
-
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $WINS_PEM $WINS_USER@$NODE_PRIVATE_IP \
-    powershell.exe -Command "Set-Content -Path C:\\ProgramData\\docker\\config\\daemon.json -Value '$DOCKER_DAEMON'"
-
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $WINS_PEM $WINS_USER@$NODE_PRIVATE_IP \
-    powershell.exe -Command "Restart-Service docker"
-
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $WINS_PEM $WINS_USER@$NODE_PRIVATE_IP "$REGISTRATION_COMMAND"
+runSSH "${NODE_PRIVATE_IP}" "powershell.exe -Command New-Item -Path C:\\ProgramData\\docker\\config -ItemType Directory -Force"
+runSSH "${NODE_PRIVATE_IP}" "icacls C:\\ProgramData\\docker\\config /grant \"Everyone:(F)\""
+scp -i "${WINS_PEM}" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /tmp/daemon.json "${WINS_USER}@${NODE_PRIVATE_IP}:C:/ProgramData/docker/config/daemon.json"
+runSSH "${NODE_PRIVATE_IP}" "powershell.exe Restart-Service docker"
+runSSH "${NODE_PRIVATE_IP}" "${REGISTRATION_COMMAND}"

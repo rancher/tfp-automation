@@ -30,9 +30,9 @@ func copyScript(provisionerBlockBody *hclwrite.Body, terraformConfig *config.Ter
 	}
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("cat << 'EOF' > /tmp/register-nodes.sh\n" + string(nodesScriptContent) + "\nEOF"),
+		cty.StringVal("echo '" + string(nodesScriptContent) + "' > /tmp/register-nodes.sh"),
 		cty.StringVal("chmod +x /tmp/register-nodes.sh"),
-		cty.StringVal("cat << 'EOF' > /tmp/register-windows-nodes.sh\n" + string(windowsScriptContent) + "\nEOF"),
+		cty.StringVal("echo '" + string(windowsScriptContent) + "' > /tmp/register-windows-nodes.sh"),
 		cty.StringVal("chmod +x /tmp/register-windows-nodes.sh"),
 	}))
 

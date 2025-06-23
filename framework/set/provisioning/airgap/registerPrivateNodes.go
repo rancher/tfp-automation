@@ -11,7 +11,7 @@ import (
 )
 
 // registerPrivateNodes is a function that will register the private nodes to the cluster
-func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, bastionPublicIP, nodePrivateIP,
+func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodePrivateIP,
 	registrationCommand string) error {
 	privateKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
 	if err != nil {
@@ -25,7 +25,7 @@ func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 		{Type: hclsyntax.TokenStringLit, Bytes: []byte("/tmp/register-nodes.sh " + encodedPEMFile + " " +
-			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " + bastionPublicIP + " " +
+			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			nodePrivateIP + " " + newCommand + " " + terraformConfig.PrivateRegistries.SystemDefaultRegistry)},
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
@@ -34,28 +34,22 @@ func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *
 }
 
 // registerWindowsPrivateNodes is a function that will register the private  Windows nodes to the cluster
-func registerWindowsPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, bastionPublicIP, nodePrivateIP,
+func registerWindowsPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodePrivateIP,
 	registrationCommand string) error {
-	privateKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
-	if err != nil {
-		return nil
-	}
-
 	windowsPrivateKey, err := os.ReadFile(terraformConfig.WindowsPrivateKeyPath)
 	if err != nil {
 		return nil
 	}
 
-	encodedPEMFile := base64.StdEncoding.EncodeToString([]byte(privateKey))
 	encodedWindowsPEMFile := base64.StdEncoding.EncodeToString([]byte(windowsPrivateKey))
 
 	newCommand := `\"` + registrationCommand + `\"`
 
 	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
-		{Type: hclsyntax.TokenStringLit, Bytes: []byte("/tmp/register-windows-nodes.sh " + encodedPEMFile + " " + encodedWindowsPEMFile + " " +
+		{Type: hclsyntax.TokenStringLit, Bytes: []byte("/tmp/register-windows-nodes.sh " + encodedWindowsPEMFile + " " +
 			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " + terraformConfig.AWSConfig.WindowsAWSUser + " " +
-			bastionPublicIP + " " + nodePrivateIP + " " + newCommand + " " + terraformConfig.PrivateRegistries.SystemDefaultRegistry)},
+			nodePrivateIP + " " + newCommand + " " + terraformConfig.PrivateRegistries.SystemDefaultRegistry)},
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
 

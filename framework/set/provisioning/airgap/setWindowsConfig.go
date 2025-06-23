@@ -1,12 +1,10 @@
 package airgap
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	"github.com/sirupsen/logrus"
 )
@@ -17,10 +15,9 @@ func SetAirgapRKE2Windows(terraformConfig *config.TerraformConfig, terratestConf
 	provisionerBlockBody, err := nullresource.SetAirgapNullResource(rootBody, terraformConfig, "register_"+airgapWindowsNode+"_"+terraformConfig.ResourcePrefix, nil)
 	rootBody.AppendNewline()
 
-	bastionPublicIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, bastion+"_"+terraformConfig.ResourcePrefix, defaults.PublicIp)
 	registrationCommands, nodePrivateIPs := GetRKE2K3sRegistrationCommands(terraformConfig)
 
-	err = registerWindowsPrivateNodes(provisionerBlockBody, terraformConfig, bastionPublicIP, nodePrivateIPs[airgapWindowsNode], registrationCommands[airgapWindowsNode])
+	err = registerWindowsPrivateNodes(provisionerBlockBody, terraformConfig, nodePrivateIPs[airgapWindowsNode], registrationCommands[airgapWindowsNode])
 	if err != nil {
 		return nil, nil, err
 	}

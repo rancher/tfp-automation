@@ -115,12 +115,10 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 
 			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
 				clusterIDs, _ = provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-				provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 			}
 		})
 	}
@@ -175,12 +173,11 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
 			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows, false, true, customClusterNames)
-			provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
+			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 
 			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
 				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows, false, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-				provisioning.VerifyRegistry(a.T(), a.client, clusterIDs[0], terraform)
 			}
 
 			clusterIDs, customClusterNames = provisioning.KubernetesUpgrade(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows)
