@@ -2,28 +2,37 @@
 name: Check Rancher tag
 description: "Checks the latest Rancher tag"
 inputs:
-  latest-tag:
+  latest-tag-v211:
+    required: true
+  latest-tag-v210:
+    required: true
+  latest-tag-v29:
     required: true
 runs:
   using: composite
   steps:
     - run: |
         mkdir -p tag
-        CACHED_FILE="tag/tag.txt"
-        LATEST_TAG="none"
+        for RELEASE_LINE in v211 v210 v29; do
+          TAG_INPUT="${{ inputs.latest-tag-${RELEASE_LINE} }}"
+          CACHED_FILE="tag/tag_${RELEASE_LINE}.txt"
+          LATEST_TAG="none"
 
-        if [ -f "$CACHED_FILE" ]; then
-          LATEST_TAG=$(cat "$CACHED_FILE")
-        fi
+          if [ -f "$CACHED_FILE" ]; then
+            LATEST_TAG=$(cat "$CACHED_FILE")
+          fi
 
-        echo "Current Rancher tag: ${{ inputs.latest-tag }}"
+          echo "Current Rancher tag for $RELEASE_LINE: $TAG_INPUT"
 
-        if [ "$LATEST_TAG" != "${{ inputs.latest-tag }}" ]; then
-          echo "New tag: ${{ inputs.latest-tag }}"
-          echo "IS_TAG_NEW=true" >> $GITHUB_OUTPUT
-          echo "${{ inputs.latest-tag }}" > "$CACHED_FILE"
-        else
-          echo "No new tag found yet..."
-          echo "IS_TAG_NEW=false" >> $GITHUB_OUTPUT
-        fi
+          OUTPUT_NAME="IS_TAG_NEW_${RELEASE_LINE}"
+
+          if [ "$LATEST_TAG" != "$TAG_INPUT" ]; then
+            echo "New tag for $RELEASE_LINE: $TAG_INPUT"
+            echo "$OUTPUT_NAME=true" >> $GITHUB_OUTPUT
+            echo "$TAG_INPUT" > "$CACHED_FILE"
+          else
+            echo "No new tag found yet for $RELEASE_LINE..."
+            echo "$OUTPUT_NAME=false" >> $GITHUB_OUTPUT
+          fi
+        done
       shell: bash

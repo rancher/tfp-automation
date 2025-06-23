@@ -10,8 +10,12 @@ jobs:
   check-latest-tag:
     runs-on: ubuntu-latest
     outputs:
-      latest_tag: ${{ steps.check-rancher-tag.outputs.LATEST_TAG }}
-      is_tag_new: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW }}
+      latest_tag_v211: ${{ steps.check-rancher-tag.outputs.LATEST_TAG_v211 }}
+      latest_tag_v210: ${{ steps.check-rancher-tag.outputs.LATEST_TAG_v210 }}
+      latest_tag_v29: ${{ steps.check-rancher-tag.outputs.LATEST_TAG_v29 }}
+      is_tag_new_v211: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v211 }}
+      is_tag_new_v210: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v210 }}
+      is_tag_new_v29: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v29 }}
 
     steps:
       - name: Checkout repository
@@ -35,20 +39,40 @@ jobs:
         id: check-rancher-tag
         uses: ./.github/actions/check-rancher-tag
         with:
-          latest-tag: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          latest-tag-v211: ${{ steps.get-latest-tag.outputs.LATEST_TAG_v211 }}
+          latest-tag-v210: ${{ steps.get-latest-tag.outputs.LATEST_TAG_v210 }}
+          latest-tag-v29: ${{ steps.get-latest-tag.outputs.LATEST_TAG_v29 }}
 
-      - name: Cache updated Rancher tag
-        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW == 'true' }}
+      - name: v2.11 - Cache updated Rancher tag
+        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v211 == 'true' }}
         uses: actions/cache@v4
         with:
           path: tag
-          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG }}
+          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG_v211 }}
           restore-keys: |
             rancher-tag
 
-  trigger-tests:
+      - name: v2.10 - Cache updated Rancher tag
+        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v210 == 'true' }}
+        uses: actions/cache@v4
+        with:
+          path: tag
+          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG_v210 }}
+          restore-keys: |
+            rancher-tag
+
+      - name: v2.9 - Cache updated Rancher tag
+        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v29 == 'true' }}
+        uses: actions/cache@v4
+        with:
+          path: tag
+          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG_v29 }}
+          restore-keys: |
+            rancher-tag
+
+  trigger-tests-v211:
     needs: check-latest-tag
-    if: ${{ needs.check-latest-tag.outputs.is_tag_new == 'true' }}
+    if: ${{ needs.check-latest-tag.outputs.is_tag_new_v211 == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -69,4 +93,54 @@ jobs:
         uses: ./.github/actions/dispatch-workflow
         with:
           workflow: ${{ matrix.workflow }}
-          tag: ${{ needs.check-latest-tag.outputs.latest_tag }}
+          tag: ${{ needs.check-latest-tag.outputs.latest_tag_v211 }}
+
+  trigger-tests-v210:
+    needs: check-latest-tag
+    if: ${{ needs.check-latest-tag.outputs.is_tag_new_v210 == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        workflow:
+          - sanity-test.yaml
+          - sanity-upgrade-test.yaml
+          - proxy-test.yaml
+          - proxy-upgrade-test.yaml
+          - registry-test.yaml
+          - airgap-test.yaml
+          - airgap-upgrade-test.yaml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger workflow dispatch for ${{ matrix.workflow }}
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          workflow: ${{ matrix.workflow }}
+          tag: ${{ needs.check-latest-tag.outputs.latest_tag_v210 }}
+
+  trigger-tests-v29:
+    needs: check-latest-tag
+    if: ${{ needs.check-latest-tag.outputs.is_tag_new_v29 == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        workflow:
+          - sanity-test.yaml
+          - sanity-upgrade-test.yaml
+          - proxy-test.yaml
+          - proxy-upgrade-test.yaml
+          - registry-test.yaml
+          - airgap-test.yaml
+          - airgap-upgrade-test.yaml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger workflow dispatch for ${{ matrix.workflow }}
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          workflow: ${{ matrix.workflow }}
+          tag: ${{ needs.check-latest-tag.outputs.latest_tag_v29 }}
