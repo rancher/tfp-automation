@@ -73,8 +73,6 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 		nodeOneExpression := "[" + defaults.NullResource + `.register_` + airgapNodeOne + "_" + terraformConfig.ResourcePrefix + "]"
 		nodeTwoExpression := "[" + defaults.NullResource + `.register_` + airgapNodeTwo + "_" + terraformConfig.ResourcePrefix + "]"
 
-		bastionPublicIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, bastion+"_"+terraformConfig.ResourcePrefix, defaults.PublicIp)
-
 		if instance == airgapNodeOne {
 			dependsOn = append(dependsOn, bastionScriptExpression)
 		} else if instance == airgapNodeTwo {
@@ -88,7 +86,7 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 			return nil, nil, err
 		}
 
-		err = registerPrivateNodes(provisionerBlockBody, terraformConfig, bastionPublicIP, nodePrivateIPs[instance], registrationCommands[instance])
+		err = registerPrivateNodes(provisionerBlockBody, terraformConfig, nodePrivateIPs[instance], registrationCommands[instance])
 		if err != nil {
 			return nil, nil, err
 		}

@@ -3,10 +3,9 @@
 PEM_FILE=$1
 USER=$2
 GROUP=$3
-BASTION_IP=$4
-NODE_PRIVATE_IP=$5
-REGISTRATION_COMMAND=$6
-REGISTRY=$7
+NODE_PRIVATE_IP=$4
+REGISTRATION_COMMAND=$5
+REGISTRY=$6
 
 set -e
 
@@ -18,16 +17,25 @@ PEM=/home/${USER}/airgap.pem
 sudo chmod 600 ${PEM}
 sudo chown ${USER}:${GROUP} ${PEM}
 
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM $USER@$NODE_PRIVATE_IP "sudo tee /etc/docker/daemon.json > /dev/null << EOF
-{
-    \"insecure-registries\" : [ \"${REGISTRY}\" ]
-    }
-EOF"
+runSSH() {
+  local server="$1"
+  local cmd="$2"
+  
+  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$PEM" "$USER@$server" \
+  "export USER=${USER}; \
+   export GROUP=${GROUP}; \
+   export NODE_PRIVATE_IP=${NODE_PRIVATE_IP}; \
+   export REGISTRY=${REGISTRY}; \
+   export REGISTRATION_COMMAND=${REGISTRATION_COMMAND}; \
+   export REGISTRY=${REGISTRY}; $cmd"
+}
 
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM $USER@$NODE_PRIVATE_IP \
-    "sudo systemctl restart docker && sudo systemctl daemon-reload"
+setupDockerDaemon() {
+  echo "{ \"insecure-registries\" : [ \"${REGISTRY}\" ] }" | sudo tee /etc/docker/daemon.json > /dev/null
+}
 
-ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM -W %h:%p $USER@$BASTION_IP" \
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $PEM $USER@$NODE_PRIVATE_IP "$REGISTRATION_COMMAND"
+dockerDaemonFunction=$(declare -f setupDockerDaemon)
+runSSH "${NODE_PRIVATE_IP}" "${dockerDaemonFunction}; setupDockerDaemon"
+
+runSSH "${NODE_PRIVATE_IP}" "sudo systemctl daemon-reload && sudo systemctl restart docker"
+runSSH "${NODE_PRIVATE_IP}" "${REGISTRATION_COMMAND}"
