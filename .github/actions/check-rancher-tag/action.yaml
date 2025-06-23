@@ -14,8 +14,8 @@ runs:
     - run: |
         mkdir -p tag
         for RELEASE_LINE in v211 v210 v29; do
-          TAG_INPUT="${{ inputs.latest-tag-${RELEASE_LINE} }}"
-          CACHED_FILE="tag/tag_${RELEASE_LINE}.txt"
+          TAG_INPUT="${{ inputs.latest-tag-$RELEASE_LINE }}"
+          CACHED_FILE="tag/tag_$RELEASE_LINE.txt"
           LATEST_TAG="none"
 
           if [ -f "$CACHED_FILE" ]; then
@@ -24,7 +24,7 @@ runs:
 
           echo "Current Rancher tag for $RELEASE_LINE: $TAG_INPUT"
 
-          OUTPUT_NAME="IS_TAG_NEW_${RELEASE_LINE}"
+          OUTPUT_NAME="IS_TAG_NEW_$RELEASE_LINE"
 
           if [ "$LATEST_TAG" != "$TAG_INPUT" ]; then
             echo "New tag for $RELEASE_LINE: $TAG_INPUT"
