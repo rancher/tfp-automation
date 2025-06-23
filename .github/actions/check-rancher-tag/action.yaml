@@ -14,7 +14,14 @@ runs:
     - run: |
         mkdir -p tag
         for RELEASE_LINE in v211 v210 v29; do
-          TAG_INPUT="${{ inputs.latest-tag-$RELEASE_LINE }}"
+          if [[ "$RELEASE_LINE" = "v211" ]]; then
+            TAG_INPUT="${{ inputs.latest-tag-v211 }}"
+          elif [[ "$RELEASE_LINE" = "v210" ]]; then
+            TAG_INPUT="${{ inputs.latest-tag-v210 }}"
+          elif [[ "$RELEASE_LINE" = "v29" ]]; then
+            TAG_INPUT="${{ inputs.latest-tag-v29 }}"
+          fi
+
           CACHED_FILE="tag/tag_$RELEASE_LINE.txt"
           LATEST_TAG="none"
 
