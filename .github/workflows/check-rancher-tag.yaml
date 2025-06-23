@@ -39,9 +39,9 @@ jobs:
         id: check-rancher-tag
         uses: ./.github/actions/check-rancher-tag
         with:
-          latest-tag-v211: ${{ steps.get-latest-tag.outputs.LATEST_TAG_v211 }}
-          latest-tag-v210: ${{ steps.get-latest-tag.outputs.LATEST_TAG_v210 }}
-          latest-tag-v29: ${{ steps.get-latest-tag.outputs.LATEST_TAG_v29 }}
+          latest-tag-v211: ${{ env.LATEST_TAG_v211 }}
+          latest-tag-v210: ${{ env.LATEST_TAG_v210 }}
+          latest-tag-v29: ${{ env.LATEST_TAG_v29 }}
 
       - name: v2.11 - Cache updated Rancher tag
         if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v211 == 'true' }}
