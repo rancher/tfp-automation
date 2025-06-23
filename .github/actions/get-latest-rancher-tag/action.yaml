@@ -47,6 +47,8 @@ runs:
             fi
           fi
 
-          echo "LATEST_TAG_$RELEASE_LINE=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          SUFFIX=$(echo "$RELEASE_LINE" | tr -d '.')
+          OUTPUT_NAME="LATEST_TAG_${SUFFIX}"
+          echo "$OUTPUT_NAME" >> $GITHUB_OUTPUT
         done
       shell: bash
