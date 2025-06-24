@@ -1,6 +1,6 @@
 ---
-name: Check Rancher tag
-description: "Checks the latest Rancher tag"
+name: Compare Rancher tag
+description: "Compares the latest Rancher tag for specified release lines with cached values"
 inputs:
   latest-tag-v211:
     required: true
