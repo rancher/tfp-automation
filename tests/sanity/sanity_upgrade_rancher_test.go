@@ -91,9 +91,6 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 	err := upgrade.CreateMainTF(s.T(), s.upgradeTerraformOptions, keyPath, s.terraformConfig, s.terratestConfig, s.serverNodeOne, "", "", "")
 	require.NoError(s.T(), err)
 
-	s.client, err = infrastructure.PostRancherSetup(s.T(), s.rancherConfig, s.session, s.terraformConfig.Standalone.RancherHostname, false, false)
-	require.NoError(s.T(), err)
-
 	provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 
 	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, true)

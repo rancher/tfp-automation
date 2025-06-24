@@ -93,9 +93,6 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 	err := upgrade.CreateMainTF(p.T(), p.upgradeTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig, p.proxyPrivateIP, p.proxyNode, "", "")
 	require.NoError(p.T(), err)
 
-	p.client, err = infrastructure.PostRancherSetup(p.T(), p.rancherConfig, p.session, p.terraformConfig.Standalone.RancherHostname, false, false)
-	require.NoError(p.T(), err)
-
 	provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 
 	p.provisionAndVerifyCluster("Post-Upgrade Proxy ", clusterIDs, true)
