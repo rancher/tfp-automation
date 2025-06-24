@@ -21,6 +21,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set test tag for v2.11
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "LATEST_TAG_v211=v2.11.3-alpha2" >> $GITHUB_ENV
+          echo "IS_TAG_NEW_v211=true" >> $GITHUB_ENV
+
       - name: Cache prior Rancher tag
         id: cache
         uses: actions/cache@v4
