@@ -43,30 +43,48 @@ jobs:
           latest-tag-v210: ${{ env.LATEST_TAG_v210 }}
           latest-tag-v29: ${{ env.LATEST_TAG_v29 }}
 
+      - name: v2.11 - Write new tag to file
+        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v211 == 'true' }}
+        run: |
+          mkdir -p tag
+          echo "${{ env.LATEST_TAG_v211 }}" > tag/tag_v211.txt
+
       - name: v2.11 - Cache updated Rancher tag
         if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v211 == 'true' }}
         uses: actions/cache@v4
         with:
-          path: tag
-          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG_v211 }}
+          path: tag/tag_v211.txt
+          key: rancher-tag-v211
           restore-keys: |
             rancher-tag
+
+      - name: v2.10 - Write new tag to file
+        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v210 == 'true' }}
+        run: |
+          mkdir -p tag
+          echo "${{ env.LATEST_TAG_v210 }}" > tag/tag_v210.txt
 
       - name: v2.10 - Cache updated Rancher tag
         if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v210 == 'true' }}
         uses: actions/cache@v4
         with:
-          path: tag
-          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG_v210 }}
+          path: tag/tag_v210.txt
+          key: rancher-tag-v210
           restore-keys: |
             rancher-tag
+
+      - name: v2.9 - Write new tag to file
+        if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v29 == 'true' }}
+        run: |
+          mkdir -p tag
+          echo "${{ env.LATEST_TAG_v29 }}" > tag/tag_v29.txt
 
       - name: v2.9 - Cache updated Rancher tag
         if: ${{ steps.check-rancher-tag.outputs.IS_TAG_NEW_v29 == 'true' }}
         uses: actions/cache@v4
         with:
-          path: tag
-          key: rancher-tag-${{ steps.get-latest-tag.outputs.LATEST_TAG_v29 }}
+          path: tag/tag_v29.txt
+          key: rancher-tag-v29
           restore-keys: |
             rancher-tag
 
