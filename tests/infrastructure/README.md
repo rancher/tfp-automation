@@ -96,6 +96,7 @@ export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
 export KUBERNETES_VERSION=""
+```
 
 See the below examples on how to run the test:
 
