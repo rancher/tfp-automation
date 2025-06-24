@@ -21,10 +21,11 @@ runs:
   steps:
     - id: set-qase-id
       run: |
+        set -euo pipefail
         TRIGGERED_TAG="${{ inputs.triggered_tag }}"
         QASE_ID=""
 
-        if [[ ! -z "$TRIGGERED_TAG" ]]; then
+        if [[ -n "$TRIGGERED_TAG" && "$TRIGGERED_TAG" != "false" ]]; then
           QASE_ID="${{ inputs.qase_release_id }}"
         else
           QASE_ID="${{ inputs.qase_recurring_id }}"
@@ -32,4 +33,5 @@ runs:
 
         echo "Qase ID for tag: $QASE_ID"
         echo "id=$QASE_ID" >> $GITHUB_OUTPUT
+
       shell: bash
