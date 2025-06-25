@@ -25,7 +25,7 @@ runs:
         TRIGGERED_TAG="${{ inputs.triggered_tag }}"
         QASE_ID=""
 
-        if [[ -n "$TRIGGERED_TAG" && "$TRIGGERED_TAG" != "false" ]]; then
+        if [[ -n "$TRIGGERED_TAG" ]]; then
           QASE_ID="${{ inputs.qase_release_id }}"
         else
           QASE_ID="${{ inputs.qase_recurring_id }}"
