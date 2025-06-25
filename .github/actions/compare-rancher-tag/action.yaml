@@ -33,14 +33,12 @@ runs:
           echo "Cached Rancher tag for $RELEASE_LINE: $CACHED_TAG"
           echo "Latest Rancher tag for $RELEASE_LINE: $TAG_INPUT"
 
-          OUTPUT_NAME="IS_TAG_NEW_$RELEASE_LINE"
-
           if [ "$CACHED_TAG" != "$TAG_INPUT" ]; then
             echo "New tag for $RELEASE_LINE: $TAG_INPUT"
-            echo "$OUTPUT_NAME=true" >> $GITHUB_OUTPUT
+            echo "IS_TAG_NEW_$RELEASE_LINE=true" >> $GITHUB_ENV
           else
             echo "No new tag found yet for $RELEASE_LINE..."
-            echo "$OUTPUT_NAME=false" >> $GITHUB_OUTPUT
+            echo "IS_TAG_NEW_$RELEASE_LINE=false" >> $GITHUB_ENV
           fi
         done
       shell: bash
