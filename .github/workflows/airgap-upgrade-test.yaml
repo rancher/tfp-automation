@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   v2-11:
-    if: (startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
+    if: ((startsWith(github.event.inputs.rancher_version, 'v2.11.')) && contains(github.event.inputs.rancher_version, '-alpha'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_11 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: alpha
@@ -188,7 +188,7 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-10:
-    if: (startsWith(inputs.rancher_version, 'v2.10.')) && contains(inputs.rancher_version, '-alpha')
+    if: ((startsWith(github.event.inputs.rancher_version, 'v2.10.')) && contains(github.event.inputs.rancher_version, '-alpha'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_10 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     needs: v2-11

@@ -60,7 +60,7 @@ env:
 
 jobs:
   v2-12:
-    if: ${{ github.event_name == 'schedule' }} || ((startsWith(inputs.rancher_version, 'v2.12.')) && contains(inputs.rancher_version, '-alpha'))
+    if: ${{ github.event_name == 'schedule' }} || ((startsWith(github.event.inputs.rancher_version, 'v2.12.')) && contains(github.event.inputs.rancher_version, '-alpha'))
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
@@ -231,7 +231,7 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-11:
-    if: ${{ github.event_name == 'schedule' }} || ((startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha'))
+    if: ${{ github.event_name == 'schedule' }} || ((startsWith(github.event.inputs.rancher_version, 'v2.11.')) && contains(github.event.inputs.rancher_version, '-alpha'))
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
@@ -402,7 +402,7 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-10:
-    if: ${{ github.event_name == 'schedule' }} || ((startsWith(inputs.rancher_version, 'v2.10.')) && contains(inputs.rancher_version, '-alpha'))
+    if: ${{ github.event_name == 'schedule' }} || ((startsWith(github.event.inputs.rancher_version, 'v2.10.')) && contains(github.event.inputs.rancher_version, '-alpha'))
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
     environment: staging-latest
