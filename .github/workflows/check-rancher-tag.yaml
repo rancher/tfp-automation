@@ -101,77 +101,20 @@ jobs:
   trigger-tests-v211:
     needs: check-latest-tag
     if: ${{ needs.check-latest-tag.outputs.is_tag_new_v211 == 'true' }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        workflow:
-          - sanity-test.yaml
-          - sanity-upgrade-test.yaml
-          - proxy-test.yaml
-          - proxy-upgrade-test.yaml
-          - registry-test.yaml
-          - airgap-test.yaml
-          - airgap-upgrade-test.yaml
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Trigger workflow dispatch for ${{ matrix.workflow }}
-        uses: ./.github/actions/dispatch-workflow
-        with:
-          token: ${{ secrets.GHA_TOKEN }}
-          workflow: ${{ matrix.workflow }}
-          tag: ${{ needs.check-latest-tag.outputs.latest_tag_v211 }}
+    uses: ./.github/workflows/dispatch-workflows.yaml
+    with:
+      rancher_version: ${{ needs.check-latest-tag.outputs.latest_tag_v211 }}
 
   trigger-tests-v210:
     needs: check-latest-tag
     if: ${{ needs.check-latest-tag.outputs.is_tag_new_v210 == 'true' }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        workflow:
-          - sanity-test.yaml
-          - sanity-upgrade-test.yaml
-          - proxy-test.yaml
-          - proxy-upgrade-test.yaml
-          - registry-test.yaml
-          - airgap-test.yaml
-          - airgap-upgrade-test.yaml
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Trigger workflow dispatch for ${{ matrix.workflow }}
-        uses: ./.github/actions/dispatch-workflow
-        with:
-          token: ${{ secrets.GHA_TOKEN }}
-          workflow: ${{ matrix.workflow }}
-          tag: ${{ needs.check-latest-tag.outputs.latest_tag_v210 }}
+    uses: ./.github/workflows/dispatch-workflows.yaml
+    with:
+      rancher_version: ${{ needs.check-latest-tag.outputs.latest_tag_v210 }}
 
   trigger-tests-v29:
     needs: check-latest-tag
     if: ${{ needs.check-latest-tag.outputs.is_tag_new_v29 == 'true' }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        workflow:
-          - sanity-test.yaml
-          - sanity-upgrade-test.yaml
-          - proxy-test.yaml
-          - proxy-upgrade-test.yaml
-          - registry-test.yaml
-          - airgap-test.yaml
-          - airgap-upgrade-test.yaml
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Trigger workflow dispatch for ${{ matrix.workflow }}
-        uses: ./.github/actions/dispatch-workflow
-        with:
-          token: ${{ secrets.GHA_TOKEN }}
-          workflow: ${{ matrix.workflow }}
-          tag: ${{ needs.check-latest-tag.outputs.latest_tag_v29 }}
+    uses: ./.github/workflows/dispatch-workflows.yaml
+    with:
+      rancher_version: ${{ needs.check-latest-tag.outputs.latest_tag_v29 }}
