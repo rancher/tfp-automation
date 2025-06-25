@@ -120,6 +120,7 @@ jobs:
       - name: Trigger workflow dispatch for ${{ matrix.workflow }}
         uses: ./.github/actions/dispatch-workflow
         with:
+          token: ${{ secrets.GHA_TOKEN }}
           workflow: ${{ matrix.workflow }}
           tag: ${{ needs.check-latest-tag.outputs.latest_tag_v211 }}
 
@@ -145,6 +146,7 @@ jobs:
       - name: Trigger workflow dispatch for ${{ matrix.workflow }}
         uses: ./.github/actions/dispatch-workflow
         with:
+          token: ${{ secrets.GHA_TOKEN }}
           workflow: ${{ matrix.workflow }}
           tag: ${{ needs.check-latest-tag.outputs.latest_tag_v210 }}
 
@@ -170,5 +172,6 @@ jobs:
       - name: Trigger workflow dispatch for ${{ matrix.workflow }}
         uses: ./.github/actions/dispatch-workflow
         with:
+          token: ${{ secrets.GHA_TOKEN }}
           workflow: ${{ matrix.workflow }}
           tag: ${{ needs.check-latest-tag.outputs.latest_tag_v29 }}
