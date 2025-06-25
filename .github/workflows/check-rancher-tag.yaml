@@ -35,10 +35,20 @@ jobs:
           release_lines: "v2.11 v2.10 v2.9"
           prime_artifacts_path: ${{ secrets.PRIME_ARTIFACTS_PATH }}
 
+      - name: Read cached Rancher tags
+        id: read-cached-tags
+        run: |
+          echo "CACHED_TAG_v211=$(cat tag/tag_v211.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
+          echo "CACHED_TAG_v210=$(cat tag/tag_v210.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
+          echo "CACHED_TAG_v29=$(cat tag/tag_v29.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
+
       - name: Compare latest Rancher tag against cached tag
         id: compare-rancher-tag
         uses: ./.github/actions/compare-rancher-tag
         with:
+          cached-tag-v211: ${{ env.CACHED_TAG_v211 }}
+          cached-tag-v210: ${{ env.CACHED_TAG_v210 }}
+          cached-tag-v29: ${{ env.CACHED_TAG_v29 }}
           latest-tag-v211: ${{ env.LATEST_TAG_v211 }}
           latest-tag-v210: ${{ env.LATEST_TAG_v210 }}
           latest-tag-v29: ${{ env.LATEST_TAG_v29 }}
