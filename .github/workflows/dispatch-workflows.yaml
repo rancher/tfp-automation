@@ -1,0 +1,32 @@
+---
+name: Dispatch Workflows
+
+on:
+  workflow_call:
+    inputs:
+      rancher_version:
+        required: true
+        type: string
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        workflow:
+          - sanity-test.yaml
+          # - sanity-upgrade-test.yaml
+          # - proxy-test.yaml
+          # - proxy-upgrade-test.yaml
+          # - registry-test.yaml
+          # - airgap-test.yaml
+          # - airgap-upgrade-test.yaml
+
+    steps:
+      - name: Trigger test workflow ${{ matrix.workflow }}
+        run: |
+          echo "Rancher Version: ${{ inputs.rancher_version }}"
+          curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/${{ matrix.workflow }}/dispatches \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"ref": "main", "inputs": {"rancher_version": "${{ inputs.rancher_version }}"}}'
