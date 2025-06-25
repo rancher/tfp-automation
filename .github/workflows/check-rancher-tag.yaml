@@ -26,6 +26,7 @@ jobs:
         with:
           name: rancher-tags
           path: tag
+        continue-on-error: true
 
       - name: Get latest Rancher tag
         id: get-latest-tag
