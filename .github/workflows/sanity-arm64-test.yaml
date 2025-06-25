@@ -1,9 +1,9 @@
 ---
-name: Sanity Testing
+name: Sanity ARM64 Testing
 
 on:
   schedule:
-    - cron: "0 7 * * 1,2,4,5"
+    - cron: "0 7 * * 3"
   workflow_dispatch:
     inputs:
       rancher_version:
@@ -107,14 +107,6 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-12) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) }}
 
-      - name: Get Qase ID
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}
-          qase_recurring_id: ${{ github.event.inputs.qase-test-run-id-2-12 }}
-
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -134,9 +126,9 @@ jobs:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
-              ami: "${{ secrets.AWS_AMI }}"
+              ami: "${{ secrets.AWS_ARM_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
-              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
+              awsInstanceType: "${{ vars.AWS_ARM_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
@@ -207,7 +199,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
+          qase-test-run-id: ${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_12}}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -272,14 +264,6 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-11) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) }}
 
-      - name: Get Qase ID
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-11 }}"
-
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -299,9 +283,9 @@ jobs:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
-              ami: "${{ secrets.AWS_AMI }}"
+              ami: "${{ secrets.AWS_ARM_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
-              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
+              awsInstanceType: "${{ vars.AWS_ARM_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
@@ -372,7 +356,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
+          qase-test-run-id: ${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_11 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -437,14 +421,6 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-10) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_10_HEAD) }}
 
-      - name: Get Qase ID
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-10 }}"
-
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -464,9 +440,9 @@ jobs:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
-              ami: "${{ secrets.AWS_AMI }}"
+              ami: "${{ secrets.AWS_ARM_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
-              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
+              awsInstanceType: "${{ vars.AWS_ARM_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
@@ -538,7 +514,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
+          qase-test-run-id: ${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_10 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -603,14 +579,6 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-9) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_9_HEAD) }}
 
-      - name: Get Qase ID
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-9 }}"
-
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -630,9 +598,9 @@ jobs:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
             awsConfig:
-              ami: "${{ secrets.AWS_AMI }}"
+              ami: "${{ secrets.AWS_ARM_AMI }}"
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
-              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
+              awsInstanceType: "${{ vars.AWS_ARM_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
@@ -704,7 +672,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
+          qase-test-run-id: ${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_9}}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack

@@ -93,9 +93,6 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	err := upgrade.CreateMainTF(a.T(), a.upgradeTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig, "", "", a.bastion, a.registry)
 	require.NoError(a.T(), err)
 
-	a.client, err = infrastructure.PostRancherSetup(a.T(), a.rancherConfig, a.session, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
-	require.NoError(a.T(), err)
-
 	provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 
 	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, true)
@@ -142,7 +139,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
 		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
+		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
 
 		a.Run((tt.name), func() {
 			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
