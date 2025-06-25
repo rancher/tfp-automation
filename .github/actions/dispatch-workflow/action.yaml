@@ -2,6 +2,8 @@
 name: Dispatch Workflow
 description: "Dispatches a workflow"
 inputs:
+  token:
+    required: true
   workflow:
     required: true
   tag:
@@ -11,7 +13,7 @@ runs:
   steps:
     - run: |
         curl -X POST https://api.github.com/repos/rancher/tfp-automation/actions/workflows/${{ inputs.workflow }}/dispatches \
-          -H "Authorization: Bearer ${{ secrets.GHA_TOKEN }}" \
+          -H "Authorization: Bearer ${{ inputs.token }}" \
           -H "Accept: application/vnd.github+json" \
           -d "{\"ref\": \"main\", \"inputs\": { \"rancher_version\": \"${{ inputs.tag }}\" }}"
       shell: bash
