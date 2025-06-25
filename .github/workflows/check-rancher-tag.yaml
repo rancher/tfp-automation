@@ -64,9 +64,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tag/tag_v211.txt
-          key: rancher-tag
+          key: rancher-tag-v211-${{ env.LATEST_TAG_v211 }}
           restore-keys: |
-            rancher-tag
+            rancher-tag-v211
 
       - name: v2.10 - Write new tag to file
         if: ${{ env.IS_TAG_NEW_v210 == 'true' }}
@@ -79,9 +79,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tag/tag_v210.txt
-          key: rancher-tag
+          key: rancher-tag-v210-${{ env.LATEST_TAG_v210 }}
           restore-keys: |
-            rancher-tag
+            rancher-tag-v210
 
       - name: v2.9 - Write new tag to file
         if: ${{ env.IS_TAG_NEW_v29 == 'true' }}
@@ -94,9 +94,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tag/tag_v29.txt
-          key: rancher-tag-v29
+          key: rancher-tag-v29-${{ env.LATEST_TAG_v29 }}
           restore-keys: |
-            rancher-tag
+            rancher-tag-v29
 
   trigger-tests-v211:
     needs: check-latest-tag
