@@ -2,6 +2,12 @@
 name: Compare Rancher tag
 description: "Compares the latest Rancher tag for specified release lines with cached values"
 inputs:
+  cached-tag-v211:
+    required: true
+  cached-tag-v210:
+    required: true
+  cached-tag-v29:
+    required: true
   latest-tag-v211:
     required: true
   latest-tag-v210:
@@ -12,31 +18,26 @@ runs:
   using: composite
   steps:
     - run: |
-        mkdir -p tag
         for RELEASE_LINE in v211 v210 v29; do
           if [[ "$RELEASE_LINE" = "v211" ]]; then
             TAG_INPUT="${{ inputs.latest-tag-v211 }}"
+            CACHED_TAG="${{ inputs.cached-tag-v211 }}"
           elif [[ "$RELEASE_LINE" = "v210" ]]; then
             TAG_INPUT="${{ inputs.latest-tag-v210 }}"
+            CACHED_TAG="${{ inputs.cached-tag-v210 }}"
           elif [[ "$RELEASE_LINE" = "v29" ]]; then
             TAG_INPUT="${{ inputs.latest-tag-v29 }}"
+            CACHED_TAG="${{ inputs.cached-tag-v29 }}"
           fi
 
-          CACHED_FILE="tag/tag_$RELEASE_LINE.txt"
-          LATEST_TAG="none"
-
-          if [ -f "$CACHED_FILE" ]; then
-            LATEST_TAG=$(cat "$CACHED_FILE")
-          fi
-
-          echo "Current Rancher tag for $RELEASE_LINE: $TAG_INPUT"
+          echo "Cached Rancher tag for $RELEASE_LINE: $CACHED_TAG"
+          echo "Latest Rancher tag for $RELEASE_LINE: $TAG_INPUT"
 
           OUTPUT_NAME="IS_TAG_NEW_$RELEASE_LINE"
 
-          if [ "$LATEST_TAG" != "$TAG_INPUT" ]; then
+          if [ "$CACHED_TAG" != "$TAG_INPUT" ]; then
             echo "New tag for $RELEASE_LINE: $TAG_INPUT"
             echo "$OUTPUT_NAME=true" >> $GITHUB_OUTPUT
-            echo "$TAG_INPUT" > "$CACHED_FILE"
           else
             echo "No new tag found yet for $RELEASE_LINE..."
             echo "$OUTPUT_NAME=false" >> $GITHUB_OUTPUT
