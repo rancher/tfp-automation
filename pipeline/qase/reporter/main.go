@@ -4,17 +4,19 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/antihax/optional"
 	defaults "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/testcase"
 	"github.com/sirupsen/logrus"
 	qase "go.qase.io/client"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var (
@@ -32,13 +34,34 @@ func main() {
 
 		runID, err := strconv.ParseInt(runIDEnvVar, 10, 64)
 		if err != nil {
-			logrus.Fatalf("error reporting converting string to int64: %v", err)
+			logrus.Fatalf("error converting run ID string to int64:: %v", err)
 		}
 
-		err = reportTestQases(client, runID)
-		if err != nil {
-			logrus.Error("error reporting: ", err)
+		maxRetries := 10
+		var lastErr error
+		var statusCode int
+
+		for retries := 0; retries < maxRetries; retries++ {
+			statusCode, err = reportTestQases(client, runID)
+			if err == nil {
+				logrus.Info("Reported results to Qase successfully.")
+				return
+			}
+
+			if statusCode == http.StatusTooManyRequests {
+				baseDelay := 10 * time.Second
+				backoff := baseDelay + time.Duration(retries)*time.Second
+				logrus.Warnf("429 Too Many Requests – retrying in %s (%d/%d)...", backoff, retries+1, maxRetries)
+				time.Sleep(backoff)
+				lastErr = err
+				continue
+			}
+
+			logrus.Errorf("Non-retryable error occurred (HTTP %d): %v", statusCode, err)
+			return
 		}
+
+		logrus.Errorf("Failed after %d retries (last HTTP %d): %v", maxRetries, statusCode, lastErr)
 	}
 }
 
@@ -141,40 +164,40 @@ func parseCorrectTestCases(testCases []testcase.GoTestOutput) map[string]*testca
 	return finalTestCases
 }
 
-func reportTestQases(client *qase.APIClient, testRunID int64) error {
+func reportTestQases(client *qase.APIClient, testRunID int64) (int, error) {
 	tempTestCases, err := readTestCase()
 	if err != nil {
-		return nil
+		return 0, err
 	}
 
 	goTestCases := parseCorrectTestCases(tempTestCases)
 
 	qaseTestCases, err := getAllAutomationTestCases(client)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	for _, goTestCase := range goTestCases {
 		if testQase, ok := qaseTestCases[goTestCase.Name]; ok {
 			// update test status
-			err = updateTestInRun(client, *goTestCase, testQase.Id, testRunID)
+			httpCode, err := updateTestInRun(client, *goTestCase, testQase.Id, testRunID)
 			if err != nil {
-				return err
+				return httpCode, err
 			}
 		} else {
 			// write test case
 			caseID, err := writeTestCaseToQase(client, *goTestCase)
 			if err != nil {
-				return err
+				return 0, err
 			}
-			err = updateTestInRun(client, *goTestCase, caseID.Result.Id, testRunID)
+			httpCode, err := updateTestInRun(client, *goTestCase, caseID.Result.Id, testRunID)
 			if err != nil {
-				return err
+				return httpCode, err
 			}
 		}
 	}
 
-	return nil
+	return http.StatusOK, nil
 }
 
 func writeTestSuiteToQase(client *qase.APIClient, testCase testcase.GoTestCase) (*int64, error) {
@@ -239,14 +262,14 @@ func writeTestCaseToQase(client *qase.APIClient, testCase testcase.GoTestCase) (
 	return &caseID, err
 }
 
-func updateTestInRun(client *qase.APIClient, testCase testcase.GoTestCase, qaseTestCaseID, testRunID int64) error {
+func updateTestInRun(client *qase.APIClient, testCase testcase.GoTestCase, qaseTestCaseID, testRunID int64) (int, error) {
 	status := fmt.Sprintf("%sed", testCase.Status)
 	var elapsedTime float64
 	if testCase.Elapsed != "" {
 		var err error
 		elapsedTime, err = strconv.ParseFloat(testCase.Elapsed, 64)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
@@ -257,12 +280,14 @@ func updateTestInRun(client *qase.APIClient, testCase testcase.GoTestCase, qaseT
 		Time:    int64(elapsedTime),
 	}
 
-	_, _, err := client.ResultsApi.CreateResult(context.TODO(), resultBody, defaults.RancherManagerProjectID, testRunID)
+	_, resp, err := client.ResultsApi.CreateResult(context.TODO(), resultBody, defaults.RancherManagerProjectID, testRunID)
 	if err != nil {
-		return err
+		if resp != nil {
+			return resp.StatusCode, err
+		}
+		return 0, err
 	}
-
-	return nil
+	return http.StatusOK, nil
 }
 
 func getAutomationTestName(customFields []qase.CustomFieldValue) string {
