@@ -122,7 +122,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-12 }}"
+          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_12 }}"
 
       - name: Create config.yaml
         run: |
@@ -182,7 +182,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_12_HEAD }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
             standaloneRegistry:
               registryName: "${{ secrets.REGISTRY_NAME }}"
               registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
@@ -300,7 +300,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-11 }}"
+          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_11 }}"
 
       - name: Create config.yaml
         run: |
@@ -360,7 +360,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_11_HEAD }}"
+              upgradedRancherTagVersion: "${{ vars.UPGRADED_RANCHER_VERSION }}"
             standaloneRegistry:
               registryName: "${{ secrets.REGISTRY_NAME }}"
               registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
@@ -478,7 +478,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-10 }}"
+          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_10 }}"
 
       - name: Create config.yaml
         run: |
@@ -540,7 +540,7 @@ jobs:
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_10_HEAD }}"
+              upgradedRancherTagVersion: "${{ vars.UPGRADED_RANCHER_VERSION }}"
             standaloneRegistry:
               registryName: "${{ secrets.REGISTRY_NAME }}"
               registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"

@@ -8,47 +8,60 @@ inputs:
   prime_artifacts_path:
     description: "Path to prime artifacts"
     required: true
+outputs:
+  latest_tag_v212:
+    description: "Latest tag for v2.12"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v212 }}
+  latest_tag_v211:
+    description: "Latest tag for v2.11"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v211 }}
+  latest_tag_v210:
+    description: "Latest tag for v2.10"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v210 }}
+  latest_tag_v29:
+    description: "Latest tag for v2.9"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v29 }}
 runs:
   using: composite
   steps:
-    - run: |
+    - id: get-tags
+      run: |
         RELEASE_LINES="${{ inputs.release_lines }}"
         TAGS=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name')
 
         for RELEASE_LINE in $RELEASE_LINES; do
-          VERSION=$(echo "$TAGS" | grep "^$RELEASE_LINE" | sort -V)
-          LATEST=$(echo "$VERSION" | tail -n 1)
-          GA_RELEASE=$(echo "$VERSION" | grep -Ev -- '-(rc|alpha|hotfix)' | tail -n 1)
-
-          if [ "$(printf "$GA_RELEASE\n$LATEST" | sort -V | tail -n 1)" == "$LATEST" ]; then
-            LATEST_VERSION="$LATEST"
-          else
-            LATEST_VERSION="$GA_RELEASE"
-          fi
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name' | grep -E "^$RELEASE_LINE" | head -n 1)
 
           echo "Latest tag for $RELEASE_LINE: $LATEST_VERSION"
 
-          if [[ "$RELEASE_LINE" == "v2.11" ]]; then
+          if [[ "$RELEASE_LINE" == "v2.12" || "$RELEASE_LINE" == "v2.11" ]]; then
             RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST_VERSION")
             ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
 
             echo "Asset count for $LATEST_VERSION: $ASSET_COUNT"
 
-            if [ "$ASSET_COUNT" -ne 20 ]; then
-              echo "Asset count: $ASSET_COUNT. Expected 20 assets..."
+            if [ "$ASSET_COUNT" -lt 19 ]; then
+              echo "Asset count: $ASSET_COUNT. Expected at least 19 assets..."
               continue
             fi
           else
             RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)
 
             if [[ $? -ne 0 ]]; then
-              echo "Unable to reach: ${{ inputs.prime_artifacts_path }}"
+              echo "Unable to reach: ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt"
               continue
             fi
           fi
 
           SUFFIX=$(echo "$RELEASE_LINE" | tr -d '.')
-          OUTPUT_NAME="LATEST_TAG_${SUFFIX}"
-          echo "$OUTPUT_NAME=$LATEST_VERSION" >> $GITHUB_ENV
+          eval "LATEST_TAG_${SUFFIX}=$LATEST_VERSION"
+          echo "LATEST_TAG_${SUFFIX}=$LATEST_VERSION" >> $GITHUB_ENV
         done
+      shell: bash
+    - id: set-outputs
+      run: |
+        echo "latest_tag_v212=$LATEST_TAG_v212" >> $GITHUB_OUTPUT
+        echo "latest_tag_v211=$LATEST_TAG_v211" >> $GITHUB_OUTPUT
+        echo "latest_tag_v210=$LATEST_TAG_v210" >> $GITHUB_OUTPUT
+        echo "latest_tag_v29=$LATEST_TAG_v29" >> $GITHUB_OUTPUT
       shell: bash
