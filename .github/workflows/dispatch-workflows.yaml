@@ -15,12 +15,12 @@ jobs:
       matrix:
         workflow:
           - sanity-test.yaml
-          # - sanity-upgrade-test.yaml
-          # - proxy-test.yaml
-          # - proxy-upgrade-test.yaml
-          # - registry-test.yaml
-          # - airgap-test.yaml
-          # - airgap-upgrade-test.yaml
+          - sanity-upgrade-test.yaml
+          - proxy-test.yaml
+          - proxy-upgrade-test.yaml
+          - registry-test.yaml
+          - airgap-test.yaml
+          - airgap-upgrade-test.yaml
 
     steps:
       - name: Trigger test workflow ${{ matrix.workflow }}
