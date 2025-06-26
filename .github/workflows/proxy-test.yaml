@@ -40,6 +40,12 @@ on:
         description: "Qase Test Run ID for v2.9.x"
         required: true
         default: "4540"
+  workflow_call:
+    inputs:
+      rancher_version:
+        description: "Rancher tag version provided from check-rancher-tag workflow"
+        required: true
+        type: string
 
 permissions:
   id-token: write
@@ -60,8 +66,11 @@ env:
 
 jobs:
   v2-12:
-    if: ${{ github.event_name == 'schedule' }} || (startsWith(github.event.inputs.rancher_version, 'v2.12.') && contains(github.event.inputs.rancher_version, '-alpha'))
-    name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
+    if: |
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.')) && contains(inputs.rancher_version, '-alpha')
+    name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -231,8 +240,11 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-11:
-    if: ${{ github.event_name == 'schedule' }} || (startsWith(github.event.inputs.rancher_version, 'v2.11.') && contains(github.event.inputs.rancher_version, '-alpha'))
-    name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
+    if: |
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
+    name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
 
@@ -402,8 +414,11 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-10:
-    if: ${{ github.event_name == 'schedule' }} || (startsWith(github.event.inputs.rancher_version, 'v2.10.') && contains(github.event.inputs.rancher_version, '-alpha'))
-    name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
+    if: |
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10.')) && contains(inputs.rancher_version, '-alpha')
+    name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: staging-latest
 
