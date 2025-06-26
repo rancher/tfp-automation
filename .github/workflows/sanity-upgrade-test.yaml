@@ -122,7 +122,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-12 }}"
+          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_12 }}"
 
       - name: Create config.yaml
         run: |
@@ -180,7 +180,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_12_HEAD}}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -294,7 +294,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-11 }}"
+          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_11 }}"
 
       - name: Create config.yaml
         run: |
@@ -352,7 +352,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_11_HEAD }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -466,7 +466,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-10 }}"
+          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_10 }}"
 
       - name: Create config.yaml
         run: |
@@ -526,7 +526,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_10_HEAD }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -640,7 +640,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
-          qase_recurring_id: "${{ github.event.inputs.qase-test-run-id-2-9 }}"
+          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_9 }}"
 
       - name: Create config.yaml
         run: |
@@ -700,7 +700,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_9_HEAD }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}

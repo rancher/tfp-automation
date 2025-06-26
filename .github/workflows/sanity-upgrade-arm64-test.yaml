@@ -163,7 +163,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_12_HEAD}}"
+              upgradedRancherTagVersion: "${{ vars.UPGRADED_RANCHER_VERSION}}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -324,7 +324,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_11_HEAD }}"
+              upgradedRancherTagVersion: "${{ vars.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -487,7 +487,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_10_HEAD }}"
+              upgradedRancherTagVersion: "${{ vars.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -650,7 +650,7 @@ jobs:
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL}}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ vars.RANCHER_VERSION_2_9_HEAD }}"
+              upgradedRancherTagVersion: "${{ vars.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}

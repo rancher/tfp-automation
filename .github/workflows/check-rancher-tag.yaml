@@ -2,42 +2,44 @@
 name: Check Rancher Tag
 
 on:
-  # schedule:
-  #   - cron: "0 */4 * * 1-5"
+  schedule:
+    - cron: "0 */4 * * 1-5"
   workflow_dispatch:
 
 jobs:
   check-latest-tag:
     runs-on: ubuntu-latest
     outputs:
-      latest_tag_v211: ${{ env.LATEST_TAG_v211 }}
-      latest_tag_v210: ${{ env.LATEST_TAG_v210 }}
-      latest_tag_v29: ${{ env.LATEST_TAG_v29 }}
-      is_tag_new_v211: ${{ env.IS_TAG_NEW_v211 }}
-      is_tag_new_v210: ${{ env.IS_TAG_NEW_v210 }}
-      is_tag_new_v29: ${{ env.IS_TAG_NEW_v29 }}
+      latest_tag_v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
+      latest_tag_v211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
+      latest_tag_v210: ${{ steps.get-latest-tag.outputs.latest_tag_v210 }}
+      latest_tag_v29: ${{ steps.get-latest-tag.outputs.latest_tag_v29 }}
+      is_tag_new_v212: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v212 }}
+      is_tag_new_v211: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v211 }}
+      is_tag_new_v210: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v210 }}
+      is_tag_new_v29: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v29 }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache prior Rancher tag
-        id: cache
+      - name: Restore Rancher tag cache
         uses: actions/cache@v4
         with:
           path: tag
-          key: rancher-tag
+          key: rancher-tag-cache
 
       - name: Get latest Rancher tag
         id: get-latest-tag
         uses: ./.github/actions/get-latest-rancher-tag
         with:
-          release_lines: "v2.11 v2.10 v2.9"
+          release_lines: "v2.12 v2.11 v2.10 v2.9"
           prime_artifacts_path: ${{ secrets.PRIME_ARTIFACTS_PATH }}
 
       - name: Read cached Rancher tags
         id: read-cached-tags
         run: |
+          echo "CACHED_TAG_v212=$(cat tag/tag_v212.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
           echo "CACHED_TAG_v211=$(cat tag/tag_v211.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
           echo "CACHED_TAG_v210=$(cat tag/tag_v210.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
           echo "CACHED_TAG_v29=$(cat tag/tag_v29.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
@@ -46,58 +48,48 @@ jobs:
         id: compare-rancher-tag
         uses: ./.github/actions/compare-rancher-tag
         with:
+          cached-tag-v212: ${{ env.CACHED_TAG_v212 }}
           cached-tag-v211: ${{ env.CACHED_TAG_v211 }}
           cached-tag-v210: ${{ env.CACHED_TAG_v210 }}
           cached-tag-v29: ${{ env.CACHED_TAG_v29 }}
-          latest-tag-v211: ${{ env.LATEST_TAG_v211 }}
-          latest-tag-v210: ${{ env.LATEST_TAG_v210 }}
-          latest-tag-v29: ${{ env.LATEST_TAG_v29 }}
+          latest-tag-v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
+          latest-tag-v211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
+          latest-tag-v210: ${{ steps.get-latest-tag.outputs.latest_tag_v210 }}
+          latest-tag-v29: ${{ steps.get-latest-tag.outputs.latest_tag_v29 }}
 
-      - name: v2.11 - Write new tag to file
-        if: ${{ env.IS_TAG_NEW_v211 == 'true' }}
+      - name: v2.12 - Write latest tag to file
         run: |
           mkdir -p tag
-          echo "${{ env.LATEST_TAG_v211 }}" > tag/tag_v211.txt
+          echo "${{ steps.get-latest-tag.outputs.latest_tag_v212 }}" > tag/tag_v212.txt
 
-      - name: v2.11 - Cache updated Rancher tag
-        if: ${{ env.IS_TAG_NEW_v211 == 'true' }}
-        uses: actions/cache@v4
-        with:
-          path: tag/tag_v211.txt
-          key: rancher-tag-v211-${{ env.LATEST_TAG_v211 }}
-          restore-keys: |
-            rancher-tag-v211
-
-      - name: v2.10 - Write new tag to file
-        if: ${{ env.IS_TAG_NEW_v210 == 'true' }}
+      - name: v2.11 - Write latest tag to file
         run: |
           mkdir -p tag
-          echo "${{ env.LATEST_TAG_v210 }}" > tag/tag_v210.txt
+          echo "${{ steps.get-latest-tag.outputs.latest_tag_v211 }}" > tag/tag_v211.txt
 
-      - name: v2.10 - Cache updated Rancher tag
-        if: ${{ env.IS_TAG_NEW_v210 == 'true' }}
-        uses: actions/cache@v4
-        with:
-          path: tag/tag_v210.txt
-          key: rancher-tag-v210-${{ env.LATEST_TAG_v210 }}
-          restore-keys: |
-            rancher-tag-v210
-
-      - name: v2.9 - Write new tag to file
-        if: ${{ env.IS_TAG_NEW_v29 == 'true' }}
+      - name: v2.10 - Write latest tag to file
         run: |
           mkdir -p tag
-          echo "${{ env.LATEST_TAG_v29 }}" > tag/tag_v29.txt
+          echo "${{ steps.get-latest-tag.outputs.latest_tag_v210 }}" > tag/tag_v210.txt
 
-      - name: v2.9 - Cache updated Rancher tag
-        if: ${{ env.IS_TAG_NEW_v29 == 'true' }}
+      - name: v2.9 - Write latest tag to file
+        run: |
+          mkdir -p tag
+          echo "${{ steps.get-latest-tag.outputs.latest_tag_v29 }}" > tag/tag_v29.txt
+
+      - name: Save Rancher tag cache
         uses: actions/cache@v4
         with:
-          path: tag/tag_v29.txt
-          key: rancher-tag-v29-${{ env.LATEST_TAG_v29 }}
-          restore-keys: |
-            rancher-tag-v29
+          path: tag
+          key: rancher-tag-cache
 
+  trigger-tests-v212:
+    needs: check-latest-tag
+    if: ${{ needs.check-latest-tag.outputs.is_tag_new_v212 == 'true' }}
+    uses: ./.github/workflows/dispatch-workflows.yaml
+    with:
+      rancher_version: ${{ needs.check-latest-tag.outputs.latest_tag_v212 }}
+  
   trigger-tests-v211:
     needs: check-latest-tag
     if: ${{ needs.check-latest-tag.outputs.is_tag_new_v211 == 'true' }}

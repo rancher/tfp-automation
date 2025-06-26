@@ -2,11 +2,15 @@
 name: Compare Rancher tag
 description: "Compares the latest Rancher tag for specified release lines with cached values"
 inputs:
+  cached-tag-v212:
+    required: true
   cached-tag-v211:
     required: true
   cached-tag-v210:
     required: true
   cached-tag-v29:
+    required: true
+  latest-tag-v212:
     required: true
   latest-tag-v211:
     required: true
@@ -14,12 +18,25 @@ inputs:
     required: true
   latest-tag-v29:
     required: true
+outputs:
+  is_tag_new_v212:
+    value: ${{ steps.compare.outputs.is_tag_new_v212 }}
+  is_tag_new_v211:
+    value: ${{ steps.compare.outputs.is_tag_new_v211 }}
+  is_tag_new_v210:
+    value: ${{ steps.compare.outputs.is_tag_new_v210 }}
+  is_tag_new_v29:
+    value: ${{ steps.compare.outputs.is_tag_new_v29 }}
 runs:
   using: composite
   steps:
-    - run: |
-        for RELEASE_LINE in v211 v210 v29; do
-          if [[ "$RELEASE_LINE" = "v211" ]]; then
+    - id: compare
+      run: |
+        for RELEASE_LINE in v212 v211 v210 v29; do
+          if [[ "$RELEASE_LINE" = "v212" ]]; then
+            TAG_INPUT="${{ inputs.latest-tag-v212 }}"
+            CACHED_TAG="${{ inputs.cached-tag-v212 }}"
+          elif [[ "$RELEASE_LINE" = "v211" ]]; then
             TAG_INPUT="${{ inputs.latest-tag-v211 }}"
             CACHED_TAG="${{ inputs.cached-tag-v211 }}"
           elif [[ "$RELEASE_LINE" = "v210" ]]; then
@@ -35,10 +52,15 @@ runs:
 
           if [ "$CACHED_TAG" != "$TAG_INPUT" ]; then
             echo "New tag for $RELEASE_LINE: $TAG_INPUT"
-            echo "IS_TAG_NEW_$RELEASE_LINE=true" >> $GITHUB_ENV
+            eval "IS_TAG_NEW_$RELEASE_LINE=true"
           else
             echo "No new tag found yet for $RELEASE_LINE..."
-            echo "IS_TAG_NEW_$RELEASE_LINE=false" >> $GITHUB_ENV
+            eval "IS_TAG_NEW_$RELEASE_LINE=false"
           fi
         done
+
+        echo "is_tag_new_v212=$IS_TAG_NEW_v212" >> $GITHUB_OUTPUT
+        echo "is_tag_new_v211=$IS_TAG_NEW_v211" >> $GITHUB_OUTPUT
+        echo "is_tag_new_v210=$IS_TAG_NEW_v210" >> $GITHUB_OUTPUT
+        echo "is_tag_new_v29=$IS_TAG_NEW_v29" >> $GITHUB_OUTPUT
       shell: bash

@@ -157,7 +157,7 @@ jobs:
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ vars.RANCHER_VERSION_2_12_HEAD }}"
+              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
@@ -314,7 +314,7 @@ jobs:
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ vars.RANCHER_VERSION_2_11_HEAD }}"
+              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_11 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
@@ -472,7 +472,7 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
-              rancherTagVersion: "${{ vars.RANCHER_VERSION_2_10_HEAD }}"
+              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_10 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
@@ -630,7 +630,7 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
-              rancherTagVersion: "${{ vars.RANCHER_VERSION_2_9_HEAD }}"
+              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_9 }}${{ vars.RKE2_VERSION_SUFFIX }}"
           terratest:
