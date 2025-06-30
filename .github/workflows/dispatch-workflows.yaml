@@ -21,6 +21,7 @@ jobs:
           - registry-test.yaml
           - airgap-test.yaml
           - airgap-upgrade-test.yaml
+          - rancher2-recurring-test.yaml
 
     steps:
       - name: Trigger test workflow ${{ matrix.workflow }}
