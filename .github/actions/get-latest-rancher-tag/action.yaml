@@ -42,14 +42,14 @@ runs:
 
             if [ "$ASSET_COUNT" -lt 19 ]; then
               echo "Asset count: $ASSET_COUNT. Expected at least 19 assets..."
-              continue
+              LATEST_VERSION=""
             fi
           else
             RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)
 
             if [[ $? -ne 0 ]]; then
               echo "Unable to reach: ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt"
-              continue
+              LATEST_VERSION=""
             fi
           fi
 
