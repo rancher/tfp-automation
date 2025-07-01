@@ -15,7 +15,7 @@ env:
   HOSTNAME_PREFIX: tfp-sanity
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: sanity
-  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION }}"
+  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: ^TestTfpSanityProvisioningTestSuite$
   TIMEOUT: 2h
@@ -151,6 +151,11 @@ jobs:
         with:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
+
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
 
       - name: Run Sanity Test Suite
         uses: ./.github/actions/run-test-suite
