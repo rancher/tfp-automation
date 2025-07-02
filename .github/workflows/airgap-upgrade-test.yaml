@@ -37,7 +37,6 @@ env:
   HOSTNAME_PREFIX: "tfp-airgap"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "airgap"
-  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION }}"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpAirgapUpgradeRancherTestSuite$"
   SUITE_TIMEOUT: "7h"
@@ -55,6 +54,8 @@ jobs:
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: alpha
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
     steps:
       - name: Checkout repository
@@ -189,6 +190,11 @@ jobs:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
       - name: Run Airgap Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
@@ -223,7 +229,10 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_11 }} -> ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
+    needs: v2-12
     environment: alpha
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
     steps:
       - name: Checkout repository
@@ -358,6 +367,11 @@ jobs:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
       - name: Run Airgap Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
@@ -392,7 +406,10 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_10 }} -> ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
+    needs: v2-11
     environment: alpha
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
     steps:
       - name: Checkout repository
@@ -526,6 +543,11 @@ jobs:
         with:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
+
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
 
       - name: Run Airgap Upgrade Test Suite
         uses: ./.github/actions/run-test-suite

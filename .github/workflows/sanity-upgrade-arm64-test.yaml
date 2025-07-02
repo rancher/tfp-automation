@@ -53,7 +53,6 @@ env:
   HOSTNAME_PREFIX: "tfp-sanity-up"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "sanity"
-  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION }}"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpSanityUpgradeRancherTestSuite$"
   TIMEOUT: "2h"
@@ -64,6 +63,8 @@ jobs:
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version || github.event.inputs.upgraded-rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
     steps:
       - name: Checkout repository
@@ -191,6 +192,11 @@ jobs:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
       - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
@@ -225,6 +231,8 @@ jobs:
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_11 }} -> ${{ github.event.inputs.rancher_version || github.event.inputs.upgraded-rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
     steps:
       - name: Checkout repository
@@ -352,6 +360,11 @@ jobs:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
       - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
@@ -386,6 +399,8 @@ jobs:
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_10 }} -> ${{ github.event.inputs.rancher_version || github.event.inputs.upgraded-rancher-version-2-10 }}
     runs-on: ubuntu-latest
     environment: upgrade-prime-staging
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
     steps:
       - name: Checkout repository
@@ -515,6 +530,11 @@ jobs:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
       - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
@@ -549,6 +569,8 @@ jobs:
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_9 }} -> ${{ github.event.inputs.rancher_version || github.event.inputs.upgraded-rancher-version-2-9 }}
     runs-on: ubuntu-latest
     environment: upgrade-prime-staging
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
     steps:
       - name: Checkout repository
@@ -677,6 +699,11 @@ jobs:
         with:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
+
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
 
       - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite

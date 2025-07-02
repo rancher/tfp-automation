@@ -52,7 +52,6 @@ env:
   HOSTNAME_PREFIX: "tfp-recur"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "rancher2/recurring"
-  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION }}"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpRancher2RecurringRunsTestSuite$"
   TIMEOUT: "4h"
@@ -63,6 +62,8 @@ jobs:
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
     steps:
       - name: Checkout repository
@@ -199,6 +200,11 @@ jobs:
           terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
 
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
       - name: Run Rancher2 Test Suite
         uses: ./.github/actions/run-test-suite
         with:
@@ -233,6 +239,8 @@ jobs:
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: latest
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
     steps:
       - name: Checkout repository
@@ -369,6 +377,11 @@ jobs:
           terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
 
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
       - name: Run Rancher2 Test Suite
         uses: ./.github/actions/run-test-suite
         with:
@@ -403,6 +416,8 @@ jobs:
     name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
     environment: staging-latest
+    env:
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
     steps:
       - name: Checkout repository
@@ -539,6 +554,11 @@ jobs:
         with:
           terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
+
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
 
       - name: Run Rancher2 Test Suite
         uses: ./.github/actions/run-test-suite
