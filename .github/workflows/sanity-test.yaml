@@ -233,6 +233,13 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
+      - name: Refresh AWS credentials
+        if: always()
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Revoke Runner IP
         if: always()
         uses: ./.github/actions/revoke-runner-ip
@@ -407,6 +414,13 @@ jobs:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
+
+      - name: Refresh AWS credentials
+        if: always()
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Revoke Runner IP
         if: always()
@@ -584,6 +598,13 @@ jobs:
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
 
+      - name: Refresh AWS credentials
+        if: always()
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Revoke Runner IP
         if: always()
         uses: ./.github/actions/revoke-runner-ip
@@ -759,6 +780,13 @@ jobs:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-token: ${{ secrets.SLACK_TOKEN }}
+
+      - name: Refresh AWS credentials
+        if: always()
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Revoke Runner IP
         if: always()
