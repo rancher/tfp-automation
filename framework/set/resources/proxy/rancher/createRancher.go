@@ -39,9 +39,9 @@ func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
-		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " +
-		rke2BastionPrivateIP
+		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.RancherHostname + " " +
+		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
+		terraformConfig.Standalone.RancherImage + " " + rke2BastionPrivateIP
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage

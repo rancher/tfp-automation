@@ -33,9 +33,10 @@ func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, bastionNode, upgradeRancher)
 
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
-		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " +
-		terraformConfig.Standalone.AirgapInternalFQDN + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
-		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.UpgradedRancherImage + " " + registryPublicDNS
+		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.CertType + " " +
+		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.AirgapInternalFQDN + " " +
+		terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
+		terraformConfig.Standalone.UpgradedRancherImage + " " + registryPublicDNS
 
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage

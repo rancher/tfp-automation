@@ -76,6 +76,7 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
@@ -155,6 +156,7 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
     rancherHostname: ""                           # REQUIRED - fill with desired value
@@ -205,6 +207,7 @@ terraform:
     airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
@@ -266,6 +269,7 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     osGroup: ""                                   # REQUIRED - fill with desired value
     osUser: ""                                    # REQUIRED - fill with desired value
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
