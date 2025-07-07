@@ -131,9 +131,6 @@ jobs:
             host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
-          upgradeInput:
-            clusters:
-              -  versionToUpgrade: ${{ vars.RKE2_VERSION_2_12 }}
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
@@ -318,9 +315,6 @@ jobs:
             host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
-          upgradeInput:
-            clusters:
-              -  versionToUpgrade: ${{ vars.RKE2_VERSION_2_11 }}
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
@@ -505,9 +499,6 @@ jobs:
             host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
-          upgradeInput:
-            clusters:
-              -  versionToUpgrade: ${{ vars.RKE2_VERSION_2_10 }}
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"

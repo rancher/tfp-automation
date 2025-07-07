@@ -100,10 +100,6 @@ rancher:
   adminToken: ""
   cleanup: true
 
-upgradeInput:
-  clusters:
-    -  versionToUpgrade: ""         # Leave off the suffix; the test will add it for K3s and RKE2
-
 terraform:
   cni: ""
   defaultClusterRoleForProjectMembers: "true"
