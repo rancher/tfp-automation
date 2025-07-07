@@ -6,8 +6,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	extClusters "github.com/rancher/shepherd/extensions/clusters"
-	"github.com/rancher/tests/actions/clusters"
-	"github.com/rancher/tests/actions/upgradeinput"
+	"github.com/rancher/shepherd/extensions/clusters/kubernetesversions"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/sirupsen/logrus"
@@ -25,30 +24,30 @@ func SetUpgradeImportedCluster(client *rancher.Client, terraformConfig *config.T
 		return err
 	}
 
-	cluster, err := upgradeinput.LoadUpgradeKubernetesConfig(client)
+	var clusterType string
+	if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
+		clusterType = extClusters.K3SClusterType.String()
+	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
+		clusterType = extClusters.RKE2ClusterType.String()
+	}
+
+	version, err := kubernetesversions.Default(client, clusterType, nil)
 	if err != nil {
 		return err
 	}
 
-	clusterConfig := clusters.ConvertConfigToClusterConfig(&cluster[0].ProvisioningInput)
-	clusterConfig.KubernetesVersion = cluster[0].VersionToUpgrade
-
 	var updatedCluster *management.Cluster
 	if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
-		clusterConfig.KubernetesVersion += "+k3s1"
-
 		updatedCluster = &management.Cluster{
 			K3sConfig: &management.K3sConfig{
-				Version: clusterConfig.KubernetesVersion,
+				Version: version[0],
 			},
 			Name: clusterResp.Name,
 		}
 	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
-		clusterConfig.KubernetesVersion += "+rke2r1"
-
 		updatedCluster = &management.Cluster{
 			Rke2Config: &management.Rke2Config{
-				Version: clusterConfig.KubernetesVersion,
+				Version: version[0],
 			},
 			Name: clusterResp.Name,
 		}
