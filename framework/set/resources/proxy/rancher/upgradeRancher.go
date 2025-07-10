@@ -33,7 +33,8 @@ func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclw
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, proxyNode, upgradeRancher)
 
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
-		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
+		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " +
+		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
 		terraformConfig.Standalone.UpgradedRancherImage + " " + proxyPrivateIP
 
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {

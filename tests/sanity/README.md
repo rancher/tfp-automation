@@ -75,6 +75,7 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using Rancher Prime or staging registry
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
