@@ -99,13 +99,6 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: "${{ secrets.AWS_REGION }}"
-
       - name: Retrieve and set ECR password
         id: get-ecr-password
         uses: ./.github/actions/get-ecr-password
@@ -291,13 +284,6 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: "${{ secrets.AWS_REGION }}"
-
       - name: Retrieve and set ECR password
         id: get-ecr-password
         uses: ./.github/actions/get-ecr-password
@@ -482,13 +468,6 @@ jobs:
         with:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: "${{ secrets.AWS_REGION }}"
 
       - name: Retrieve and set ECR password
         id: get-ecr-password
