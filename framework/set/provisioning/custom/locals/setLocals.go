@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -45,10 +44,8 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 }
 
 func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customClusterNames []string) {
-	if customClusterNames != nil {
-		for _, name := range customClusterNames {
-			setCustomClusterLocalBlock(localsBlockBody, name, terraformConfig)
-		}
+	for _, name := range customClusterNames {
+		setCustomClusterLocalBlock(localsBlockBody, name, terraformConfig)
 	}
 
 	//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
@@ -87,12 +84,12 @@ func setCustomClusterLocalBlock(localsBlockBody *hclwrite.Body, name string, ter
 
 	localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
 
-	if terraformConfig.Module == modules.CustomEC2RKE2Windows && (terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "") {
-		setProxyLocalBlock(localsBlockBody, terraformConfig.ResourcePrefix)
+	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && (terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "") {
+		setWindowsProxyLocalBlock(localsBlockBody, name)
 	}
 }
 
-func setProxyLocalBlock(localsBlockBody *hclwrite.Body, name string) error {
+func setWindowsProxyLocalBlock(localsBlockBody *hclwrite.Body, name string) error {
 	// Terraform, by design, results to a .cmd file. Need to explictily call powershell.exe
 	envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "powershell.exe $env:")`, name)
 	curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)

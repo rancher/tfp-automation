@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
@@ -19,9 +19,10 @@ import (
 // SetCustomRKE2K3s is a function that will set the custom RKE2/K3s cluster configurations in the main.tf file.
 func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
-	if terraformConfig.Provider == defaults.Aws {
+	switch terraformConfig.Provider {
+	case defaults.Aws:
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
-	} else if terraformConfig.Provider == defaults.Vsphere {
+	case defaults.Vsphere:
 		dataCenterExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereDatacenter + `.` + defaults.VsphereDatacenter + `.id`)
 		dataCenterValue := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dataCenterExpression)},
@@ -45,7 +46,7 @@ func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 		vsphere.CreateVsphereVirtualMachine(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
 	}
 
-	if strings.Contains(terraformConfig.Module, modules.CustomEC2RKE2Windows) {
+	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {
 		rootBody.AppendNewline()
 		aws.CreateWindowsAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
@@ -35,7 +36,7 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 
 	// Based on GH issue https://github.com/rancher/rancher/issues/45607, K3s clusters will only have one node.
 	instances := []string{}
-	if terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapRKE2Windows {
+	if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
 		instances = []string{airgapNodeOne, airgapNodeTwo, airgapNodeThree}
 	} else if terraformConfig.Module == modules.AirgapK3S {
 		instances = []string{airgapNodeOne}
@@ -46,7 +47,7 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 		rootBody.AppendNewline()
 	}
 
-	if strings.Contains(terraformConfig.Module, modules.AirgapRKE2Windows) {
+	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {
 		aws.CreateAirgappedWindowsAWSInstances(rootBody, terraformConfig, airgapWindowsNode+"_"+terraformConfig.ResourcePrefix)
 		rootBody.AppendNewline()
 	}
@@ -73,11 +74,12 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 		nodeOneExpression := "[" + defaults.NullResource + `.register_` + airgapNodeOne + "_" + terraformConfig.ResourcePrefix + "]"
 		nodeTwoExpression := "[" + defaults.NullResource + `.register_` + airgapNodeTwo + "_" + terraformConfig.ResourcePrefix + "]"
 
-		if instance == airgapNodeOne {
+		switch instance {
+		case airgapNodeOne:
 			dependsOn = append(dependsOn, bastionScriptExpression)
-		} else if instance == airgapNodeTwo {
+		case airgapNodeTwo:
 			dependsOn = append(dependsOn, nodeOneExpression)
-		} else if instance == airgapNodeThree {
+		case airgapNodeThree:
 			dependsOn = append(dependsOn, nodeTwoExpression)
 		}
 
@@ -119,7 +121,7 @@ func GetRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig) (ma
 	airgapNodeThreePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeThree+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
 	airgapWindowsNodePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapWindowsNode+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
 
-	if terraformConfig.Module == modules.AirgapRKE2 || terraformConfig.Module == modules.AirgapRKE2Windows {
+	if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
 		commands[airgapNodeOne] = etcdRegistrationCommand
 		commands[airgapNodeTwo] = controlPlaneRegistrationCommand
 		commands[airgapNodeThree] = workerRegistrationCommand

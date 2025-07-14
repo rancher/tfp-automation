@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -76,7 +77,8 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		module    string
 	}{
 		{"Sanity RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Sanity RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		{"Sanity RKE2 Windows 2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"Sanity RKE2 Windows 2022", nil, modules.CustomEC2RKE2Windows2022},
 		{"Sanity K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
@@ -113,7 +115,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			clusterIDs, customClusterNames := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 
-			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			}

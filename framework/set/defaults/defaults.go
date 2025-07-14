@@ -188,7 +188,7 @@ const (
 	Inline           = "inline"
 	TargetPlatform   = "target_platform"
 	NullResource     = "null_resource"
-	RandomInteger    = "random_integer"
+	RandomPassword   = "random_password"
 	TimeSleep        = "time_sleep"
 	CreateDuration   = "create_duration"
 	RegisterNodes    = "register_nodes"

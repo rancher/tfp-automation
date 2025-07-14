@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -57,7 +58,8 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 		module string
 	}{
 		{"Custom TFP RKE2", modules.CustomEC2RKE2},
-		{"Custom TFP RKE2 Windows", modules.CustomEC2RKE2Windows},
+		{"Custom TFP RKE2 Windows 2019", modules.CustomEC2RKE2Windows2019},
+		{"Custom TFP RKE2 Windows 2022", modules.CustomEC2RKE2Windows2022},
 		{"Custom TFP K3S", modules.CustomEC2K3s},
 	}
 
@@ -90,7 +92,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 
-			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			}
@@ -135,7 +137,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 
-			if strings.Contains(p.terraformConfig.Module, modules.CustomEC2RKE2Windows) {
+			if strings.Contains(p.terraformConfig.Module, clustertypes.WINDOWS) {
 				clusterIDs, _ = provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			}

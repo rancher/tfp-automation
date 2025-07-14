@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	"github.com/zclconf/go-cty/cty"
@@ -50,7 +50,7 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 		v2.SetPrivateRegistryConfig(registryBlockBody, terraformConfig)
 	}
 
-	if terraformConfig.Module == modules.CustomEC2RKE2Windows {
+	if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) && strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {
 		dependsOnBlock := `[` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows]`
 
 		server := hclwrite.Tokens{

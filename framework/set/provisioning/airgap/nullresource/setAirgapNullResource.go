@@ -43,12 +43,13 @@ func SetAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terr
 
 	var bastionHostExpression string
 
-	if terraformConfig.Module == modules.ImportEC2K3s {
+	switch terraformConfig.Module {
+	case modules.ImportEC2K3s:
 		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + k3sServerOne + `_` + terraformConfig.ResourcePrefix + `.` + defaults.PublicIp + `}"`
-	} else if terraformConfig.Module == modules.ImportEC2RKE2 {
+	case modules.ImportEC2RKE2:
 		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + rke2ServerOne + `_` + terraformConfig.ResourcePrefix + `.` + defaults.PublicIp + `}"`
-	} else {
-		bastionHostExpression = defaults.AwsInstance + `.` + bastion + `_` + terraformConfig.ResourcePrefix + `.` + defaults.PublicIp
+	default:
+		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + bastion + `_` + terraformConfig.ResourcePrefix + `.` + defaults.PublicIp + `}"`
 	}
 
 	bastionHost := hclwrite.Tokens{

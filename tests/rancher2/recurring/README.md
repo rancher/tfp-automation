@@ -25,6 +25,7 @@ terraform:
   cni: ""
   provider: ""                                    # REQUIRED - supported values are aws | linode | harvester | vsphere
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  windowsPrivateKeyPath: ""
   resourcePrefix: ""
 
   awsCredentials:
@@ -45,6 +46,13 @@ terraform:
     awsUser: ""
     sshConnectionType: "ssh"
     timeout: "5m"
+    windowsAMI2019: ""
+    windowsAMI2022: ""
+    windowsAWSUser: ""
+    windows2019Password: ""
+    windows2022Password: ""
+    windowsInstanceType: ""
+    windowsKeyName: ""
     ipAddressType: "ipv4"
     loadBalancerType: "ipv4"
     targetType: "instance"
