@@ -10,36 +10,25 @@ on:
         description: "Rancher tag version provided from check-rancher-tag workflow"
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
-        required: true
         default: "head"
       rancher-version-2-11:
         description: "Rancher version for v2.11.x"
-        required: true
         default: "v2.11-head"
       rancher-version-2-10:
         description: "Rancher version for v2.10.x"
-        required: true
         default: "v2.10-head"
       rancher-version-2-9:
         description: "Rancher version for v2.9.x"
-        required: true
         default: "v2.9-head"
       qase-test-run-id-2-12:
         description: "Qase Test Run ID for v2.12.x"
-        required: true
         default: "4512"
       qase-test-run-id-2-11:
         description: "Qase Test Run ID for v2.11.x"
-        required: true
         default: "4541"
       qase-test-run-id-2-10:
         description: "Qase Test Run ID for v2.10.x"
-        required: true
         default: "4542"
-      qase-test-run-id-2-9:
-        description: "Qase Test Run ID for v2.9.x"
-        required: true
-        default: "4540"
   workflow_call:
     inputs:
       rancher_version:
@@ -260,7 +249,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: staging-alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
@@ -449,7 +438,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
-    environment: staging-latest
+    environment: staging-alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 

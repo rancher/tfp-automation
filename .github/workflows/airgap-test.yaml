@@ -8,20 +8,13 @@ on:
         description: "Rancher version"
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
-        required: true
-        default: "head"
+        default: "v2.12.0"
       rancher-version-2-11:
         description: "Rancher version for v2.11.x"
-        required: true
-        default: "v2.11-head"
+        default: "v2.11.3"
       rancher-version-2-10:
         description: "Rancher version for v2.10.x"
-        required: true
-        default: "v2.10-head"
-      rancher-version-2-9:
-        description: "Rancher version for v2.9.x"
-        required: true
-        default: "v2.9-head"
+        default: "v2.10.7"
   workflow_call:
     inputs:
       rancher_version:
@@ -233,7 +226,7 @@ jobs:
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
     needs: v2-12
-    environment: alpha
+    environment: staging-alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
