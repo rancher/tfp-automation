@@ -8,38 +8,29 @@ on:
     inputs:
       rancher_version:
         description: "Rancher tag version provided from check-rancher-tag workflow"
-        required: true
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
-        required: true
         default: "head"
       rancher-version-2-11:
         description: "Rancher version for v2.11.x"
-        required: true
         default: "v2.11.2"
       rancher-version-2-10:
         description: "Rancher version for v2.10.x"
-        required: true
         default: "v2.10.6"
       rancher-version-2-9:
         description: "Rancher version for v2.9.x"
-        required: true
         default: "v2.9.10"
       qase-test-run-id-2-12:
         description: "Qase Test Run ID for v2.12.x"
-        required: true
         default: "4512"
       qase-test-run-id-2-11:
         description: "Qase Test Run ID for v2.11.x"
-        required: true
         default: "4541"
       qase-test-run-id-2-10:
         description: "Qase Test Run ID for v2.10.x"
-        required: true
         default: "4542"
       qase-test-run-id-2-9:
         description: "Qase Test Run ID for v2.9.x"
-        required: true
         default: "4540"
   workflow_call:
     inputs:
@@ -255,7 +246,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: staging-latest
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
