@@ -45,10 +45,8 @@ permissions:
 jobs:
   v2-12:
     if: |
-      (github.event_name == 'workflow_dispatch' && 
-       ((github.event.inputs.rancher_version != '' && startsWith(github.event.inputs.rancher_version, 'v2.12.') && contains(github.event.inputs.rancher_version, '-alpha')) ||
-        (github.event.inputs.rancher_version == '' && contains(github.event.inputs.rancher-version-2-12, '-alpha')))) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.') && contains(inputs.rancher_version, '-alpha'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: alpha
@@ -231,13 +229,10 @@ jobs:
   
   v2-11:
     if: |
-      (github.event_name == 'workflow_dispatch' && 
-       ((github.event.inputs.rancher_version != '' && startsWith(github.event.inputs.rancher_version, 'v2.11.') && contains(github.event.inputs.rancher_version, '-alpha')) ||
-        (github.event.inputs.rancher_version == '' && contains(github.event.inputs.rancher-version-2-11, '-alpha')))) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.') && contains(inputs.rancher_version, '-alpha'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_11 }} -> ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
-    needs: v2-12
     environment: upgrade-prime-staging
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
@@ -418,13 +413,10 @@ jobs:
 
   v2-10:
     if: |
-      (github.event_name == 'workflow_dispatch' && 
-       ((github.event.inputs.rancher_version != '' && startsWith(github.event.inputs.rancher_version, 'v2.10.') && contains(github.event.inputs.rancher_version, '-alpha')) ||
-        (github.event.inputs.rancher_version == '' && contains(github.event.inputs.rancher-version-2-10, '-alpha')))) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10.') && contains(inputs.rancher_version, '-alpha'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_10 }} -> ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
-    needs: v2-11
     environment: upgrade-prime-staging
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
