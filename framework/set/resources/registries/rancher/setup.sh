@@ -49,7 +49,7 @@ sleep 60
 echo "Installing Rancher with ${CERT_TYPE} certs"
 if [ "$CERT_TYPE" == "self-signed" ]; then
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher rancher-${REPO}/rancher --version 2.11.4-alpha2 --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                     --set hostname=${HOSTNAME} \
                                                                                     --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                     --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
@@ -60,7 +60,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --devel
 
     else
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher rancher-${REPO}/rancher --version 2.11.4-alpha2 --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                     --set hostname=${HOSTNAME} \
                                                                                     --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
                                                                                     --set rancherImageTag=${RANCHER_TAG_VERSION} \
@@ -73,7 +73,7 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
     LETS_ENCRYPT_EMAIL="${RAND_STR}@gmail.com"
 
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher rancher-${REPO}/rancher --version 2.11.4-alpha2 --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                      --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
@@ -86,7 +86,7 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel
     else
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher rancher-${REPO}/rancher --version 2.11.4-alpha2 --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
                                                                                      --set rancherImageTag=${RANCHER_TAG_VERSION} \
