@@ -300,7 +300,8 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-version-2-11) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) }}
+          value: v2.11.4-alpha2
+          # value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-version-2-11) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) }}
 
       - name: Get Qase ID
         id: get-qase-id
