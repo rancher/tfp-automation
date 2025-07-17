@@ -2,7 +2,6 @@ package sanity
 
 import (
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -106,13 +105,8 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) TestTfpRKE1ProvisioningSanity() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
-			clusterIDs, customClusterNames := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-
-			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
-				clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
-				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-			}
 		})
 	}
 

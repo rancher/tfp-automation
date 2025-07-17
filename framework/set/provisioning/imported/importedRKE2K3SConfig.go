@@ -3,12 +3,13 @@ package imported
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/sleep"
 	"github.com/rancher/tfp-automation/framework/set/resources/imported"
@@ -48,7 +49,7 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 	imported.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, nodeOnePublicIP, nodeOnePrivateIP, nodeTwoPublicIP, nodeThreePublicIP, token)
 	rootBody.AppendNewline()
 
-	if terraformConfig.Module == modules.ImportEC2RKE2Windows {
+	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {
 		aws.CreateWindowsAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
 		rootBody.AppendNewline()
 

@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -75,7 +76,8 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 		module string
 	}{
 		{"Custom TFP RKE2", modules.CustomEC2RKE2},
-		{"Custom TFP RKE2 Windows", modules.CustomEC2RKE2Windows},
+		{"Custom TFP RKE2 Windows 2019", modules.CustomEC2RKE2Windows2019},
+		{"Custom TFP RKE2 Windows 2022", modules.CustomEC2RKE2Windows2022},
 		{"Custom TFP K3S", modules.CustomEC2K3s},
 	}
 
@@ -109,7 +111,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 			clusterIDs, customClusterNames := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 
-			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, _ = provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			}
@@ -127,7 +129,8 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 		module string
 	}{
 		{"Upgrade Imported TFP RKE2", modules.ImportEC2RKE2},
-		{"Upgrade Imported TFP RKE2 Windows", modules.ImportEC2RKE2Windows},
+		{"Upgrade Imported TFP RKE2 Windows 2019", modules.ImportEC2RKE2Windows2019},
+		{"Upgrade Imported TFP RKE2 Windows 2022", modules.ImportEC2RKE2Windows2022},
 		{"Upgrade Imported TFP K3S", modules.ImportEC2K3s},
 	}
 

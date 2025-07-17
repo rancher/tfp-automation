@@ -57,7 +57,8 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 		module string
 	}{
 		{"Upgrade Imported TFP RKE2", modules.ImportEC2RKE2},
-		{"Upgrade Imported TFP RKE2 Windows", modules.ImportEC2RKE2Windows},
+		{"Upgrade Imported TFP RKE2 Windows 2019", modules.ImportEC2RKE2Windows2019},
+		{"Upgrade Imported TFP RKE2 Windows 2022", modules.ImportEC2RKE2Windows2022},
 		{"Upgrade Imported TFP K3S", modules.ImportEC2K3s},
 	}
 

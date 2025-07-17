@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -78,7 +79,8 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 		module    string
 	}{
 		{"No Proxy RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"No Proxy RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		{"No Proxy RKE2 Windows 2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"No Proxy RKE2 Windows 2022", nil, modules.CustomEC2RKE2Windows2022},
 		{"No Proxy K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
@@ -118,7 +120,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 
-			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}
@@ -139,7 +141,8 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 		module    string
 	}{
 		{"Proxy RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Proxy RKE2 Windows", nil, modules.CustomEC2RKE2Windows},
+		{"Proxy RKE2 Windows 2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"Proxy RKE2 Windows 2022", nil, modules.CustomEC2RKE2Windows2022},
 		{"Proxy K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
@@ -179,7 +182,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 			clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 
-			if strings.Contains(terraform.Module, modules.CustomEC2RKE2Windows) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, _ := provisioning.Provision(p.T(), p.client, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}

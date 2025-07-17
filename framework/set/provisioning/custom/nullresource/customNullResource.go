@@ -59,10 +59,11 @@ func CustomNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	var hostExpression string
 
-	if terraformConfig.Provider == defaults.Aws {
+	switch terraformConfig.Provider {
+	case defaults.Aws:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, defaults.AwsInstance, terraformConfig.ResourcePrefix, defaults.Count, defaults.Index, defaults.PublicIp)
-	} else if terraformConfig.Provider == defaults.Vsphere {
+	case defaults.Vsphere:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
 		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, defaults.VsphereVirtualMachine, terraformConfig.ResourcePrefix, defaults.Count, defaults.Index, defaults.DefaultIPAddress)
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -76,7 +77,8 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		module string
 	}{
 		{"Airgap RKE2", modules.AirgapRKE2},
-		{"Airgap RKE2 Windows", modules.AirgapRKE2Windows},
+		{"Airgap RKE2 Windows 2019", modules.AirgapRKE2Windows2019},
+		{"Airgap RKE2 Windows 2022", modules.AirgapRKE2Windows2022},
 		{"Airgap K3S", modules.AirgapK3S},
 	}
 
@@ -116,7 +118,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 
-			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
+			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows2019) {
 				clusterIDs, _ = provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			}
@@ -135,7 +137,8 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 		isWindows bool
 	}{
 		{"Upgrading Airgap RKE2", modules.AirgapRKE2, false},
-		{"Upgrading Airgap RKE2 Windows", modules.AirgapRKE2Windows, true},
+		{"Upgrading Airgap RKE2 Windows 2019", modules.AirgapRKE2Windows2019, true},
+		{"Upgrading Airgap RKE2 Windows 2022", modules.AirgapRKE2Windows2022, true},
 		{"Upgrading Airgap K3S", modules.AirgapK3S, false},
 	}
 
@@ -175,12 +178,12 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows, false, true, customClusterNames)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 
-			if strings.Contains(terraform.Module, modules.AirgapRKE2Windows) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows, false, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			}
 
-			clusterIDs, customClusterNames = provisioning.KubernetesUpgrade(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows)
+			provisioning.KubernetesUpgrade(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, tt.isWindows)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 		})
 	}

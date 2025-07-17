@@ -26,9 +26,11 @@ type Config struct {
 	AWSUser               string   `json:"awsUser,omitempty" yaml:"awsUser,omitempty"`
 	TargetType            string   `json:"targetType,omitempty" yaml:"targetType,omitempty" default:"instance"`
 	Timeout               string   `json:"timeout,omitempty" yaml:"timeout,omitempty"`
-	WindowsAMI            string   `json:"windowsAMI,omitempty" yaml:"windowsAMI,omitempty"`
+	Windows2019AMI        string   `json:"windows2019AMI,omitempty" yaml:"windows2019AMI,omitempty"`
+	Windows2022AMI        string   `json:"windows2022AMI,omitempty" yaml:"windows2022AMI,omitempty"`
 	WindowsAWSUser        string   `json:"windowsAWSUser,omitempty" yaml:"windowsAWSUser,omitempty"`
-	WindowsAWSPassword    string   `json:"windowsAWSPassword,omitempty" yaml:"windowsAWSPassword,omitempty"`
+	Windows2019Password   string   `json:"windows2019Password,omitempty" yaml:"windows2019Password,omitempty"`
+	Windows2022Password   string   `json:"windows2022Password,omitempty" yaml:"windows2022Password,omitempty"`
 	WindowsInstanceType   string   `json:"windowsInstanceType,omitempty" yaml:"windowsInstanceType,omitempty"`
 	WindowsKeyName        string   `json:"windowsKeyName,omitempty" yaml:"windowsKeyName,omitempty"`
 	WindowsVolumeType     string   `json:"windowsVolumeType,omitempty" yaml:"windowsVolumeType,omitempty"`

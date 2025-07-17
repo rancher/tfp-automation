@@ -64,9 +64,11 @@ terraform:
     ipAddressType: "ipv4"
     loadBalancerType: "ipv4"
     targetType: "instance"
-    windowsAMI: ""
+    windowsAMI2019: ""
+    windowsAMI2022: ""
     windowsAWSUser: ""
-    windowsAWSPassword: ""
+    windows2019Password: ""
+    windows2022Password: ""
     windowsInstanceType: ""
     windowsKeyName: ""
   ###################################

@@ -56,7 +56,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 
 		module := terraform.Module
 
-		if strings.Contains(module, clustertypes.CUSTOM) {
+		if strings.Contains(module, clustertypes.CUSTOM) || strings.Contains(module, defaults.Airgap) {
 			containsCustomModule = true
 		}
 
@@ -130,7 +130,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 			if err != nil {
 				return clusterNames, customClusterNames, err
 			}
-		case module == modules.AirgapRKE2 || module == modules.AirgapK3S || module == modules.AirgapRKE2Windows:
+		case module == modules.AirgapRKE2 || module == modules.AirgapK3S || module == modules.AirgapRKE2Windows2019 || module == modules.AirgapRKE2Windows2022:
 			if !isWindows {
 				newFile, file, err = airgap.SetAirgapRKE2K3s(terraform, terratest, configMap, newFile, rootBody, file)
 				if err != nil {
@@ -158,12 +158,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 			logrus.Errorf("Unsupported module: %v", module)
 		}
 
-		if i == len(configMap)-1 && containsCustomModule && !strings.Contains(module, defaults.Airgap) && !isWindows {
-			file, err = locals.SetLocals(rootBody, terraform, terratest, configMap, newFile, file, customClusterNames)
-			rootBody.AppendNewline()
-		}
-
-		if strings.Contains(module, defaults.Airgap) || isWindows {
+		if i == len(configMap)-1 && containsCustomModule {
 			localsBlock := newFile.Body().FirstMatchingBlock(defaults.Locals, nil)
 			if localsBlock != nil {
 				newFile.Body().RemoveBlock(localsBlock)
