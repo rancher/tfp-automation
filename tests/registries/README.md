@@ -77,6 +77,7 @@ terraform:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
+    chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using Rancher Prime or staging registry

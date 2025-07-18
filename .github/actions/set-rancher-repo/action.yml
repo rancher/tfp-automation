@@ -1,0 +1,39 @@
+---
+name: "Set Rancher Repo"
+description: "Sets the Rancher repo to 'latest' for RC versions, 'alpha' for alpha versions, or falls back to a specified repo"
+inputs:
+  rancher-version:
+    description: "The rancher version to check for RC or alpha"
+    required: true
+  fallback-repo:
+    description: "The fallback repo to use if no RC/alpha detected"
+    default: ""
+outputs:
+  repo:
+    description: "The determined repo"
+    value: ${{ steps.determine-repo.outputs.repo }}
+runs:
+  using: "composite"
+  steps:
+    - name: Determine repo
+      id: determine-repo
+      shell: bash
+      run: |
+        RANCHER_VERSION="${{ inputs.rancher-version }}"
+        FALLBACK_REPO="${{ inputs.fallback-repo }}"
+        
+        if [[ "$RANCHER_VERSION" == *"-rc"* ]]; then
+          REPO="latest"
+        elif [[ "$RANCHER_VERSION" == *"-alpha"* ]]; then
+          REPO="alpha"
+        else
+          REPO="$FALLBACK_REPO"
+        fi
+        
+        echo "repo=$REPO" >> $GITHUB_OUTPUT
+    
+    - name: Set environment variable
+      uses: ./.github/actions/set-env-var
+      with:
+        key: RANCHER_REPO
+        value: ${{ steps.determine-repo.outputs.repo }}

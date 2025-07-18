@@ -130,6 +130,7 @@ type Standalone struct {
 	BootstrapPassword              string `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
 	CertManagerVersion             string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
 	CertType                       string `json:"certType,omitempty" yaml:"certType,omitempty"`
+	ChartVersion                   string `json:"chartVersion,omitempty" yaml:"chartVersion,omitempty"`
 	K3SVersion                     string `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
 	RancherAgentImage              string `json:"rancherAgentImage,omitempty" yaml:"rancherAgentImage,omitempty"`
 	RancherChartRepository         string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
@@ -144,6 +145,7 @@ type Standalone struct {
 	UpgradeProxyRancher            bool   `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
 	UpgradeRancher                 bool   `json:"upgradeRancher,omitempty" yaml:"upgradeRancher,omitempty"`
 	UpgradedRancherChartRepository string `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`
+	UpgradedRancherChartVersion    string `json:"upgradedRancherChartVersion,omitempty" yaml:"upgradedRancherChartVersion,omitempty"`
 	UpgradedRancherImage           string `json:"upgradedRancherImage,omitempty" yaml:"upgradedRancherImage,omitempty"`
 	UpgradedRancherAgentImage      string `json:"upgradedRancherAgentImage,omitempty" yaml:"upgradedRancherAgentImage,omitempty"`
 	UpgradedRancherRepo            string `json:"upgradedRancherRepo,omitempty" yaml:"upgradedRancherRepo,omitempty"`

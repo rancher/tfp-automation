@@ -6,19 +6,34 @@ on:
     inputs:
       rancher_version:
         description: "Rancher version"
+      rancher_chart_version:
+        description: "Rancher chart version"
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
-        default: "v2.12.0"
+        default: "v2.12.0-alpha20"
+      rancher-chart-version-2-12:
+        description: "Rancher chart version for v2.12.x"
+        default: "2.12.0-alpha20"
       rancher-version-2-11:
         description: "Rancher version for v2.11.x"
         default: "v2.11.3"
+      rancher-chart-version-2-11:
+        description: "Rancher chart version for v2.11.x"
+        default: "2.11.3"
       rancher-version-2-10:
         description: "Rancher version for v2.10.x"
         default: "v2.10.7"
+      rancher-chart-version-2-10:
+        description: "Rancher chart version for v2.10.x"
+        default: "2.10.7"
   workflow_call:
     inputs:
       rancher_version:
         description: "Rancher tag version provided from check-rancher-tag workflow"
+        required: true
+        type: string
+      rancher_chart_version:
+        description: "Rancher chart version provided from check-rancher-tag workflow"
         required: true
         type: string
 
@@ -92,6 +107,18 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
 
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: "${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-12 }}"
+
+      - name: Set Rancher repo
+        uses: ./.github/actions/set-rancher-repo
+        with:
+          rancher-version: ${{ env.RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.RANCHER_REPO }}
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -143,6 +170,7 @@ jobs:
               airgapInternalFQDN: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}"
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
@@ -151,7 +179,7 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              repo: "${{ secrets.RANCHER_REPO }}"
+              repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
@@ -273,6 +301,18 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
 
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: "${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-11 }}"
+
+      - name: Set Rancher repo
+        uses: ./.github/actions/set-rancher-repo
+        with:
+          rancher-version: ${{ env.RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.RANCHER_REPO }}
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -325,6 +365,7 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
@@ -332,7 +373,7 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              repo: "${{ secrets.RANCHER_REPO }}"
+              repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
@@ -454,6 +495,18 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
 
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: "${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-10 }}"
+
+      - name: Set Rancher repo
+        uses: ./.github/actions/set-rancher-repo
+        with:
+          rancher-version: ${{ env.RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.RANCHER_REPO }}
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -506,6 +559,7 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
@@ -513,7 +567,7 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              repo: "${{ secrets.RANCHER_REPO }}"
+              repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_10 }}"
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"

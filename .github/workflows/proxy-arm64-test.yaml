@@ -8,27 +8,32 @@ on:
     inputs:
       rancher_version:
         description: "Rancher tag version provided from check-rancher-tag workflow"
+      rancher_chart_version:
+        description: "Rancher chart version provided from check-rancher-tag workflow"
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
-        default: "head"
+        default: "v2.12-head"
+      rancher-chart-version-2-12:
+        description: "Rancher chart version for v2.12.x"
+        default: "v2.12-head"
       rancher-version-2-11:
         description: "Rancher version for v2.11.x"
+        default: "v2.11-head"
+      rancher-chart-version-2-11:
+        description: "Rancher chart version for v2.11.x"
         default: "v2.11-head"
       rancher-version-2-10:
         description: "Rancher version for v2.10.x"
         default: "v2.10-head"
+      rancher-chart-version-2-10:
+        description: "Rancher chart version for v2.10.x"
+        default: "v2.10-head"
       rancher-version-2-9:
         description: "Rancher version for v2.9.x"
         default: "v2.9-head"
-      qase-test-run-id-2-12:
-        description: "Qase Test Run ID for v2.12.x"
-        default: "4512"
-      qase-test-run-id-2-11:
-        description: "Qase Test Run ID for v2.11.x"
-        default: "4541"
-      qase-test-run-id-2-10:
-        description: "Qase Test Run ID for v2.10.x"
-        default: "4542"
+      rancher-chart-version-2-9:
+        description: "Rancher chart version for v2.9.x"
+        default: "v2.9-head"
 
 permissions:
   id-token: write
@@ -95,7 +100,29 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-12) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) }}
+          value: |
+            ${{
+              github.event.inputs.rancher_version ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-12) ||
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD)
+            }}
+
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-12) ||
+              (github.event_name == 'schedule' && vars.RANCHER_CHART_VERSION_2_12_HEAD)
+            }}
+
+      - name: Set Rancher repo
+        uses: ./.github/actions/set-rancher-repo
+        with:
+          rancher-version: ${{ env.RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.RANCHER_REPO }}
 
       - name: Create config.yaml
         run: |
@@ -147,13 +174,14 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              repo: "${{ secrets.RANCHER_REPO }}"
+              repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
             standaloneRegistry:
               registryName: "${{ secrets.REGISTRY_NAME }}"
@@ -275,7 +303,29 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher_version || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-11) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) }}
+          value: |
+            ${{
+              github.event.inputs.rancher_version ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-11) ||
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD)
+            }}
+
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-11) ||
+              (github.event_name == 'schedule' && vars.RANCHER_CHART_VERSION_2_11_HEAD)
+            }}
+
+      - name: Set Rancher repo
+        uses: ./.github/actions/set-rancher-repo
+        with:
+          rancher-version: ${{ env.RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.RANCHER_REPO }}
 
       - name: Create config.yaml
         run: |
@@ -327,13 +377,14 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              repo: "${{ secrets.RANCHER_REPO }}"
+              repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
             standaloneRegistry:
               registryName: "${{ secrets.REGISTRY_NAME }}"
@@ -455,7 +506,29 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ github.event.inputs.rancher-version-2-10 || (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-10) || (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_10_HEAD) }}
+          value: |
+            ${{
+              github.event.inputs.rancher_version ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-10) ||
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_10_HEAD)
+            }}
+      
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-10) ||
+              (github.event_name == 'schedule' && vars.RANCHER_CHART_VERSION_2_10_HEAD)
+            }}
+
+      - name: Set Rancher repo
+        uses: ./.github/actions/set-rancher-repo
+        with:
+          rancher-version: ${{ env.RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.RANCHER_REPO }}
 
       - name: Create config.yaml
         run: |
@@ -507,6 +580,7 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -514,7 +588,7 @@ jobs:
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              repo: "${{ secrets.RANCHER_REPO }}"
+              repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_10 }}"
             standaloneRegistry:
               registryName: "${{ secrets.REGISTRY_NAME }}"
