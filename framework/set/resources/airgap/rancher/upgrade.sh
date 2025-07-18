@@ -6,10 +6,11 @@ CERT_TYPE=$3
 HOSTNAME=$4
 INTERNAL_FQDN=$5
 RANCHER_TAG_VERSION=$6
-BOOTSTRAP_PASSWORD=$7
-RANCHER_IMAGE=$8
-REGISTRY=$9
-RANCHER_AGENT_IMAGE=${10}
+CHART_VERSION=$7
+BOOTSTRAP_PASSWORD=$8
+RANCHER_IMAGE=$9
+REGISTRY=${10}
+RANCHER_AGENT_IMAGE=${11}
 
 set -ex
 
@@ -20,6 +21,7 @@ echo "Upgrading Rancher"
 if [ "$CERT_TYPE" == "self-signed" ]; then
   if [ -n "$RANCHER_AGENT_IMAGE" ]; then
       helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                  --version ${CHART_VERSION} \
                                                                                   --set hostname=${HOSTNAME} \
                                                                                   --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                   --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
@@ -31,6 +33,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
 
   else
       helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                  --version ${CHART_VERSION} \
                                                                                   --set hostname=${HOSTNAME} \
                                                                                   --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
                                                                                   --set rancherImageTag=${RANCHER_TAG_VERSION} \
@@ -44,12 +47,14 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
 
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                     --version ${CHART_VERSION} \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                      --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
                                                                                      --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
+                                                                                     --set letsEncrypt.ingress.class=nginx \
                                                                                      --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                      --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                      --set agentTLSMode=system-store \
@@ -57,12 +62,14 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --devel
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                     --version ${CHART_VERSION} \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
                                                                                      --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
+                                                                                     --set letsEncrypt.ingress.class=nginx \
                                                                                      --set agentTLSMode=system-store \
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel

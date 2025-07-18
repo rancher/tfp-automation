@@ -6,19 +6,34 @@ on:
     inputs:
       rancher_version:
         description: "Rancher version"
+      rancher_chart_version:
+        description: "Rancher chart version"
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
-        default: "v2.12.0"
+        default: "v2.12.0-alpha20"
+      rancher-chart-version-2-12:
+        description: "Rancher chart version for v2.12.x"
+        default: "2.12.0-alpha20"
       rancher-version-2-11:
         description: "Rancher version for v2.11.x"
         default: "v2.11.3"
+      rancher-chart-version-2-11:
+        description: "Rancher chart version for v2.11.x"
+        default: "2.11.3"
       rancher-version-2-10:
         description: "Rancher version for v2.10.x"
         default: "v2.10.7"
+      rancher-chart-version-2-10:
+        description: "Rancher chart version for v2.10.x"
+        default: "2.10.7"
   workflow_call:
     inputs:
       rancher_version:
         description: "Rancher tag version provided from check-rancher-tag workflow"
+        required: true
+        type: string
+      rancher_chart_version:
+        description: "Rancher chart version provided from check-rancher-chart-version workflow"
         required: true
         type: string
 
@@ -92,6 +107,12 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
 
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: ${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-12 }}
+
       - name: Retrieve and set ECR password
         id: get-ecr-password
         uses: ./.github/actions/get-ecr-password
@@ -143,6 +164,7 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -277,6 +299,12 @@ jobs:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
 
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: ${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-11 }}
+
       - name: Retrieve and set ECR password
         id: get-ecr-password
         uses: ./.github/actions/get-ecr-password
@@ -328,6 +356,7 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
+              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -461,6 +490,12 @@ jobs:
         with:
           key: RANCHER_VERSION
           value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
+
+      - name: Set Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: RANCHER_CHART_VERSION
+          value: ${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-10 }}
 
       - name: Retrieve and set ECR password
         id: get-ecr-password

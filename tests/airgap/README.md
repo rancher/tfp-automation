@@ -84,6 +84,7 @@ terraform:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
+    chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using Rancher Prime or staging registry
@@ -93,6 +94,12 @@ terraform:
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.31.3)
+    upgradedRancherAgentImage: ""                 # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartRepository: ""            # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartVersion: ""               # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherImage: ""                      # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherRepo: ""                       # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
   ####################################
   # STANDALONE CONFIG - REGISTRY SETUP
   ####################################
