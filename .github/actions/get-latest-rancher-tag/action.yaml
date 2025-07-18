@@ -40,8 +40,8 @@ runs:
 
             echo "Asset count for $LATEST_VERSION: $ASSET_COUNT"
 
-            if [ "$ASSET_COUNT" -lt 19 ]; then
-              echo "Asset count: $ASSET_COUNT. Expected at least 19 assets..."
+            if [ "$ASSET_COUNT" -lt 17 ]; then
+              echo "Asset count: $ASSET_COUNT. Expected at least 17 assets..."
               LATEST_VERSION=""
             fi
           else

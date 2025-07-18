@@ -7,6 +7,9 @@ on:
       rancher_version:
         required: true
         type: string
+      rancher_chart_version:
+        required: true
+        type: string
 
 jobs:
   run-tests:
@@ -27,7 +30,9 @@ jobs:
       - name: Trigger test workflow ${{ matrix.workflow }}
         run: |
           echo "Rancher Version: ${{ inputs.rancher_version }}"
+          echo "Rancher Chart Version: ${{ inputs.rancher_chart_version }}"
           curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/${{ matrix.workflow }}/dispatches \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
-            -d '{"ref": "main", "inputs": {"rancher_version": "${{ inputs.rancher_version }}"}}'
+            -H "Content-Type: application/json" \
+            -d '{"ref": "main", "inputs": {"rancher_version": "${{ inputs.rancher_version }}", "rancher_chart_version": "${{ inputs.rancher_chart_version }}"}}'

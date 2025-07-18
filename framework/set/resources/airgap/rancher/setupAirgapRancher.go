@@ -36,7 +36,8 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.AirgapInternalFQDN + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " + registryPublicDNS
+		terraformConfig.Standalone.ChartVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
+		terraformConfig.Standalone.RancherImage + " " + registryPublicDNS
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
