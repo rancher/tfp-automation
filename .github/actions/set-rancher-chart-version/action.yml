@@ -1,0 +1,56 @@
+---
+name: "Set Rancher Chart Version and Repo Type"
+description: "Sets the Rancher chart version and determines the repo type (latest/alpha) based on rancher version"
+inputs:
+  rancher-version:
+    description: "The rancher version to check for RC or alpha"
+    required: true
+  chart-version:
+    description: "The chart version to use"
+    required: true
+  is-v2-12:
+    description: "Whether this is for v2.12 (determines if repo type logic applies)"
+    default: "false"
+outputs:
+  chart-version:
+    description: "The chart version (passed through)"
+    value: ${{ inputs.chart-version }}
+  repo-type:
+    description: "The determined repo type (latest/alpha/stable)"
+    value: ${{ steps.determine-repo-type.outputs.repo-type }}
+runs:
+  using: "composite"
+  steps:
+    - name: Determine repo type
+      id: determine-repo-type
+      shell: bash
+      run: |
+        RANCHER_VERSION="${{ inputs.rancher-version }}"
+        IS_V2_12="${{ inputs.is-v2-12 }}"
+        
+        if [[ "$IS_V2_12" == "true" ]]; then
+          if [[ "$RANCHER_VERSION" == *"-rc"* ]]; then
+            REPO_TYPE="latest"
+          elif [[ "$RANCHER_VERSION" == *"-alpha"* ]]; then
+            REPO_TYPE="alpha"
+          else
+            REPO_TYPE="stable"
+          fi
+        else
+          REPO_TYPE="stable"
+        fi
+        
+        echo "repo-type=$REPO_TYPE" >> $GITHUB_OUTPUT
+        echo "Determined repo type: $REPO_TYPE (rancher version: $RANCHER_VERSION, is v2.12: $IS_V2_12)"
+    
+    - name: Set chart version environment variable
+      uses: ./.github/actions/set-env-var
+      with:
+        key: RANCHER_CHART_VERSION
+        value: ${{ inputs.chart-version }}
+    
+    - name: Set repo type environment variable
+      uses: ./.github/actions/set-env-var
+      with:
+        key: RANCHER_REPO_TYPE
+        value: ${{ steps.determine-repo-type.outputs.repo-type }}

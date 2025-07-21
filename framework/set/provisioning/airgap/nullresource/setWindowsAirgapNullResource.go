@@ -24,7 +24,7 @@ func SetWindowsAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *conf
 	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	bastionHostExpression := defaults.AwsInstance + `.` + bastion + `.` + defaults.PublicIp
+	bastionHostExpression := `"${` + defaults.AwsInstance + `.` + bastion + `.` + defaults.PublicIp + `}"`
 
 	bastionHost := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(bastionHostExpression)},

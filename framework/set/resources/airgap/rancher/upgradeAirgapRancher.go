@@ -35,8 +35,8 @@ func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.CertType + " " +
 		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.AirgapInternalFQDN + " " +
-		terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
-		terraformConfig.Standalone.UpgradedRancherImage + " " + registryPublicDNS
+		terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.Standalone.UpgradedRancherChartVersion + " " +
+		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.UpgradedRancherImage + " " + registryPublicDNS
 
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage

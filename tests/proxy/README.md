@@ -82,6 +82,7 @@ terraform:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
+    chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     osGroup: ""                                   # REQUIRED - fill with desired value
     osUser: ""                                    # REQUIRED - fill with desired value
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using Rancher Prime or staging registry
@@ -94,9 +95,12 @@ terraform:
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.9)
-    upgradedRancherChartRepository: ""            # OPTIONAL - set if upgraded. Fill with desired value. Must end with a trailing /
-    upgradedRancherImage: ""                      # OPTIONAL - set if upgraded. Fill with desired value
-    upgradedRancherTagVersion: ""                 # OPTIONAL - set if upgraded. Fill with desired value
+    upgradedRancherAgentImage: ""                 # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartRepository: ""            # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartVersion: ""               # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherImage: ""                      # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherRepo: ""                       # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
   ####################################
   # STANDALONE CONFIG - REGISTRY SETUP
   ####################################
