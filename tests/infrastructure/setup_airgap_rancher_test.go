@@ -36,7 +36,7 @@ func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
-	registry, _, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.terraformConfig, i.terratestConfig)
+	registry, _, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
 	logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)

@@ -131,6 +131,7 @@ jobs:
             host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
+            cleanup: true
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
@@ -328,6 +329,7 @@ jobs:
             host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
+            cleanup: true
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
@@ -525,6 +527,7 @@ jobs:
             host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
+            cleanup: true
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
@@ -723,6 +726,7 @@ jobs:
             host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
+            cleanup: true
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"

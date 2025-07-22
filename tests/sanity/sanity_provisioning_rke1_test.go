@@ -49,7 +49,7 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
 	s.standaloneTerraformOptions = standaloneTerraformOptions
 
-	_, err := resources.CreateMainTF(s.T(), s.standaloneTerraformOptions, keyPath, s.terraformConfig, s.terratestConfig)
+	_, err := resources.CreateMainTF(s.T(), s.standaloneTerraformOptions, keyPath, s.rancherConfig, s.terraformConfig, s.terratestConfig)
 	require.NoError(s.T(), err)
 
 	testSession := session.NewSession()

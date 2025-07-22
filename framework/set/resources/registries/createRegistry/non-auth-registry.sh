@@ -40,8 +40,15 @@ action() {
 }
 
 copyImagesWithCrane() {
-    sudo wget https://github.com/google/go-containerregistry/releases/download/v0.20.3/go-containerregistry_Linux_x86_64.tar.gz
-    sudo tar -xf go-containerregistry_Linux_x86_64.tar.gz
+    ARCH=$(uname -m)
+    if [[ $ARCH == "x86_64" ]]; then
+        KUBECTL_ARCH="amd64"
+    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+        KUBECTL_ARCH="arm64"
+    fi
+
+    sudo wget https://github.com/google/go-containerregistry/releases/download/v0.20.6/go-containerregistry_Linux_${KUBECTL_ARCH}.tar.gz
+    sudo tar -xf go-containerregistry_Linux_${KUBECTL_ARCH}.tar.gz
     sudo chmod +x crane
     sudo mv crane /usr/local/bin/crane
 

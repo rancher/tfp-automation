@@ -59,7 +59,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
 	a.standaloneTerraformOptions = standaloneTerraformOptions
 
-	registry, bastion, err := airgap.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig)
+	registry, bastion, err := airgap.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.rancherConfig, a.terraformConfig, a.terratestConfig)
 	require.NoError(a.T(), err)
 
 	a.registry = registry

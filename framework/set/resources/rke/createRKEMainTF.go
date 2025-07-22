@@ -7,7 +7,9 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke/aws"
 	rke "github.com/rancher/tfp-automation/framework/set/resources/rke/rke"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
@@ -23,8 +25,8 @@ const (
 )
 
 // CreateRKEMainTF is a helper function that will create the main.tf file for creating an RKE1 cluster
-func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig) (string, error) {
+func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *shepherdConfig.Config,
+	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, error) {
 	var file *os.File
 	file = resources.OpenFile(file, keyPath)
 	defer file.Close()
@@ -41,7 +43,12 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 		return "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating resources. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", err
+	}
 
 	rkeServerOnePublicIP := terraform.Output(t, terraformOptions, rkeServerOnePublicIP)
 
@@ -57,7 +64,12 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 		return "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating RKE cluster. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", err
+	}
 
 	kubeConfigContent := terraform.Output(t, terraformOptions, kubeConfig)
 
@@ -68,7 +80,12 @@ func CreateRKEMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath 
 		return "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while checking RKE status. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", err
+	}
 
 	err = removeKubeConfig(keyPath)
 	if err != nil {
@@ -127,9 +144,7 @@ output "kube_config" {
 }
 `
 	contentStr := string(content)
-	if strings.Contains(contentStr, outputBlock) {
-		contentStr = strings.Replace(contentStr, outputBlock, "", -1)
-	}
+	contentStr = strings.ReplaceAll(contentStr, outputBlock, "")
 
 	err = os.WriteFile(filePath, []byte(contentStr), 0600)
 	if err != nil {

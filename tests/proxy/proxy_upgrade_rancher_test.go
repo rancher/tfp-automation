@@ -59,7 +59,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.standaloneTerraformOptions = standaloneTerraformOptions
 
-	proxyNode, proxyPrivateIP, err := resources.CreateMainTF(p.T(), p.standaloneTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig)
+	proxyNode, proxyPrivateIP, err := resources.CreateMainTF(p.T(), p.standaloneTerraformOptions, keyPath, p.rancherConfig, p.terraformConfig, p.terratestConfig)
 	require.NoError(p.T(), err)
 
 	p.proxyNode = proxyNode

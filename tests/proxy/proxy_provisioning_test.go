@@ -53,7 +53,7 @@ func (p *TfpProxyProvisioningTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
 	p.standaloneTerraformOptions = standaloneTerraformOptions
 
-	proxyBastion, _, err := resources.CreateMainTF(p.T(), p.standaloneTerraformOptions, keyPath, p.terraformConfig, p.terratestConfig)
+	proxyBastion, _, err := resources.CreateMainTF(p.T(), p.standaloneTerraformOptions, keyPath, p.rancherConfig, p.terraformConfig, p.terratestConfig)
 	require.NoError(p.T(), err)
 
 	p.proxyBastion = proxyBastion
