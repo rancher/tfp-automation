@@ -132,14 +132,13 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapUpgrading() {
 	tests := []struct {
-		name      string
-		module    string
-		isWindows bool
+		name   string
+		module string
 	}{
-		{"Upgrading Airgap RKE2", modules.AirgapRKE2, false},
-		{"Upgrading Airgap RKE2 Windows 2019", modules.AirgapRKE2Windows2019, true},
-		{"Upgrading Airgap RKE2 Windows 2022", modules.AirgapRKE2Windows2022, true},
-		{"Upgrading Airgap K3S", modules.AirgapK3S, false},
+		{"Upgrading Airgap RKE2", modules.AirgapRKE2},
+		{"Upgrading Airgap RKE2 Windows 2019", modules.AirgapRKE2Windows2019},
+		{"Upgrading Airgap RKE2 Windows 2022", modules.AirgapRKE2Windows2022},
+		{"Upgrading Airgap K3S", modules.AirgapK3S},
 	}
 
 	customClusterNames := []string{}
