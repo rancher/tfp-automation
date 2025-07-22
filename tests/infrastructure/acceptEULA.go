@@ -1,15 +1,19 @@
 package infrastructure
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/rancher/rancher/tests/v2/actions/pipeline"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
+	"github.com/rancher/shepherd/extensions/defaults"
 	"github.com/rancher/shepherd/extensions/token"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+	kwait "k8s.io/apimachinery/pkg/util/wait"
 )
 
 // PostRancherSetup is a helper function that creates a Rancher client and accepts the EULA, if needed
@@ -19,7 +23,16 @@ func PostRancherSetup(t *testing.T, rancherConfig *rancher.Config, session *sess
 		Password: rancherConfig.AdminPassword,
 	}
 
-	adminToken, err := token.GenerateUserToken(adminUser, rancherConfig.Host)
+	var adminToken *management.Token
+	err := kwait.PollUntilContextTimeout(context.TODO(), 5*time.Second, defaults.FiveMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
+		adminToken, err = token.GenerateUserToken(adminUser, rancherConfig.Host)
+		if err != nil {
+			logrus.Warnf("Failed to generate admin token: %v. Retrying...", err)
+			return false, nil
+		}
+
+		return true, nil
+	})
 	require.NoError(t, err)
 
 	rancherConfig.AdminToken = adminToken.Token

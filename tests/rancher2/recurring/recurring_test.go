@@ -1,4 +1,4 @@
-package sanity
+package recurring
 
 import (
 	"os"
