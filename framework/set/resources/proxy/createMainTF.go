@@ -6,8 +6,10 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/providers"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2"
@@ -34,8 +36,8 @@ const (
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server behind a proxy.
-func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig) (string, string, error) {
+func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *shepherdConfig.Config,
+	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, string, error) {
 	var file *os.File
 	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
@@ -57,7 +59,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating resources. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", err
+	}
 
 	if terraformConfig.Provider == providers.Linode {
 		linodeNodeBalancerHostname = terraform.Output(t, terraformOptions, nodeBalancerHostname)
@@ -76,7 +83,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating squid proxy. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", err
+	}
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
@@ -85,7 +97,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating RKE2 cluster. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", err
+	}
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
@@ -94,7 +111,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating Rancher server. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", err
+	}
 
 	terraformConfig.Proxy.ProxyBastion = rke2BastionPublicDNS
 

@@ -7,7 +7,9 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/registries/rancher"
@@ -39,8 +41,8 @@ const (
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating an Airgapped-Rancher server.
-func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig) (string, string, string, error) {
+func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *shepherdConfig.Config,
+	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, string, string, error) {
 	var file *os.File
 	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
@@ -59,7 +61,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating resources. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", "", err
+	}
 
 	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
 	nonAuthRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthRegistryPublicDNS)
@@ -127,7 +134,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		}
 	}()
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating registries. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", "", err
+	}
 
 	wg.Wait()
 
@@ -139,7 +151,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating RKE2 cluster. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", "", err
+	}
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
@@ -148,7 +165,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	terraform.InitAndApply(t, terraformOptions)
+	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	if err != nil && *rancherConfig.Cleanup {
+		logrus.Infof("Error while creating Rancher server. Cleaning up...")
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+		return "", "", "", err
+	}
 
 	return authRegistryPublicDNS, nonAuthRegistryPublicDNS, globalRegistryPublicDNS, nil
 }

@@ -53,7 +53,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.standaloneTerraformOptions = standaloneTerraformOptions
 
-	authRegistry, nonAuthRegistry, globalRegistry, err := registries.CreateMainTF(r.T(), r.standaloneTerraformOptions, keyPath, r.terraformConfig, r.terratestConfig)
+	authRegistry, nonAuthRegistry, globalRegistry, err := registries.CreateMainTF(r.T(), r.standaloneTerraformOptions, keyPath, r.rancherConfig, r.terraformConfig, r.terratestConfig)
 	require.NoError(r.T(), err)
 
 	r.authRegistry = authRegistry

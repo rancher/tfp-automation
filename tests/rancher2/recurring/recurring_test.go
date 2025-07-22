@@ -54,7 +54,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) SetupSuite() {
 	standaloneTerraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
 	r.standaloneTerraformOptions = standaloneTerraformOptions
 
-	_, err := resources.CreateMainTF(r.T(), r.standaloneTerraformOptions, keyPath, r.terraformConfig, r.terratestConfig)
+	_, err := resources.CreateMainTF(r.T(), r.standaloneTerraformOptions, keyPath, r.rancherConfig, r.terraformConfig, r.terratestConfig)
 	require.NoError(r.T(), err)
 
 	testSession := session.NewSession()
