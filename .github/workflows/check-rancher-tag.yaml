@@ -9,6 +9,7 @@ on:
 
 jobs:
   check-latest-rancher-tag:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     outputs:
       latest_tag_v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
@@ -28,7 +29,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tag
-          key: rancher-tag-cache
+          key: rancher-tag-cache-${{ github.ref_name }}
+          restore-keys: |
+            rancher-tag-cache-
 
       - name: Get latest Rancher tag
         id: get-latest-tag
@@ -82,7 +85,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tag
-          key: rancher-tag-cache
+          key: rancher-tag-cache-${{ github.ref_name }}
 
   set-latest-chart-version:
     needs: check-latest-rancher-tag
