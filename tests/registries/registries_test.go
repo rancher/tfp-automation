@@ -64,7 +64,9 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 	r.session = testSession
 
 	client, err := infrastructure.PostRancherSetup(r.T(), r.rancherConfig, testSession, r.terraformConfig.Standalone.RancherHostname, false, false)
-	require.NoError(r.T(), err)
+	if err != nil && *r.rancherConfig.Cleanup {
+		cleanup.Cleanup(r.T(), r.standaloneTerraformOptions, keyPath)
+	}
 
 	r.client = client
 

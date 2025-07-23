@@ -62,7 +62,9 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	a.session = testSession
 
 	client, err := infrastructure.PostRancherSetup(a.T(), a.rancherConfig, testSession, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
-	require.NoError(a.T(), err)
+	if err != nil && *a.rancherConfig.Cleanup {
+		cleanup.Cleanup(a.T(), a.standaloneTerraformOptions, keyPath)
+	}
 
 	a.client = client
 

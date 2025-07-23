@@ -74,7 +74,9 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	p.session = testSession
 
 	client, err := infrastructure.PostRancherSetup(p.T(), p.rancherConfig, testSession, p.terraformConfig.Standalone.RancherHostname, false, false)
-	require.NoError(p.T(), err)
+	if err != nil && *p.rancherConfig.Cleanup {
+		cleanup.Cleanup(p.T(), p.standaloneTerraformOptions, keyPath)
+	}
 
 	p.client = client
 
