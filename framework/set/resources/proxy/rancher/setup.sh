@@ -66,6 +66,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                     --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                     --set noProxy="${NO_PROXY}" \
+                                                                                    --set agentTLSMode=system-store \
                                                                                     --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                     --devel
 
@@ -77,6 +78,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                     --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                     --set noProxy="${NO_PROXY}" \
+                                                                                    --set agentTLSMode=system-store \
                                                                                     --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                     --devel
     fi

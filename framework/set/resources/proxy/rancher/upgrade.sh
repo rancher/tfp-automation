@@ -29,7 +29,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                     --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                     --set noProxy="${NO_PROXY}" \
-                                                                                    --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                    --set agentTLSMode=system-store \
                                                                                     --devel
 
     else
@@ -40,7 +40,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --set rancherImageTag=${RANCHER_TAG_VERSION} \
                                                                                     --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                     --set noProxy="${NO_PROXY}" \
-                                                                                    --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                    --set agentTLSMode=system-store \
                                                                                     --devel
     fi
 elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
@@ -61,7 +61,6 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                      --set noProxy="${NO_PROXY}" \
                                                                                      --set agentTLSMode=system-store \
-                                                                                     --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -75,7 +74,6 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                      --set noProxy="${NO_PROXY}" \
                                                                                      --set agentTLSMode=system-store \
-                                                                                     --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel
     fi
 else

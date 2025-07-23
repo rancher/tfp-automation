@@ -24,6 +24,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --set rancherImage=${RANCHER_IMAGE} \
                                                                                     --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                     --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                    --set agentTLSMode=system-store \
                                                                                     --devel
 
     else
@@ -32,6 +33,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --set hostname=${HOSTNAME} \
                                                                                     --set rancherImage=${RANCHER_IMAGE} \
                                                                                     --set rancherImageTag=${RANCHER_TAG_VERSION} \
+                                                                                    --set agentTLSMode=system-store \
                                                                                     --devel
     fi
 elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
@@ -50,7 +52,6 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                      --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                      --set agentTLSMode=system-store \
-                                                                                     --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -63,7 +64,6 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set agentTLSMode=system-store \
-                                                                                     --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel
     fi
 else
