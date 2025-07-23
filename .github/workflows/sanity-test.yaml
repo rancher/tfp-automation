@@ -63,10 +63,10 @@ env:
 
 jobs:
   v2-12:
-    # if: |
-    #   github.event_name == 'schedule' ||
-    #   (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12.')) ||
-    #   (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.'))
+    if: |
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12.')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
@@ -143,6 +143,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}
+          qase_rc_id: ${{ vars.QASE_RC_TEST_RUN_ID_2_12 }}
           qase_recurring_id: ${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_12 }}
 
       - name: Create config.yaml
@@ -352,6 +353,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
+          qase_rc_id: ${{ vars.QASE_RC_TEST_RUN_ID_2_11 }}
           qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_11 }}"
 
       - name: Create config.yaml
@@ -561,6 +563,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
+          qase_rc_id: "${{ vars.QASE_RC_TEST_RUN_ID_2_10 }}"
           qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_10 }}"
 
       - name: Create config.yaml
@@ -771,6 +774,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_9 }}"
+          qase_rc_id: "${{ vars.QASE_RC_TEST_RUN_ID_2_9 }}"
           qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_9 }}"
 
       - name: Create config.yaml

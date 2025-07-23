@@ -8,6 +8,9 @@ inputs:
   qase_release_id:
     description: "Qase ID for the release test run"
     required: true
+  qase_rc_id:
+    description: "Qase ID for the RC test run"
+    required: false
   qase_recurring_id:
     description: "Qase ID for the recurring test run"
     required: true
@@ -26,7 +29,11 @@ runs:
         QASE_ID=""
 
         if [[ -n "$TRIGGERED_TAG" ]]; then
-          QASE_ID="${{ inputs.qase_release_id }}"
+          if [[ "$TRIGGERED_TAG" == *"-rc"* ]]; then
+            QASE_ID="${{ inputs.qase_rc_id }}"
+          else
+            QASE_ID="${{ inputs.qase_release_id }}"
+          fi
         else
           QASE_ID="${{ inputs.qase_recurring_id }}"
         fi
