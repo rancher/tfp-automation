@@ -40,7 +40,8 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.ChartVersion + " " +
-		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage
+		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage +
+		" " + terraformConfig.Standalone.LetsEncryptEmail
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage

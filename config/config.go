@@ -131,6 +131,7 @@ type Standalone struct {
 	CertManagerVersion             string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
 	CertType                       string `json:"certType,omitempty" yaml:"certType,omitempty"`
 	ChartVersion                   string `json:"chartVersion,omitempty" yaml:"chartVersion,omitempty"`
+	LetsEncryptEmail               string `json:"letsEncryptEmail,omitempty" yaml:"letsEncryptEmail,omitempty"`
 	K3SVersion                     string `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
 	RancherAgentImage              string `json:"rancherAgentImage,omitempty" yaml:"rancherAgentImage,omitempty"`
 	RancherChartRepository         string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`

@@ -50,9 +50,6 @@ permissions:
   contents: read
 
 env:
-  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-  AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-  AWS_DEFAULT_REGION: "${{ secrets.AWS_REGION }}"
   CLOUD_PROVIDER_VERSION: "5.95.0"
   HOSTNAME_PREFIX: "tfp-proxy-up"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
@@ -136,6 +133,7 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
         id: get-qase-id
@@ -197,6 +195,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
+              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -356,6 +355,7 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
         id: get-qase-id
@@ -417,6 +417,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_11 }}"
+              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -576,6 +577,7 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
         id: get-qase-id
@@ -637,6 +639,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_10 }}"
+              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"

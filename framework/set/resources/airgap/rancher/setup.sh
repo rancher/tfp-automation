@@ -11,7 +11,8 @@ CHART_VERSION=$8
 BOOTSTRAP_PASSWORD=$9
 RANCHER_IMAGE=${10}
 REGISTRY=${11}
-RANCHER_AGENT_IMAGE=${12}
+LETS_ENCRYPT_EMAIL=${12}
+RANCHER_AGENT_IMAGE=${13}
 
 set -ex
 
@@ -62,9 +63,6 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                   --devel
   fi
 elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-    RAND_STR=$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 12)
-    LETS_ENCRYPT_EMAIL="${RAND_STR}@gmail.com"
-
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \

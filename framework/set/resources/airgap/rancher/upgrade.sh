@@ -9,7 +9,8 @@ RANCHER_TAG_VERSION=$6
 CHART_VERSION=$7
 RANCHER_IMAGE=$8
 REGISTRY=$9
-RANCHER_AGENT_IMAGE=${10}
+LETS_ENCRYPT_EMAIL=${10}
+RANCHER_AGENT_IMAGE=${11}
 
 set -ex
 
@@ -19,7 +20,7 @@ helm repo add upgraded-rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
 echo "Upgrading Rancher"
 if [ "$CERT_TYPE" == "self-signed" ]; then
   if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-      helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+      helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                   --version ${CHART_VERSION} \
                                                                                   --set hostname=${HOSTNAME} \
                                                                                   --set rancherImageTag=${RANCHER_TAG_VERSION} \
@@ -31,7 +32,7 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                   --devel
 
   else
-      helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+      helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                   --version ${CHART_VERSION} \
                                                                                   --set hostname=${HOSTNAME} \
                                                                                   --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
@@ -41,11 +42,8 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                   --devel
   fi
 elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-    RAND_STR=$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 12)
-    LETS_ENCRYPT_EMAIL="${RAND_STR}@gmail.com"
-
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --version ${CHART_VERSION} \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImageTag=${RANCHER_TAG_VERSION} \
@@ -59,7 +57,7 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set agentTLSMode=system-store \
                                                                                      --devel
     else
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --version ${CHART_VERSION} \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
