@@ -10,7 +10,8 @@ CHART_VERSION=$7
 BOOTSTRAP_PASSWORD=$8
 RANCHER_IMAGE=$9
 BASTION=${10}
-RANCHER_AGENT_IMAGE=${11}
+LETS_ENCRYPT_EMAIL=${11}
+RANCHER_AGENT_IMAGE=${12}
 PROXY_PORT="3228"
 NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,.svc\\,.cluster.local\\,cattle-system.svc\\,169.254.169.254"
 
@@ -83,9 +84,6 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --devel
     fi
 elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-    RAND_STR=$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 12)
-    LETS_ENCRYPT_EMAIL="${RAND_STR}@gmail.com"
-
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \

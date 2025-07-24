@@ -50,8 +50,6 @@ permissions:
   contents: read
 
 env:
-  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-  AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
   CLOUD_PROVIDER_VERSION: "5.95.0"
   HOSTNAME_PREFIX: "tfp-recur"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
@@ -194,6 +192,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
+              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               k3sVersion: "${{ vars.K3S_VERSION_2_12 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
@@ -405,6 +404,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
+              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               k3sVersion: "${{ vars.K3S_VERSION_2_11 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
@@ -616,6 +616,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
+              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               k3sVersion: "${{ vars.K3S_VERSION_2_10 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"

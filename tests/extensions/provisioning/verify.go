@@ -110,15 +110,13 @@ func VerifyKubernetesVersion(t *testing.T, client *rancher.Client, clusterID, ex
 	case module == clustertypes.AKS || module == clustertypes.GKE:
 		expectedKubernetesVersion = `v` + expectedKubernetesVersion
 		require.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion)
-
-	// Terraform requires that we input the entire RKE1 version. However, Rancher client clips the `-rancher` suffix.
+	case strings.Contains(module, clustertypes.EKS):
+		require.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion[1:5])
 	case strings.Contains(module, clustertypes.RKE1):
 		expectedKubernetesVersion = expectedKubernetesVersion[:len(expectedKubernetesVersion)-11]
 		require.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion)
-
-	case strings.Contains(module, clustertypes.EKS):
-		require.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion[1:5])
-
+	case strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S):
+		require.Equal(t, expectedKubernetesVersion, cluster.Version.GitVersion)
 	default:
 		logrus.Errorf("Invalid module provided")
 	}

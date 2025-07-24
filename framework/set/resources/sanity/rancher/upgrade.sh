@@ -7,7 +7,8 @@ HOSTNAME=$4
 RANCHER_TAG_VERSION=$5
 CHART_VERSION=$6
 RANCHER_IMAGE=$7
-RANCHER_AGENT_IMAGE=${8}
+LETS_ENCRYPT_EMAIL=$8
+RANCHER_AGENT_IMAGE=${9}
 
 set -ex
 
@@ -37,11 +38,8 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                     --devel
     fi
 elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-    RAND_STR=$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | head -c 12)
-    LETS_ENCRYPT_EMAIL="${RAND_STR}@gmail.com"
-
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --version ${CHART_VERSION} \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImageTag=${RANCHER_TAG_VERSION} \
@@ -54,7 +52,7 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set agentTLSMode=system-store \
                                                                                      --devel
     else
-        helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --version ${CHART_VERSION} \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --set rancherImage=${RANCHER_IMAGE} \

@@ -35,7 +35,8 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.CertType + " " +
 		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
-		terraformConfig.Standalone.UpgradedRancherChartVersion + " " + terraformConfig.Standalone.UpgradedRancherImage
+		terraformConfig.Standalone.UpgradedRancherChartVersion + " " + terraformConfig.Standalone.UpgradedRancherImage +
+		" " + terraformConfig.Standalone.LetsEncryptEmail
 
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage

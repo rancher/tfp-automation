@@ -136,7 +136,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(s.T(), err)
 
-		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.SecondHighestVersion, configMap)
 
 		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
 
@@ -150,6 +150,12 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
+			}
+
+			if deleteClusters {
+				provisioning.KubernetesUpgrade(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false)
+				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
+				provisioning.VerifyKubernetesVersion(s.T(), s.client, clusterIDs[0], terratest.KubernetesVersion, s.terraformConfig.Module)
 			}
 		})
 	}
