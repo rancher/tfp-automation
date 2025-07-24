@@ -36,10 +36,14 @@ func UpgradeProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclw
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
 		terraformConfig.Standalone.UpgradedRancherChartVersion + " " + terraformConfig.Standalone.UpgradedRancherImage + " " +
-		proxyPrivateIP + " " + terraformConfig.Standalone.LetsEncryptEmail
+		proxyPrivateIP
 
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
+	}
+
+	if terraformConfig.Standalone.LetsEncryptEmail != "" {
+		command += " " + terraformConfig.Standalone.LetsEncryptEmail
 	}
 
 	command += " || true'"
