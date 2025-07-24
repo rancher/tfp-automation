@@ -41,11 +41,14 @@ func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.ChartVersion + " " +
-		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " + rke2BastionPrivateIP +
-		" " + terraformConfig.Standalone.LetsEncryptEmail
+		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " + rke2BastionPrivateIP
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
+	}
+
+	if terraformConfig.Standalone.LetsEncryptEmail != "" {
+		command += " " + terraformConfig.Standalone.LetsEncryptEmail
 	}
 
 	command += " || true'"
