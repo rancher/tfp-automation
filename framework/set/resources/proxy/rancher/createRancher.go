@@ -47,10 +47,6 @@ func CreateProxiedRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	if terraformConfig.Standalone.LetsEncryptEmail != "" {
-		command += " " + terraformConfig.Standalone.LetsEncryptEmail
-	}
-
 	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{

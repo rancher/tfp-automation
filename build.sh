@@ -10,6 +10,7 @@ RANCHER2_PROVIDER_VERSION="${RANCHER2_PROVIDER_VERSION:-}"
 LOCALS_PROVIDER_VERSION="${LOCALS_PROVIDER_VERSION:-}"
 CLOUD_PROVIDER_VERSION="${CLOUD_PROVIDER_VERSION:-}"
 KUBERNETES_PROVIDER_VERSION="${KUBERNETES_PROVIDER_VERSION:-}"
+LETS_ENCRYPT_EMAIL="${LETS_ENCRYPT_EMAIL:-}"
 
 TRIM_JOB_NAME=$(basename "$JOB_NAME")
 
@@ -27,6 +28,7 @@ while [[ 3 -gt $count ]]; do
                                                                     --build-arg LOCALS_PROVIDER_VERSION="$LOCALS_PROVIDER_VERSION" \
                                                                     --build-arg CLOUD_PROVIDER_VERSION="$CLOUD_PROVIDER_VERSION" \
                                                                     --build-arg KUBERNETES_PROVIDER_VERSION="$KUBERNETES_PROVIDER_VERSION" \
+                                                                    --build-arg LETS_ENCRYPT_EMAIL="$LETS_ENCRYPT_EMAIL" \
                                                                     -t tfp-automation-validation-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"
 
     if [[ $? -eq 0 ]]; then break; fi
