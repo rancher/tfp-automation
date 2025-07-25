@@ -98,6 +98,7 @@ export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
 export KUBERNETES_VERSION=""
+export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
 ```
 
 See the below examples on how to run the test:
@@ -235,6 +236,7 @@ export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
+export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
 ```
 
 See the below examples on how to run the test:
@@ -299,6 +301,7 @@ export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
+export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
 ```
 
 See the below examples on how to run the tests:

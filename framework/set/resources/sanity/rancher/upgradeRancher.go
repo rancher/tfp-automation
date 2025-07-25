@@ -41,10 +41,6 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 	}
 
-	if terraformConfig.Standalone.LetsEncryptEmail != "" {
-		command += " " + terraformConfig.Standalone.LetsEncryptEmail
-	}
-
 	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{

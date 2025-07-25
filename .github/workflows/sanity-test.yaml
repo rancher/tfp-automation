@@ -81,7 +81,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Get AWS credentials from Secrets Manager
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
@@ -194,7 +193,6 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -263,7 +261,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Revoke Runner IP
         if: always()
@@ -294,7 +291,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Get AWS credentials from Secrets Manager
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
@@ -407,7 +403,6 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -476,7 +471,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Revoke Runner IP
         if: always()
@@ -507,7 +501,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Get AWS credentials from Secrets Manager
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
@@ -620,7 +613,6 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -690,7 +682,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Revoke Runner IP
         if: always()
@@ -721,7 +712,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Get AWS credentials from Secrets Manager
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
@@ -834,7 +824,6 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              letsEncryptEmail: "${{ secrets.LETS_ENCRYPT_EMAIL }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -904,7 +893,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-duration-seconds: 14400
 
       - name: Revoke Runner IP
         if: always()
