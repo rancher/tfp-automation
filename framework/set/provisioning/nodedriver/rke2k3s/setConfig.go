@@ -61,16 +61,16 @@ const (
 func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact string, nodePools []config.Nodepool,
 	snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
-	switch {
-	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
+	switch terraformConfig.Module {
+	case modules.EC2RKE2, modules.EC2K3s:
 		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
-	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
+	case modules.AzureRKE2, modules.AzureK3s:
 		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig)
-	case terraformConfig.Module == modules.HarvesterRKE2 || terraformConfig.Module == modules.HarvesterK3s:
+	case modules.HarvesterRKE2, modules.HarvesterK3s:
 		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig)
-	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
+	case modules.LinodeRKE2, modules.LinodeK3s:
 		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig)
-	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:
+	case modules.VsphereRKE2, modules.VsphereK3s:
 		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig)
 	}
 
@@ -85,6 +85,12 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact strin
 	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, terraformConfig.ResourcePrefix})
 	machineConfigBlockBody := machineConfigBlock.Body()
 
+	provider := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Rancher2 + "." + defaults.StandardUser)},
+	}
+
+	machineConfigBlockBody.SetAttributeRaw(defaults.Provider, provider)
+
 	if psact == defaults.RancherBaseline {
 		dependsOnTemp := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.PodSecurityAdmission + "." +
@@ -96,16 +102,16 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact strin
 
 	machineConfigBlockBody.SetAttributeValue(defaults.GenerateName, cty.StringVal(terraformConfig.ResourcePrefix))
 
-	switch {
-	case terraformConfig.Module == modules.EC2RKE2 || terraformConfig.Module == modules.EC2K3s:
+	switch terraformConfig.Module {
+	case modules.EC2RKE2, modules.EC2K3s:
 		aws.SetAWSRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.AzureRKE2 || terraformConfig.Module == modules.AzureK3s:
+	case modules.AzureRKE2, modules.AzureK3s:
 		azure.SetAzureRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.HarvesterRKE2 || terraformConfig.Module == modules.HarvesterK3s:
+	case modules.HarvesterRKE2, modules.HarvesterK3s:
 		harvester.SetHarvesterRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.LinodeRKE2 || terraformConfig.Module == modules.LinodeK3s:
+	case modules.LinodeRKE2, modules.LinodeK3s:
 		linode.SetLinodeRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.VsphereRKE2 || terraformConfig.Module == modules.VsphereK3s:
+	case modules.VsphereRKE2, modules.VsphereK3s:
 		vsphere.SetVsphereRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	}
 
@@ -114,6 +120,7 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact strin
 	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, terraformConfig.ResourcePrefix})
 	clusterBlockBody := clusterBlock.Body()
 
+	clusterBlockBody.SetAttributeRaw(defaults.Provider, provider)
 	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 	clusterBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
 	clusterBlockBody.SetAttributeValue(defaults.EnableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))

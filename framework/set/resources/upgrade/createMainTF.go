@@ -6,7 +6,9 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	airgap "github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
@@ -22,8 +24,9 @@ const (
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server behind a proxy.
-func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, serverNode, proxyNode, bastionNode, registryNode string) error {
+func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *rancher.Config,
+	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, serverNode, proxyNode, bastionNode,
+	registryNode string) error {
 	var file *os.File
 	file = sanity.OpenFile(file, keyPath)
 	defer file.Close()
@@ -49,7 +52,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		terraform.InitAndApply(t, terraformOptions)
+		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		if err != nil && *rancherConfig.Cleanup {
+			logrus.Infof("Error while updating private registry. Cleaning up...")
+			cleanup.Cleanup(t, terraformOptions, keyPath)
+			return err
+		}
 
 		file = sanity.OpenFile(file, keyPath)
 		logrus.Infof("Upgrading Airgap Rancher...")
@@ -58,7 +66,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		terraform.InitAndApply(t, terraformOptions)
+		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		if err != nil && *rancherConfig.Cleanup {
+			logrus.Infof("Error while upgrading Airgap Rancher. Cleaning up...")
+			cleanup.Cleanup(t, terraformOptions, keyPath)
+			return err
+		}
 	case terraformConfig.Standalone.UpgradeProxyRancher:
 		logrus.Infof("Upgrading Proxy Rancher...")
 		_, err := proxy.UpgradeProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverNode, proxyNode)
@@ -66,7 +79,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		terraform.InitAndApply(t, terraformOptions)
+		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		if err != nil && *rancherConfig.Cleanup {
+			logrus.Infof("Error while upgrading Proxy Rancher. Cleaning up...")
+			cleanup.Cleanup(t, terraformOptions, keyPath)
+			return err
+		}
 	case terraformConfig.Standalone.UpgradeRancher:
 		logrus.Infof("Upgrading Rancher...")
 		_, err := sanityRancher.UpgradeRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverNode)
@@ -74,7 +92,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		terraform.InitAndApply(t, terraformOptions)
+		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		if err != nil && *rancherConfig.Cleanup {
+			logrus.Infof("Error while upgrading Rancher. Cleaning up...")
+			cleanup.Cleanup(t, terraformOptions, keyPath)
+			return err
+		}
 	default:
 		logrus.Errorf("Unsupported Rancher environment. Please check the configuration file.")
 	}

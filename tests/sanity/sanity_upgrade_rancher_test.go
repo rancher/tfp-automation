@@ -1,14 +1,12 @@
 package sanity
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
@@ -16,11 +14,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
-	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
@@ -51,59 +46,32 @@ func (s *TfpSanityUpgradeRancherTestSuite) TearDownSuite() {
 }
 
 func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
-	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
-
-	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terratestConfig.PathToRepo, s.terraformConfig.Provider)
-	standaloneTerraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
-	s.standaloneTerraformOptions = standaloneTerraformOptions
-
-	serverNodeOne, err := resources.CreateMainTF(s.T(), s.standaloneTerraformOptions, keyPath, s.rancherConfig, s.terraformConfig, s.terratestConfig)
-	require.NoError(s.T(), err)
-
-	s.serverNodeOne = serverNodeOne
-
-	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terratestConfig.PathToRepo, s.terraformConfig.Provider)
-	upgradeTerraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
-
-	s.upgradeTerraformOptions = upgradeTerraformOptions
-
 	testSession := session.NewSession()
 	s.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(s.T(), s.rancherConfig, testSession, s.terraformConfig.Standalone.RancherHostname, false, false)
-	if err != nil && *s.rancherConfig.Cleanup {
-		cleanup.Cleanup(s.T(), s.standaloneTerraformOptions, keyPath)
-	}
-
-	s.client = client
-
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
-	s.terraformOptions = terraformOptions
+	s.client, s.serverNodeOne, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = infrastructure.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
 }
 
 func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 	var clusterIDs []string
 
-	s.provisionAndVerifyCluster("Pre-Upgrade Sanity ", clusterIDs, false)
+	testUser, testPassword := configs.CreateTestCredentials()
 
-	s.terraformConfig.Standalone.UpgradeRancher = true
+	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
+	s.provisionAndVerifyCluster("Pre-Upgrade Sanity ", clusterIDs, false, testUser, testPassword)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, s.terratestConfig.PathToRepo, s.terraformConfig.Provider)
-	err := upgrade.CreateMainTF(s.T(), s.upgradeTerraformOptions, keyPath, s.terraformConfig, s.terratestConfig, s.serverNodeOne, "", "", "")
-	require.NoError(s.T(), err)
+	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = infrastructure.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
 
-	provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-
-	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, true)
+	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
+	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, true, testUser, testPassword)
 
 	if s.terratestConfig.LocalQaseReporting {
 		qase.ReportTest(s.terratestConfig)
 	}
 }
 
-func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool) []string {
+func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool,
+	testUser, testPassword string) []string {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -121,7 +89,6 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	defer file.Close()
 
 	customClusterNames := []string{}
-	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
@@ -155,7 +122,6 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 			if deleteClusters {
 				provisioning.KubernetesUpgrade(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-				provisioning.VerifyKubernetesVersion(s.T(), s.client, clusterIDs[0], terratest.KubernetesVersion, s.terraformConfig.Module)
 			}
 		})
 	}

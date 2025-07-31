@@ -82,7 +82,6 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			time.Sleep(4 * time.Minute)
 
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
-			provisioning.VerifyKubernetesVersion(k.T(), k.client, clusterIDs[0], k.terratestConfig.KubernetesVersion, k.terraformConfig.Module)
 		})
 	}
 

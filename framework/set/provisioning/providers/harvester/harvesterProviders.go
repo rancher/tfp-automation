@@ -41,6 +41,11 @@ func SetHarvesterCredentialProvider(rootBody *hclwrite.Body, terraformConfig *co
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, terraformConfig.ResourcePrefix})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
+	provider := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Rancher2 + "." + defaults.StandardUser)},
+	}
+
+	cloudCredBlockBody.SetAttributeRaw(defaults.Provider, provider)
 	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	harvesterCredBlock := cloudCredBlockBody.AppendNewBlock(harvester.HarvesterCredentialConfig, nil)

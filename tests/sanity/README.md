@@ -88,7 +88,7 @@ terraform:
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
-    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
     upgradedRancherAgentImage: ""                 # OPTIONAL - fill out if you are performing an upgrade
     upgradedRancherChartRepository: ""            # OPTIONAL - fill out if you are performing an upgrade
     upgradedRancherChartVersion: ""               # OPTIONAL - fill out if you are performing an upgrade

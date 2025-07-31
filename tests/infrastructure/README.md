@@ -87,7 +87,7 @@ terraform:
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using staging registry
-    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
 ```
 
 Note: Depending on what `provider` is set to, only fill out the appropriate section. Before running locally, be sure to run the following commands:
@@ -169,7 +169,7 @@ terraform:
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using staging registry
-    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.3)
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
 ```
 
 See the below examples on how to run the test:
@@ -220,7 +220,7 @@ terraform:
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.3)
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
     authenticated: true                           # REQUIRED - true if you want an authenticated registry, false for a non-authenticated registry
@@ -287,7 +287,7 @@ terraform:
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
-    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.3+rke2r1)
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
   standaloneRegistry:
     registryName: ""                              # REQUIRED - fill with desired value
     registryPassword: ""                          # REQUIRED - fill with desired value
@@ -399,7 +399,7 @@ terraform:
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.3)
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
     registryName: ""                              # REQUIRED - fill with desired value
@@ -453,7 +453,7 @@ terraform:
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.3)
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
     registryName: ""                              # REQUIRED - fill with desired value

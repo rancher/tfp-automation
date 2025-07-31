@@ -1,14 +1,12 @@
 package recurring
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
@@ -16,11 +14,9 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
@@ -47,27 +43,11 @@ func (r *TfpRancher2RecurringRunsTestSuite) TearDownSuite() {
 }
 
 func (r *TfpRancher2RecurringRunsTestSuite) SetupSuite() {
-	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
-
-	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, r.terratestConfig.PathToRepo, r.terraformConfig.Provider)
-	standaloneTerraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
-	r.standaloneTerraformOptions = standaloneTerraformOptions
-
-	_, err := resources.CreateMainTF(r.T(), r.standaloneTerraformOptions, keyPath, r.rancherConfig, r.terraformConfig, r.terratestConfig)
-	require.NoError(r.T(), err)
-
 	testSession := session.NewSession()
 	r.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(r.T(), r.rancherConfig, testSession, r.terraformConfig.Standalone.RancherHostname, false, false)
-	require.NoError(r.T(), err)
-
-	r.client = client
-
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
-	r.terraformOptions = terraformOptions
+	r.client, _, r.standaloneTerraformOptions, r.terraformOptions, r.cattleConfig = infrastructure.SetupRancher(r.T(), r.session, keypath.SanityKeyPath)
+	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 }
 
 func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomCluster() {

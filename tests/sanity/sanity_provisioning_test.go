@@ -1,14 +1,12 @@
 package sanity
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
@@ -16,10 +14,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
@@ -45,29 +41,11 @@ func (s *TfpSanityProvisioningTestSuite) TearDownSuite() {
 }
 
 func (s *TfpSanityProvisioningTestSuite) SetupSuite() {
-	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
-
-	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, s.terratestConfig.PathToRepo, s.terraformConfig.Provider)
-	standaloneTerraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
-	s.standaloneTerraformOptions = standaloneTerraformOptions
-
-	_, err := resources.CreateMainTF(s.T(), s.standaloneTerraformOptions, keyPath, s.rancherConfig, s.terraformConfig, s.terratestConfig)
-	require.NoError(s.T(), err)
-
 	testSession := session.NewSession()
 	s.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(s.T(), s.rancherConfig, testSession, s.terraformConfig.Standalone.RancherHostname, false, false)
-	if err != nil && *s.rancherConfig.Cleanup {
-		cleanup.Cleanup(s.T(), s.standaloneTerraformOptions, keyPath)
-	}
-
-	s.client = client
-
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
-	s.terraformOptions = terraformOptions
+	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = infrastructure.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
+	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
 }
 
 func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {

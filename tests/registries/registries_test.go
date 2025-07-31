@@ -1,23 +1,19 @@
 package registries
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/registries"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
@@ -46,33 +42,13 @@ func (r *TfpRegistriesTestSuite) TearDownSuite() {
 }
 
 func (r *TfpRegistriesTestSuite) SetupSuite() {
-	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
-
-	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, r.terratestConfig.PathToRepo, r.terraformConfig.Provider)
-	standaloneTerraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
-	r.standaloneTerraformOptions = standaloneTerraformOptions
-
-	authRegistry, nonAuthRegistry, globalRegistry, err := registries.CreateMainTF(r.T(), r.standaloneTerraformOptions, keyPath, r.rancherConfig, r.terraformConfig, r.terratestConfig)
-	require.NoError(r.T(), err)
-
-	r.authRegistry = authRegistry
-	r.nonAuthRegistry = nonAuthRegistry
-	r.globalRegistry = globalRegistry
-
 	testSession := session.NewSession()
 	r.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(r.T(), r.rancherConfig, testSession, r.terraformConfig.Standalone.RancherHostname, false, false)
-	if err != nil && *r.rancherConfig.Cleanup {
-		cleanup.Cleanup(r.T(), r.standaloneTerraformOptions, keyPath)
-	}
+	r.client, r.authRegistry, r.nonAuthRegistry, r.globalRegistry, r.standaloneTerraformOptions, r.terraformOptions,
+		r.cattleConfig = infrastructure.SetupRegistryRancher(r.T(), r.session, keypath.RegistryKeyPath)
 
-	r.client = client
-
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
-	r.terraformOptions = terraformOptions
+	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
 }
 
 func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {

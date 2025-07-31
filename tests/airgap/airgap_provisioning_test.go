@@ -1,14 +1,12 @@
 package airgap
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
@@ -16,9 +14,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -46,31 +42,11 @@ func (a *TfpAirgapProvisioningTestSuite) TearDownSuite() {
 }
 
 func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
-	a.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
-
-	_, keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terratestConfig.PathToRepo, a.terraformConfig.Provider)
-	standaloneTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
-	a.standaloneTerraformOptions = standaloneTerraformOptions
-
-	registry, _, err := airgap.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.rancherConfig, a.terraformConfig, a.terratestConfig)
-	require.NoError(a.T(), err)
-
-	a.registry = registry
-
 	testSession := session.NewSession()
 	a.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(a.T(), a.rancherConfig, testSession, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
-	if err != nil && *a.rancherConfig.Cleanup {
-		cleanup.Cleanup(a.T(), a.standaloneTerraformOptions, keyPath)
-	}
-
-	a.client = client
-
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
-	a.terraformOptions = terraformOptions
+	a.client, a.registry, _, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig = infrastructure.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
+	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
 }
 
 func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {

@@ -69,7 +69,8 @@ func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	connectionBlockBody.SetAttributeValue(defaults.Host, cty.StringVal(instance))
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
 
-	if terraformConfig.Provider == defaults.Aws {
+	switch terraformConfig.Provider {
+	case defaults.Aws:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
 		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
@@ -78,10 +79,10 @@ func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		}
 
 		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-	} else if terraformConfig.Provider == defaults.Linode {
+	case defaults.Linode:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(linode.RootUser))
 		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
-	} else if terraformConfig.Provider == defaults.Harvester {
+	case defaults.Harvester:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.HarvesterConfig.SSHUser))
 
 		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
@@ -90,7 +91,7 @@ func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		}
 
 		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-	} else if terraformConfig.Provider == defaults.Vsphere {
+	case defaults.Vsphere:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
 
 		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
@@ -137,8 +138,8 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		host := hosts[i]
 		nullResourceBlockBody, provisionerBlockBody := SSHNullResource(rootBody, terraformConfig, instance, host)
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
-			instance + " " + rke2Token + " " + terraformConfig.CNI
+		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RKE2Version + " " +
+			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + terraformConfig.CNI
 
 		if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 			command += " " + terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
