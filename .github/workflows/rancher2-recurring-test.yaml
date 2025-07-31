@@ -28,12 +28,6 @@ on:
       rancher-chart-version-2-10:
         description: "Rancher chart version for v2.10-head"
         default: "v2.10-head"
-      rancher-version-2-9:
-        description: "Rancher version for v2.9-head"
-        default: "v2.9-head"
-      rancher-chart-version-2-9:
-        description: "Rancher chart version for v2.9-head"
-        default: "v2.9-head"
   workflow_call:
     inputs:
       rancher_version:
@@ -200,7 +194,7 @@ jobs:
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}${{ vars.RKE2_VERSION_SUFFIX }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -411,7 +405,7 @@ jobs:
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}${{ vars.RKE2_VERSION_SUFFIX }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
@@ -623,7 +617,7 @@ jobs:
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_10 }}${{ vars.RKE2_VERSION_SUFFIX }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_10 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}

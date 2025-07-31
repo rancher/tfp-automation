@@ -10,22 +10,22 @@ on:
         description: "Rancher chart version"
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
-        default: "v2.12.0-alpha20"
+        default: "v2.12.0"
       rancher-chart-version-2-12:
         description: "Rancher chart version for v2.12.x"
-        default: "2.12.0-alpha20"
+        default: "2.12.0"
       rancher-version-2-11:
         description: "Rancher version for v2.11.x"
-        default: "v2.11.3"
+        default: "v2.11.4"
       rancher-chart-version-2-11:
         description: "Rancher chart version for v2.11.x"
-        default: "2.11.3"
+        default: "2.11.4"
       rancher-version-2-10:
         description: "Rancher version for v2.10.x"
-        default: "v2.10.7"
+        default: "v2.10.8"
       rancher-chart-version-2-10:
         description: "Rancher chart version for v2.10.x"
-        default: "2.10.7"
+        default: "2.10.8"
   workflow_call:
     inputs:
       rancher_version:

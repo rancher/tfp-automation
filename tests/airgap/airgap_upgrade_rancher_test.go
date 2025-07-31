@@ -1,14 +1,12 @@
 package airgap
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
@@ -16,11 +14,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
@@ -52,60 +47,32 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TearDownSuite() {
 }
 
 func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
-	a.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
-
-	_, keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, a.terratestConfig.PathToRepo, a.terraformConfig.Provider)
-	standaloneTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
-	a.standaloneTerraformOptions = standaloneTerraformOptions
-
-	registry, bastion, err := airgap.CreateMainTF(a.T(), a.standaloneTerraformOptions, keyPath, a.rancherConfig, a.terraformConfig, a.terratestConfig)
-	require.NoError(a.T(), err)
-
-	a.registry = registry
-	a.bastion = bastion
-
-	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, a.terratestConfig.PathToRepo, a.terraformConfig.Provider)
-	upgradeTerraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
-
-	a.upgradeTerraformOptions = upgradeTerraformOptions
-
 	testSession := session.NewSession()
 	a.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(a.T(), a.rancherConfig, testSession, a.terraformConfig.Standalone.AirgapInternalFQDN, false, true)
-	if err != nil && *a.rancherConfig.Cleanup {
-		cleanup.Cleanup(a.T(), a.standaloneTerraformOptions, keyPath)
-	}
-
-	a.client = client
-
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
-	a.terraformOptions = terraformOptions
+	a.client, a.registry, a.bastion, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig = infrastructure.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
 }
 
 func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	var clusterIDs []string
 
-	a.provisionAndVerifyCluster("Pre-Upgrade Airgap ", clusterIDs, false)
+	testUser, testPassword := configs.CreateTestCredentials()
 
-	a.terraformConfig.Standalone.UpgradeAirgapRancher = true
+	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
+	a.provisionAndVerifyCluster("Pre-Upgrade Airgap ", clusterIDs, false, testUser, testPassword)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, a.terratestConfig.PathToRepo, a.terraformConfig.Provider)
-	err := upgrade.CreateMainTF(a.T(), a.upgradeTerraformOptions, keyPath, a.terraformConfig, a.terratestConfig, "", "", a.bastion, a.registry)
-	require.NoError(a.T(), err)
+	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = infrastructure.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig)
 
-	provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-
-	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, true)
+	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
+	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, true, testUser, testPassword)
 
 	if a.terratestConfig.LocalQaseReporting {
 		qase.ReportTest(a.terratestConfig)
 	}
 }
 
-func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool) []string {
+func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool,
+	testUser, testPassword string) []string {
 	tests := []struct {
 		name   string
 		module string
@@ -120,7 +87,6 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	defer file.Close()
 
 	customClusterNames := []string{}
-	testUser, testPassword := configs.CreateTestCredentials()
 
 	for _, tt := range tests {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})

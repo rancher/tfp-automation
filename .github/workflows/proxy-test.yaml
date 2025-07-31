@@ -28,12 +28,6 @@ on:
       rancher-chart-version-2-10:
         description: "Rancher chart version for v2.10.x"
         default: "v2.10-head"
-      rancher-version-2-9:
-        description: "Rancher version for v2.9.x"
-        default: "v2.9-head"
-      rancher-chart-version-2-9:
-        description: "Rancher chart version for v2.9.x"
-        default: "v2.9-head"
   workflow_call:
     inputs:
       rancher_version:

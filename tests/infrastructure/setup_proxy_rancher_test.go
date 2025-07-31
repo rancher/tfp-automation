@@ -46,7 +46,7 @@ func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	_, err = PostRancherSetup(i.T(), i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, false, false)
+	_, err = PostRancherSetup(i.T(), i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, false)
 	require.NoError(i.T(), err)
 }
 

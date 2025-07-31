@@ -1,14 +1,12 @@
 package proxy
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
@@ -16,9 +14,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/proxy"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -46,30 +42,11 @@ func (p *TfpProxyProvisioningTestSuite) TearDownSuite() {
 }
 
 func (p *TfpProxyProvisioningTestSuite) SetupSuite() {
-	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
-
-	_, keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, p.terratestConfig.PathToRepo, p.terraformConfig.Provider)
-	standaloneTerraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
-	p.standaloneTerraformOptions = standaloneTerraformOptions
-
-	proxyBastion, _, err := resources.CreateMainTF(p.T(), p.standaloneTerraformOptions, keyPath, p.rancherConfig, p.terraformConfig, p.terratestConfig)
-	require.NoError(p.T(), err)
-
-	p.proxyBastion = proxyBastion
-
 	testSession := session.NewSession()
 	p.session = testSession
 
-	client, err := infrastructure.PostRancherSetup(p.T(), p.rancherConfig, testSession, p.terraformConfig.Standalone.RancherHostname, false, false)
-	if err != nil && *p.rancherConfig.Cleanup {
-		cleanup.Cleanup(p.T(), p.standaloneTerraformOptions, keyPath)
-	}
-
-	p.client = client
-	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
-	p.terraformOptions = terraformOptions
+	p.client, p.proxyBastion, _, p.standaloneTerraformOptions, p.terraformOptions, p.cattleConfig = infrastructure.SetupProxyRancher(p.T(), p.session, keypath.ProxyKeyPath)
+	p.rancherConfig, p.terraformConfig, p.terratestConfig = config.LoadTFPConfigs(p.cattleConfig)
 }
 
 func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
