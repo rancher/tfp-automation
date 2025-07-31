@@ -112,8 +112,7 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 	_, provisionerBlockBody := SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " +
-		rke2Token + " " + terraformConfig.CNI
+		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " + terraformConfig.CNI
 
 	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 		command += " " + terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
@@ -139,7 +138,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		nullResourceBlockBody, provisionerBlockBody := SSHNullResource(rootBody, terraformConfig, instance, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
-			instance + " " + terraformConfig.Standalone.RancherHostname + " " + rke2Token + " " + terraformConfig.CNI
+			instance + " " + rke2Token + " " + terraformConfig.CNI
 
 		if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 			command += " " + terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
