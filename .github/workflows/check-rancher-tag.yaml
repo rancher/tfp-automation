@@ -7,10 +7,17 @@ on:
     - cron: "0 0 * * 2-6"
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   check-latest-rancher-tag:
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
+    env:
+      RANCHER_RELEASE_LINES: "v2.12 v2.11 v2.10 v2.9"
+      SANITIZED_RELEASES: "v212 v211 v210 v29"
     outputs:
       latest_tag_v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
       latest_tag_v211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
@@ -25,28 +32,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore Rancher tag cache
-        uses: actions/cache@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          path: tag
-          key: rancher-tag-cache-${{ github.ref_name }}
-          restore-keys: |
-            rancher-tag-cache-
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Fetch Rancher tags from S3
+        run: |
+          for release in $SANITIZED_RELEASES; do
+            if aws s3 ls "s3://${{ secrets.RANCHER_TAG_BUCKET }}/tag_${release}.txt" > /dev/null 2>&1; then
+              aws s3 cp "s3://${{ secrets.RANCHER_TAG_BUCKET }}/tag_${release}.txt" "tag/tag_${release}.txt"
+            else
+              echo "Skipping $release — no tag file found in bucket."
+            fi
+          done
 
       - name: Get latest Rancher tag
         id: get-latest-tag
         uses: ./.github/actions/get-latest-rancher-tag
         with:
-          release_lines: "v2.12 v2.11 v2.10 v2.9"
+          release_lines: ${{ env.RANCHER_RELEASE_LINES }}
           prime_artifacts_path: ${{ secrets.PRIME_ARTIFACTS_PATH }}
 
       - name: Read cached Rancher tags
         id: read-cached-tags
         run: |
-          echo "CACHED_TAG_v212=$(cat tag/tag_v212.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
-          echo "CACHED_TAG_v211=$(cat tag/tag_v211.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
-          echo "CACHED_TAG_v210=$(cat tag/tag_v210.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
-          echo "CACHED_TAG_v29=$(cat tag/tag_v29.txt 2>/dev/null || echo '')" >> $GITHUB_ENV
+          for release in $SANITIZED_RELEASES; do
+            cache_tag="CACHED_TAG_${release}"
+            file="tag/tag_${release}.txt"
+            version=$(cat "$file" 2>/dev/null || echo '')
+            echo "${cache_tag}=${version}" >> $GITHUB_ENV
+          done
 
       - name: Compare latest Rancher tag against cached tag
         id: compare-rancher-tag
@@ -61,31 +78,24 @@ jobs:
           latest-tag-v210: ${{ steps.get-latest-tag.outputs.latest_tag_v210 }}
           latest-tag-v29: ${{ steps.get-latest-tag.outputs.latest_tag_v29 }}
 
-      - name: v2.12 - Write latest tag to file
+      - name: Write latest tags to files
+        env:
+          LATEST_TAG_V212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
+          LATEST_TAG_V211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
+          LATEST_TAG_V210: ${{ steps.get-latest-tag.outputs.latest_tag_v210 }}
+          LATEST_TAG_V29: ${{ steps.get-latest-tag.outputs.latest_tag_v29 }}
         run: |
           mkdir -p tag
-          echo "${{ steps.get-latest-tag.outputs.latest_tag_v212 }}" > tag/tag_v212.txt
+          for release in $SANITIZED_RELEASES; do
+            latest_tag="LATEST_TAG_${release^^}"
+            echo "${!latest_tag}" > tag/tag_${release}.txt
+          done
 
-      - name: v2.11 - Write latest tag to file
+      - name: Update Rancher tags to S3
         run: |
-          mkdir -p tag
-          echo "${{ steps.get-latest-tag.outputs.latest_tag_v211 }}" > tag/tag_v211.txt
-
-      - name: v2.10 - Write latest tag to file
-        run: |
-          mkdir -p tag
-          echo "${{ steps.get-latest-tag.outputs.latest_tag_v210 }}" > tag/tag_v210.txt
-
-      - name: v2.9 - Write latest tag to file
-        run: |
-          mkdir -p tag
-          echo "${{ steps.get-latest-tag.outputs.latest_tag_v29 }}" > tag/tag_v29.txt
-
-      - name: Save Rancher tag cache
-        uses: actions/cache@v4
-        with:
-          path: tag
-          key: rancher-tag-cache-${{ github.ref_name }}
+          for release in $SANITIZED_RELEASES; do
+            aws s3 cp "tag/tag_${release}.txt" "s3://${{ secrets.RANCHER_TAG_BUCKET }}/tag_${release}.txt"
+          done
 
   set-latest-chart-version:
     needs: check-latest-rancher-tag
@@ -117,7 +127,7 @@ jobs:
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v212 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v212 }}
-  
+
   trigger-tests-v211:
     needs: [check-latest-rancher-tag, set-latest-chart-version]
     if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v211 == 'true' }}
