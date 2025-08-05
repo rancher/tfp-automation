@@ -30,7 +30,7 @@ type ProxyRancherTestSuite struct {
 
 func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
 	i.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	i.rancherConfig, i.terraformConfig, i.terratestConfig = config.LoadTFPConfigs(i.cattleConfig)
+	i.rancherConfig, i.terraformConfig, i.terratestConfig, _ = config.LoadTFPConfigs(i.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)

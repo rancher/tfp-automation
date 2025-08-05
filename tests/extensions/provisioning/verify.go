@@ -18,6 +18,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	waitState "github.com/rancher/tfp-automation/framework/wait/state"
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -107,6 +108,14 @@ func VerifyRegistry(t *testing.T, client *rancher.Client, clusterID string, terr
 		_, err := registries.CheckAllClusterPodsForRegistryPrefix(client, clusterID, terraformConfig.PrivateRegistries.URL)
 		require.NoError(t, err)
 	}
+}
+
+// VerifyRancherVersion validates that the expected rancher version matches the version of the rancher server.
+func VerifyRancherVersion(t *testing.T, hostURL string, expectedVersion string) {
+	resp, err := RequestRancherVersion(hostURL)
+	require.NoError(t, err)
+
+	assert.Equal(t, expectedVersion, resp.RancherVersion, "rancher version does not match the expected version")
 }
 
 // VerifyNodeCount validates that a cluster has the expected number of nodes.

@@ -33,6 +33,7 @@ type TfpRancher2RecurringRunsTestSuite struct {
 	rancherConfig              *rancher.Config
 	terraformConfig            *config.TerraformConfig
 	terratestConfig            *config.TerratestConfig
+	standaloneConfig           *config.Standalone
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
 }
@@ -47,7 +48,9 @@ func (r *TfpRancher2RecurringRunsTestSuite) SetupSuite() {
 	r.session = testSession
 
 	r.client, _, r.standaloneTerraformOptions, r.terraformOptions, r.cattleConfig = infrastructure.SetupRancher(r.T(), r.session, keypath.SanityKeyPath)
-	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
+	r.rancherConfig, r.terraformConfig, r.terratestConfig, r.standaloneConfig = config.LoadTFPConfigs(r.cattleConfig)
+
+	provisioning.VerifyRancherVersion(r.T(), r.rancherConfig.Host, r.standaloneConfig.RancherTagVersion)
 }
 
 func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomCluster() {
@@ -79,7 +82,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		currentDate := time.Now().Format("2006-01-02 03:04PM")
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
@@ -129,7 +132,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(r.T(), err)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		currentDate := time.Now().Format("2006-01-02 03:04PM")
 		tt.name = tt.name + " " + currentDate
@@ -193,7 +196,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 
 		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		currentDate := time.Now().Format("2006-01-02 03:04PM")
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate

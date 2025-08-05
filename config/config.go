@@ -27,8 +27,9 @@ type Role string
 type PSACT string
 
 const (
-	TerraformConfigurationFileKey = "terraform"
-	TerratestConfigurationFileKey = "terratest"
+	TerraformConfigurationFileKey  = "terraform"
+	TerratestConfigurationFileKey  = "terratest"
+	StandaloneConfigurationFileKey = "standalone"
 
 	AdminClientName    TestClientName = "Admin User"
 	StandardClientName TestClientName = "Standard User"
@@ -234,7 +235,7 @@ type TerratestConfig struct {
 }
 
 // LoadTFPConfigs loads the TFP configurations from the provided map
-func LoadTFPConfigs(cattleConfig map[string]any) (*rancher.Config, *TerraformConfig, *TerratestConfig) {
+func LoadTFPConfigs(cattleConfig map[string]any) (*rancher.Config, *TerraformConfig, *TerratestConfig, *Standalone) {
 	rancherConfig := new(rancher.Config)
 	operations.LoadObjectFromMap(configs.Rancher, cattleConfig, rancherConfig)
 
@@ -244,7 +245,12 @@ func LoadTFPConfigs(cattleConfig map[string]any) (*rancher.Config, *TerraformCon
 	terratestConfig := new(TerratestConfig)
 	operations.LoadObjectFromMap(TerratestConfigurationFileKey, cattleConfig, terratestConfig)
 
-	return rancherConfig, terraformConfig, terratestConfig
+	standaloneConfig := terraformConfig.Standalone
+	if standaloneConfig == nil {
+		standaloneConfig = new(Standalone)
+	}
+
+	return rancherConfig, terraformConfig, terratestConfig, standaloneConfig
 }
 
 // LoadPackageDefaults loads the specified filename in the same package as the test

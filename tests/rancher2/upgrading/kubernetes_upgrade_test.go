@@ -42,7 +42,7 @@ func (k *KubernetesUpgradeTestSuite) SetupSuite() {
 	k.client = client
 
 	k.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	k.rancherConfig, k.terraformConfig, k.terratestConfig = config.LoadTFPConfigs(k.cattleConfig)
+	k.rancherConfig, k.terraformConfig, k.terratestConfig, _ = config.LoadTFPConfigs(k.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(k.T(), k.terraformConfig, k.terratestConfig, keyPath)
@@ -73,7 +73,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 
 		provisioning.GetK8sVersion(k.T(), k.client, k.terratestConfig, k.terraformConfig, configs.SecondHighestVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
@@ -115,7 +115,7 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 
 		provisioning.GetK8sVersion(k.T(), k.client, k.terratestConfig, k.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = tt.name + " Module: " + k.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 

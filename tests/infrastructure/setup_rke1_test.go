@@ -25,7 +25,7 @@ type CreateRKE1ClusterTestSuite struct {
 }
 
 func (i *CreateRKE1ClusterTestSuite) TestCreateRKE1Cluster() {
-	i.rancherConfig, i.terraformConfig, i.terratestConfig = config.LoadTFPConfigs(i.cattleConfig)
+	i.rancherConfig, i.terraformConfig, i.terratestConfig, _ = config.LoadTFPConfigs(i.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)

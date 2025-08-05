@@ -31,6 +31,7 @@ type TfpSanityUpgradeRancherTestSuite struct {
 	rancherConfig              *rancher.Config
 	terraformConfig            *config.TerraformConfig
 	terratestConfig            *config.TerratestConfig
+	standaloneConfig           *config.Standalone
 	standaloneTerraformOptions *terraform.Options
 	upgradeTerraformOptions    *terraform.Options
 	terraformOptions           *terraform.Options
@@ -50,6 +51,9 @@ func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
 	s.session = testSession
 
 	s.client, s.serverNodeOne, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = infrastructure.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
+	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
+
+	provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.RancherTagVersion)
 }
 
 func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
@@ -57,12 +61,13 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 
 	testUser, testPassword := configs.CreateTestCredentials()
 
-	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
 	s.provisionAndVerifyCluster("Pre-Upgrade Sanity ", clusterIDs, false, testUser, testPassword)
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = infrastructure.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
 
-	s.rancherConfig, s.terraformConfig, s.terratestConfig = config.LoadTFPConfigs(s.cattleConfig)
+	provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.UpgradedRancherTagVersion)
+
+	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, true, testUser, testPassword)
 
 	if s.terratestConfig.LocalQaseReporting {
@@ -105,7 +110,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 
 		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.SecondHighestVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		currentDate := time.Now().Format("2006-01-02 03:04PM")
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate

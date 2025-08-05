@@ -23,7 +23,7 @@ func AuthConfig(rancherConfig *rancher.Config, testUser, testPassword string, co
 
 	newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, true, newFile, rootBody, configMap, false)
 
-	rancherConfig, terraform, _ := config.LoadTFPConfigs(configMap[0])
+	rancherConfig, terraform, _, _ := config.LoadTFPConfigs(configMap[0])
 	authProvider := terraform.AuthProvider
 
 	switch {

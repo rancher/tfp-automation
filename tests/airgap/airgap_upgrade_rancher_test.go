@@ -31,6 +31,7 @@ type TfpAirgapUpgradeRancherTestSuite struct {
 	rancherConfig              *rancher.Config
 	terraformConfig            *config.TerraformConfig
 	terratestConfig            *config.TerratestConfig
+	standaloneConfig           *config.Standalone
 	standaloneTerraformOptions *terraform.Options
 	upgradeTerraformOptions    *terraform.Options
 	terraformOptions           *terraform.Options
@@ -51,6 +52,9 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 	a.session = testSession
 
 	a.client, a.registry, a.bastion, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig = infrastructure.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
+	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
+
+	provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.RancherTagVersion)
 }
 
 func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
@@ -58,12 +62,13 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 
 	testUser, testPassword := configs.CreateTestCredentials()
 
-	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
 	a.provisionAndVerifyCluster("Pre-Upgrade Airgap ", clusterIDs, false, testUser, testPassword)
 
 	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = infrastructure.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig)
 
-	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
+	provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.UpgradedRancherTagVersion)
+
+	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
 	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, true, testUser, testPassword)
 
 	if a.terratestConfig.LocalQaseReporting {
@@ -106,7 +111,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		currentDate := time.Now().Format("2006-01-02 03:04PM")
 		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate

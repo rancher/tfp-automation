@@ -31,6 +31,7 @@ type TfpAirgapProvisioningTestSuite struct {
 	rancherConfig              *rancher.Config
 	terraformConfig            *config.TerraformConfig
 	terratestConfig            *config.TerratestConfig
+	standaloneConfig           *config.Standalone
 	standaloneTerraformOptions *terraform.Options
 	terraformOptions           *terraform.Options
 	registry                   string
@@ -46,7 +47,9 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	a.session = testSession
 
 	a.client, a.registry, _, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig = infrastructure.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
-	a.rancherConfig, a.terraformConfig, a.terratestConfig = config.LoadTFPConfigs(a.cattleConfig)
+	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
+
+	provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.RancherTagVersion)
 }
 
 func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
@@ -84,7 +87,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
 
-		rancher, terraform, terratest := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		currentDate := time.Now().Format("2006-01-02 03:04PM")
 		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
