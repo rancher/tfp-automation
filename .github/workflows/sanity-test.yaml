@@ -692,7 +692,6 @@ jobs:
 
   v2-9:
     if: |
-      github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9.')) ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9.'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-9 }}

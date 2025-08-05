@@ -9,8 +9,8 @@ import (
 )
 
 // SetTimeSleep is a function that will set the time_sleep configurations in the main.tf file,
-func SetTimeSleep(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, duration, dependsOnValue string) error {
-	sleepResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.TimeSleep, defaults.TimeSleep + "-" + terraformConfig.ResourcePrefix})
+func SetTimeSleep(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, duration, dependsOnValue, suffix string) error {
+	sleepResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.TimeSleep, defaults.TimeSleep + "-" + terraformConfig.ResourcePrefix + "-" + suffix})
 	sleepResourceBlockBody := sleepResourceBlock.Body()
 
 	sleepResourceBlockBody.SetAttributeValue(defaults.CreateDuration, cty.StringVal(duration))

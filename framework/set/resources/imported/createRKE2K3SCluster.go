@@ -77,8 +77,7 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 		version = terraformConfig.Standalone.RKE2Version
 
 		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			version + " " + serverOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " + token + " " +
-			terraformConfig.CNI + "'"
+			version + " " + serverOnePrivateIP + " " + token + " " + terraformConfig.CNI + "'"
 	}
 
 	command += " || true"
@@ -128,8 +127,8 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
 			version = terraformConfig.Standalone.RKE2Version
 
-			command = "bash -c '/tmp/add-servers.sh " + version + " " + serverOnePrivateIP + " " + instance + " " + terraformConfig.Standalone.RancherHostname +
-				" " + token + " " + terraformConfig.CNI + "'"
+			command = "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + version + " " + serverOnePrivateIP + " " +
+				instance + " " + token + " " + terraformConfig.CNI + "'"
 		}
 
 		command += " || true"

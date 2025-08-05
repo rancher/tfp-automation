@@ -97,6 +97,13 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
 	configBlockBody.AppendNewline()
 
+	provisionerBlock := configBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlockBody := provisionerBlock.Body()
+
+	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		cty.StringVal("echo Connected!!!"),
+	}))
+
 	if terraformConfig.Module == modules.ImportEC2RKE2Windows2019 || terraformConfig.Module == modules.ImportEC2RKE2Windows2022 {
 		serverTwoName := terraformConfig.ResourcePrefix + `_server2`
 		serverThreeName := terraformConfig.ResourcePrefix + `_server3`

@@ -60,7 +60,7 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 		rootBody.AppendNewline()
 		dependsOnValue := fmt.Sprintf("[" + defaults.NullResource + ".add_windows_node" + "]")
 
-		sleep.SetTimeSleep(rootBody, terraformConfig, "10s", dependsOnValue)
+		sleep.SetTimeSleep(rootBody, terraformConfig, "10s", dependsOnValue, "import_wins")
 		rootBody.AppendNewline()
 	}
 
