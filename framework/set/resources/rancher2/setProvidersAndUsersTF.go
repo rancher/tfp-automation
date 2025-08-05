@@ -231,7 +231,7 @@ func createGlobalRoleBinding(rootBody *hclwrite.Body, testUser string, userID st
 	dependsOnValue := fmt.Sprintf("[" + globalRoleBinding + "." + globalRoleBinding + "]")
 
 	rootBody.AppendNewline()
-	sleep.SetTimeSleep(rootBody, terraformConfig, "5s", dependsOnValue)
+	sleep.SetTimeSleep(rootBody, terraformConfig, "5s", dependsOnValue, "standard_user")
 	rootBody.AppendNewline()
 }
 

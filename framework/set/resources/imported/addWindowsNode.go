@@ -73,7 +73,9 @@ func addImportedWindowsNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal(inlineCommands))
 	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedWindowsNullResource(rootBody, terraformConfig, terratestConfig, windowsNodePublicDNS, addWindowsNode)
+
 	version := terraformConfig.Standalone.RKE2Version
+	version += "+rke2r1"
 
 	command := "powershell.exe -File C:\\\\Windows\\\\Temp\\\\init-server.ps1 -ArgumentList -K8S_VERSION " + version + " -RKE2_SERVER_IP " + serverOnePrivateIP +
 		" -RKE2_TOKEN " + token
