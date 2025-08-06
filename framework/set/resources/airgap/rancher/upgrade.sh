@@ -27,6 +27,10 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                   --set systemDefaultRegistry=${REGISTRY} \
                                                                                   --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                   --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                  --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
+                                                                                  --set 'extraEnv[1].value=prime' \
+                                                                                  --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
+                                                                                  --set 'extraEnv[2].value=suse' \
                                                                                   --set agentTLSMode=system-store \
                                                                                   --devel
 
@@ -53,6 +57,10 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                      --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                     --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
+                                                                                     --set 'extraEnv[1].value=prime' \
+                                                                                     --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
+                                                                                     --set 'extraEnv[2].value=suse' \
                                                                                      --set agentTLSMode=system-store \
                                                                                      --devel
     else
