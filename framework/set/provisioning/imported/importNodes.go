@@ -20,7 +20,7 @@ import (
 
 // importNodes is a function that will import the nodes to the cluster
 func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, nodeOnePublicDNS, kubeConfig, importCommand string) error {
-	userDir, _ := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	userDir, _ := rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/provisioning/imported/import-nodes.sh")
 
@@ -59,14 +59,14 @@ func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	var dependsOnServer string
 
-	if strings.Contains(terraformConfig.Module, defaults.Import) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) &&
-		!strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {
+	switch terraformConfig.Module {
+	case modules.ImportEC2RKE2, modules.ImportEC2K3s, modules.ImportVsphereRKE2, modules.ImportVsphereK3s:
 		addServerTwoName := addServer + terraformConfig.ResourcePrefix + `_` + serverTwo
 		addServerThreeName := addServer + terraformConfig.ResourcePrefix + `_` + serverThree
 		dependsOnServer = `[` + defaults.NullResource + `.` + addServerTwoName + `, ` + defaults.NullResource + `.` + addServerThreeName + `]`
-	} else if terraformConfig.Module == modules.ImportEC2RKE2Windows2019 || terraformConfig.Module == modules.ImportEC2RKE2Windows2022 {
+	case modules.ImportEC2RKE2Windows2019, modules.ImportEC2RKE2Windows2022:
 		dependsOnServer = `[` + defaults.TimeSleep + `.` + defaults.TimeSleep + `-` + terraformConfig.ResourcePrefix + `-import_wins` + `]`
-	} else {
+	case modules.ImportEC2RKE1, modules.ImportVsphereRKE1:
 		dependsOnServer = `[` + defaults.RKECluster + `.` + terraformConfig.ResourcePrefix + `]`
 	}
 

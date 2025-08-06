@@ -35,9 +35,10 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
 
-	if terraformConfig.Provider == defaults.Aws {
+	switch terraformConfig.Provider {
+	case defaults.Aws:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
-	} else if terraformConfig.Provider == defaults.Vsphere {
+	case defaults.Vsphere:
 		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
 	}
 
@@ -53,9 +54,10 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 	serverThreeName := terraformConfig.ResourcePrefix + `_` + serverThree
 
 	var dependsOnServer string
-	if terraformConfig.Provider == defaults.Aws {
+	switch terraformConfig.Provider {
+	case defaults.Aws:
 		dependsOnServer = `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
-	} else if terraformConfig.Provider == defaults.Vsphere {
+	case defaults.Vsphere:
 		dependsOnServer = `[` + defaults.VsphereVirtualMachine + `.` + serverOneName + `, ` + defaults.VsphereVirtualMachine + `.` + serverTwoName + `, ` + defaults.VsphereVirtualMachine + `.` + serverThreeName + `]`
 	}
 
