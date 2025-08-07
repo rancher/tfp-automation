@@ -124,7 +124,8 @@ func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestCo
 	}
 
 	for _, instance := range instances {
-		if terraformConfig.Provider == defaults.Aws {
+		switch terraformConfig.Provider {
+		case defaults.Aws:
 			aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
 
@@ -132,7 +133,7 @@ func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestCo
 			nodeOnePublicIP = fmt.Sprintf("${%s.%s.public_ip}", defaults.AwsInstance, serverOneName)
 			nodeTwoPublicIP = fmt.Sprintf("${%s.%s.public_ip}", defaults.AwsInstance, serverTwoName)
 			nodeThreePublicIP = fmt.Sprintf("${%s.%s.public_ip}", defaults.AwsInstance, serverThreeName)
-		} else if terraformConfig.Provider == defaults.Vsphere {
+		case defaults.Vsphere:
 			vsphere.CreateVsphereVirtualMachine(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
 
