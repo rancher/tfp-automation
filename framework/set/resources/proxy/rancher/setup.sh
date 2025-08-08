@@ -16,6 +16,33 @@ NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,
 
 set -ex
 
+checkClusterStatus() {
+    EXPECTED_NODES=3
+    TIMEOUT=300
+    INTERVAL=10
+    ELAPSED=0
+
+    while true; do
+        TOTAL_NODES=$(kubectl get nodes --no-headers | wc -l)
+        READY_NODES=$(kubectl get nodes --no-headers | awk '$2 == "Ready"' | wc -l)
+
+        if [ "$READY_NODES" -ne "$EXPECTED_NODES" ]; then
+            echo "Waiting for all $EXPECTED_NODES nodes to be Ready...$READY_NODES/$TOTAL_NODES Ready"
+            sleep $INTERVAL
+
+            ELAPSED=$((ELAPSED + INTERVAL))
+
+            if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+                echo "Timeout reached: Not all nodes are Ready after $TIMEOUT seconds."
+                exit 1
+            fi
+        else
+            echo "All nodes are in status Ready!"
+            break
+        fi
+    done
+}
+
 ARCH=$(uname -m)
 if [[ $ARCH == "x86_64" ]]; then
     ARCH="amd64"
@@ -28,6 +55,8 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 mkdir -p ~/.kube
 rm kubectl
+
+checkClusterStatus
 
 echo "Installing Helm"
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
