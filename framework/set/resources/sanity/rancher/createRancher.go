@@ -36,7 +36,7 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
 	}
 
-	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
+	command := "/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.ChartVersion + " " +
@@ -46,10 +46,10 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	command += " || true'"
+	command += " || true"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/setup.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/setup.sh\n" + string(scriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/setup.sh"),
 		cty.StringVal(command),
 	}))

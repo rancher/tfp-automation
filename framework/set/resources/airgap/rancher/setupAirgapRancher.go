@@ -32,7 +32,7 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installRancher)
 
-	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
+	command := "/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.AirgapInternalFQDN + " " + terraformConfig.Standalone.RancherTagVersion + " " +
@@ -43,10 +43,10 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	command += " || true'"
+	command += " || true"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/setup.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/setup.sh\n" + string(scriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/setup.sh"),
 		cty.StringVal(command),
 	}))
