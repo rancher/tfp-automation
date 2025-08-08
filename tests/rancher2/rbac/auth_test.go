@@ -44,7 +44,7 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 	r.client = client
 
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
+	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
@@ -74,7 +74,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, tt.authProvider, configMap[0])
 		require.NoError(r.T(), err)
 
-		rancher, terraform, _ := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, _, _ := config.LoadTFPConfigs(configMap[0])
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
@@ -112,7 +112,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, r.terraformConfig.AuthProvider, configMap[0])
 		require.NoError(r.T(), err)
 
-		rancher, terraform, _ := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, _, _ := config.LoadTFPConfigs(configMap[0])
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")

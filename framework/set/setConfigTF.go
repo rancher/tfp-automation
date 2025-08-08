@@ -47,7 +47,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 	containsCustomModule := false
 
 	for i, cattleConfig := range configMap {
-		_, terraform, terratest := config.LoadTFPConfigs(cattleConfig)
+		_, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
 		kubernetesVersion := terratest.KubernetesVersion
 		nodePools := terratest.Nodepools

@@ -30,7 +30,7 @@ func UniquifyTerraform(cattleConfigs []map[string]any) ([]map[string]any, error)
 
 func uniquifyField(keyPath []string, cattleConfig map[string]any) (map[string]any, error) {
 	cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	_, terraformConfig, _ := config.LoadTFPConfigs(cattleConfig)
+	_, terraformConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
 
 	keyPathValue := terraformConfig.ResourcePrefix
 

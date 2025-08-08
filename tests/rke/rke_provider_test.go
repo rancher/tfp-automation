@@ -34,7 +34,7 @@ func (t *RKEProviderTestSuite) TearDownSuite() {
 }
 
 func (t *RKEProviderTestSuite) TestCreateRKECluster() {
-	t.rancherConfig, t.terraformConfig, t.terratestConfig = config.LoadTFPConfigs(t.cattleConfig)
+	t.rancherConfig, t.terraformConfig, t.terratestConfig, _ = config.LoadTFPConfigs(t.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RKEKeyPath, t.terratestConfig.PathToRepo, t.terraformConfig.Provider)
 	terraformOptions := framework.Setup(t.T(), t.terraformConfig, t.terratestConfig, keyPath)

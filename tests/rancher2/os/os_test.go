@@ -79,7 +79,7 @@ func (o *OSValidationTestSuite) SetupSuite() {
 	o.permutedConfigs, err = provisioning.UniquifyTerraform(permutedConfigs)
 	require.NoError(o.T(), err)
 
-	_, terraformConfig, terratestConfig := config.LoadTFPConfigs(o.permutedConfigs[0])
+	_, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(o.permutedConfigs[0])
 
 	o.awsCredentials = cloudcredentials.AmazonEC2CredentialConfig{
 		AccessKey:     terraformConfig.AWSCredentials.AWSAccessKey,
@@ -96,7 +96,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 	//Batch configs so that not all AMIs run in parallel
 	configBatches := map[string][]map[string]any{}
 	for _, cattleConfig := range o.permutedConfigs {
-		_, terraformConfig, _ := config.LoadTFPConfigs(cattleConfig)
+		_, terraformConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
 		configBatches[terraformConfig.AWSConfig.AMI] = append(configBatches[terraformConfig.AWSConfig.AMI], cattleConfig)
 	}
 
@@ -121,7 +121,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 				cattleConfig, err = operations.ReplaceValue([]string{"terraform", "awsConfig", "awsVolumeType"}, *amiInfo.Images[0].BlockDeviceMappings[0].Ebs.VolumeType, cattleConfig)
 				require.NoError(o.T(), err)
 
-				_, terraformConfig, terratestConfig := config.LoadTFPConfigs(cattleConfig)
+				_, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}

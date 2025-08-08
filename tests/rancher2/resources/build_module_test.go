@@ -28,7 +28,7 @@ func (r *BuildModuleTestSuite) TestBuildModule() {
 	defer cleanup.TFFilesCleanup(keyPath)
 
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	r.rancherConfig, r.terraformConfig, r.terratestConfig = config.LoadTFPConfigs(r.cattleConfig)
+	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
 
 	configMap := []map[string]any{r.cattleConfig}
 

@@ -19,7 +19,7 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	map[string]any, *terraform.Options, *terraform.Options) {
 	var err error
 
-	rancherConfig, terraformConfig, terratestConfig := config.LoadTFPConfigs(cattleConfig)
+	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
 	terraformConfig.Standalone.UpgradeAirgapRancher = true
 
@@ -43,7 +43,7 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 	map[string]any, *terraform.Options, *terraform.Options) {
 	var err error
 
-	rancherConfig, terraformConfig, terratestConfig := config.LoadTFPConfigs(cattleConfig)
+	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
 	terraformConfig.Standalone.UpgradeProxyRancher = true
 
@@ -67,7 +67,7 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 	map[string]any, *terraform.Options, *terraform.Options) {
 	var err error
 
-	rancherConfig, terraformConfig, terratestConfig := config.LoadTFPConfigs(cattleConfig)
+	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
 	terraformConfig.Standalone.UpgradeRancher = true
 

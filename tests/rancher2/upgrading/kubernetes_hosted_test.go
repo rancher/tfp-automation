@@ -42,7 +42,7 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 	k.client = client
 
 	k.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	k.rancherConfig, k.terraformConfig, k.terratestConfig = config.LoadTFPConfigs(k.cattleConfig)
+	k.rancherConfig, k.terraformConfig, k.terratestConfig, _ = config.LoadTFPConfigs(k.cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(k.T(), k.terraformConfig, k.terratestConfig, keyPath)
