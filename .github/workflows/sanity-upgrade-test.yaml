@@ -160,6 +160,15 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            privateRegistries:
+              url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
+              username: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              password: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
+              insecure: true
+              authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
+              mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
+              mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
+              mirrorRewrite: "${{ secrets.PRIVATE_REGISTRY_MIRROR_REWRITE }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
@@ -376,6 +385,15 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            privateRegistries:
+              url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
+              username: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              password: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
+              insecure: true
+              authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
+              mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
+              mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
+              mirrorRewrite: "${{ secrets.PRIVATE_REGISTRY_MIRROR_REWRITE }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
@@ -592,6 +610,15 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            privateRegistries:
+              url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
+              username: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              password: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
+              insecure: true
+              authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
+              mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
+              mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
+              mirrorRewrite: "${{ secrets.PRIVATE_REGISTRY_MIRROR_REWRITE }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
@@ -809,6 +836,15 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
+            privateRegistries:
+              url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
+              username: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              password: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
+              insecure: true
+              authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
+              mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
+              mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
+              mirrorRewrite: "${{ secrets.PRIVATE_REGISTRY_MIRROR_REWRITE }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"

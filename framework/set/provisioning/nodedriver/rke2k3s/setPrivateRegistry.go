@@ -40,7 +40,11 @@ func SetPrivateRegistryConfig(registryBlockBody *hclwrite.Body, terraformConfig 
 	mirrorsBlock := registryBlockBody.AppendNewBlock(defaults.Mirrors, nil)
 	mirrorsBlockBody := mirrorsBlock.Body()
 
-	mirrorsBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.URL))
+	mirrorsBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.MirrorHostname))
+	mirrorsBlockBody.SetAttributeValue(endpoints, cty.ListVal([]cty.Value{cty.StringVal(terraformConfig.PrivateRegistries.MirrorEndpoint)}))
+	mirrorsBlockBody.SetAttributeValue(rewrites, cty.MapVal(map[string]cty.Value{
+		"^(.*)": cty.StringVal(terraformConfig.PrivateRegistries.MirrorRewrite),
+	}))
 
 	return nil
 }

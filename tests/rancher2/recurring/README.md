@@ -27,7 +27,17 @@ terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   windowsPrivateKeyPath: ""
   resourcePrefix: ""
-
+  privateRegistries:                              # This is an optional block. You must already have a private registry stood up
+    engineInsecureRegistry: ""                    # RKE1 specific
+    url: ""
+    systemDefaultRegistry: ""                     # RKE2/K3S specific, can be left blank
+    username: ""                                  # RKE1 specific
+    password: ""                                  # RKE1 specific
+    insecure: true
+    authConfigSecretName: ""                      # RKE2/K3S specific
+    mirrorHostname: ""
+    mirrorEndpoint: ""
+    mirrorRewrite: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""

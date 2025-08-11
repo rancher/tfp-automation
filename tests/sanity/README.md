@@ -40,6 +40,17 @@ terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   resourcePrefix: ""                              # REQUIRED - fill with desired value
   windowsPrivateKeyPath: ""                       # REQUIRED - specify Windows private key that will be used to access created instances
+  privateRegistries:                              # This is an optional block. You must already have a private registry stood up
+    engineInsecureRegistry: ""                    # RKE1 specific
+    url: ""
+    systemDefaultRegistry: ""                     # RKE2/K3S specific, can be left blank
+    username: ""                                  # RKE1 specific
+    password: ""                                  # RKE1 specific
+    insecure: true
+    authConfigSecretName: ""                      # RKE2/K3S specific
+    mirrorHostname: ""
+    mirrorEndpoint: ""
+    mirrorRewrite: ""
   ##########################################
   # STANDALONE / RANCHER CLUSTER CONFIG
   ##########################################

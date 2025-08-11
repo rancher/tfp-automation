@@ -171,6 +171,22 @@ terratest:
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```
 
+If you would like a private registry associated to your downstream cluster, enter in the optional parameters underneath the `terraform` block:
+
+```yaml
+privateRegistries:                          # This is an optional block. You must already have a private registry stood up
+  engineInsecureRegistry: ""                # RKE1 specific
+  url: ""
+  systemDefaultRegistry: ""                 # RKE2/K3S specific, can be left blank
+  username: ""                              # RKE1 specific
+  password: ""                              # RKE1 specific
+  insecure: true
+  authConfigSecretName: ""                  # RKE2/K3S specific
+  mirrorHostname: ""
+  mirrorEndpoint: ""
+  mirrorRewrite: ""
+```
+
 In addition, when running locally, you will need to ensure that you have `export RKE_PROVIDER_VERSION=x.x.x` defined for the RKE1 portion of the test. You also must ensure that you are not using the highest available K8s version as this test will perform an upgrade of the imported cluster.
 
 See the below examples on how to run the tests:
