@@ -62,8 +62,8 @@ jobs:
   v2-12:
     if: |
       github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12.')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
     runs-on: ubuntu-latest
     environment: latest
@@ -281,8 +281,8 @@ jobs:
   v2-11:
     if: |
       github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11.')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
     environment: staging-latest
@@ -500,8 +500,8 @@ jobs:
   v2-10:
     if: |
       github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10.')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10.'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
     environment: staging-latest
@@ -719,8 +719,8 @@ jobs:
 
   v2-9:
     if: |
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9.')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9.'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-9 }}
     runs-on: ubuntu-latest
     environment: staging-latest

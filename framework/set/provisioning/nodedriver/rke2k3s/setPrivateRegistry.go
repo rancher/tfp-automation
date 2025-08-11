@@ -30,7 +30,8 @@ func SetPrivateRegistryConfig(registryBlockBody *hclwrite.Body, terraformConfig 
 	configBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.URL))
 
 	if terraformConfig.PrivateRegistries.Username != "" {
-		configBlockBody.SetAttributeValue(authConfigSecretName, cty.StringVal(terraformConfig.PrivateRegistries.AuthConfigSecretName))
+		registrySecretName := terraformConfig.PrivateRegistries.AuthConfigSecretName + "-" + terraformConfig.ResourcePrefix
+		configBlockBody.SetAttributeValue(authConfigSecretName, cty.StringVal(registrySecretName))
 	}
 
 	configBlockBody.SetAttributeValue(tlsSecretName, cty.StringVal(terraformConfig.PrivateRegistries.TLSSecretName))

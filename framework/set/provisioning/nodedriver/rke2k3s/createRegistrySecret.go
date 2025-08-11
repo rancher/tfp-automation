@@ -22,7 +22,10 @@ func CreateRegistrySecret(terraformConfig *config.TerraformConfig, rootBody *hcl
 	secretBlockBody := secretBlock.Body()
 
 	secretBlockBody.SetAttributeValue(clusterID, cty.StringVal(localCluster))
-	secretBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.PrivateRegistries.AuthConfigSecretName))
+
+	registrySecretName := terraformConfig.PrivateRegistries.AuthConfigSecretName + "-" + terraformConfig.ResourcePrefix
+
+	secretBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(registrySecretName))
 	secretBlockBody.SetAttributeValue(defaults.Namespace, cty.StringVal(namespace))
 	secretBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(secretType))
 
