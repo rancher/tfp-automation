@@ -243,11 +243,14 @@ terraform:
   privateRegistries:                          # This is an optional block. You must already have a private registry stood up
     engineInsecureRegistry: ""                # RKE1 specific
     url: ""
-    systemDefaultRegistry: ""                 # RKE2/K3S specific
+    systemDefaultRegistry: ""                 # RKE2/K3S specific, can be left blank
     username: ""                              # RKE1 specific
     password: ""                              # RKE1 specific
     insecure: true
-    authConfigSecretName: ""                  # RKE2/K3S specific. Secret must be created in the fleet-default namespace already
+    authConfigSecretName: ""                  # RKE2/K3S specific
+    mirrorHostname: ""
+    mirrorEndpoint: ""
+    mirrorRewrite: ""
   chartValues: |-			      # Provided as a multiline string
     rke2-cilium:                              # RKE2/Cilium specific example of how to do a Kube-proxy Replacement deployment
       k8sServiceHost: 127.0.0.1               

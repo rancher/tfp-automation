@@ -50,6 +50,7 @@ const (
 	systemDefaultRegistry = "system-default-registry"
 	project               = "project"
 	endpoints             = "endpoints"
+	rewrites              = "rewrites"
 
 	httpProxy    = "HTTP_PROXY"
 	httpsProxy   = "HTTPS_PROXY"
@@ -158,7 +159,9 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact strin
 			CreateRegistrySecret(terraformConfig, rootBody)
 		}
 
-		SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
+		if terraformConfig.PrivateRegistries.SystemDefaultRegistry != "" {
+			SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
+		}
 
 		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)
 		registryBlockBody := registryBlock.Body()

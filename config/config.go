@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"path"
 	"runtime"
@@ -119,6 +118,9 @@ type PrivateRegistries struct {
 	CABundle               string `json:"caBundle,omitempty" yaml:"caBundle,omitempty"`
 	EngineInsecureRegistry string `json:"engineInsecureRegistry,omitempty" yaml:"engineInsecureRegistry,omitempty"`
 	Insecure               bool   `json:"insecure,omitempty" yaml:"insecure,omitempty"`
+	MirrorEndpoint         string `json:"mirrorEndpoint,omitempty" yaml:"mirrorEndpoint,omitempty"`
+	MirrorHostname         string `json:"mirrorHostname,omitempty" yaml:"mirrorHostname,omitempty"`
+	MirrorRewrite          string `json:"mirrorRewrite,omitempty" yaml:"mirrorRewrite,omitempty"`
 	Password               string `json:"password,omitempty" yaml:"password,omitempty"`
 	SystemDefaultRegistry  string `json:"systemDefaultRegistry,omitempty" yaml:"systemDefaultRegistry,omitempty"`
 	TLSSecretName          string `json:"tlsSecretName,omitempty" yaml:"tlsSecretName,omitempty"`
@@ -276,7 +278,7 @@ func LoadProvisioningDefaults(cattleConfig map[string]any, filename string) (map
 
 	_, filePath, _, ok := runtime.Caller(0)
 	if !ok {
-		err := errors.New(fmt.Sprintf("Unable to locate directory of %s", filename))
+		err := fmt.Errorf("Unable to locate directory of %s", filename)
 		return nil, err
 	}
 
