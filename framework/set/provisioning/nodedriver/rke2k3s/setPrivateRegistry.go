@@ -23,7 +23,10 @@ func SetMachineSelectorConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig
 }
 
 // SetPrivateRegistryConfig is a function that will set the private registry configurations in the main.tf file.
-func SetPrivateRegistryConfig(registryBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
+func SetPrivateRegistryConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
+	registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)
+	registryBlockBody := registryBlock.Body()
+
 	configBlock := registryBlockBody.AppendNewBlock(defaults.Configs, nil)
 	configBlockBody := configBlock.Body()
 

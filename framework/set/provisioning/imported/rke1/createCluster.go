@@ -1,8 +1,7 @@
-package imported
+package rke1
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -10,45 +9,8 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
-
-// // SetImportedRKE1 is a function that will set the imported RKE1 cluster configurations in the main.tf file.
-func SetImportedRKE1(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File,
-	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
-	SetImportedCluster(rootBody, terraformConfig.ResourcePrefix)
-
-	rootBody.AppendNewline()
-
-	createRKE1Cluster(rootBody, terraformConfig, terratestConfig)
-
-	importCommand := getImportCommand(terraformConfig.ResourcePrefix)
-
-	serverOneName := terraformConfig.ResourcePrefix + `_` + serverOne
-
-	var nodeOnePublicDNS string
-	if terraformConfig.Provider == defaults.Aws {
-		nodeOnePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverOneName)
-	} else if terraformConfig.Provider == defaults.Vsphere {
-		nodeOnePublicDNS = fmt.Sprintf("${%s.%s.default_ip_address}", defaults.VsphereVirtualMachine, serverOneName)
-	}
-
-	kubeConfig := fmt.Sprintf("${%s.%s.kube_config_yaml}", defaults.RKECluster, terraformConfig.ResourcePrefix)
-
-	err := importNodes(rootBody, terraformConfig, terratestConfig, nodeOnePublicDNS, kubeConfig, importCommand[serverOneName])
-	if err != nil {
-		return nil, nil, err
-	}
-
-	_, err = file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write imported RKE1 configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
-	}
-
-	return newFile, file, nil
-}
 
 // createRKE1Cluster is a helper function that will create the RKE1 cluster.
 func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) {
@@ -80,10 +42,11 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 	}
 
 	for _, instance := range instances {
-		if terraformConfig.Provider == defaults.Aws {
+		switch terraformConfig.Provider {
+		case defaults.Aws:
 			aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
-		} else if terraformConfig.Provider == defaults.Vsphere {
+		case defaults.Vsphere:
 			vsphere.CreateVsphereVirtualMachine(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
 		}
@@ -97,9 +60,10 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 		nodesBlockBody := nodesBlock.Body()
 
 		var addressExpression string
-		if terraformConfig.Provider == defaults.Aws {
+		switch terraformConfig.Provider {
+		case defaults.Aws:
 			addressExpression = `"${` + defaults.AwsInstance + "." + instance + ".public_ip" + `}"`
-		} else if terraformConfig.Provider == defaults.Vsphere {
+		case defaults.Vsphere:
 			addressExpression = `"${` + defaults.VsphereVirtualMachine + "." + instance + ".default_ip_address" + `}"`
 		}
 
@@ -110,7 +74,7 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 		nodesBlockBody.SetAttributeRaw(address, values)
 		nodesBlockBody.SetAttributeValue(user, cty.StringVal(terraformConfig.Standalone.OSUser))
 
-		rolesExpression := fmt.Sprintf(`["controlplane", "etcd", "worker"]`)
+		rolesExpression := `["controlplane", "etcd", "worker"]`
 		values = hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(rolesExpression)},
 		}
@@ -128,9 +92,10 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 	rkeBlockBody.SetAttributeValue(enableCriDockerD, cty.BoolVal(true))
 
 	var dependsOnServer string
-	if terraformConfig.Provider == defaults.Aws {
+	switch terraformConfig.Provider {
+	case defaults.Aws:
 		dependsOnServer = `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
-	} else if terraformConfig.Provider == defaults.Vsphere {
+	case defaults.Vsphere:
 		dependsOnServer = `[` + defaults.VsphereVirtualMachine + `.` + serverOneName + `, ` + defaults.VsphereVirtualMachine + `.` + serverTwoName + `, ` + defaults.VsphereVirtualMachine + `.` + serverThreeName + `]`
 	}
 

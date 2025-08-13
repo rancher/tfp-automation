@@ -16,8 +16,8 @@ import (
 )
 
 // SetAKS is a function that will set the AKS configurations in the main.tf file.
-func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
-	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
+func SetAKS(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File) (*hclwrite.File, *os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
@@ -50,7 +50,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceGroup, cty.StringVal(terraformConfig.AzureConfig.ResourceGroup))
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceLocation, cty.StringVal(terraformConfig.AzureConfig.ResourceLocation))
 	aksConfigBlockBody.SetAttributeValue(azure.DNSPrefix, cty.StringVal(terraformConfig.ResourcePrefix))
-	aksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
+	aksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkPlugin, cty.StringVal(terraformConfig.NetworkPlugin))
 	aksConfigBlockBody.SetAttributeValue(azure.VirtualNetwork, cty.StringVal(terraformConfig.AzureConfig.Vnet))
 	aksConfigBlockBody.SetAttributeValue(azure.Subnet, cty.StringVal(terraformConfig.AzureConfig.Subnet))
@@ -60,7 +60,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 
 	availabilityZones := format.ListOfStrings(terraformConfig.AzureConfig.AvailabilityZones)
 
-	for count, pool := range nodePools {
+	for count, pool := range terratestConfig.Nodepools {
 		poolNum := strconv.Itoa(count)
 
 		_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
@@ -75,7 +75,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 		nodePoolsBlockBody.SetAttributeValue(azure.NodePoolMode, cty.StringVal(terraformConfig.AzureConfig.Mode))
 		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.AzureConfig.Name))
 		nodePoolsBlockBody.SetAttributeValue(azure.Count, cty.NumberIntVal(pool.Quantity))
-		nodePoolsBlockBody.SetAttributeValue(azure.OrchestratorVersion, cty.StringVal(k8sVersion))
+		nodePoolsBlockBody.SetAttributeValue(azure.OrchestratorVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 		nodePoolsBlockBody.SetAttributeValue(azure.OSDiskSizeGB, cty.NumberIntVal(terraformConfig.AzureConfig.OSDiskSizeGB))
 		nodePoolsBlockBody.SetAttributeValue(azure.VMSize, cty.StringVal(terraformConfig.AzureConfig.VMSize))
 

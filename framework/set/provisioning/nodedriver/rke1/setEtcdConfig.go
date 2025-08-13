@@ -9,7 +9,10 @@ import (
 )
 
 // setEtcdConfig is a function that will set the etcd configurations in the main.tf file.
-func setEtcdConfig(servicesBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
+func setEtcdConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
+	servicesBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Services, nil)
+	servicesBlockBody := servicesBlock.Body()
+
 	etcdBlock := servicesBlockBody.AppendNewBlock(defaults.Etcd, nil)
 	etcdBlockBody := etcdBlock.Body()
 

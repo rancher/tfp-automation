@@ -26,20 +26,20 @@ func AuthConfig(rancherConfig *rancher.Config, testUser, testPassword string, co
 	rancherConfig, terraform, _, _ := config.LoadTFPConfigs(configMap[0])
 	authProvider := terraform.AuthProvider
 
-	switch {
-	case authProvider == authproviders.AD:
+	switch authProvider {
+	case authproviders.AD:
 		err = ad.SetAD(terraform, newFile, rootBody, file)
 		return err
-	case authProvider == authproviders.AzureAD:
+	case authproviders.AzureAD:
 		err = azureAD.SetAzureAD(rancherConfig, terraform, newFile, rootBody, file)
 		return err
-	case authProvider == authproviders.GitHub:
+	case authproviders.GitHub:
 		err = github.SetGithub(terraform, newFile, rootBody, file)
 		return err
-	case authProvider == authproviders.Okta:
+	case authproviders.Okta:
 		err = okta.SetOkta(rancherConfig, terraform, newFile, rootBody, file)
 		return err
-	case authProvider == authproviders.OpenLDAP:
+	case authproviders.OpenLDAP:
 		err = ldap.SetOpenLDAP(terraform, newFile, rootBody, file)
 		return err
 	default:

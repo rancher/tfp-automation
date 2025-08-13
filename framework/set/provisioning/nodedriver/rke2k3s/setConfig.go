@@ -4,8 +4,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -16,8 +14,6 @@ import (
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/sirupsen/logrus"
-	"github.com/zclconf/go-cty/cty"
 )
 
 const (
@@ -59,8 +55,7 @@ const (
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
-func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact string, nodePools []config.Nodepool,
-	snapshots config.Snapshots, newFile *hclwrite.File, rootBody *hclwrite.Body,
+func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
 	switch terraformConfig.Module {
 	case modules.EC2RKE2, modules.EC2K3s:
@@ -77,31 +72,19 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact strin
 
 	rootBody.AppendNewline()
 
-	if strings.Contains(psact, defaults.RancherBaseline) {
-		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
+	if strings.Contains(terratestConfig.PSACT, defaults.RancherBaseline) {
+		rootBody, err := resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		rootBody.AppendNewline()
 	}
 
-	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, terraformConfig.ResourcePrefix})
-	machineConfigBlockBody := machineConfigBlock.Body()
-
-	provider := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Rancher2 + "." + defaults.StandardUser)},
+	machineConfigBlockBody, provider, err := setMachineConfig(rootBody, terraformConfig, terratestConfig.PSACT)
+	if err != nil {
+		return nil, nil, err
 	}
-
-	machineConfigBlockBody.SetAttributeRaw(defaults.Provider, provider)
-
-	if psact == defaults.RancherBaseline {
-		dependsOnTemp := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.PodSecurityAdmission + "." +
-				terraformConfig.ResourcePrefix + "]")},
-		}
-
-		machineConfigBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnTemp)
-	}
-
-	machineConfigBlockBody.SetAttributeValue(defaults.GenerateName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	switch terraformConfig.Module {
 	case modules.EC2RKE2, modules.EC2K3s:
@@ -118,39 +101,28 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact strin
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, terraformConfig.ResourcePrefix})
-	clusterBlockBody := clusterBlock.Body()
-
-	clusterBlockBody.SetAttributeRaw(defaults.Provider, provider)
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
-	clusterBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
-	clusterBlockBody.SetAttributeValue(defaults.EnableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))
-	clusterBlockBody.SetAttributeValue(defaults.DefaultPodSecurityAdmission, cty.StringVal(psact))
-	clusterBlockBody.SetAttributeValue(defaults.DefaultClusterRoleForProjectMembers, cty.StringVal(terraformConfig.DefaultClusterRoleForProjectMembers))
+	clusterBlockBody, err := setClusterConfig(rootBody, terraformConfig, provider, terratestConfig.PSACT, terratestConfig.KubernetesVersion)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
-		SetProxyConfig(clusterBlockBody, terraformConfig)
+		err = SetProxyConfig(clusterBlockBody, terraformConfig)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
-	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
-	rkeConfigBlockBody := rkeConfigBlock.Body()
-
-	if terraformConfig.ChartValues != "" {
-		chartValues := hclwrite.TokensForTraversal(hcl.Traversal{
-			hcl.TraverseRoot{Name: "<<EOF\n" + terraformConfig.ChartValues + "\nEOF"},
-		})
-
-		rkeConfigBlockBody.SetAttributeRaw(defaults.ChartValues, chartValues)
+	rkeConfigBlockBody, err := setRKEConfig(clusterBlockBody, terraformConfig)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	machineGlobalConfigValue := hclwrite.TokensForTraversal(hcl.Traversal{
-		hcl.TraverseRoot{Name: "<<EOF\ncni: " + terraformConfig.CNI + "\ndisable-kube-proxy: " + terraformConfig.DisableKubeProxy + "\nEOF"},
-	})
-
-	rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, machineGlobalConfigValue)
-
-	for count, pool := range nodePools {
-		setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody)
+	for count, pool := range terratestConfig.Nodepools {
+		err = setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
@@ -160,34 +132,40 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, k8sVersion, psact strin
 		}
 
 		if terraformConfig.PrivateRegistries.SystemDefaultRegistry != "" {
-			SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
+			err = SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
+			if err != nil {
+				return nil, nil, err
+			}
 		}
 
-		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)
-		registryBlockBody := registryBlock.Body()
-
-		SetPrivateRegistryConfig(registryBlockBody, terraformConfig)
+		err = SetPrivateRegistryConfig(rkeConfigBlockBody, terraformConfig)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	if terraformConfig.ETCD != nil {
-		setEtcdConfig(rkeConfigBlockBody, terraformConfig)
+		err = setEtcdConfig(rkeConfigBlockBody, terraformConfig)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
-	if snapshots.CreateSnapshot {
-		SetCreateRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody)
+	if terratestConfig.SnapshotInput.CreateSnapshot {
+		err = SetCreateRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
-	if snapshots.RestoreSnapshot {
-		SetRestoreRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody, snapshots)
+	if terratestConfig.SnapshotInput.RestoreSnapshot {
+		err = SetRestoreRKE2K3SSnapshot(terraformConfig, rkeConfigBlockBody, terratestConfig.SnapshotInput)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	rootBody.AppendNewline()
-
-	_, err := file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write RKE2/K3s configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
-	}
 
 	return newFile, file, nil
 }

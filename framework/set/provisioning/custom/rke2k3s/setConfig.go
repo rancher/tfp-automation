@@ -13,7 +13,6 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
-	"github.com/sirupsen/logrus"
 )
 
 // SetCustomRKE2K3s is a function that will set the custom RKE2/K3s cluster configurations in the main.tf file.
@@ -58,12 +57,6 @@ func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 
 	nullresource.CustomNullResource(rootBody, terraformConfig, terratestConfig)
 	rootBody.AppendNewline()
-
-	_, err := file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write custom RKE2/K3s configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
-	}
 
 	return newFile, file, nil
 }

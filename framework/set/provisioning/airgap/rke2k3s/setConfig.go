@@ -1,7 +1,6 @@
-package airgap
+package rke2k3s
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -10,10 +9,10 @@ import (
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -59,12 +58,12 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 
 	rootBody.AppendNewline()
 
-	err = copyScript(provisionerBlockBody, terraformConfig, terratestConfig)
+	err = airgap.CopyScript(provisionerBlockBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	registrationCommands, nodePrivateIPs := GetRKE2K3sRegistrationCommands(terraformConfig)
+	registrationCommands, nodePrivateIPs := getRKE2K3sRegistrationCommands(terraformConfig)
 
 	for _, instance := range instances {
 		var dependsOn []string
@@ -88,7 +87,7 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 			return nil, nil, err
 		}
 
-		err = registerPrivateNodes(provisionerBlockBody, terraformConfig, nodePrivateIPs[instance], registrationCommands[instance])
+		err = airgap.RegisterPrivateNodes(provisionerBlockBody, terraformConfig, nodePrivateIPs[instance], registrationCommands[instance])
 		if err != nil {
 			return nil, nil, err
 		}
@@ -96,45 +95,5 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 		rootBody.AppendNewline()
 	}
 
-	_, err = file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write airgap RKE2/K3s configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
-	}
-
 	return newFile, file, nil
-}
-
-// GetRKE2K3sRegistrationCommands is a helper function that will return the registration commands for the airgap nodes.
-func GetRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig) (map[string]string, map[string]string) {
-	commands := make(map[string]string)
-	nodePrivateIPs := make(map[string]string)
-
-	etcdRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.EtcdRoleFlag)
-	controlPlaneRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.ControlPlaneRoleFlag)
-	workerRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.WorkerRoleFlag)
-	allRolesRegistrationCommand := fmt.Sprintf("${%s.%s_%s} %s", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureNodeCommand, defaults.AllFlags)
-	windowsRegistrationCommand := fmt.Sprintf("${%s.%s_%s}", defaults.Local, terraformConfig.ResourcePrefix, defaults.InsecureWindowsNodeCommand)
-
-	airgapNodeOnePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeOne+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
-	airgapNodeTwoPrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeTwo+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
-	airgapNodeThreePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeThree+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
-	airgapWindowsNodePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapWindowsNode+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
-
-	if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
-		commands[airgapNodeOne] = etcdRegistrationCommand
-		commands[airgapNodeTwo] = controlPlaneRegistrationCommand
-		commands[airgapNodeThree] = workerRegistrationCommand
-		commands[airgapWindowsNode] = windowsRegistrationCommand
-
-		nodePrivateIPs[airgapNodeOne] = airgapNodeOnePrivateIP
-		nodePrivateIPs[airgapNodeTwo] = airgapNodeTwoPrivateIP
-		nodePrivateIPs[airgapNodeThree] = airgapNodeThreePrivateIP
-		nodePrivateIPs[airgapWindowsNode] = airgapWindowsNodePrivateIP
-	} else if terraformConfig.Module == modules.AirgapK3S {
-		commands[airgapNodeOne] = allRolesRegistrationCommand
-		nodePrivateIPs[airgapNodeOne] = airgapNodeOnePrivateIP
-	}
-
-	return commands, nodePrivateIPs
 }

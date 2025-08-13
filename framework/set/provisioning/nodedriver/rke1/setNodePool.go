@@ -34,7 +34,7 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(defaults.RancherClusterID, clusterID)
-	nodePoolBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal("pool"+poolNum))
+	nodePoolBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+poolNum))
 	nodePoolBlockBody.SetAttributeValue(hostnamePrefix, cty.StringVal(terraformConfig.ResourcePrefix+"-pool"+poolNum))
 
 	nodeTempID := hclwrite.Tokens{

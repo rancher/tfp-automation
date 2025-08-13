@@ -12,8 +12,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// copyScript is a function that will copy the register scripts to the bastion node
-func copyScript(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) error {
+// CopyScript is a function that will copy the register scripts to the bastion node
+func CopyScript(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) error {
 	userDir, _ := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	nodesScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/provisioning/airgap/register-nodes.sh")
