@@ -4,7 +4,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -16,7 +15,6 @@ import (
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -47,9 +45,8 @@ const (
 )
 
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
-func SetRKE1(terraformConfig *config.TerraformConfig, k8sVersion, psact string, nodePools []config.Nodepool, snapshots config.Snapshots,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
-
+func SetRKE1(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
 	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, terraformConfig.ResourcePrefix})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
 
@@ -61,95 +58,83 @@ func SetRKE1(terraformConfig *config.TerraformConfig, k8sVersion, psact string, 
 		}))
 	}
 
-	switch {
-	case terraformConfig.Module == modules.EC2RKE1:
+	switch terraformConfig.Module {
+	case modules.EC2RKE1:
 		aws.SetAWSRKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.AzureRKE1:
+	case modules.AzureRKE1:
 		azure.SetAzureRKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.LinodeRKE1:
+	case modules.LinodeRKE1:
 		linode.SetLinodeRKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.HarvesterRKE1:
+	case modules.HarvesterRKE1:
 		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig)
 		harvester.SetHarvesterRKE1Provider(nodeTemplateBlockBody, terraformConfig)
-	case terraformConfig.Module == modules.VsphereRKE1:
+	case modules.VsphereRKE1:
 		vsphere.SetVsphereRKE1Provider(nodeTemplateBlockBody, terraformConfig)
 	}
 
 	rootBody.AppendNewline()
 
-	if strings.Contains(psact, defaults.RancherBaseline) {
-		newFile, rootBody = resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
+	if strings.Contains(terratestConfig.PSACT, defaults.RancherBaseline) {
+		rootBody, err := resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		rootBody.AppendNewline()
 	}
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, terraformConfig.ResourcePrefix})
-	clusterBlockBody := clusterBlock.Body()
-
-	dependsOnTemp := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + terraformConfig.ResourcePrefix + "]")},
+	clusterBlockBody, err := setClusterConfig(rootBody, terraformConfig, terratestConfig.PSACT)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	if psact == defaults.RancherBaseline {
-		dependsOnTemp = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + nodeTemplate + "." + terraformConfig.ResourcePrefix + "," +
-				defaults.PodSecurityAdmission + "." + terraformConfig.ResourcePrefix + "]")},
+	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
+		err = v2.SetProxyConfig(clusterBlockBody, terraformConfig)
+		if err != nil {
+			return nil, nil, err
 		}
 	}
 
-	clusterBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnTemp)
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
-	clusterBlockBody.SetAttributeValue(defaults.DefaultPodSecurityAdmission, cty.StringVal(psact))
-
-	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
-		v2.SetProxyConfig(clusterBlockBody, terraformConfig)
+	rkeConfigBlockBody, err := setRKEConfig(clusterBlockBody, terraformConfig, terratestConfig.KubernetesVersion)
+	if err != nil {
+		return nil, nil, err
 	}
-
-	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
-	rkeConfigBlockBody := rkeConfigBlock.Body()
-
-	rkeConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
-
-	networkBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Network, nil)
-	networkBlockBody := networkBlock.Body()
-
-	networkBlockBody.SetAttributeValue(defaults.Plugin, cty.StringVal(terraformConfig.CNI))
 
 	rootBody.AppendNewline()
 
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
-		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.RKE1PrivateRegistries, nil)
-		registryBlockBody := registryBlock.Body()
-
-		setRKE1PrivateRegistryConfig(registryBlockBody, terraformConfig)
+		err = setRKE1PrivateRegistryConfig(rkeConfigBlockBody, terraformConfig)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		rootBody.AppendNewline()
 	}
 
 	if terraformConfig.ETCDRKE1 != nil {
-		servicesBlock := rkeConfigBlockBody.AppendNewBlock(defaults.Services, nil)
-		servicesBlockBody := servicesBlock.Body()
-
-		setEtcdConfig(servicesBlockBody, terraformConfig)
+		err = setEtcdConfig(rkeConfigBlockBody, terraformConfig)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		rootBody.AppendNewline()
 	}
 
 	clusterSyncNodePoolIDs := ""
 
-	for count, pool := range nodePools {
-		setNodePool(nodePools, count, pool, rootBody, clusterSyncNodePoolIDs, terraformConfig)
+	for count, pool := range terratestConfig.Nodepools {
+		err = setNodePool(terratestConfig.Nodepools, count, pool, rootBody, clusterSyncNodePoolIDs, terraformConfig)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
-	setClusterSync(rootBody, clusterSyncNodePoolIDs, terraformConfig.ResourcePrefix)
-
-	rootBody.AppendNewline()
-
-	_, err := file.Write(newFile.Bytes())
+	err = setClusterSync(rootBody, clusterSyncNodePoolIDs, terraformConfig.ResourcePrefix)
 	if err != nil {
-		logrus.Infof("Failed to write RKE1 configurations to main.tf file. Error: %v", err)
 		return nil, nil, err
 	}
+
+	rootBody.AppendNewline()
 
 	return newFile, file, nil
 }

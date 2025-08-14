@@ -48,11 +48,7 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 		}
 
 		v2.SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
-
-		registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)
-		registryBlockBody := registryBlock.Body()
-
-		v2.SetPrivateRegistryConfig(registryBlockBody, terraformConfig)
+		v2.SetPrivateRegistryConfig(rkeConfigBlockBody, terraformConfig)
 	}
 
 	if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) && strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {

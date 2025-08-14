@@ -17,7 +17,7 @@ const (
 
 // SetCreateRKE2K3SSnapshot is a function that will set the etcd_snapshot_create resource
 // block in the main.tf file for a RKE2/K3S cluster.
-func SetCreateRKE2K3SSnapshot(terraformConfig *config.TerraformConfig, rkeConfigBlockBody *hclwrite.Body) {
+func SetCreateRKE2K3SSnapshot(terraformConfig *config.TerraformConfig, rkeConfigBlockBody *hclwrite.Body) error {
 	createSnapshotBlock := rkeConfigBlockBody.AppendNewBlock(EtcdSnapshotCreate, nil)
 	createSnapshotBlockBody := createSnapshotBlock.Body()
 
@@ -28,11 +28,13 @@ func SetCreateRKE2K3SSnapshot(terraformConfig *config.TerraformConfig, rkeConfig
 	} else {
 		createSnapshotBlockBody.SetAttributeValue(Generation, cty.NumberIntVal(generation+1))
 	}
+
+	return nil
 }
 
 // SetRestoreRKE2K3SSnapshot is a function that will set the etcd_snapshot_restore
 // resource block in the main.tf file for a RKE2/K3S cluster.
-func SetRestoreRKE2K3SSnapshot(terraformConfig *config.TerraformConfig, rkeConfigBlockBody *hclwrite.Body, snapshots config.Snapshots) {
+func SetRestoreRKE2K3SSnapshot(terraformConfig *config.TerraformConfig, rkeConfigBlockBody *hclwrite.Body, snapshots config.Snapshots) error {
 	restoreSnapshotBlock := rkeConfigBlockBody.AppendNewBlock(EtcdSnapshotRestore, nil)
 	restoreSnapshotBlockBody := restoreSnapshotBlock.Body()
 
@@ -46,4 +48,5 @@ func SetRestoreRKE2K3SSnapshot(terraformConfig *config.TerraformConfig, rkeConfi
 
 	restoreSnapshotBlockBody.SetAttributeValue((defaults.ResourceName), cty.StringVal(snapshots.SnapshotName))
 	restoreSnapshotBlockBody.SetAttributeValue((RestoreRKEConfig), cty.StringVal(snapshots.SnapshotRestore))
+	return nil
 }

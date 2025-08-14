@@ -18,8 +18,20 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// importNodes is a function that will import the nodes to the cluster
-func importNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, nodeOnePublicDNS, kubeConfig, importCommand string) error {
+const (
+	address       = "address"
+	addServer     = "add_server_"
+	importCluster = "import_cluster"
+	copyScript    = "copy_script"
+	role          = "role"
+	serverTwo     = "server2"
+	serverThree   = "server3"
+	user          = "user"
+	windows       = "windows"
+)
+
+// ImportNodes is a function that will import the nodes to the cluster
+func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, nodeOnePublicDNS, kubeConfig, importCommand string) error {
 	userDir, _ := rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/provisioning/imported/import-nodes.sh")

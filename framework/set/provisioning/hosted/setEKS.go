@@ -16,8 +16,8 @@ import (
 )
 
 // SetEKS is a function that will set the EKS configurations in the main.tf file.
-func SetEKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
-	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
+func SetEKS(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File) (*hclwrite.File, *os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
@@ -45,7 +45,7 @@ func SetEKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 
 	eksConfigBlockBody.SetAttributeRaw(defaults.CloudCredentialID, cloudCredID)
 	eksConfigBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
-	eksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
+	eksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 	awsSubnetsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSubnets)
 	eksConfigBlockBody.SetAttributeRaw(amazon.Subnets, awsSubnetsList)
 	awsSecGroupsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroups)
@@ -53,7 +53,7 @@ func SetEKS(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 	eksConfigBlockBody.SetAttributeValue(amazon.PrivateAccess, cty.BoolVal(terraformConfig.AWSConfig.PrivateAccess))
 	eksConfigBlockBody.SetAttributeValue(amazon.PublicAccess, cty.BoolVal(terraformConfig.AWSConfig.PublicAccess))
 
-	for count, pool := range nodePools {
+	for count, pool := range terratestConfig.Nodepools {
 		poolNum := strconv.Itoa(count)
 
 		_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)

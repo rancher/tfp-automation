@@ -32,7 +32,7 @@ const (
 )
 
 // SetUsers is a helper function that will set the RBAC users in the main.tf file.
-func SetUsers(newFile *hclwrite.File, rootBody *hclwrite.Body, rbacRole config.Role) (string, error) {
+func setUsers(newFile *hclwrite.File, rootBody *hclwrite.Body, rbacRole config.Role) (string, error) {
 	var testuser = namegen.AppendRandomString("testuser")
 	var testpassword = password.GenerateUserPassword("testpass")
 

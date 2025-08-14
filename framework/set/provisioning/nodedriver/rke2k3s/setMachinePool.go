@@ -22,7 +22,7 @@ func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool con
 	machinePoolsBlock := rkeConfigBlockBody.AppendNewBlock(defaults.MachinePools, nil)
 	machinePoolsBlockBody := machinePoolsBlock.Body()
 
-	machinePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal("pool"+poolNum))
+	machinePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+poolNum))
 
 	cloudCredSecretName := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + terraformConfig.ResourcePrefix + ".id")},

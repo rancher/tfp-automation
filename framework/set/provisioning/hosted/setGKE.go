@@ -15,8 +15,8 @@ import (
 )
 
 // SetGKE is a function that will set the GKE configurations in the main.tf file.
-func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePools []config.Nodepool, newFile *hclwrite.File,
-	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
+func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File) (*hclwrite.File, *os.File, error) {
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
@@ -44,11 +44,11 @@ func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 	gkeConfigBlockBody.SetAttributeRaw(google.GoogleCredentialSecret, cloudCredSecret)
 	gkeConfigBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.GoogleConfig.Region))
 	gkeConfigBlockBody.SetAttributeValue(google.ProjectID, cty.StringVal(terraformConfig.GoogleConfig.ProjectID))
-	gkeConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(k8sVersion))
+	gkeConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 	gkeConfigBlockBody.SetAttributeValue(google.Network, cty.StringVal(terraformConfig.GoogleConfig.Network))
 	gkeConfigBlockBody.SetAttributeValue(google.Subnetwork, cty.StringVal(terraformConfig.GoogleConfig.Subnetwork))
 
-	for count, pool := range nodePools {
+	for count, pool := range terratestConfig.Nodepools {
 		poolNum := strconv.Itoa(count)
 
 		_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
@@ -62,7 +62,7 @@ func SetGKE(terraformConfig *config.TerraformConfig, k8sVersion string, nodePool
 		nodePoolsBlockBody.SetAttributeValue(google.InitialNodeCount, cty.NumberIntVal(pool.Quantity))
 		nodePoolsBlockBody.SetAttributeValue(google.MaxPodsConstraint, cty.NumberIntVal(pool.MaxPodsContraint))
 		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
-		nodePoolsBlockBody.SetAttributeValue(google.Version, cty.StringVal(k8sVersion))
+		nodePoolsBlockBody.SetAttributeValue(google.Version, cty.StringVal(terratestConfig.KubernetesVersion))
 	}
 
 	_, err := file.Write(newFile.Bytes())

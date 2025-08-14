@@ -10,8 +10,8 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 )
 
-// registerPrivateNodes is a function that will register the private nodes to the cluster
-func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodePrivateIP,
+// RegisterPrivateNodes is a function that will register the private nodes to the cluster
+func RegisterPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodePrivateIP,
 	registrationCommand string) error {
 	privateKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
 	if err != nil {
@@ -33,8 +33,8 @@ func registerPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *
 	return nil
 }
 
-// registerWindowsPrivateNodes is a function that will register the private  Windows nodes to the cluster
-func registerWindowsPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodePrivateIP,
+// RegisterWindowsPrivateNodes is a function that will register the private  Windows nodes to the cluster
+func RegisterWindowsPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, nodePrivateIP,
 	registrationCommand string) error {
 	windowsPrivateKey, err := os.ReadFile(terraformConfig.WindowsPrivateKeyPath)
 	if err != nil {

@@ -28,7 +28,7 @@ const (
 )
 
 // SetCustomPSACT is a function that will set the Custom PSACT configurations in the main.tf file.
-func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body, clusterName string) (*hclwrite.File, *hclwrite.Body) {
+func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body, clusterName string) (*hclwrite.Body, error) {
 	exemptionsNamespaces := []string{
 		"ingress-nginx",
 		"kube-system",
@@ -78,5 +78,5 @@ func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body, clusterNa
 
 	exemptionsBlockBody.SetAttributeRaw(namespace, namespaces)
 
-	return newFile, rootBody
+	return rootBody, nil
 }

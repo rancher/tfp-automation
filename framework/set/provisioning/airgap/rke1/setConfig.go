@@ -1,16 +1,24 @@
-package airgap
+package rke1
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
-	"github.com/sirupsen/logrus"
+)
+
+const (
+	airgapNodeOne       = "airgap_node1"
+	airgapNodeTwo       = "airgap_node2"
+	airgapNodeThree     = "airgap_node3"
+	airgapWindowsNode   = "airgap_windows_node"
+	bastion             = "bastion"
+	copyScriptToBastion = "copy_script_to_bastion"
 )
 
 // // SetAirgapRKE1 is a function that will set the airgap RKE1 cluster configurations in the main.tf file.
@@ -36,7 +44,7 @@ func SetAirgapRKE1(terraformConfig *config.TerraformConfig, terratestConfig *con
 
 	rootBody.AppendNewline()
 
-	err = copyScript(provisionerBlockBody, terraformConfig, terratestConfig)
+	err = airgap.CopyScript(provisionerBlockBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,11 +59,12 @@ func SetAirgapRKE1(terraformConfig *config.TerraformConfig, terratestConfig *con
 		nodeOneExpression := "[" + defaults.NullResource + `.register_` + airgapNodeOne + "_" + terraformConfig.ResourcePrefix + "]"
 		nodeTwoExpression := "[" + defaults.NullResource + `.register_` + airgapNodeTwo + "_" + terraformConfig.ResourcePrefix + "]"
 
-		if instance == airgapNodeOne {
+		switch instance {
+		case airgapNodeOne:
 			dependsOn = append(dependsOn, bastionScriptExpression)
-		} else if instance == airgapNodeTwo {
+		case airgapNodeTwo:
 			dependsOn = append(dependsOn, nodeOneExpression)
-		} else if instance == airgapNodeThree {
+		case airgapNodeThree:
 			dependsOn = append(dependsOn, nodeTwoExpression)
 		}
 
@@ -64,7 +73,7 @@ func SetAirgapRKE1(terraformConfig *config.TerraformConfig, terratestConfig *con
 			return nil, nil, err
 		}
 
-		err = registerPrivateNodes(provisionerBlockBody, terraformConfig, nodePrivateIPs[instance], registrationCommands[instance])
+		err = airgap.RegisterPrivateNodes(provisionerBlockBody, terraformConfig, nodePrivateIPs[instance], registrationCommands[instance])
 		if err != nil {
 			return nil, nil, err
 		}
@@ -72,37 +81,5 @@ func SetAirgapRKE1(terraformConfig *config.TerraformConfig, terratestConfig *con
 		rootBody.AppendNewline()
 	}
 
-	_, err = file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write airgap RKE1 configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
-	}
-
 	return newFile, file, nil
-}
-
-// getRKE1RegistrationCommands is a helper function that will return the registration commands for the airgap nodes.
-func getRKE1RegistrationCommands(terraformConfig *config.TerraformConfig) (map[string]string, map[string]string) {
-	commands := make(map[string]string)
-	nodePrivateIPs := make(map[string]string)
-
-	regCommand := fmt.Sprintf("${%s.%s.%s[0].%s}", defaults.Cluster, terraformConfig.ResourcePrefix, defaults.ClusterRegistrationToken, defaults.NodeCommand)
-
-	etcdRegistrationCommand := fmt.Sprintf(regCommand+" %s", defaults.EtcdRoleFlag)
-	controlPlaneRegistrationCommand := fmt.Sprintf(regCommand+" %s", defaults.ControlPlaneRoleFlag)
-	workerRegistrationCommand := fmt.Sprintf(regCommand+" %s", defaults.WorkerRoleFlag)
-
-	airgapNodeOnePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeOne+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
-	airgapNodeTwoPrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeTwo+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
-	airgapNodeThreePrivateIP := fmt.Sprintf("${%s.%s.%s}", defaults.AwsInstance, airgapNodeThree+"_"+terraformConfig.ResourcePrefix, defaults.PrivateIp)
-
-	commands[airgapNodeOne] = etcdRegistrationCommand
-	commands[airgapNodeTwo] = controlPlaneRegistrationCommand
-	commands[airgapNodeThree] = workerRegistrationCommand
-
-	nodePrivateIPs[airgapNodeOne] = airgapNodeOnePrivateIP
-	nodePrivateIPs[airgapNodeTwo] = airgapNodeTwoPrivateIP
-	nodePrivateIPs[airgapNodeThree] = airgapNodeThreePrivateIP
-
-	return commands, nodePrivateIPs
 }
