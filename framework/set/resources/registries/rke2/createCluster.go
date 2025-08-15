@@ -63,7 +63,8 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
+		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
+		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
@@ -90,7 +91,8 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
+			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage

@@ -54,7 +54,6 @@ terraform:
     authConfigSecretName: ""                      # RKE2/K3S specific
     mirrorHostname: ""
     mirrorEndpoint: ""
-    mirrorRewrite: ""
   ########################
   # INFRASTRUCTURE SETUP
   ########################

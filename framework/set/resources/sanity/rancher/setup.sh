@@ -15,7 +15,7 @@ set -ex
 
 checkClusterStatus() {
     EXPECTED_NODES=3
-    TIMEOUT=300
+    TIMEOUT=600
     INTERVAL=10
     ELAPSED=0
 

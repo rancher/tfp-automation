@@ -6,10 +6,13 @@ RKE2_SERVER_ONE_IP=$3
 RKE2_NEW_SERVER_IP=$4
 RKE2_TOKEN=$5
 REGISTRY=$6
-RANCHER_IMAGE=$7
-RANCHER_TAG_VERSION=$8
-RANCHER_AGENT_IMAGE=${9}
+REGISTRY_USERNAME=$7
+REGISTRY_PASSWORD=$8
+RANCHER_IMAGE=$9
+RANCHER_TAG_VERSION=${10}
+RANCHER_AGENT_IMAGE=${11}
 PEM_FILE=/home/$USER/airgap.pem
+HOST="registry-1.docker.io"
 
 set -e
 
@@ -38,24 +41,20 @@ EOF
 }
 
 setupRegistry() {
-  sudo mkdir -p /etc/rancher/rke2
-  sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+  sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
     endpoint:
-      - "https://${REGISTRY}"
+      - "https://${HOST}"
 configs:
-  "${REGISTRY}":
-    tls:
-      insecure_skip_verify: true
-EOF
-}
-
-setupDockerDaemon() {
-  sudo tee -a /etc/docker/daemon.json > /dev/null << EOF
-{
-  "insecure-registries" : [ "${REGISTRY}" ]
-}
+  "${HOST}":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
+  "docker.io":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
 EOF
 }
 
@@ -70,10 +69,6 @@ runSSH "${RKE2_NEW_SERVER_IP}" "sudo systemctl enable rke2-server"
 runSSH "${RKE2_NEW_SERVER_IP}" "sudo systemctl start rke2-server"
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-  setupDaemonFunction=$(declare -f setupDockerDaemon)
-  runSSH "${RKE2_NEW_SERVER_IP}" "${setupDaemonFunction}; setupDockerDaemon"
-  runSSH "${RKE2_NEW_SERVER_IP}" "sudo systemctl restart docker && sudo systemctl daemon-reload"
-
   runSSH "${RKE2_NEW_SERVER_IP}" "sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}"
   runSSH "${RKE2_NEW_SERVER_IP}" "sudo docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}"
   runSSH "${RKE2_NEW_SERVER_IP}" "sudo systemctl restart rke2-server"
