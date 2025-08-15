@@ -24,8 +24,6 @@ const (
 	rke2ServerTwo   = "rke2_server2"
 	rke2ServerThree = "rke2_server3"
 
-	nonAuthRegistry = "non_auth_registry"
-
 	registryPublicDNS        = "registry_public_dns"
 	rke2BastionPublicDNS     = "rke2_bastion_public_dns"
 	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
@@ -71,7 +69,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	logrus.Infof("Creating registry...")
 	file = sanity.OpenFile(file, keyPath)
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicDNS, nonAuthRegistry)
+	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicDNS)
 	if err != nil {
 		return "", "", err
 	}

@@ -35,6 +35,24 @@ tls-san:
 EOF
 }
 
+setupRegistry() {
+  sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+mirrors:
+  docker.io:
+    endpoint:
+      - "https://registry-1.docker.io"
+configs:
+  "registry-1.docker.io":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
+  "docker.io":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
+EOF
+}
+
 setupProxy() {
   cat <<EOF | sudo tee /etc/default/rke2-server > /dev/null
 HTTP_PROXY=http://${BASTION}:${PORT}
@@ -52,6 +70,9 @@ runSSH "${RKE2_NEW_SERVER_IP}" "sudo hostnamectl set-hostname ${RKE2_NEW_SERVER_
 
 configFunction=$(declare -f setupConfig)
 runSSH "${RKE2_NEW_SERVER_IP}" "${configFunction}; setupConfig"
+
+registryFunction=$(declare -f setupRegistry)
+runSSH "${RKE2_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
 
 setupProxyFunction=$(declare -f setupProxy)
 runSSH "${RKE2_NEW_SERVER_IP}" "${setupProxyFunction}; setupProxy"

@@ -8,7 +8,9 @@ RKE2_TOKEN=$5
 RANCHER_IMAGE=$6
 RANCHER_TAG_VERSION=$7
 REGISTRY=$8
-RANCHER_AGENT_IMAGE=${9}
+REGISTRY_USERNAME=$9
+REGISTRY_PASSWORD=${10}
+RANCHER_AGENT_IMAGE=${11}
 
 set -e
 
@@ -24,18 +26,27 @@ sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
     endpoint:
-      - "https://${REGISTRY}"
+    - "https://registry-1.docker.io"
 configs:
-  "${REGISTRY}":
-    tls:
-      insecure_skip_verify: true
+  "registry-1.docker.io":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
+  "docker.io":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
 EOF
 
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+ARCH=$(uname -m)
+if [[ $ARCH == "x86_64" ]]; then
+    ARCH="amd64"
+elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+    ARCH="arm64"
+fi
+
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 
 curl -sfL https://get.rke2.io --output install.sh

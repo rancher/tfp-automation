@@ -46,9 +46,6 @@ func SetPrivateRegistryConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig
 
 	mirrorsBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.MirrorHostname))
 	mirrorsBlockBody.SetAttributeValue(endpoints, cty.ListVal([]cty.Value{cty.StringVal(terraformConfig.PrivateRegistries.MirrorEndpoint)}))
-	mirrorsBlockBody.SetAttributeValue(rewrites, cty.MapVal(map[string]cty.Value{
-		"^(.*)": cty.StringVal(terraformConfig.PrivateRegistries.MirrorRewrite),
-	}))
 
 	return nil
 }

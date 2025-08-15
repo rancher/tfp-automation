@@ -140,6 +140,8 @@ type Standalone struct {
 	RancherHostname                string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
 	RancherImage                   string `json:"rancherImage,omitempty" yaml:"rancherImage,omitempty"`
 	RancherTagVersion              string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
+	RegistryUsername               string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
+	RegistryPassword               string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
 	Repo                           string `json:"repo,omitempty" yaml:"repo,omitempty"`
 	OSUser                         string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
 	OSGroup                        string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`

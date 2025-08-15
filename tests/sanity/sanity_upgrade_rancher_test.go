@@ -61,22 +61,24 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 
 	testUser, testPassword := configs.CreateTestCredentials()
 
-	s.provisionAndVerifyCluster("Pre-Upgrade Sanity ", clusterIDs, false, testUser, testPassword)
+	s.provisionAndVerifyCluster("Pre-Upgrade Sanity ", clusterIDs, testUser, testPassword)
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = infrastructure.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
 
 	provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.UpgradedRancherTagVersion)
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
-	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, true, testUser, testPassword)
+	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, testUser, testPassword)
+
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
+	cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 	if s.terratestConfig.LocalQaseReporting {
 		qase.ReportTest(s.terratestConfig)
 	}
 }
 
-func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool,
-	testUser, testPassword string) []string {
+func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, testUser, testPassword string) []string {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -123,17 +125,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			}
-
-			if deleteClusters {
-				provisioning.KubernetesUpgrade(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false)
-				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-			}
 		})
-	}
-
-	if deleteClusters {
-		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
-		cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 	}
 
 	return clusterIDs

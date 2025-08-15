@@ -62,22 +62,24 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 
 	testUser, testPassword := configs.CreateTestCredentials()
 
-	p.provisionAndVerifyCluster("Pre-Upgrade Proxy ", clusterIDs, false, testUser, testPassword)
+	p.provisionAndVerifyCluster("Pre-Upgrade Proxy ", clusterIDs, testUser, testPassword)
 
 	p.client, p.cattleConfig, p.terraformOptions, p.upgradeTerraformOptions = infrastructure.UpgradeProxyRancher(p.T(), p.client, p.proxyPrivateIP, p.proxyBastion, p.session, p.cattleConfig)
 
 	provisioning.VerifyRancherVersion(p.T(), p.rancherConfig.Host, p.standaloneConfig.UpgradedRancherTagVersion)
 
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
-	p.provisionAndVerifyCluster("Post-Upgrade Proxy ", clusterIDs, true, testUser, testPassword)
+	p.provisionAndVerifyCluster("Post-Upgrade Proxy ", clusterIDs, testUser, testPassword)
+
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
+	cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
 	if p.terratestConfig.LocalQaseReporting {
 		qase.ReportTest(p.terratestConfig)
 	}
 }
 
-func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool,
-	testUser, testPassword string) []string {
+func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, testUser, testPassword string) []string {
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -128,11 +130,6 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}
 		})
-	}
-
-	if deleteClusters {
-		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
-		cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 	}
 
 	return clusterIDs

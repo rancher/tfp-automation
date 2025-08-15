@@ -31,7 +31,7 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 	registry, bastion, err := airgap.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, rancherConfig, session, terraformConfig.Standalone.RancherHostname, true)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -52,7 +52,7 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 	proxyBastion, proxyPrivateIP, err := proxy.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, rancherConfig, session, terraformConfig.Standalone.RancherHostname, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -73,7 +73,7 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	serverNodeOne, err := sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, rancherConfig, session, terraformConfig.Standalone.RancherHostname, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -93,7 +93,7 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	authRegistry, nonAuthRegistry, globalRegistry, err := registries.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, rancherConfig, session, terraformConfig.Standalone.RancherHostname, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

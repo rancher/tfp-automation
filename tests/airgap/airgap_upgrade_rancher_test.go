@@ -62,22 +62,24 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 
 	testUser, testPassword := configs.CreateTestCredentials()
 
-	a.provisionAndVerifyCluster("Pre-Upgrade Airgap ", clusterIDs, false, testUser, testPassword)
+	a.provisionAndVerifyCluster("Pre-Upgrade Airgap ", clusterIDs, testUser, testPassword)
 
 	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = infrastructure.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig)
 
 	provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.UpgradedRancherTagVersion)
 
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
-	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, true, testUser, testPassword)
+	a.provisionAndVerifyCluster("Post-Upgrade Airgap ", clusterIDs, testUser, testPassword)
+
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
+	cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
 	if a.terratestConfig.LocalQaseReporting {
 		qase.ReportTest(a.terratestConfig)
 	}
 }
 
-func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, deleteClusters bool,
-	testUser, testPassword string) []string {
+func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, testUser, testPassword string) []string {
 	tests := []struct {
 		name   string
 		module string
@@ -125,11 +127,6 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			}
 		})
-	}
-
-	if deleteClusters {
-		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
-		cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 	}
 
 	return clusterIDs

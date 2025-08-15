@@ -9,22 +9,26 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/ipv6/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
-	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	rancherRegistry = "registry"
+	rke2Bastion     = "rke2_bastion"
 	rke2ServerOne   = "rke2_server1"
 	rke2ServerTwo   = "rke2_server2"
 	rke2ServerThree = "rke2_server3"
 
-	rke2ServerOnePublicIP   = "rke2_server1_public_ip"
-	rke2ServerTwoPublicIP   = "rke2_server2_public_ip"
-	rke2ServerThreePublicIP = "rke2_server3_public_ip"
+	rke2BastionPublicIP      = "rke2_bastion_public_ip"
+	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
+	rke2ServerOnePublicIP    = "rke2_server1_public_ip"
+	rke2ServerTwoPrivateIP   = "rke2_server2_private_ip"
+	rke2ServerTwoPublicIP    = "rke2_server2_public_ip"
+	rke2ServerThreePrivateIP = "rke2_server3_private_ip"
+	rke2ServerThreePublicIP  = "rke2_server3_public_ip"
 
 	terraformConst = "terraform"
 )
@@ -43,10 +47,10 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances := []string{rke2Bastion}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
-	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
+	file, err := providerTunnel.CreateAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	if err != nil {
 		return "", err
 	}
@@ -58,13 +62,18 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
+	rke2BastionPublicIP := terraform.Output(t, terraformOptions, rke2BastionPublicIP)
+	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
 	rke2ServerOnePublicIP := terraform.Output(t, terraformOptions, rke2ServerOnePublicIP)
+	rke2ServerTwoPrivateIP := terraform.Output(t, terraformOptions, rke2ServerTwoPrivateIP)
 	rke2ServerTwoPublicIP := terraform.Output(t, terraformOptions, rke2ServerTwoPublicIP)
+	rke2ServerThreePrivateIP := terraform.Output(t, terraformOptions, rke2ServerThreePrivateIP)
 	rke2ServerThreePublicIP := terraform.Output(t, terraformOptions, rke2ServerThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicIP, rke2ServerOnePublicIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP)
+	file, err = rke2.CreateIPv6RKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicIP, rke2ServerOnePublicIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP,
+		rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +87,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	logrus.Infof("Creating Rancher server...")
 	file = sanity.OpenFile(file, keyPath)
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicIP, "")
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicIP, "")
 	if err != nil {
 		return "", err
 	}
@@ -90,5 +99,5 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	return rke2ServerOnePublicIP, nil
+	return rke2BastionPublicIP, nil
 }

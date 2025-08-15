@@ -127,7 +127,6 @@ jobs:
               authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
               mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
               mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
-              mirrorRewrite: "${{ secrets.PRIVATE_REGISTRY_MIRROR_REWRITE }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
@@ -168,6 +167,8 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
           terratest:

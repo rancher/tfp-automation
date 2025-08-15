@@ -54,7 +54,6 @@ terraform:
     authConfigSecretName: ""                      # RKE2/K3S specific
     mirrorHostname: ""
     mirrorEndpoint: ""
-    mirrorRewrite: ""
   ########################
   # INFRASTRUCTURE SETUP
   ########################
@@ -112,13 +111,6 @@ terraform:
     upgradedRancherImage: ""                      # OPTIONAL - fill out if you are performing an upgrade
     upgradedRancherRepo: ""                       # OPTIONAL - fill out if you are performing an upgrade
     upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
-  ####################################
-  # STANDALONE CONFIG - REGISTRY SETUP
-  ####################################
-  standaloneRegistry:
-    registryName: ""                              # REQUIRED - fill with desired value
-    registryPassword: ""                          # REQUIRED - fill with desired value
-    registryUsername: ""                          # REQUIRED - fill with desired value
 #######################
 # TERRATEST CONFIG
 #######################

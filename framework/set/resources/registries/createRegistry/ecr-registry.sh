@@ -1,11 +1,13 @@
 #!/usr/bin/bash
 
 ECR=$1
-RANCHER_VERSION=$2
-RANCHER_IMAGE=$3
-USER=$4
-ASSET_DIR=$5
-RANCHER_AGENT_IMAGE=${6}
+REGISTRY_USERNAME=$2
+REGISTRY_PASSWORD=$3
+RANCHER_VERSION=$4
+RANCHER_IMAGE=$5
+USER=$6
+ASSET_DIR=$7
+RANCHER_AGENT_IMAGE=${8}
 
 set -e
 
@@ -38,19 +40,9 @@ action() {
     fi
 }
 
-. /etc/os-release
-
-[[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt install -y unzip
-[[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install -y unzip
-[[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install -y unzip
-
-echo "Creating a self-signed certificate..."
-mkdir -p certs
-openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key -addext "subjectAltName = DNS:${ECR}" -x509 -days 365 -out certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${ECR}"
-
-echo "Copying the certificate to the /etc/docker/certs.d/${ECR} directory..."
-sudo mkdir -p /etc/docker/certs.d/${ECR}
-sudo cp certs/domain.crt /etc/docker/certs.d/${ECR}/ca.crt
+echo "Logging into the private registry..."
+sudo cat /dev/null > ~/.docker/config.json
+sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
 
 echo "Downloading ${RANCHER_VERSION} image list and scripts..."
 wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt
