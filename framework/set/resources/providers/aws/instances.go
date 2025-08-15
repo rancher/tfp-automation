@@ -90,13 +90,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
 	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
-	var hostExpression string
-	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
-		hostExpression = defaults.Self + "." + defaults.IPV6Addresses + `[0]`
-	} else {
-		hostExpression = defaults.Self + "." + defaults.PublicIp
-	}
-
+	hostExpression := defaults.Self + "." + defaults.PublicIp
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
@@ -161,7 +155,13 @@ func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *confi
 	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
 	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
-	hostExpression := defaults.Self + "." + defaults.PrivateIp
+	var hostExpression string
+	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		hostExpression = defaults.Self + "." + defaults.IPV6Addresses + `[0]`
+	} else {
+		hostExpression = defaults.Self + "." + defaults.PrivateIp
+	}
+
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}

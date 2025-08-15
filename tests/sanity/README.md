@@ -50,7 +50,6 @@ terraform:
     authConfigSecretName: ""                      # RKE2/K3S specific
     mirrorHostname: ""
     mirrorEndpoint: ""
-    mirrorRewrite: ""
   ##########################################
   # STANDALONE / RANCHER CLUSTER CONFIG
   ##########################################

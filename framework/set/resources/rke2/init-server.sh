@@ -6,8 +6,8 @@ K8S_VERSION=$3
 RKE2_SERVER_IP=$4
 RKE2_TOKEN=$5
 CNI=$6
-CLUSTER_CIDR=${7}
-SERVICE_CIDR=${8}
+REGISTRY_USERNAME=$7
+REGISTRY_PASSWORD=$8
 
 set -e
 
@@ -27,22 +27,24 @@ wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha
 sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
 
-if [ -n "${CLUSTER_CIDR}" ]; then
-  echo "cni: ${CNI}
-write-kubeconfig-mode: 644
-node-ip: ${RKE2_SERVER_IP}
-node-external-ip: ${RKE2_SERVER_IP}
-token: ${RKE2_TOKEN}
-cluster-cidr: ${CLUSTER_CIDR}
-service-cidr: ${SERVICE_CIDR}
-tls-san:
-  - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
-else
-  echo "cni: ${CNI}
+echo "cni: ${CNI}
 token: ${RKE2_TOKEN}
 tls-san:
   - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
-fi
+
+echo "mirrors:
+  docker.io:
+    endpoint:
+    - "https://registry-1.docker.io"
+configs:
+  "registry-1.docker.io":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
+  "docker.io":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null
 
 curl -sfL https://get.rke2.io --output install.sh
 chmod +x install.sh

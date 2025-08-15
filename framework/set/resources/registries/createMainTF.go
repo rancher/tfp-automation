@@ -128,7 +128,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 		file = sanity.OpenFile(file, keyPath)
 		logrus.Infof("Creating ecr registry...")
-		file, err = registry.CreateEcrRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, ecrRegistryPublicDNS)
+		file, err = registry.CreateECRRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, ecrRegistryPublicDNS)
 		if err != nil {
 			logrus.Fatalf("Error creating ecr registry: %v", err)
 		}

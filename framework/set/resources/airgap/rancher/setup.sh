@@ -58,7 +58,14 @@ kubectl create ns cattle-system
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
+helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager \
+                                                          --create-namespace \
+                                                          --version ${CERT_MANAGER_VERSION} \
+                                                          --set image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-controller \
+                                                          --set webhook.image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-webhook \
+                                                          --set cainjector.image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-cainjector \
+                                                          --set startupapicheck.image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-ctl
+
 kubectl get pods --namespace cert-manager
 
 echo "Waiting 1 minute for Rancher"
