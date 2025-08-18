@@ -5,19 +5,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/defaults"
 	"github.com/rancher/shepherd/extensions/token"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/pipeline"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	kwait "k8s.io/apimachinery/pkg/util/wait"
 )
 
 // PostRancherSetup is a helper function that creates a Rancher client and accepts the EULA, if needed
-func PostRancherSetup(t *testing.T, rancherConfig *rancher.Config, session *session.Session, host string, isAirgap bool) (*rancher.Client, error) {
+func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancherConfig *rancher.Config, session *session.Session, host,
+	keyPath string, isAirgap bool) (*rancher.Client, error) {
 	adminUser := &management.User{
 		Username: "admin",
 		Password: rancherConfig.AdminPassword,
@@ -33,7 +36,9 @@ func PostRancherSetup(t *testing.T, rancherConfig *rancher.Config, session *sess
 
 		return true, nil
 	})
-	require.NoError(t, err)
+	if err != nil && *rancherConfig.Cleanup {
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+	}
 
 	rancherConfig.AdminToken = adminToken.Token
 

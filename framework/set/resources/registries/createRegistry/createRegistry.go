@@ -34,11 +34,9 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2AuthRegistryPublicDNS, authRegistry)
 
-	command := "bash -c '/tmp/auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
-		terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.StandaloneRegistry.RegistryName + " " +
-		rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
-		terraformConfig.Standalone.RancherImage
+	command := "bash -c '/tmp/auth-registry.sh " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+		rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " +
+		terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RancherImage
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
@@ -78,19 +76,17 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 	var command string
 
 	if terraformConfig.Standalone.UpgradeAirgapRancher {
-		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " +
-			rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
-			terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
-			terraformConfig.Standalone.UpgradedRancherImage
+		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.RegistryUsername + " " +
+			terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
+			terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage
 
 		if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 		}
 	} else {
-		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " +
-			rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
-			terraformConfig.Standalone.RancherImage
+		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.RegistryUsername + " " +
+			terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+			terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RancherImage
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage
@@ -114,8 +110,8 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 	return file, nil
 }
 
-// CreateEcrRegistry is a helper function that will create an authenticated ECR registry.
-func CreateEcrRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
+// CreateECRRegistry is a helper function that will create an authenticated ECR registry.
+func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, rke2EcrRegistryPublicDNS string) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
@@ -128,8 +124,8 @@ func CreateEcrRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2EcrRegistryPublicDNS, ecrRegistry)
 
-	command := "bash -c '/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " +
-		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.RancherImage + " " +
+	command := "bash -c '/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " + terraformConfig.Standalone.RegistryUsername + " " +
+		terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.RancherImage + " " +
 		terraformConfig.Standalone.OSUser + " " + terraformConfig.StandaloneRegistry.AssetsPath
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {

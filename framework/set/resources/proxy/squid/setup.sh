@@ -2,55 +2,19 @@
 
 USER=$1
 GROUP=$2
-BASTION=$3
-PASSWORD=$4
-REGISTRY_USER=$5
-REGISTRY_PASS=$6
-REGISTRY_NAME=$7
-K8S_VERSION=$8
-RKE2_SERVER_ONE_IP=$9
-RKE2_SERVER_TWO_IP=${10}
-RKE2_SERVER_THREE_IP=${11}
+REGISTRY_USERNAME=$3
+REGISTRY_PASSWORD=$4
+K8S_VERSION=$5
+RKE2_SERVER_ONE_IP=$6
+RKE2_SERVER_TWO_IP=$7
+RKE2_SERVER_THREE_IP=$8
 DOCKER_DIR="/etc/systemd/system/docker.service.d"
 PORT="3228"
 
 set -e
 
-echo "Setting up htpasswd..."
-. /etc/os-release
-
-[[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt install -y apache2-utils wget
-[[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install -y httpd-tools wget
-[[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install -y apache2-utils wget
-
-if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
-    echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
-else
-    sudo mkdir -p /home/${USER}/auth
-    sudo htpasswd -Bbn ${REGISTRY_USER} ${REGISTRY_PASS} | sudo tee /home/${USER}/auth/htpasswd
-
-    echo "Creating a self-signed certificate..."
-    sudo mkdir -p /home/${USER}/certs
-    sudo openssl req -newkey rsa:4096 -nodes -sha256 -keyout /home/${USER}/certs/domain.key -addext "subjectAltName = DNS:${BASTION}" -x509 -days 365 -out /home/${USER}/certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${BASTION}"
-
-    echo "Copying the certificate to the /etc/docker/certs.d/${BASTION} directory..."
-    sudo mkdir -p /etc/docker/certs.d/${BASTION}
-    sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${BASTION}/ca.crt
-
-    echo "Creating a private registry..."
-    sudo docker run -d --restart=always --name "${REGISTRY_NAME}" -v /home/${USER}/auth:/auth -v /home/${USER}/certs:/certs \
-                                                                                                    -e REGISTRY_AUTH=htpasswd \
-                                                                                                    -e REGISTRY_AUTH_HTPASSWD_REALM="Registry Realm" \
-                                                                                                    -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
-                                                                                                    -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
-                                                                                                    -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
-                                                                                                    -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
-                                                                                                    -p 443:443 \
-                                                                                                    registry:2
-
-    echo "Logging into the private registry..."
-    sudo docker login https://${BASTION} -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
-fi
+echo "Logging into the private registry..."
+sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
 
 echo "Starting proxy..."
 sudo mkdir -p /home/$USER/squid
