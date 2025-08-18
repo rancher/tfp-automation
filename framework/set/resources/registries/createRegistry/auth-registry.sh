@@ -1,13 +1,16 @@
 #!/usr/bin/bash
 
-REGISTRY_USERNAME=$1
-REGISTRY_PASSWORD=$2
-HOST=$3
-RANCHER_VERSION=$4
-ASSET_DIR=$5
-USER=$6
-RANCHER_IMAGE=$7
-RANCHER_AGENT_IMAGE=${8}
+REGISTRY_NAME=$1
+REGISTRY_USER=$2
+REGISTRY_PASS=$3
+REGISTRY_USERNAME=$4
+REGISTRY_PASSWORD=$5
+HOST=$6
+RANCHER_VERSION=$7
+ASSET_DIR=$8
+USER=$9
+RANCHER_IMAGE=${10}
+RANCHER_AGENT_IMAGE=${11}
 
 set -e
 
@@ -41,7 +44,33 @@ action() {
 }
 
 echo "Logging into the private registry..."
-sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+sudo docker login https://${HOST} -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+
+if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
+    echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
+else
+    sudo mkdir -p /home/${USER}/auth
+    sudo htpasswd -Bbn ${REGISTRY_USER} ${REGISTRY_PASS} | sudo tee /home/${USER}/auth/htpasswd
+
+    echo "Creating a self-signed certificate..."
+    sudo mkdir -p /home/${USER}/certs
+    sudo openssl req -newkey rsa:4096 -nodes -sha256 -keyout /home/${USER}/certs/domain.key -addext "subjectAltName = DNS:${HOST}" -x509 -days 365 -out /home/${USER}/certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
+
+    echo "Copying the certificate to the /etc/docker/certs.d/${HOST} directory..."
+    sudo mkdir -p /etc/docker/certs.d/${HOST}
+    sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
+
+    echo "Creating a private registry..."
+    sudo docker run -d --restart=always --name "${REGISTRY_NAME}" -v /home/${USER}/auth:/auth -v /home/${USER}/certs:/certs \
+                                                                                                    -e REGISTRY_AUTH=htpasswd \
+                                                                                                    -e REGISTRY_AUTH_HTPASSWD_REALM="Registry Realm" \
+                                                                                                    -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+                                                                                                    -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+                                                                                                    -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+                                                                                                    -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+                                                                                                    -p 443:443 \
+                                                                                                    registry:2
+fi
 
 sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
 sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt -O /home/${USER}/rancher-windows-images.txt
