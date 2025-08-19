@@ -26,11 +26,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
 	}
 
-	if hostnamePrefix == ecrRegistry {
-		configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.StandaloneRegistry.ECRAMI))
-	} else {
-		configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))
-	}
+	configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))
 
 	configBlockBody.SetAttributeValue(defaults.InstanceType, cty.StringVal(terraformConfig.AWSConfig.AWSInstanceType))
 	configBlockBody.SetAttributeValue(defaults.SubnetId, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))

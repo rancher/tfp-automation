@@ -160,7 +160,6 @@ type Standalone struct {
 type StandaloneRegistry struct {
 	AssetsPath         string `json:"assetsPath,omitempty" yaml:"assetsPath,omitempty"`
 	Authenticated      bool   `json:"authenticated,omitempty" yaml:"authenticated,omitempty"`
-	ECRAMI             string `json:"ecrAMI,omitempty" yaml:"ecrAMI,omitempty"`
 	ECRURI             string `json:"ecrURI,omitempty" yaml:"ecrURI,omitempty"`
 	ECRUsername        string `json:"ecrUsername,omitempty" yaml:"ecrUsername,omitempty"`
 	ECRPassword        string `json:"ecrPassword,omitempty" yaml:"ecrPassword,omitempty"`

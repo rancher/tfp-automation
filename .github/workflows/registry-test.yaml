@@ -185,7 +185,6 @@ jobs:
               ecrUsername: "${{ vars.ECR_USERNAME }}"
               ecrPassword: "${{ steps.get-ecr-password.outputs.password }}"
               ecrURI: "${{ secrets.ECR_URI }}"
-              ecrAMI: "${{ secrets.ECR_AMI }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
@@ -384,7 +383,6 @@ jobs:
               ecrUsername: "${{ vars.ECR_USERNAME }}"
               ecrPassword: "${{ steps.get-ecr-password.outputs.password }}"
               ecrURI: "${{ secrets.ECR_URI }}"
-              ecrAMI: "${{ secrets.ECR_AMI }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
@@ -583,7 +581,6 @@ jobs:
               ecrUsername: "${{ vars.ECR_USERNAME }}"
               ecrPassword: "${{ steps.get-ecr-password.outputs.password }}"
               ecrURI: "${{ secrets.ECR_URI }}"
-              ecrAMI: "${{ secrets.ECR_AMI }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
