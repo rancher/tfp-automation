@@ -127,7 +127,8 @@ func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 	command := "bash -c '/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " + terraformConfig.Standalone.RegistryUsername + " " +
 		terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.RancherImage + " " +
-		terraformConfig.Standalone.OSUser + " " + terraformConfig.StandaloneRegistry.AssetsPath
+		terraformConfig.Standalone.OSUser + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.AWSCredentials.AWSAccessKey + " " +
+		terraformConfig.AWSCredentials.AWSSecretKey + " " + terraformConfig.AWSConfig.Region
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage

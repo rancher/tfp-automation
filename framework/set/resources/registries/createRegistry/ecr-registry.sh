@@ -7,9 +7,22 @@ RANCHER_VERSION=$4
 RANCHER_IMAGE=$5
 USER=$6
 ASSET_DIR=$7
-RANCHER_AGENT_IMAGE=${8}
+AWS_ACCESS_KEY_ID=$8
+AWS_SECRET_ACCESS_KEY=$9
+AWS_REGION=${10}
+RANCHER_AGENT_IMAGE=${11}
 
 set -e
+
+configureAWS() {
+    echo "Configuring AWS CLI..."
+    aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+    aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+    aws configure set default.region "$AWS_REGION"
+
+    echo "Logging into Amazon ECR..."
+    aws ecr get-login-password --region "$AWS_REGION" | sudo docker login --username AWS --password-stdin "${ECR}"
+}
 
 manageImages() {
     ACTION=$1
@@ -21,7 +34,7 @@ manageImages() {
         action "${ACTION}" "${IMAGE}"
         COUNTER=$((COUNTER+1))
         
-        if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
+        if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
             wait
         fi
     done
@@ -40,8 +53,9 @@ action() {
     fi
 }
 
-echo "Logging into the private registry..."
-sudo cat /dev/null > ~/.docker/config.json
+configureAWS
+
+echo "Logging into Docker Hub..."
 sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
 
 echo "Downloading ${RANCHER_VERSION} image list and scripts..."
