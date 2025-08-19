@@ -58,6 +58,14 @@ configureAWS
 echo "Logging into Docker Hub..."
 sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
 
+echo "Creating a self-signed certificate..."
+mkdir -p certs
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key -addext "subjectAltName = DNS:${ECR}" -x509 -days 365 -out certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${ECR}"
+
+echo "Copying the certificate to the /etc/docker/certs.d/${ECR} directory..."
+sudo mkdir -p /etc/docker/certs.d/${ECR}
+sudo cp certs/domain.crt /etc/docker/certs.d/${ECR}/ca.crt
+
 echo "Downloading ${RANCHER_VERSION} image list and scripts..."
 wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt
 wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-save-images.sh
