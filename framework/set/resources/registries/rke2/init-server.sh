@@ -15,27 +15,43 @@ RANCHER_AGENT_IMAGE=${11}
 set -e
 
 sudo mkdir -p /etc/rancher/rke2
-sudo touch /etc/rancher/rke2/config.yaml
-
-echo "token: ${RKE2_TOKEN}
+sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
+token: ${RKE2_TOKEN}
 tls-san:
-  - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
+  - ${RKE2_SERVER_IP}
+EOF
 
-sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
     endpoint:
-    - "https://registry-1.docker.io"
+      - "https://registry-1.docker.io"
+EOF
+
+if [ -n "${REGISTRY}" ]; then
+  sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+  ${REGISTRY}:
+    endpoint:
+      - "http://${REGISTRY}"
+EOF
+
+  sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 configs:
-  "registry-1.docker.io":
-    auth:
-      username: "${REGISTRY_USERNAME}"
-      password: "${REGISTRY_PASSWORD}"
-  "docker.io":
+  "${REGISTRY}":
+EOF
+  if [ -n "${REGISTRY_USERNAME}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
+    sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
     auth:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"
 EOF
+  fi
+
+  sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+    tls:
+      insecure_skip_verify: true
+EOF
+fi
 
 ARCH=$(uname -m)
 if [[ $ARCH == "x86_64" ]]; then
@@ -50,18 +66,10 @@ wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha
 
 curl -sfL https://get.rke2.io --output install.sh
 sudo chmod +x install.sh
-
 sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh
+
 sudo systemctl enable rke2-server
 sudo systemctl start rke2-server
-
-sudo tee /etc/docker/daemon.json > /dev/null << EOF
-{
-  "insecure-registries" : [ "${REGISTRY}" ]
-}
-EOF
-
-sudo systemctl restart docker && sudo systemctl daemon-reload
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
   sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}
