@@ -43,16 +43,19 @@ setupRegistry() {
 mirrors:
   docker.io:
     endpoint:
-      - "https://${HOST}"
+      - "https://registry-1.docker.io"
+  "${REGISTRY}":
+    endpoint:
+      - "https://${REGISTRY}"
+
 configs:
-  "${HOST}":
-    auth:
-      username: "${REGISTRY_USERNAME}"
-      password: "${REGISTRY_PASSWORD}"
   "docker.io":
     auth:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"
+  "${REGISTRY}":
+    tls:
+      insecure_skip_verify: true
 EOF
 }
 
