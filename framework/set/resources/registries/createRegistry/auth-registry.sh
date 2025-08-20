@@ -44,7 +44,7 @@ action() {
 }
 
 echo "Logging into the private registry..."
-sudo docker login https://${HOST} -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
 
 if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
     echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
