@@ -26,16 +26,19 @@ sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
     endpoint:
-    - "https://registry-1.docker.io"
+      - "https://registry-1.docker.io"
+  "${REGISTRY}":
+    endpoint:
+      - "https://${REGISTRY}"
+
 configs:
-  "registry-1.docker.io":
-    auth:
-      username: "${REGISTRY_USERNAME}"
-      password: "${REGISTRY_PASSWORD}"
   "docker.io":
     auth:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"
+  "${REGISTRY}":
+    tls:
+      insecure_skip_verify: true
 EOF
 
 ARCH=$(uname -m)
