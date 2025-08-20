@@ -183,8 +183,10 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
               registryName: "${{ secrets.REGISTRY_NAME }}"
@@ -384,6 +386,8 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
             standaloneRegistry:
@@ -585,6 +589,8 @@ jobs:
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
+              registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_10 }}"
             standaloneRegistry:
