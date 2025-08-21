@@ -48,7 +48,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 
 	r.client, r.authRegistry, r.nonAuthRegistry, r.globalRegistry, r.standaloneTerraformOptions, r.terraformOptions,
 		r.cattleConfig = infrastructure.SetupRegistryRancher(r.T(), r.session, keypath.RegistryKeyPath)
-	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
+	r.rancherConfig, r.terraformConfig, r.terratestConfig, r.standaloneConfig = config.LoadTFPConfigs(r.cattleConfig)
 
 	provisioning.VerifyRancherVersion(r.T(), r.rancherConfig.Host, r.standaloneConfig.RancherTagVersion)
 }
