@@ -194,6 +194,7 @@ jobs:
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
               registryName: "${{ secrets.REGISTRY_NAME }}"
+              upgradedAssetsPath: "${{ secrets.UPGRADED_ASSETS_PATH }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
@@ -403,6 +404,7 @@ jobs:
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
               registryName: "${{ secrets.REGISTRY_NAME }}"
+              upgradedAssetsPath: "${{ secrets.UPGRADED_ASSETS_PATH }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
@@ -612,6 +614,7 @@ jobs:
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
               registryName: "${{ secrets.REGISTRY_NAME }}"
+              upgradedAssetsPath: "${{ secrets.UPGRADED_ASSETS_PATH }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF

@@ -178,7 +178,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}${{ vars.RKE2_VERSION_SUFFIX }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
               registryName: "${{ secrets.REGISTRY_NAME }}"
@@ -378,7 +378,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}${{ vars.RKE2_VERSION_SUFFIX }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
               registryName: "${{ secrets.REGISTRY_NAME }}"
@@ -578,7 +578,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_10 }}${{ vars.RKE2_VERSION_SUFFIX }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_10 }}"
             standaloneRegistry:
               assetsPath: "${{ secrets.ASSETS_PATH }}"
               registryName: "${{ secrets.REGISTRY_NAME }}"

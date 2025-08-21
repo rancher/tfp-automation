@@ -86,7 +86,7 @@ terraform:
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
-    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.30.6+rke2r1)
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.xx.x)
   ####################################
   # STANDALONE CONFIG - REGISTRY SETUP
   ####################################

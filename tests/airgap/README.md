@@ -106,6 +106,7 @@ terraform:
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
     registryName: ""                              # REQUIRED - fill with desired value
+    upgradedAssetsPath: ""                        # REQUIRED - ensure that you end with a trailing `/`
 terratest:
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```
