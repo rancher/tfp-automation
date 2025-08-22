@@ -172,3 +172,8 @@ kubectl patch setting server-url --type=json -p="[{
   \"path\": \"/value\", 
   \"value\": \"https://${INTERNAL_FQDN}\"
 }]"
+
+echo "Restarting Rancher"
+kubectl -n cattle-system rollout restart deploy/rancher
+kubectl -n cattle-system rollout status deploy/rancher
+kubectl -n cattle-system get deploy rancher
