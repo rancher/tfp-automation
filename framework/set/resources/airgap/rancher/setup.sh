@@ -42,6 +42,32 @@ checkClusterStatus() {
     done
 }
 
+waitForIngress() {
+  EXPECTED_INGRESS=1
+  TIMEOUT=300
+  INTERVAL=10
+  ELAPSED=0
+
+  while true; do
+    TOTAL_INGRESS=$(kubectl get ingress rancher -n cattle-system | awk '$1 == "rancher"' | wc -l)
+    
+    if [ "$TOTAL_INGRESS" -ne "$EXPECTED_INGRESS" ]; then
+      echo "Waiting for $TOTAL_INGRESS Rancher ingress to be created...$ELAPSED/$TIMEOUT seconds elapsed."
+      sleep $INTERVAL
+
+      ELAPSED=$((ELAPSED + INTERVAL))
+      
+      if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+        echo "Timeout reached: Rancher ingress not found after $TIMEOUT seconds."
+        exit 1
+      fi
+    else
+      echo "Rancher ingress found!"
+      break
+    fi
+  done
+}
+
 checkClusterStatus
 
 echo "Installing Helm"
@@ -139,6 +165,8 @@ kubectl -n cattle-system get deploy rancher
 
 echo "Waiting 3 minutes for Rancher to be ready to deploy downstream clusters"
 sleep 180
+
+waitForIngress
 
 kubectl patch ingress rancher -n cattle-system --type=json -p="[{
   \"op\": \"add\", 
