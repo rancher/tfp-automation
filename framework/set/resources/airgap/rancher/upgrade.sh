@@ -85,9 +85,6 @@ echo "Waiting for Rancher to be rolled out"
 kubectl -n cattle-system rollout status deploy/rancher
 kubectl -n cattle-system get deploy rancher
 
-echo "Waiting 15 seconds to be able to login to Rancher"
-sleep 15
-
 kubectl patch ingress rancher -n cattle-system --type=json -p="[{
   \"op\": \"add\", 
   \"path\": \"/spec/rules/-\", 
@@ -120,3 +117,11 @@ kubectl patch setting server-url --type=json -p="[{
   \"path\": \"/value\", 
   \"value\": \"https://${INTERNAL_FQDN}\"
 }]"
+
+echo "Restarting Rancher"
+kubectl -n cattle-system rollout restart deploy/rancher
+kubectl -n cattle-system rollout status deploy/rancher
+kubectl -n cattle-system get deploy rancher
+
+echo "Waiting 15 seconds to be able to login to Rancher"
+sleep 15
