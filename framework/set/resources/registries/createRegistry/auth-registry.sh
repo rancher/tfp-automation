@@ -3,8 +3,8 @@
 REGISTRY_NAME=$1
 REGISTRY_USER=$2
 REGISTRY_PASS=$3
-REGISTRY_USERNAME=$4
-REGISTRY_PASSWORD=$5
+DOCKERHUB_USER=$4
+DOCKERHUB_PASS=$5
 HOST=$6
 RANCHER_VERSION=$7
 ASSET_DIR=$8
@@ -44,7 +44,7 @@ action() {
 }
 
 echo "Logging into the private registry..."
-sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+sudo docker login https://registry-1.docker.io -u ${DOCKERHUB_USER} -p ${DOCKERHUB_PASS}
 
 if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
     echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
@@ -71,6 +71,9 @@ else
                                                                                                     -p 443:443 \
                                                                                                     registry:2
 fi
+
+echo "Logging into private registry ${HOST}..."
+sudo docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} https://${HOST}
 
 sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
 sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt -O /home/${USER}/rancher-windows-images.txt
