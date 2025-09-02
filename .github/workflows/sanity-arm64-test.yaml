@@ -58,6 +58,18 @@ jobs:
             AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: "Fetch and Set DockerHub Credentials"
+        uses: rancher-eio/read-vault-secrets@main
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
+            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
+
+      - name: Mask Dockerhub Credentials
+        run: |
+          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
+          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -121,8 +133,8 @@ jobs:
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
             privateRegistries:
               url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
-              username: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
-              password: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
+              username: "${{ env.DOCKERHUB_USERNAME }}"
+              password: "${{ env.DOCKERHUB_PASSWORD }}"
               insecure: true
               authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
               mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
