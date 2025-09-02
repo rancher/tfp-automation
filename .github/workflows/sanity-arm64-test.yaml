@@ -215,7 +215,7 @@ jobs:
         if: always()
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_12}}
+          qase-test-run-id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12}}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack

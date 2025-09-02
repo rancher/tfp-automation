@@ -134,8 +134,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}"
-          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_12 }}"
+          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}"
 
       - name: Create config.yaml
         run: |
@@ -365,8 +364,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
-          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_11 }}"
+          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}"
 
       - name: Create config.yaml
         run: |
@@ -596,8 +594,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_10 }}"
-          qase_recurring_id: "${{ vars.QASE_DEFAULT_TEST_RUN_ID_2_10 }}"
+          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_10 }}"
 
       - name: Create config.yaml
         run: |
