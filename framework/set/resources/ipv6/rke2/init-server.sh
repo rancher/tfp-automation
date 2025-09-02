@@ -68,7 +68,7 @@ configFunction=$(declare -f setupConfig)
 runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "${configFunction}; setupConfig"
 
 registryFunction=$(declare -f setupRegistry)
-runSSH "${RKE2_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
+runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "${registryFunction}; setupRegistry"
 
 runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh"
 runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo systemctl enable rke2-server"
