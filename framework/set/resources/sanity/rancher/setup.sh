@@ -143,5 +143,20 @@ echo "Waiting for Rancher to be rolled out"
 kubectl -n cattle-system rollout status deploy/rancher
 kubectl -n cattle-system get deploy rancher
 
+if kubectl get svc -n kube-system | awk 'NR>1 {print $3}' | grep -q ':'; then
+    . /etc/os-release
+
+    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install jq
+    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install jq -y
+    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y jq
+
+    echo "Updating CoreDNS configmap for IPv6"
+    kubectl -n kube-system get cm rke2-coredns-rke2-coredns -o json  \
+    | jq '.data.Corefile |= sub("forward\\s+\\.\\s+/etc/resolv\\.conf"; "forward  . 2001:4860:4860::8888")' \
+    | kubectl apply -f -
+	
+    kubectl -n kube-system delete pod -l k8s-app=kube-dns
+fi
+
 echo "Waiting 3 minutes for Rancher to be ready to deploy downstream clusters"
 sleep 180
