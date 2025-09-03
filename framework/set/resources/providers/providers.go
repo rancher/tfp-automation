@@ -20,6 +20,7 @@ type ProviderResourceFunc func(file *os.File, newFile *hclwrite.File, tfBlockBod
 type ProviderResources struct {
 	CreateAirgap    ProviderResourceFunc
 	CreateNonAirgap ProviderResourceFunc
+	CreateIPv6      ProviderResourceFunc
 }
 
 // TunnelToProvider returns an struct that allows a user to create resources from a given provider
@@ -30,6 +31,7 @@ func TunnelToProvider(provider string) ProviderResources {
 		return ProviderResources{
 			CreateAirgap:    aws.CreateAirgappedAWSResources,
 			CreateNonAirgap: aws.CreateAWSResources,
+			CreateIPv6:      aws.CreateIPv6AWSResources,
 		}
 	case providers.Linode:
 		logrus.Infof("Creating Linode resources...")

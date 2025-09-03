@@ -132,6 +132,58 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 	return file, err
 }
 
+// CreateIPv6AWSResources is a helper function that will create the AWS resources needed for the IPv6 RKE2 cluster.
+func CreateIPv6AWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig, instances []string) (*os.File, error) {
+	CreateAWSTerraformProviderBlock(tfBlockBody)
+	rootBody.AppendNewline()
+
+	CreateAWSProviderBlock(rootBody, terraformConfig)
+	rootBody.AppendNewline()
+
+	for _, instance := range instances {
+		CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
+		rootBody.AppendNewline()
+	}
+
+	instances = []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	for _, instance := range instances {
+		CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
+		rootBody.AppendNewline()
+	}
+
+	CreateAWSLocalBlock(rootBody, terraformConfig)
+	rootBody.AppendNewline()
+
+	ports := []int64{80, 443, 6443, 9345}
+	for _, port := range ports {
+		CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+		rootBody.AppendNewline()
+	}
+
+	CreateLoadBalancer(rootBody, terraformConfig)
+	rootBody.AppendNewline()
+
+	for _, port := range ports {
+		CreateTargetGroups(rootBody, terraformConfig, port)
+		rootBody.AppendNewline()
+
+		CreateLoadBalancerListeners(rootBody, port)
+		rootBody.AppendNewline()
+	}
+
+	CreateRoute53Record(rootBody, terraformConfig)
+	rootBody.AppendNewline()
+
+	_, err := file.Write(newFile.Bytes())
+	if err != nil {
+		logrus.Infof("Failed to write configurations to main.tf file. Error: %v", err)
+		return nil, err
+	}
+
+	return file, err
+}
+
 // getTargetGroupAttachment gets the target group attachment based on the port
 func getTargetGroupAttachment(port int64, internal bool) string {
 	switch port {
