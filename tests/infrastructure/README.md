@@ -471,6 +471,59 @@ See the below examples on how to run the tests:
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateAirgappedRKE2ClusterTestSuite$"`
 
+## Setup IPv6 RKE2 Cluster
+
+See below an example config on setting up a standalone IPv6 RKE2 cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    enablePrimaryIPv6: true
+    httpProtocolIPv6: "enabled"
+    ipAddressType: "ipv6"
+    loadBalancerType: "dualstack"
+    targetType: "ip"
+    region: ""
+    prefix: ""
+    awsUser: ""
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  standalone:
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    repo: ""                                      # REQUIRED - fill with desired value
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CLOUD_PROVIDER_VERSION=""
+export LOCALS_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run the tests:
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateIPv6RKE2ClusterTestSuite$"`
+
 ## Setup K3S Cluster
 
 See below an example config on setting up a standalone K3S cluster:
