@@ -297,7 +297,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
     runs-on: ubuntu-latest
-    environment: staging-latest
+    environment: staging-alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
@@ -529,7 +529,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
     runs-on: ubuntu-latest
-    environment: staging-latest
+    environment: staging-alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
@@ -760,7 +760,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9'))
     name: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-9 }}
     runs-on: ubuntu-latest
-    environment: staging-latest
+    environment: staging-alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
