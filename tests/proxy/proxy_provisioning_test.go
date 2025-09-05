@@ -3,12 +3,12 @@ package proxy
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -16,9 +16,11 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -60,10 +62,10 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"No Proxy RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"No Proxy RKE2 Windows 2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"No Proxy RKE2 Windows 2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"No Proxy K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"No_Proxy_RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"No_Proxy_RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"No_Proxy_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
+		{"No_Proxy_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	customClusterNames := []string{}
@@ -92,9 +94,6 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
@@ -107,10 +106,16 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(p.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(p.terratestConfig)
+		results.ReportTest(p.terratestConfig)
 	}
 }
 
@@ -122,10 +127,10 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Proxy RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Proxy RKE2 Windows 2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"Proxy RKE2 Windows 2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"Proxy K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"Proxy_Provisioning_RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"Proxy_Provisioning_RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"Proxy_Provisioning_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
+		{"Proxy_Provisioning_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	customClusterNames := []string{}
@@ -154,9 +159,6 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
@@ -169,10 +171,16 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(p.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(p.terratestConfig)
+		results.ReportTest(p.terratestConfig)
 	}
 }
 

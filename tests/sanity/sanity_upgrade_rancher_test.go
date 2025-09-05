@@ -3,12 +3,12 @@ package sanity
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -16,9 +16,11 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -61,20 +63,20 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 
 	testUser, testPassword := configs.CreateTestCredentials()
 
-	s.provisionAndVerifyCluster("Pre-Upgrade Sanity ", clusterIDs, testUser, testPassword)
+	s.provisionAndVerifyCluster("Sanity_Pre_Rancher_Upgrade_", clusterIDs, testUser, testPassword)
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = infrastructure.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
 
 	provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.UpgradedRancherTagVersion)
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
-	s.provisionAndVerifyCluster("Post-Upgrade Sanity ", clusterIDs, testUser, testPassword)
+	s.provisionAndVerifyCluster("Sanity_Post_Rancher_Upgrade_", clusterIDs, testUser, testPassword)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 	cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
 	if s.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(s.terratestConfig)
+		results.ReportTest(s.terratestConfig)
 	}
 }
 
@@ -87,8 +89,8 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		module    string
 	}{
 		{"RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"RKE2 Windows 2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"RKE2 Windows 2022", nil, modules.CustomEC2RKE2Windows2022},
+		{"RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
 		{"K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
@@ -114,8 +116,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = name + tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
+		tt.name = name + tt.name
 
 		s.Run((tt.name), func() {
 			clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
@@ -126,6 +127,12 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	return clusterIDs

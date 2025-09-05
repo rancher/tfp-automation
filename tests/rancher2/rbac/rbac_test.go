@@ -9,15 +9,18 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -57,8 +60,8 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		name     string
 		rbacRole config.Role
 	}{
-		{"Cluster Owner", config.ClusterOwner},
-		{"Project Owner", config.ProjectOwner},
+		{"Cluster_Owner", config.ClusterOwner},
+		{"Project_Owner", config.ProjectOwner},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -77,8 +80,6 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Module: " + r.terraformConfig.Module
-
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -90,10 +91,16 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 

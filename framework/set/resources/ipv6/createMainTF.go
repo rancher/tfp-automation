@@ -1,4 +1,4 @@
-package airgap
+package ipv6
 
 import (
 	"os"

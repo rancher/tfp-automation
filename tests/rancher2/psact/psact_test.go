@@ -57,9 +57,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		nodeRoles []config.Nodepool
 		psact     config.PSACT
 	}{
-		{"Rancher Privileged " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-privileged"},
-		{"Rancher Restricted " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-restricted"},
-		{"Rancher Baseline " + config.StandardClientName.String(), nodeRolesDedicated, "rancher-baseline"},
+		{"Rancher_Privileged", nodeRolesDedicated, "rancher-privileged"},
+		{"Rancher_Restricted", nodeRolesDedicated, "rancher-restricted"},
+		{"Rancher_Baseline", nodeRolesDedicated, "rancher-baseline"},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -80,8 +80,6 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
-
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")

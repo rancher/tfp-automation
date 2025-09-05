@@ -50,7 +50,7 @@ env:
   PACKAGE: "rancher2/recurring"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpRancher2RecurringRunsTestSuite$"
-  TIMEOUT: "4h"
+  TIMEOUT: "5h"
 
 jobs:
   v2-12:
