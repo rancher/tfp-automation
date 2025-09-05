@@ -3,12 +3,12 @@ package sanity
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -16,9 +16,11 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -59,10 +61,10 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Sanity RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Sanity RKE2 Windows 2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"Sanity RKE2 Windows 2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"Sanity K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"Sanity_RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"Sanity_RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"Sanity_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
+		{"Sanity_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	customClusterNames := []string{}
@@ -88,9 +90,6 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		s.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
@@ -103,10 +102,16 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if s.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(s.terratestConfig)
+		results.ReportTest(s.terratestConfig)
 	}
 }
 

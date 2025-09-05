@@ -1,0 +1,66 @@
+- projects:
+  - RRT
+  - RM
+  suite: Go Automation/TFP/Provisioning
+  cases:
+  - description: Upgrades downstream RKE2/K3S node driver cluster
+    title: 8_nodes_3_etcd_2_cp_3_worker
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream RKE2/K3S cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    - action: Upgrade downstream RKE2/K3S cluster
+      expectedresult: ""
+      data: ""
+      position: 3
+      attachments: []
+    - action: Post upgrade checks
+      expectedresult: ""
+      data: ""
+      position: 4
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provision hosted cluster
+    title: Upgrade_Hosted_Cluster
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision hosted cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    - action: Upgrade hosted cluster
+      expectedresult: ""
+      data: ""
+      position: 3
+      attachments: []
+    - action: Post upgrade checks
+      expectedresult: ""
+      data: ""
+      position: 4
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters

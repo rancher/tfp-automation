@@ -7,10 +7,10 @@ replace (
 	github.com/docker/distribution => github.com/docker/distribution v2.8.2+incompatible // rancher-machine requires a replace is set
 	github.com/docker/docker => github.com/docker/docker v20.10.27+incompatible // rancher-machine requires a replace is set
 	github.com/docker/go-connections => github.com/docker/go-connections v0.4.0
-	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20250410003522-2a1bf3d05723
-	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20250212213103-5c3550f55322
+	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20250806201723-9a7af3779b9d
+	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20250806201723-9a7af3779b9d
 
-	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20240308221502-c3b2635212be
+	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20250627195016-142ff3dfec16
 	k8s.io/api => k8s.io/api v0.33.2
 	k8s.io/apimachinery => k8s.io/apimachinery v0.33.2
 	k8s.io/apiserver => k8s.io/apiserver v0.33.2
@@ -52,8 +52,8 @@ require (
 	github.com/imdario/mergo v0.3.16
 	github.com/rancher/norman v0.7.0
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20250514182450-235145b2fd2a
-	github.com/rancher/tests/actions v0.0.0-20250729165811-42c7bc5bd585
+	github.com/rancher/shepherd v0.0.0-20250825193534-ac295ac065d7
+	github.com/rancher/tests/actions v0.0.0-20250905194519-8b56fea58b3a
 	github.com/sirupsen/logrus v1.9.3
 )
 
@@ -90,7 +90,7 @@ require (
 	github.com/kubereboot/kured v1.13.1 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
-	github.com/rancher/wrangler/v3 v3.2.2 // indirect
+	github.com/rancher/wrangler/v3 v3.2.3-rc.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.61.0 // indirect

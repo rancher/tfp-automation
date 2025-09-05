@@ -1,0 +1,151 @@
+- projects:
+  - RRT
+  - RM
+  suite: Go Automation/TFP/Registries
+  cases:
+  - description: Provisions downstream RKE2 node driver cluster with using the global registry
+    title: Global_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream RKE2 node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream K3S node driver cluster with using the global registry
+    title: Global_K3S
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream K3S node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 node driver cluster with an authenticated registry
+    title: Auth_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream RKE2 node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream K3S node driver cluster with using an authenticated registry
+    title: Auth_K3S
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream K3S node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 node driver cluster with using an non-authenticated registry
+    title: Non_Auth_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream RKE2 node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream K3S node driver cluster with using an non-authenticated registry
+    title: Non_Auth_K3S
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream K3S node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 node driver cluster with using AWS ECR
+    title: ECR_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream RKE2 node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters

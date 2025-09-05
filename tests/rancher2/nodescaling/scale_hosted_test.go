@@ -10,14 +10,17 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -54,7 +57,7 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 	tests := []struct {
 		name string
 	}{
-		{config.StandardClientName.String()},
+		{"Scaling_Hosted_Cluster"},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -65,8 +68,6 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
 		require.NoError(s.T(), err)
-
-		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + s.terratestConfig.KubernetesVersion
 
 		s.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
@@ -98,10 +99,16 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, s.terraformConfig.ResourcePrefix, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledDownNodeCount)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if s.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(s.terratestConfig)
+		results.ReportTest(s.terratestConfig)
 	}
 }
 

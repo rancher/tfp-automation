@@ -10,14 +10,17 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -61,7 +64,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		scaleUpNodeRoles   []config.Nodepool
 		scaleDownNodeRoles []config.Nodepool
 	}{
-		{"Scaling 8 nodes dedicated roles -> 13 nodes -> 11 nodes " + config.StandardClientName.String(), nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
+		{"Scaling_8_nodes_to_13_nodes_11_nodes", nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -93,8 +96,6 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			scaledDownCount += scaleDownNodepool.Quantity
 		}
 
-		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
-
 		s.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
@@ -121,10 +122,16 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), s.client, terraform.ResourcePrefix, s.terraformConfig, scaledDownCount)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if s.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(s.terratestConfig)
+		results.ReportTest(s.terratestConfig)
 	}
 }
 
@@ -147,8 +154,6 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
-
-		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		s.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
@@ -178,10 +183,16 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyNodeCount(s.T(), adminClient, terraform.ResourcePrefix, s.terraformConfig, terratest.ScalingInput.ScaledDownNodeCount)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if s.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(s.terratestConfig)
+		results.ReportTest(s.terratestConfig)
 	}
 }
 

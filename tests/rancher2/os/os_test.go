@@ -14,6 +14,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations/permutations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/nodes/ec2"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/cronjob"
 	"github.com/rancher/tests/actions/workloads/daemonset"
 	"github.com/rancher/tests/actions/workloads/deployment"
@@ -24,7 +25,8 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/permutationsdata"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/sirupsen/logrus"
@@ -115,7 +117,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 		amiInfo, err := ec2.GetAMI(o.client, &o.awsCredentials, ami)
 		require.NoError(o.T(), err)
 
-		testName := "Parallel_Provisioning_" + *amiInfo.Images[0].Name
+		testName := "Parallel_Provisioning"
 		o.Run(testName, func() {
 			for _, cattleConfig := range batch {
 				cattleConfig, err = operations.ReplaceValue([]string{"terraform", "awsConfig", "awsVolumeType"}, *amiInfo.Images[0].BlockDeviceMappings[0].Ebs.VolumeType, cattleConfig)
@@ -166,11 +168,19 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 					}
 				}
 			})
+
+			for _, cattleConfig := range batch {
+				params := tfpQase.GetProvisioningSchemaParams(o.client, cattleConfig)
+				err = qase.UpdateSchemaParameters(testName, params)
+				if err != nil {
+					logrus.Warningf("Failed to upload schema parameters %s", err)
+				}
+			}
 		}
 	}
 
 	if o.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(o.terratestConfig)
+		results.ReportTest(o.terratestConfig)
 	}
 }
 
