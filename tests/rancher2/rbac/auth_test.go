@@ -9,6 +9,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -16,9 +17,11 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/rbac"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -56,7 +59,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		name         string
 		authProvider string
 	}{
-		{"Azure AD", authproviders.AzureAD},
+		{"Azure_AD", authproviders.AzureAD},
 		{"GitHub", authproviders.GitHub},
 		{"Okta", authproviders.Okta},
 		{"OpenLDAP", authproviders.OpenLDAP},
@@ -82,10 +85,16 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 
 			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -120,10 +129,16 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 
 			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 

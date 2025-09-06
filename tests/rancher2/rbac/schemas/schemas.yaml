@@ -1,0 +1,88 @@
+- projects:
+  - RRT
+  - RM
+  suite: Go Automation/TFP/RBAC
+  cases:
+  - description: Enables and disables Azure Active Directory auth provider
+    title: Azure_AD
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Enables Azure Active Directory auth provider
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Disables Azure Active Directory auth provider
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Platform
+
+  - description: Enables and disables Github auth provider
+    title: Github
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Enables Github auth provider
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Disables Github auth provider
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Platform
+
+  - description: Enables and disables Okta auth provider
+    title: Okta
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Enables Okta auth provider
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Disables Okta auth provider
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Platform
+
+  - description: Enables and disables OpenLDAP auth provider
+    title: OpenLDAP
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Enables OpenLDAP auth provider
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Disables OpenLDAP auth provider
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Platform

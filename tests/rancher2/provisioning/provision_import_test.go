@@ -9,6 +9,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -17,8 +18,10 @@ import (
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -56,10 +59,10 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 		name   string
 		module string
 	}{
-		{"Upgrade Imported TFP RKE2", modules.ImportEC2RKE2},
-		{"Upgrade Imported TFP RKE2 Windows 2019", modules.ImportEC2RKE2Windows2019},
-		{"Upgrade Imported TFP RKE2 Windows 2022", modules.ImportEC2RKE2Windows2022},
-		{"Upgrade Imported TFP K3S", modules.ImportEC2K3s},
+		{"Upgrade_Imported_RKE2", modules.ImportEC2RKE2},
+		{"Upgrade_Imported_RKE2_Windows_2019", modules.ImportEC2RKE2Windows2019},
+		{"Upgrade_Imported_RKE2_Windows_2022", modules.ImportEC2RKE2Windows2022},
+		{"Upgrade_Imported_K3S", modules.ImportEC2K3s},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -89,10 +92,16 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
 			require.NoError(p.T(), err)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(p.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(p.terratestConfig)
+		results.ReportTest(p.terratestConfig)
 	}
 }
 
@@ -116,8 +125,6 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicIn
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
-
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
@@ -131,10 +138,16 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicIn
 			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
 			require.NoError(p.T(), err)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(p.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(p.terratestConfig)
+		results.ReportTest(p.terratestConfig)
 	}
 }
 

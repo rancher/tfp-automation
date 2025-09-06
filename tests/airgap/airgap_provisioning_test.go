@@ -3,12 +3,12 @@ package airgap
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -16,9 +16,11 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -57,10 +59,10 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		name   string
 		module string
 	}{
-		{"Airgap RKE2", modules.AirgapRKE2},
-		{"Airgap RKE2 Windows 2019", modules.AirgapRKE2Windows2019},
-		{"Airgap RKE2 Windows 2022", modules.AirgapRKE2Windows2022},
-		{"Airgap K3S", modules.AirgapK3S},
+		{"Airgap_RKE2", modules.AirgapRKE2},
+		{"Airgap_RKE2_Windows_2019", modules.AirgapRKE2Windows2019},
+		{"Airgap_RKE2_Windows_2022", modules.AirgapRKE2Windows2022},
+		{"Airgap_K3S", modules.AirgapK3S},
 	}
 
 	customClusterNames := []string{}
@@ -89,9 +91,6 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		a.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
@@ -104,10 +103,16 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(a.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if a.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(a.terratestConfig)
+		results.ReportTest(a.terratestConfig)
 	}
 }
 

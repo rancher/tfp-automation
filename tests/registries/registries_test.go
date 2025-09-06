@@ -2,21 +2,23 @@ package registries
 
 import (
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -62,8 +64,8 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Global RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Global K3S", modules.EC2K3s, nodeRolesAll},
+		{"Global_RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"Global_K3S", modules.EC2K3s, nodeRolesAll},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -103,9 +105,6 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -114,10 +113,16 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -130,8 +135,8 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Auth RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Auth K3S", modules.EC2K3s, nodeRolesAll},
+		{"Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"Auth_K3S", modules.EC2K3s, nodeRolesAll},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -165,9 +170,6 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -176,10 +178,16 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -192,8 +200,8 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Non Auth RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Non Auth K3S", modules.EC2K3s, nodeRolesAll},
+		{"Non_Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"Non_Auth_K3S", modules.EC2K3s, nodeRolesAll},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -233,9 +241,6 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -244,10 +249,16 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -259,7 +270,7 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"ECR RKE2", "ec2_rke2", nodeRolesDedicated},
+		{"ECR_RKE2", "ec2_rke2", nodeRolesDedicated},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -302,9 +313,6 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -313,10 +321,16 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 

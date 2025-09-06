@@ -1,0 +1,50 @@
+- projects:
+  - RRT
+  - RM
+  suite: Go Automation/TFP/Snapshot
+  cases:
+  - description: Creates and restores a snapshot on a downstream RKE2/K3S cluster
+    title: Snapshot_Restore
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream RKE2 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    - action: Create workloads on the cluster
+      expectedresult: ""
+      data: ""
+      position: 3
+      attachments: []
+    - action: Create snapshot of the cluster
+      expectedresult: ""
+      data: ""
+      position: 4
+      attachments: []
+    - action: Post snapshot checks
+      expectedresult: ""
+      data: ""
+      position: 5
+      attachments: []
+    - action: Restore snapshot of the cluster
+      expectedresult: ""
+      data: ""
+      position: 6
+      attachments: []
+    - action: Post snapshot restore checks
+      expectedresult: ""
+      data: ""
+      position: 7
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters

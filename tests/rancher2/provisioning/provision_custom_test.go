@@ -10,6 +10,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -18,8 +19,10 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -57,10 +60,10 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 		name   string
 		module string
 	}{
-		{"Custom TFP RKE2", modules.CustomEC2RKE2},
-		{"Custom TFP RKE2 Windows 2019", modules.CustomEC2RKE2Windows2019},
-		{"Custom TFP RKE2 Windows 2022", modules.CustomEC2RKE2Windows2022},
-		{"Custom TFP K3S", modules.CustomEC2K3s},
+		{"Custom_TFP_RKE2", modules.CustomEC2RKE2},
+		{"Custom_TFP_RKE2_Windows_2019", modules.CustomEC2RKE2Windows2019},
+		{"Custom_TFP_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022},
+		{"Custom_TFP_K3S", modules.CustomEC2K3s},
 	}
 
 	customClusterNames := []string{}
@@ -97,10 +100,16 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(p.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(p.terratestConfig)
+		results.ReportTest(p.terratestConfig)
 	}
 }
 
@@ -125,8 +134,6 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + p.terratestConfig.KubernetesVersion
-
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
@@ -142,10 +149,16 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(p.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if p.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(p.terratestConfig)
+		results.ReportTest(p.terratestConfig)
 	}
 }
 

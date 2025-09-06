@@ -1,0 +1,29 @@
+---
+name: Qase Test Upload
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '**/schemas/**'
+  
+jobs:
+  update-qase:
+    name: update-qase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Set up Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Update Qase
+        env:
+          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_AUTOMATION_TOKEN }}
+        run: go run ./pipeline/qase/schemaupload/main.go

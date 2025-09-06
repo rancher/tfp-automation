@@ -3,12 +3,12 @@ package recurring
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -17,10 +17,12 @@ import (
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	qase "github.com/rancher/tfp-automation/pipeline/qase/results"
+	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure"
 	"github.com/rancher/tfp-automation/tests/rancher2/snapshot"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -58,10 +60,10 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 		name   string
 		module string
 	}{
-		{"Custom TFP RKE2", modules.CustomEC2RKE2},
-		{"Custom TFP RKE2 Windows 2019", modules.CustomEC2RKE2Windows2019},
-		{"Custom TFP RKE2 Windows 2022", modules.CustomEC2RKE2Windows2022},
-		{"Custom TFP K3S", modules.CustomEC2K3s},
+		{"Custom_TFP_RKE2", modules.CustomEC2RKE2},
+		{"Custom_TFP_RKE2_Windows_2019", modules.CustomEC2RKE2Windows2019},
+		{"Custom_TFP_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022},
+		{"Custom_TFP_K3S", modules.CustomEC2K3s},
 	}
 
 	customClusterNames := []string{}
@@ -84,9 +86,6 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -99,10 +98,16 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 				provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			}
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -111,10 +116,10 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 		name   string
 		module string
 	}{
-		{"Upgrade Imported TFP RKE2", modules.ImportEC2RKE2},
-		{"Upgrade Imported TFP RKE2 Windows 2019", modules.ImportEC2RKE2Windows2019},
-		{"Upgrade Imported TFP RKE2 Windows 2022", modules.ImportEC2RKE2Windows2022},
-		{"Upgrade Imported TFP K3S", modules.ImportEC2K3s},
+		{"Upgrade_Imported_RKE2", modules.ImportEC2RKE2},
+		{"Upgrade_Imported_RKE2_Windows_2019", modules.ImportEC2RKE2Windows2019},
+		{"Upgrade_Imported_RKE2_Windows_2022", modules.ImportEC2RKE2Windows2022},
+		{"Upgrade_Imported_K3S", modules.ImportEC2K3s},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -134,9 +139,6 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " " + currentDate
-
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -147,10 +149,16 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 			err = imported.SetUpgradeImportedCluster(r.client, terraform)
 			require.NoError(r.T(), err)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 
@@ -169,8 +177,8 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
 	}{
-		{"RKE2 Snapshot Restore", modules.EC2RKE2, nodeRolesDedicated, snapshotRestoreNone},
-		{"K3S Snapshot Restore", modules.EC2K3s, nodeRolesDedicated, snapshotRestoreNone},
+		{"RKE2_Snapshot_Restore", modules.EC2RKE2, nodeRolesDedicated, snapshotRestoreNone},
+		{"K3S_Snapshot_Restore", modules.EC2K3s, nodeRolesDedicated, snapshotRestoreNone},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -198,9 +206,6 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		currentDate := time.Now().Format("2006-01-02 03:04PM")
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion + " " + currentDate
-
 		r.Run(tt.name, func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
@@ -211,10 +216,16 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 			snapshot.RestoreSnapshot(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 		})
+
+		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
-		qase.ReportTest(r.terratestConfig)
+		results.ReportTest(r.terratestConfig)
 	}
 }
 

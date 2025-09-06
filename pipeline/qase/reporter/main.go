@@ -3,79 +3,67 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
-	"net/http"
 	"os"
-	"regexp"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/antihax/optional"
-	defaults "github.com/rancher/tfp-automation/pipeline/qase"
-	"github.com/rancher/tfp-automation/pipeline/qase/testcase"
+	"github.com/rancher/tests/actions/qase"
+	qaseactions "github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/actions/qase/testresult"
 	"github.com/sirupsen/logrus"
-	qase "go.qase.io/client"
-	yaml "gopkg.in/yaml.v2"
+	upstream "go.qase.io/client"
+	"gopkg.in/yaml.v2"
 )
 
 var (
-	multiSubTestReg = regexp.MustCompile(defaults.MultiSubTestPattern)
-	subTestReg      = regexp.MustCompile(defaults.SubtestPattern)
-	qaseToken       = os.Getenv(defaults.QaseTokenEnvVar)
-	runIDEnvVar     = os.Getenv(defaults.TestRunEnvVar)
+	runIDEnvVar             = os.Getenv(qase.TestRunEnvVar)
+	projectIDEnvVar         = os.Getenv(qase.ProjectIDEnvVar)
+	_, callerFilePath, _, _ = runtime.Caller(0)
+	basepath                = filepath.Join(filepath.Dir(callerFilePath), "..", "..", "..")
 )
 
 func main() {
+	logrus.Info("Running QASE reporter")
+	if projectIDEnvVar == "" {
+		logrus.Warningf("Project env var not provided, defaulting to %s", qaseactions.RancherManagerProjectID)
+		projectIDEnvVar = qaseactions.RancherManagerProjectID
+	}
+
 	if runIDEnvVar != "" {
-		cfg := qase.NewConfiguration()
-		cfg.AddDefaultHeader("Token", qaseToken)
-		client := qase.NewAPIClient(cfg)
+		client := qase.SetupQaseClient()
 
 		runID, err := strconv.ParseInt(runIDEnvVar, 10, 64)
 		if err != nil {
-			logrus.Fatalf("error converting run ID string to int64:: %v", err)
+			logrus.Fatalf("error reporting converting string to int64: %v", err)
 		}
 
-		maxRetries := 10
-		var lastErr error
-		var statusCode int
-
-		for retries := 0; retries < maxRetries; retries++ {
-			statusCode, err = reportTestQases(client, runID)
-			if err == nil {
-				logrus.Info("Reported results to Qase successfully.")
-				return
-			}
-
-			if statusCode == http.StatusTooManyRequests {
-				baseDelay := 10 * time.Second
-				backoff := baseDelay + time.Duration(retries)*time.Second
-				logrus.Warnf("429 Too Many Requests – retrying in %s (%d/%d)...", backoff, retries+1, maxRetries)
-				time.Sleep(backoff)
-				lastErr = err
-				continue
-			}
-
-			logrus.Errorf("Non-retryable error occurred (HTTP %d): %v", statusCode, err)
-			return
+		err = reportTestQases(client, runID)
+		if err != nil {
+			logrus.Error("error reporting: ", err)
 		}
-
-		logrus.Errorf("Failed after %d retries (last HTTP %d): %v", maxRetries, statusCode, lastErr)
+	} else {
+		logrus.Warningf("QASE run ID not provided")
 	}
 }
 
-func getAllAutomationTestCases(client *qase.APIClient) (map[string]qase.TestCase, error) {
-	testCases := []qase.TestCase{}
-	testCaseNameMap := map[string]qase.TestCase{}
+// getAllAutomationTestCases gets all qase tests in a project
+func getAllAutomationTestCases(qaseService *qase.Service) (map[string]upstream.TestCase, error) {
+	testCases := []upstream.TestCase{}
+	testCaseNameMap := map[string]upstream.TestCase{}
 	var numOfTestsCases int32 = 1
 	offSetCount := 0
 	for numOfTestsCases > 0 {
 		offset := optional.NewInt32(int32(offSetCount))
-		localVarOptionals := &qase.CasesApiGetCasesOpts{
+		localVarOptionals := &upstream.CasesApiGetCasesOpts{
 			Offset: offset,
 		}
-		tempResult, _, err := client.CasesApi.GetCases(context.TODO(), defaults.RancherManagerProjectID, localVarOptionals)
+
+		tempResult, _, err := qaseService.Client.CasesApi.GetCases(context.TODO(), projectIDEnvVar, localVarOptionals)
 		if err != nil {
 			return nil, err
 		}
@@ -98,201 +86,172 @@ func getAllAutomationTestCases(client *qase.APIClient) (map[string]qase.TestCase
 	return testCaseNameMap, nil
 }
 
-func readTestCase() ([]testcase.GoTestOutput, error) {
-	file, err := os.Open(defaults.TestResultsJSON)
+// readTestResults converts the results.json file into an output object
+func readTestResults() ([]testresult.GoTestOutput, error) {
+	file, err := os.Open(qase.TestResultsJSON)
 	if err != nil {
 		return nil, err
 	}
 
 	fscanner := bufio.NewScanner(file)
-	testCases := []testcase.GoTestOutput{}
+	outputLines := []testresult.GoTestOutput{}
 	for fscanner.Scan() {
-		var testCase testcase.GoTestOutput
+		var testCase testresult.GoTestOutput
 		err = yaml.Unmarshal(fscanner.Bytes(), &testCase)
 		if err != nil {
 			return nil, err
 		}
-		testCases = append(testCases, testCase)
+		outputLines = append(outputLines, testCase)
 	}
 
-	return testCases, nil
+	return outputLines, nil
 }
 
-func parseCorrectTestCases(testCases []testcase.GoTestOutput) map[string]*testcase.GoTestCase {
-	finalTestCases := map[string]*testcase.GoTestCase{}
-	var deletedTest string
+// parseTestResults parses the results.json into a test results object
+func parseTestResults(outputs []testresult.GoTestOutput) map[string]*testresult.GoTestResult {
+	finalTestResults := map[string]*testresult.GoTestResult{}
 	var timeoutFailure bool
-	for _, testCase := range testCases {
-		if testCase.Action == "run" && strings.Contains(testCase.Test, "/") {
-			newTestCase := &testcase.GoTestCase{Name: testCase.Test}
-			finalTestCases[testCase.Test] = newTestCase
-		} else if testCase.Action == "output" && strings.Contains(testCase.Test, "/") {
-			goTestCase := finalTestCases[testCase.Test]
-			goTestCase.StackTrace += testCase.Output
-		} else if testCase.Action == defaults.SkipStatus {
-			delete(finalTestCases, testCase.Test)
-		} else if (testCase.Action == defaults.FailStatus || testCase.Action == defaults.PassStatus) && strings.Contains(testCase.Test, "/") {
-			goTestCase := finalTestCases[testCase.Test]
 
-			if goTestCase != nil {
-				substring := subTestReg.FindString(goTestCase.Name)
-				goTestCase.StackTrace += testCase.Output
-				goTestCase.Status = testCase.Action
-				goTestCase.Elapsed = testCase.Elapsed
+	for _, output := range outputs {
+		var tableTestName string
+		testName := strings.Split(output.Test, "/")
+		if len(testName) > 1 {
+			tableTestName = testName[len(testName)-1]
+		}
 
-				if multiSubTestReg.MatchString(goTestCase.Name) && substring != deletedTest {
-					deletedTest = subTestReg.FindString(goTestCase.Name)
-					delete(finalTestCases, deletedTest)
-				}
-
+		if output.Action == "run" && tableTestName != "" {
+			newTestResult := &testresult.GoTestResult{Name: tableTestName, Package: output.Package}
+			finalTestResults[tableTestName] = newTestResult
+		} else if output.Action == "output" && tableTestName != "" {
+			goTestResult := finalTestResults[tableTestName]
+			goTestResult.StackTrace += output.Output
+		} else if output.Action == qase.SkipStatus {
+			if tableTestName != "" {
+				delete(finalTestResults, tableTestName)
 			}
-		} else if testCase.Action == defaults.FailStatus && testCase.Test == "" {
+		} else if (output.Action == qase.FailStatus || output.Action == qase.PassStatus) && tableTestName != "" {
+			if tableTestName != "" {
+				goTestResult := finalTestResults[tableTestName]
+				goTestResult.StackTrace += output.Output
+				goTestResult.Status = output.Action
+				goTestResult.Elapsed = output.Elapsed
+			} else {
+				goTestResult := finalTestResults[tableTestName]
+				goTestResult.StackTrace += output.Output
+			}
+		} else if output.Action == qase.FailStatus && tableTestName != "" {
 			timeoutFailure = true
 		}
 	}
 
-	for _, testCase := range finalTestCases {
-		testSuite := strings.Split(testCase.Name, "/")
+	for _, testResult := range finalTestResults {
+		testSuite := strings.Split(testResult.Name, "/")
 		testName := testSuite[len(testSuite)-1]
-		testCase.Name = testName
-		testCase.TestSuite = testSuite[0 : len(testSuite)-1]
-		if timeoutFailure && testCase.Status == "" {
-			testCase.Status = defaults.FailStatus
+		testResult.Name = testName
+		testResult.TestSuite = testSuite[0 : len(testSuite)-1]
+		if timeoutFailure && testResult.Status == "" {
+			testResult.Status = qase.FailStatus
 		}
 	}
 
-	return finalTestCases
+	return finalTestResults
 }
 
-func reportTestQases(client *qase.APIClient, testRunID int64) (int, error) {
-	tempTestCases, err := readTestCase()
+// reportTestQases updates a qase test run with the results of a set of tests
+func reportTestQases(qaseService *qase.Service, testRunID int64) error {
+	resultsOutputs, err := readTestResults()
 	if err != nil {
-		return 0, err
+		return nil
 	}
 
-	goTestCases := parseCorrectTestCases(tempTestCases)
+	goTestResults := parseTestResults(resultsOutputs)
 
-	qaseTestCases, err := getAllAutomationTestCases(client)
+	qaseTestCases, err := getAllAutomationTestCases(qaseService)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	for _, goTestCase := range goTestCases {
-		if testQase, ok := qaseTestCases[goTestCase.Name]; ok {
+	for _, goTestResult := range goTestResults {
+		if testQase, ok := qaseTestCases[goTestResult.Name]; ok {
+			basePathDirs := strings.Split(basepath, "/")
+			baseTestPathDir := basePathDirs[len(basePathDirs)-1]
+
+			logrus.Infof("base path: %s", basepath)
+			logrus.Infof("base path dirs: %s", basePathDirs)
+			logrus.Infof("baseTestPathDir: %s", baseTestPathDir)
+
+			packagePath := strings.Split(goTestResult.Package, baseTestPathDir)
+			logrus.Infof("packagePath: %v", packagePath)
+			if len(packagePath) > 2 {
+				return errors.New("Error base path directory is not unique")
+			}
+
+			fullPackagePath := filepath.Join(basepath, packagePath[1])
+			qaseProjects, err := qase.GetSchemas(fullPackagePath)
+			if err != nil {
+				logrus.Warning(err)
+				continue
+			}
+
+			qaseTestSchema, err := qase.GetTestSchema(goTestResult.Name, qaseProjects)
+			if err != nil {
+				logrus.Warning(err)
+				continue
+			}
+
 			// update test status
-			httpCode, err := updateTestInRun(client, *goTestCase, testQase.Id, testRunID)
+			logrus.Infof("Updating run with %v", testQase.Title)
+			err = updateTestInRun(qaseService.Client, *goTestResult, testQase, qaseTestSchema.Params, testRunID)
 			if err != nil {
-				return httpCode, err
+				logrus.Warning(err)
+				continue
 			}
 		} else {
-			// write test case
-			caseID, err := writeTestCaseToQase(client, *goTestCase)
-			if err != nil {
-				return 0, err
-			}
-			httpCode, err := updateTestInRun(client, *goTestCase, caseID.Result.Id, testRunID)
-			if err != nil {
-				return httpCode, err
-			}
+			err = fmt.Errorf("Test case not found in qase: %s", goTestResult.Name)
+			logrus.Warning(err)
+			continue
 		}
 	}
 
-	return http.StatusOK, nil
+	return nil
 }
 
-func writeTestSuiteToQase(client *qase.APIClient, testCase testcase.GoTestCase) (*int64, error) {
-	parentSuite := int64(defaults.AutomationSuiteID)
-	var id int64
-	for _, suiteGo := range testCase.TestSuite {
-		localVarOptionals := &qase.SuitesApiGetSuitesOpts{
-			FiltersSearch: optional.NewString(suiteGo),
-		}
-
-		qaseSuites, _, err := client.SuitesApi.GetSuites(context.TODO(), defaults.RancherManagerProjectID, localVarOptionals)
-		if err != nil {
-			return nil, err
-		}
-
-		var testSuiteWasFound bool
-		var qaseSuiteFound qase.Suite
-		for _, qaseSuite := range qaseSuites.Result.Entities {
-			if qaseSuite.Title == suiteGo {
-				testSuiteWasFound = true
-				qaseSuiteFound = qaseSuite
-			}
-		}
-		if !testSuiteWasFound {
-			suiteBody := qase.SuiteCreate{
-				Title:    suiteGo,
-				ParentId: int64(parentSuite),
-			}
-			idResponse, _, err := client.SuitesApi.CreateSuite(context.TODO(), suiteBody, defaults.RancherManagerProjectID)
-			if err != nil {
-				return nil, err
-			}
-			id = idResponse.Result.Id
-			parentSuite = id
-		} else {
-			id = qaseSuiteFound.Id
-		}
-	}
-
-	return &id, nil
-}
-
-func writeTestCaseToQase(client *qase.APIClient, testCase testcase.GoTestCase) (*qase.IdResponse, error) {
-	testSuiteID, err := writeTestSuiteToQase(client, testCase)
-	if err != nil {
-		return nil, err
-	}
-
-	testQaseBody := qase.TestCaseCreate{
-		Title:      testCase.Name,
-		SuiteId:    *testSuiteID,
-		IsFlaky:    int32(0),
-		Automation: int32(2),
-		CustomField: map[string]string{
-			fmt.Sprintf("%d", defaults.TestSourceID): defaults.TestSource,
-		},
-	}
-	caseID, _, err := client.CasesApi.CreateCase(context.TODO(), testQaseBody, defaults.RancherManagerProjectID)
-	if err != nil {
-		return nil, err
-	}
-	return &caseID, err
-}
-
-func updateTestInRun(client *qase.APIClient, testCase testcase.GoTestCase, qaseTestCaseID, testRunID int64) (int, error) {
-	status := fmt.Sprintf("%sed", testCase.Status)
+// updateTestInRun updates the current qase test run with a test
+func updateTestInRun(client *upstream.APIClient, testResult testresult.GoTestResult, qaseTestCase upstream.TestCase, params []upstream.Params, testRunID int64) error {
 	var elapsedTime float64
-	if testCase.Elapsed != "" {
+	if testResult.Elapsed != "" {
 		var err error
-		elapsedTime, err = strconv.ParseFloat(testCase.Elapsed, 64)
+		elapsedTime, err = strconv.ParseFloat(testResult.Elapsed, 64)
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
-	resultBody := qase.ResultCreate{
-		CaseId:  qaseTestCaseID,
-		Status:  status,
-		Comment: testCase.StackTrace,
+	var resultParams []string
+	for _, param := range params {
+		resultParams = append(resultParams, fmt.Sprintf("%s: [%s]", param.Title, strings.Join(param.Values, ", ")))
+	}
+
+	resultBody := upstream.ResultCreate{
+		CaseId:  qaseTestCase.Id,
+		Status:  fmt.Sprintf("%sed", testResult.Status),
 		Time:    int64(elapsedTime),
+		Param:   resultParams,
+		Comment: testResult.StackTrace,
 	}
 
-	_, resp, err := client.ResultsApi.CreateResult(context.TODO(), resultBody, defaults.RancherManagerProjectID, testRunID)
+	_, _, err := client.ResultsApi.CreateResult(context.TODO(), resultBody, projectIDEnvVar, testRunID)
 	if err != nil {
-		if resp != nil {
-			return resp.StatusCode, err
-		}
-		return 0, err
+		return err
 	}
-	return http.StatusOK, nil
+
+	return nil
 }
 
-func getAutomationTestName(customFields []qase.CustomFieldValue) string {
+// getAutomationTestName gets the custom test name field
+func getAutomationTestName(customFields []upstream.CustomFieldValue) string {
 	for _, field := range customFields {
-		if field.Id == defaults.AutomationTestNameID {
+		if field.Id == qase.AutomationTestNameID {
 			return field.Value
 		}
 	}
