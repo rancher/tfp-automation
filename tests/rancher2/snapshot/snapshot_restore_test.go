@@ -65,7 +65,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
 	}{
-		{"Restore etcd only", nodeRolesDedicated, snapshotRestoreNone},
+		{"Snapshot_Restore", nodeRolesDedicated, snapshotRestoreNone},
 	}
 
 	testUser, testPassword := configs.CreateTestCredentials()
@@ -86,8 +86,6 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
-
-		tt.name = tt.name + " Module: " + s.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		if strings.Contains(s.terraformConfig.Module, clustertypes.RKE1) {
 			s.T().Skip("RKE1 is not supported")

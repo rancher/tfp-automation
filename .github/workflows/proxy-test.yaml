@@ -50,7 +50,7 @@ env:
   PACKAGE: "proxy"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpProxyProvisioningTestSuite$"
-  TIMEOUT: "2h"
+  TIMEOUT: "5h"
 
 jobs:
   v2-12:

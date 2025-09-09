@@ -1,0 +1,30 @@
+- projects:
+  - RRT
+  - RM
+  suite: Go Automation/TFP/OSChecks
+  cases:
+  - description: Performs OS checks on downstream RKE2/K3S clusters with different AMIs in parallel
+    title: Parallel_Provisioning
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream RKE2/K3S clusters in parallel
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    - action: Perform workload tests
+      expectedresult: ""
+      data: ""
+      position: 3
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
