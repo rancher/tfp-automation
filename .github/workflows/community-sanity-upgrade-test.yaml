@@ -1,33 +1,24 @@
 ---
-name: Rancher2 Recurring Runs Testing
+name: Sanity Upgrade Testing
 
 on:
   schedule:
-    - cron: "0 7 * * 2,4"
+    - cron: "0 8 * * 1"
   workflow_dispatch:
     inputs:
       rancher_version:
         description: "Rancher tag version provided from check-rancher-tag workflow"
       rancher_chart_version:
         description: "Rancher chart version provided from check-rancher-tag workflow"
-      rancher-version-2-12:
-        description: "Rancher version for v2.12-head"
+      upgraded-rancher-version-head:
+        description: "Upgraded Rancher version for head"
+        default: "head"
+      upgraded-rancher-version-2-12:
+        description: "Upgraded Rancher version for v2.12.x"
         default: "v2.12-head"
-      rancher-chart-version-2-12:
-        description: "Rancher chart version for v2.12-head"
-        default: "v2.12-head"
-      rancher-version-2-11:
-        description: "Rancher version for v2.11-head"
-        default: "v2.11-head"
-      rancher-chart-version-2-11:
-        description: "Rancher chart version for v2.11-head"
-        default: "v2.11-head"
-      rancher-version-2-10:
-        description: "Rancher version for v2.10-head"
-        default: "v2.10-head"
-      rancher-chart-version-2-10:
-        description: "Rancher chart version for v2.10-head"
-        default: "v2.10-head"
+      upgraded-rancher-chart-version-2-12:
+        description: "Upgraded Rancher chart version for v2.12.x"
+        default: "v2.12.1"
   workflow_call:
     inputs:
       rancher_version:
@@ -45,20 +36,17 @@ permissions:
 
 env:
   CLOUD_PROVIDER_VERSION: "5.95.0"
-  HOSTNAME_PREFIX: "tfp-recur"
+  HOSTNAME_PREFIX: "tfp-sanity-up"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
-  PACKAGE: "rancher2/recurring"
+  PACKAGE: "sanity"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
-  SUITE: "^TestTfpRancher2RecurringRunsTestSuite$"
+  SUITE: "^TestTfpSanityUpgradeRancherTestSuite$"
   TIMEOUT: "5h"
 
 jobs:
-  v2-12:
+  head:
     if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.')) && contains(inputs.rancher_version, '-alpha')
-    name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
+      github.event_name == 'schedule'
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -112,39 +100,41 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set Rancher version
+      - name: Set upgraded Rancher version
         uses: ./.github/actions/set-env-var
         with:
-          key: RANCHER_VERSION
+          key: UPGRADED_RANCHER_VERSION
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-12) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-version-2-12) || 
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) 
             }}
 
-      - name: Set Rancher chart version
+      - name: Set upgraded Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
-          key: RANCHER_CHART_VERSION
+          key: UPGRADED_RANCHER_CHART_VERSION
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-12) ||
-              (github.event_name == 'schedule' && vars.RANCHER_CHART_VERSION_2_12_HEAD)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-chart-version-2-12) ||
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
             }}
 
-      - name: Set Rancher repo
+      - name: Set upgraded Rancher repo
         uses: ./.github/actions/set-rancher-repo
         with:
-          rancher-version: ${{ env.RANCHER_VERSION }}
-          fallback-repo: ${{ secrets.RANCHER_REPO }}
+          rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
         id: get-qase-id
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_rc_id: "${{ vars.QASE_RC_TEST_RUN_ID_2_12 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}"
 
       - name: Create config.yaml
@@ -204,23 +194,26 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              k3sVersion: "${{ vars.K3S_VERSION_2_12 }}${{ vars.K3S_VERSION_SUFFIX }}"
+              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_12 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
-              repo: "${{ env.RANCHER_REPO }}"
+              repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
-            snapshotInput: {}
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -241,7 +234,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
+          terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
       - name: Setup Rancher2 Provider if RC is present
@@ -249,7 +242,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Rancher2 Test Suite
+      - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -284,17 +277,17 @@ jobs:
         with:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
-
-  v2-11:
+  
+  v2-12:
     if: |
       github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
-    name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12'))
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ inputs.rancher_version || github.event.inputs.upgraded-rancher-version-2-12 }}
     runs-on: ubuntu-latest
-    environment: staging-alpha
+    environment: latest
     env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
     steps:
       - name: Checkout repository
@@ -344,40 +337,42 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
-      - name: Set Rancher version
+      - name: Set upgraded Rancher version
         uses: ./.github/actions/set-env-var
         with:
-          key: RANCHER_VERSION
+          key: UPGRADED_RANCHER_VERSION
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-11) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-version-2-12) || 
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) 
             }}
-      
-      - name: Set Rancher chart version
+
+      - name: Set upgraded Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
-          key: RANCHER_CHART_VERSION
+          key: UPGRADED_RANCHER_CHART_VERSION
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-11) ||
-              (github.event_name == 'schedule' && vars.RANCHER_CHART_VERSION_2_11_HEAD)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-chart-version-2-12) ||
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
             }}
 
-      - name: Set Rancher repo
+      - name: Set upgraded Rancher repo
         uses: ./.github/actions/set-rancher-repo
         with:
-          rancher-version: ${{ env.RANCHER_VERSION }}
-          fallback-repo: ${{ secrets.RANCHER_REPO }}
+          rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
         id: get-qase-id
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}"
+          qase_rc_id: "${{ vars.QASE_RC_TEST_RUN_ID_2_12 }}"
+          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}"
 
       - name: Create config.yaml
         run: |
@@ -436,24 +431,26 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              k3sVersion: "${{ vars.K3S_VERSION_2_11 }}${{ vars.K3S_VERSION_SUFFIX }}"
+              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
+              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_12 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
-              repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
+              repo: "${{ secrets.RANCHER_REPO }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
+              upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
+              upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             nodeCount: ${{ vars.NODE_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
-            snapshotInput: {}
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -474,7 +471,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
+          terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
       - name: Setup Rancher2 Provider if RC is present
@@ -482,240 +479,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Rancher2 Test Suite
-        uses: ./.github/actions/run-test-suite
-        with:
-          package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
-          timeout: ${{ env.TIMEOUT }}
-
-      - name: Reporting Results to Qase
-        if: always()
-        uses: ./.github/actions/report-to-qase
-        with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
-          qase-automation-token: ${{ secrets.QASE_TOKEN }}
-
-      - name: Reporting Results to Slack
-        uses: ./.github/actions/report-to-slack
-        with:
-          job-status: ${{ job.status }}
-          slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
-
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Revoke Runner IP
-        if: always()
-        uses: ./.github/actions/revoke-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
-  v2-10:
-    if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10.')) && contains(inputs.rancher_version, '-alpha')
-    name: ${{ github.event.inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
-    runs-on: ubuntu-latest
-    environment: staging-alpha
-    env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Get AWS credentials from Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
-        with:
-          secret-ids: |
-            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: "Fetch and Set DockerHub Credentials"
-        uses: rancher-eio/read-vault-secrets@main
-        with:
-          secrets: |
-            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
-            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
-
-      - name: Mask Dockerhub Credentials
-        run: |
-          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
-          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
-
-      - name: Whitelist Runner IP
-        uses: ./.github/actions/whitelist-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
-      - name: Set up SSH Keys
-        uses: ./.github/actions/setup-ssh-keys
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
-          windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
-          windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
-
-      - name: Uniquify hostname prefix
-        uses: ./.github/actions/uniquify-hostname
-
-      - name: Set Rancher version
-        uses: ./.github/actions/set-env-var
-        with:
-          key: RANCHER_VERSION
-          value: |
-            ${{ 
-              github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-10) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_10_HEAD) 
-            }}
-
-      - name: Set Rancher chart version
-        uses: ./.github/actions/set-env-var
-        with:
-          key: RANCHER_CHART_VERSION
-          value: |
-            ${{ 
-              github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-10) ||
-              (github.event_name == 'schedule' && vars.RANCHER_CHART_VERSION_2_10_HEAD)
-            }}
-
-      - name: Set Rancher repo
-        uses: ./.github/actions/set-rancher-repo
-        with:
-          rancher-version: ${{ env.RANCHER_VERSION }}
-          fallback-repo: ${{ secrets.RANCHER_REPO }}
-
-      - name: Get Qase ID
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_10 }}"
-
-      - name: Create config.yaml
-        run: |
-          cat > config.yaml <<EOF
-          rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
-            adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
-            insecure: true
-            cleanup: true
-          terraform:
-            cni: "${{ secrets.CNI }}"
-            defaultClusterRoleForProjectMembers: "true"
-            enableNetworkPolicy: false
-            provider: "${{ vars.PROVIDER_AMAZON }}"
-            privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
-            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
-            windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            privateRegistries:
-              url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
-              username: "${{ env.DOCKERHUB_USERNAME }}"
-              password: "${{ env.DOCKERHUB_PASSWORD }}"
-              insecure: true
-              authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
-              mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
-              mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
-            awsCredentials:
-              awsAccessKey: "$AWS_ACCESS_KEY"
-              awsSecretKey: "$AWS_SECRET_KEY"
-            awsConfig:
-              ami: "${{ secrets.AWS_AMI }}"
-              awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
-              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
-              awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
-              region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
-              awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
-              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
-              awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
-              awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
-              awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
-              awsUser: "${{ secrets.AWS_USER }}"
-              sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
-              timeout: "${{ vars.TIMEOUT }}"
-              windowsAWSUser: "${{ secrets.AWS_WINDOWS_USER }}" 
-              windows2019AMI: "${{ secrets.WINDOWS_2019_AMI }}"
-              windows2022AMI: "${{ secrets.WINDOWS_2022_AMI }}"
-              windows2019Password: "${{ secrets.AWS_WINDOWS_2019_PASSWORD }}"
-              windows2022Password: "${{ secrets.AWS_WINDOWS_2022_PASSWORD }}"
-              windowsInstanceType: "${{ vars.AWS_WINDOWS_INSTANCE_TYPE }}"
-              windowsKeyName: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}"
-              ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
-              loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
-              targetType: "${{ vars.TARGET_TYPE }}"
-            standalone:
-              bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
-              certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              k3sVersion: "${{ vars.K3S_VERSION_2_10 }}${{ vars.K3S_VERSION_SUFFIX }}"
-              osUser: "${{ secrets.OS_USER }}"
-              osGroup: "${{ secrets.OS_GROUP }}"
-              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
-              rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
-              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
-              registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
-              repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_10 }}"
-          terratest:
-            pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
-            windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
-            snapshotInput: {}
-          EOF
-
-      - name: Export CATTLE_TEST_CONFIG
-        run: echo "CATTLE_TEST_CONFIG=${{ github.workspace }}/config.yaml" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Set up Go environment
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "./go.mod"
-
-      - name: Build Packages
-        run: ./.github/scripts/build-packages.sh
-
-      - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
-          terraform_wrapper: false
-
-      - name: Setup Rancher2 Provider if RC is present
-        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
-        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
-        shell: bash
-
-      - name: Run Rancher2 Test Suite
+      - name: Run Sanity Upgrade Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
