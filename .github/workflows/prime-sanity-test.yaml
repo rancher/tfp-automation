@@ -1,5 +1,5 @@
 ---
-name: Sanity Testing
+name: Prime Sanity Testing
 
 on:
   schedule:

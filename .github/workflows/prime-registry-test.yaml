@@ -1,5 +1,5 @@
 ---
-name: Registry Testing
+name: Prime Registry Testing
 
 on:
   workflow_dispatch:

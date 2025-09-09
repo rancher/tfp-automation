@@ -1,5 +1,5 @@
 ---
-name: Airgap Upgrade Testing
+name: Prime Airgap Upgrade Testing
 
 on:
   workflow_dispatch:

@@ -1,5 +1,5 @@
 ---
-name: Proxy Testing
+name: Community Proxy Testing
 
 on:
   schedule:

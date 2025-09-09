@@ -1,5 +1,5 @@
 ---
-name: Registry Testing
+name: Community Registry Testing
 
 on:
   workflow_dispatch:

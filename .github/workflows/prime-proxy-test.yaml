@@ -1,5 +1,5 @@
 ---
-name: Proxy Testing
+name: Prime Proxy Testing
 
 on:
   schedule:
