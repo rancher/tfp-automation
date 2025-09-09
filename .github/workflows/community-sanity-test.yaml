@@ -117,7 +117,12 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-12) || 
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) 
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
