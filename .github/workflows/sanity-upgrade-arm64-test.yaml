@@ -15,7 +15,7 @@ on:
         default: "v2.12-head"
       upgraded-rancher-chart-version-2-12:
         description: "Upgraded Rancher chart version for v2.12.x"
-        default: "v2.12.1"
+        default: "2.12.1"
 
 permissions:
   id-token: write

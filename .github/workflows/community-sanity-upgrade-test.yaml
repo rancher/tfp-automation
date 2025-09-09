@@ -18,7 +18,7 @@ on:
         default: "v2.12-head"
       upgraded-rancher-chart-version-2-12:
         description: "Upgraded Rancher chart version for v2.12.x"
-        default: "v2.12.1"
+        default: "2.12.1"
   workflow_call:
     inputs:
       rancher_version:
@@ -135,8 +135,8 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_rc_id: "${{ vars.QASE_RC_TEST_RUN_ID_2_12 }}"
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}"
+          qase_rc_id: "${{ vars.QASE_RC_TEST_RUN_ID_2_13 }}"
+          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}"
 
       - name: Create config.yaml
         run: |
