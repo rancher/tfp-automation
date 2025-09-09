@@ -25,5 +25,5 @@ jobs:
 
       - name: Update Qase
         env:
-          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_AUTOMATION_TOKEN }}
+          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
         run: go run ./pipeline/qase/schemaupload/main.go
