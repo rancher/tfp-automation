@@ -1,5 +1,5 @@
 ---
-name: Sanity Testing
+name: Community Sanity Testing
 
 on:
   schedule:

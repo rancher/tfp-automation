@@ -1,5 +1,5 @@
 ---
-name: Rancher2 Recurring Runs Testing
+name: Community Rancher2 Recurring Runs Testing
 
 on:
   schedule:

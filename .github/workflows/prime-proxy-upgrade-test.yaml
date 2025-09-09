@@ -1,5 +1,5 @@
 ---
-name: Proxy Upgrade Testing
+name: Prime Proxy Upgrade Testing
 
 on:
   schedule:

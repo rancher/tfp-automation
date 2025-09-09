@@ -1,5 +1,5 @@
 ---
-name: Airgap Testing
+name: Community Airgap Testing
 
 on:
   workflow_dispatch:

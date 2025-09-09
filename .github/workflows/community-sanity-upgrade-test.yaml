@@ -1,5 +1,5 @@
 ---
-name: Sanity Upgrade Testing
+name: Community Sanity Upgrade Testing
 
 on:
   schedule:
