@@ -67,7 +67,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = infrastructure.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
 
-	if s.standaloneConfig.RancherTagVersion != "head" {
+	if s.standaloneConfig.UpgradedRancherTagVersion != "head" {
 		provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.UpgradedRancherTagVersion)
 	}
 

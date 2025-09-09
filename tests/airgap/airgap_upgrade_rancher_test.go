@@ -68,7 +68,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 
 	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = infrastructure.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig)
 
-	if a.standaloneConfig.RancherTagVersion != "head" {
+	if a.standaloneConfig.UpgradedRancherTagVersion != "head" {
 		provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.UpgradedRancherTagVersion)
 	}
 

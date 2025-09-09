@@ -108,7 +108,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-12) || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-head) || 
               (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) 
             }}
 

@@ -10,6 +10,9 @@ on:
         description: "Rancher tag version provided from check-rancher-tag workflow"
       rancher_chart_version:
         description: "Rancher chart version provided from check-rancher-tag workflow"
+      rancher-version-head:
+        description: "Rancher version for head"
+        default: "head"
       rancher-version-2-12:
         description: "Rancher version for v2.12.x"
         default: "v2.12-head"
@@ -102,7 +105,12 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD
+          value: |
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-head) || 
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) 
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
