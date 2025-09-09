@@ -50,7 +50,9 @@ func (s *TfpSanityProvisioningTestSuite) SetupSuite() {
 	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = infrastructure.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
 
-	provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.RancherTagVersion)
+	if s.standaloneConfig.RancherTagVersion != "head" {
+		provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.RancherTagVersion)
+	}
 }
 
 func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {

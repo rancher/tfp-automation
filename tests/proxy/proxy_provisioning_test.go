@@ -51,7 +51,9 @@ func (p *TfpProxyProvisioningTestSuite) SetupSuite() {
 	p.client, p.proxyBastion, _, p.standaloneTerraformOptions, p.terraformOptions, p.cattleConfig = infrastructure.SetupProxyRancher(p.T(), p.session, keypath.ProxyKeyPath)
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, p.standaloneConfig = config.LoadTFPConfigs(p.cattleConfig)
 
-	provisioning.VerifyRancherVersion(p.T(), p.rancherConfig.Host, p.standaloneConfig.RancherTagVersion)
+	if p.standaloneConfig.RancherTagVersion != "head" {
+		provisioning.VerifyRancherVersion(p.T(), p.rancherConfig.Host, p.standaloneConfig.RancherTagVersion)
+	}
 }
 
 func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {

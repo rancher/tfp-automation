@@ -43,7 +43,8 @@ env:
 jobs:
   head:
     if: |
-      github.event_name == 'schedule'
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
     runs-on: ubuntu-latest
     environment: latest
     env:
