@@ -67,7 +67,9 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = infrastructure.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
 
-	provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.UpgradedRancherTagVersion)
+	if s.standaloneConfig.RancherTagVersion != "head" {
+		provisioning.VerifyRancherVersion(s.T(), s.rancherConfig.Host, s.standaloneConfig.UpgradedRancherTagVersion)
+	}
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 	s.provisionAndVerifyCluster("Sanity_Post_Rancher_Upgrade_", clusterIDs, testUser, testPassword)

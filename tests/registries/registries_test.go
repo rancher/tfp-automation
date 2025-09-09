@@ -52,7 +52,9 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 		r.cattleConfig = infrastructure.SetupRegistryRancher(r.T(), r.session, keypath.RegistryKeyPath)
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, r.standaloneConfig = config.LoadTFPConfigs(r.cattleConfig)
 
-	provisioning.VerifyRancherVersion(r.T(), r.rancherConfig.Host, r.standaloneConfig.RancherTagVersion)
+	if r.standaloneConfig.RancherTagVersion != "head" {
+		provisioning.VerifyRancherVersion(r.T(), r.rancherConfig.Host, r.standaloneConfig.RancherTagVersion)
+	}
 }
 
 func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {

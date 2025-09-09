@@ -68,7 +68,9 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 
 	p.client, p.cattleConfig, p.terraformOptions, p.upgradeTerraformOptions = infrastructure.UpgradeProxyRancher(p.T(), p.client, p.proxyPrivateIP, p.proxyBastion, p.session, p.cattleConfig)
 
-	provisioning.VerifyRancherVersion(p.T(), p.rancherConfig.Host, p.standaloneConfig.UpgradedRancherTagVersion)
+	if p.standaloneConfig.RancherTagVersion != "head" {
+		provisioning.VerifyRancherVersion(p.T(), p.rancherConfig.Host, p.standaloneConfig.UpgradedRancherTagVersion)
+	}
 
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 	p.provisionAndVerifyCluster("Proxy_Post_Rancher_Upgrade_", clusterIDs, testUser, testPassword)

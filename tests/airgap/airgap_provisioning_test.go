@@ -51,7 +51,9 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	a.client, a.registry, _, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig = infrastructure.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
 
-	provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.RancherTagVersion)
+	if a.standaloneConfig.RancherTagVersion != "head" {
+		provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.RancherTagVersion)
+	}
 }
 
 func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {

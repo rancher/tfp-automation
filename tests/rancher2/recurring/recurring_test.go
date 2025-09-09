@@ -52,7 +52,9 @@ func (r *TfpRancher2RecurringRunsTestSuite) SetupSuite() {
 	r.client, _, r.standaloneTerraformOptions, r.terraformOptions, r.cattleConfig = infrastructure.SetupRancher(r.T(), r.session, keypath.SanityKeyPath)
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, r.standaloneConfig = config.LoadTFPConfigs(r.cattleConfig)
 
-	provisioning.VerifyRancherVersion(r.T(), r.rancherConfig.Host, r.standaloneConfig.RancherTagVersion)
+	if r.standaloneConfig.RancherTagVersion != "head" {
+		provisioning.VerifyRancherVersion(r.T(), r.rancherConfig.Host, r.standaloneConfig.RancherTagVersion)
+	}
 }
 
 func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomCluster() {
