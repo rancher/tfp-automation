@@ -107,6 +107,73 @@ See the below examples on how to run the test:
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
+## Setup Dualstack Rancher
+
+See below an example config on setting up an Rancher server powered by an dualstack RKE2 HA cluster:
+
+```yaml
+#######################
+# RANCHER CONFIG
+#######################
+rancher:
+  host: ""                                        # REQUIRED - fill out with the expected Rancher server URL
+  insecure: true                                  # REQUIRED - leave this as true
+#######################
+# TERRAFORM CONFIG
+#######################
+terraform:
+  cni: ""
+  provider: ""                                    # REQUIRED - supported values are aws
+  privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  resourcePrefix: ""
+  ##########################################
+  # STANDALONE CONFIG - INFRASTRUCTURE SETUP
+  ##########################################
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    ipAddressType: "ipv4"
+    loadBalancerType: "dualstack"
+    targetType: "instance"
+    region: ""
+    prefix: ""
+    awsUser: ""
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  ###################################
+  # STANDALONE CONFIG - RANCHER SETUP
+  ###################################
+  standalone:
+    bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
+    certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
+    chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
+    rancherChartVersion: ""                       # REQUIRED - fill with desired value
+    rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    repo: ""                                      # REQUIRED - fill with desired value
+    rke2Group: ""                                 # REQUIRED - fill with group of the instance created
+    rke2User: ""                                  # REQUIRED - fill with username of the instance created
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using staging registry
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
+```
+
+See the below examples on how to run the test:
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestDualStackRancherTestSuite$"`
+
 ## Setup Rancher IPv6
 
 See below an example config on setting up an IPv6 Rancher server powered by an IPv6 RKE2 HA cluster:

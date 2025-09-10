@@ -13,7 +13,6 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/proxy"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -38,10 +37,6 @@ func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
 
 	_, _, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
-
-	logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)
-	logrus.Infof("Booststrap password: %s", i.terraformConfig.Standalone.BootstrapPassword)
-	logrus.Infof("Proxy Address: %s:3228", i.terraformConfig.Proxy.ProxyBastion)
 
 	testSession := session.NewSession()
 	i.session = testSession
