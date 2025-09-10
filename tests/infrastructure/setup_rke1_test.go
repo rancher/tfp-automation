@@ -10,7 +10,6 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	rke "github.com/rancher/tfp-automation/framework/set/resources/rke"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -31,10 +30,8 @@ func (i *CreateRKE1ClusterTestSuite) TestCreateRKE1Cluster() {
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
-	rkeNodeOne, err := rke.CreateRKEMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
+	_, err := rke.CreateRKEMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
-
-	logrus.Infof("Kubeconfig file is located in /home/%s/.kube in the node: %s", i.terraformConfig.Standalone.OSUser, rkeNodeOne)
 }
 
 func TestCreateRKE1ClusterTestSuite(t *testing.T) {

@@ -86,8 +86,6 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
-
-	logrus.Infof("Kubeconfig file is located in /home/%s/.kube in the node: %s", i.terraformConfig.Standalone.OSUser, rke2ServerOnePublicIP)
 }
 
 func TestCreateRKE2ClusterTestSuite(t *testing.T) {

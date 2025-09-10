@@ -80,8 +80,6 @@ func (i *CreateK3SClusterTestSuite) TestCreateK3SCluster() {
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
-
-	logrus.Infof("Kubeconfig file is located in /home/%s/.kube in the node: %s", i.terraformConfig.Standalone.OSUser, k3sServerOnePublicIP)
 }
 
 func TestCreateK3SClusterTestSuite(t *testing.T) {

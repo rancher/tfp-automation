@@ -14,7 +14,6 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -41,9 +40,6 @@ func (i *RancherTestSuite) TestCreateRancher() {
 	require.NoError(i.T(), err)
 
 	if i.terraformConfig.Provider != providers.Linode && i.terraformConfig.Provider != providers.Vsphere {
-		logrus.Infof("Rancher server URL: %s", i.terraformConfig.Standalone.RancherHostname)
-		logrus.Infof("Booststrap password: %s", i.terraformConfig.Standalone.BootstrapPassword)
-
 		testSession := session.NewSession()
 		i.session = testSession
 
