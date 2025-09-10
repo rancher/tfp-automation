@@ -122,6 +122,13 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
 
+      - name: Set Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.RANCHER_REPO }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
+
       - name: Retrieve and set ECR password
         id: get-ecr-password
         uses: ./.github/actions/get-ecr-password
@@ -177,7 +184,7 @@ jobs:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
-              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
@@ -334,6 +341,13 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
 
+      - name: Set Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.RANCHER_REPO }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
+
       - name: Retrieve and set ECR password
         id: get-ecr-password
         uses: ./.github/actions/get-ecr-password
@@ -389,7 +403,7 @@ jobs:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
-              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
