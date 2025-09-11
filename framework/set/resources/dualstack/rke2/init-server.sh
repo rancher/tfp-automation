@@ -22,6 +22,12 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
+echo "Installing kubectl"
+sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
+sudo chmod +x kubectl
+
+sudo mv kubectl /usr/local/bin/
+
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt

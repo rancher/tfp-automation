@@ -24,7 +24,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	}
 
 	if terraformConfig.Proxy != nil {
-		instances = []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+		instances = []string{serverOne, serverTwo, serverThree}
 		for _, instance := range instances {
 			CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
 			rootBody.AppendNewline()
@@ -79,7 +79,7 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 		rootBody.AppendNewline()
 	}
 
-	instances = []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances = []string{serverOne, serverTwo, serverThree}
 	for _, instance := range instances {
 		CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
 		rootBody.AppendNewline()
@@ -148,7 +148,7 @@ func CreateIPv6AWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 		rootBody.AppendNewline()
 	}
 
-	instances = []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances = []string{serverOne, serverTwo, serverThree}
 	for _, instance := range instances {
 		CreateAirgappedAWSInstances(rootBody, terraformConfig, instance)
 		rootBody.AppendNewline()

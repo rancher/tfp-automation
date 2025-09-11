@@ -48,7 +48,7 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances := []string{serverOne, serverTwo, serverThree}
 
 	providerTunnel := providers.TunnelToProvider(i.terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
@@ -57,10 +57,10 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 	terraform.InitAndApply(i.T(), terraformOptions)
 
 	registryPublicIP := terraform.Output(i.T(), terraformOptions, registryPublicIP)
-	rke2BastionPublicIP := terraform.Output(i.T(), terraformOptions, rke2BastionPublicIP)
-	rke2ServerOnePrivateIP := terraform.Output(i.T(), terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPrivateIP := terraform.Output(i.T(), terraformOptions, rke2ServerTwoPrivateIP)
-	rke2ServerThreePrivateIP := terraform.Output(i.T(), terraformOptions, rke2ServerThreePrivateIP)
+	bastionPublicIP := terraform.Output(i.T(), terraformOptions, bastionPublicIP)
+	serverOnePrivateIP := terraform.Output(i.T(), terraformOptions, serverOnePrivateIP)
+	serverTwoPrivateIP := terraform.Output(i.T(), terraformOptions, serverTwoPrivateIP)
+	serverThreePrivateIP := terraform.Output(i.T(), terraformOptions, serverThreePrivateIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating registry...")
@@ -71,7 +71,7 @@ func (i *CreateAirgappedRKE2ClusterTestSuite) TestCreateAirgappedRKE2Cluster() {
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating airgap RKE2 cluster...")
-	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, rke2BastionPublicIP, registryPublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, bastionPublicIP, registryPublicIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)

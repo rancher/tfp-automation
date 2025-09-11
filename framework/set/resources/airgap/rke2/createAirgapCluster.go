@@ -18,10 +18,10 @@ import (
 )
 
 const (
-	rke2Bastion     = "rke2_bastion"
-	rke2ServerOne   = "rke2_server1"
-	rke2ServerTwo   = "rke2_server2"
-	rke2ServerThree = "rke2_server3"
+	rke2Bastion     = "bastion"
+	rke2ServerOne   = "server1"
+	rke2ServerTwo   = "server2"
+	rke2ServerThree = "server3"
 	token           = "token"
 )
 

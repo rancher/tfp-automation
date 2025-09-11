@@ -13,12 +13,9 @@ import (
 const (
 	locals            = "locals"
 	requiredProviders = "required_providers"
-	k3sServerOne      = "k3s_server1"
-	k3sServerTwo      = "k3s_server2"
-	k3sServerThree    = "k3s_server3"
-	rke2ServerOne     = "rke2_server1"
-	rke2ServerTwo     = "rke2_server2"
-	rke2ServerThree   = "rke2_server3"
+	serverOne         = "server1"
+	serverTwo         = "server2"
+	serverThree       = "server3"
 )
 
 // CreateAWSTerraformProviderBlock will up the terraform block with the required aws provider.
@@ -50,27 +47,21 @@ func CreateAWSLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	localBlockBody := localBlock.Body()
 
 	var instanceIds map[string]any
-	if terraformConfig.Standalone.RKE2Version != "" && !terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+	if !terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 		instanceIds = map[string]any{
-			rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne + ".id",
-			rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo + ".id",
-			rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree + ".id",
+			serverOne:   defaults.AwsInstance + "." + serverOne + ".id",
+			serverTwo:   defaults.AwsInstance + "." + serverTwo + ".id",
+			serverThree: defaults.AwsInstance + "." + serverThree + ".id",
 		}
-	} else if terraformConfig.Standalone.RKE2Version != "" && terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+	} else if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 		instanceIds = map[string]any{
-			rke2ServerOne:   defaults.AwsInstance + "." + rke2ServerOne + ".ipv6_addresses[0]",
-			rke2ServerTwo:   defaults.AwsInstance + "." + rke2ServerTwo + ".ipv6_addresses[0]",
-			rke2ServerThree: defaults.AwsInstance + "." + rke2ServerThree + ".ipv6_addresses[0]",
-		}
-	} else if terraformConfig.Standalone.K3SVersion != "" {
-		instanceIds = map[string]any{
-			k3sServerOne:   defaults.AwsInstance + "." + k3sServerOne + ".id",
-			k3sServerTwo:   defaults.AwsInstance + "." + k3sServerTwo + ".id",
-			k3sServerThree: defaults.AwsInstance + "." + k3sServerThree + ".id",
+			serverOne:   defaults.AwsInstance + "." + serverOne + ".ipv6_addresses[0]",
+			serverTwo:   defaults.AwsInstance + "." + serverTwo + ".ipv6_addresses[0]",
+			serverThree: defaults.AwsInstance + "." + serverThree + ".ipv6_addresses[0]",
 		}
 	}
 
-	instanceIdsBlock := localBlockBody.AppendNewBlock(rke2InstanceIDs+" =", nil)
+	instanceIdsBlock := localBlockBody.AppendNewBlock(instanceIDs+" =", nil)
 	instanceIdsBlockBody := instanceIdsBlock.Body()
 
 	for key, value := range instanceIds {

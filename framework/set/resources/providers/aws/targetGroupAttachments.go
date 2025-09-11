@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	eachValue       = "each.value"
-	forEach         = "for_each"
-	rke2InstanceIDs = "rke2_instance_ids"
+	eachValue   = "each.value"
+	forEach     = "for_each"
+	instanceIDs = "instance_ids"
 )
 
 // CreateTargetGroupAttachments is a function that will set the target group attachments configurations in the main.tf file.
@@ -22,7 +22,7 @@ func CreateTargetGroupAttachments(rootBody *hclwrite.Body, terraformConfig *conf
 	targetGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{lbTargetGroupAttachment, targetGroupAttachmentServer})
 	targetGroupBlockBody := targetGroupBlock.Body()
 
-	instanceValueExpression := defaults.Local + "." + rke2InstanceIDs
+	instanceValueExpression := defaults.Local + "." + instanceIDs
 	values := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(instanceValueExpression)},
 	}
@@ -50,7 +50,7 @@ func CreateInternalTargetGroupAttachments(rootBody *hclwrite.Body, terraformConf
 	targetGroupBlock := rootBody.AppendNewBlock(defaults.Resource, []string{lbTargetGroupAttachment, targetGroupAttachmentServer})
 	targetGroupBlockBody := targetGroupBlock.Body()
 
-	instanceValueExpression := defaults.Local + "." + rke2InstanceIDs
+	instanceValueExpression := defaults.Local + "." + instanceIDs
 	values := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(instanceValueExpression)},
 	}

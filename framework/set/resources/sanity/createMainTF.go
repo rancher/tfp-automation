@@ -18,16 +18,16 @@ import (
 )
 
 const (
-	rke2ServerOne           = "rke2_server1"
-	rke2ServerTwo           = "rke2_server2"
-	rke2ServerThree         = "rke2_server3"
-	rke2ServerOnePublicIP   = "rke2_server1_public_ip"
-	rke2ServerOnePrivateIP  = "rke2_server1_private_ip"
-	linodeBalancerHostname  = "linode_node_balancer_hostname"
-	rke2ServerTwoPublicIP   = "rke2_server2_public_ip"
-	rke2ServerThreePublicIP = "rke2_server3_public_ip"
-	terraformConst          = "terraform"
-	sslipioSuffix           = ".sslip.io"
+	serverOne              = "server1"
+	serverTwo              = "server2"
+	serverThree            = "server3"
+	serverOnePublicIP      = "server1_public_ip"
+	serverOnePrivateIP     = "server1_private_ip"
+	linodeBalancerHostname = "linode_node_balancer_hostname"
+	serverTwoPublicIP      = "server2_public_ip"
+	serverThreePublicIP    = "server3_public_ip"
+	terraformConst         = "terraform"
+	sslipioSuffix          = ".sslip.io"
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server.
@@ -46,7 +46,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	var err error
 	var nodeBalancerHostname string
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances := []string{serverOne, serverTwo, serverThree}
 
 	providerTunnel := tunnel.TunnelToProvider(terraformConfig.Provider)
 	file, err = providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -66,18 +66,18 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		nodeBalancerHostname = terraform.Output(t, terraformOptions, linodeBalancerHostname)
 		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
 	case providers.Harvester, providers.Vsphere:
-		nodeBalancerHostname = terraform.Output(t, terraformOptions, rke2ServerOnePublicIP) + sslipioSuffix
+		nodeBalancerHostname = terraform.Output(t, terraformOptions, serverOnePublicIP) + sslipioSuffix
 		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
 	}
 
-	rke2ServerOnePublicIP := terraform.Output(t, terraformOptions, rke2ServerOnePublicIP)
-	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPublicIP := terraform.Output(t, terraformOptions, rke2ServerTwoPublicIP)
-	rke2ServerThreePublicIP := terraform.Output(t, terraformOptions, rke2ServerThreePublicIP)
+	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
+	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
+	serverTwoPublicIP := terraform.Output(t, terraformOptions, serverTwoPublicIP)
+	serverThreePublicIP := terraform.Output(t, terraformOptions, serverThreePublicIP)
 
 	file = OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
 	if err != nil {
 		return "", err
 	}
@@ -91,7 +91,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicIP, nodeBalancerHostname)
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, nodeBalancerHostname)
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +103,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	return rke2ServerOnePublicIP, nil
+	return serverOnePublicIP, nil
 }
 
 // OpenFile is a helper function that will open the main.tf file.

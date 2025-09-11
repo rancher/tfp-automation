@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/resources/ipv6/rke2"
+	"github.com/rancher/tfp-automation/framework/set/resources/ipv6/k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
@@ -19,14 +19,14 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type CreateIPv6RKE2ClusterTestSuite struct {
+type CreateIPv6K3SClusterTestSuite struct {
 	suite.Suite
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
 	terraformOptions *terraform.Options
 }
 
-func (i *CreateIPv6RKE2ClusterTestSuite) TestCreateIPv6RKE2Cluster() {
+func (i *CreateIPv6K3SClusterTestSuite) TestCreateIPv6K3SCluster() {
 	i.terraformConfig = new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, i.terraformConfig)
 
@@ -63,14 +63,14 @@ func (i *CreateIPv6RKE2ClusterTestSuite) TestCreateIPv6RKE2Cluster() {
 	serverThreePublicIP := terraform.Output(i.T(), terraformOptions, serverThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
-	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateIPv6RKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, bastionPublicIP, serverOnePublicIP, serverTwoPublicIP, serverThreePublicIP,
+	logrus.Infof("Creating K3S cluster...")
+	file, err = k3s.CreateIPv6K3SCluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, bastionPublicIP, serverOnePublicIP, serverTwoPublicIP, serverThreePublicIP,
 		serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 }
 
-func TestCreateIPv6RKE2ClusterTestSuite(t *testing.T) {
-	suite.Run(t, new(CreateIPv6RKE2ClusterTestSuite))
+func TestCreateIPv6K3SClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(CreateIPv6K3SClusterTestSuite))
 }

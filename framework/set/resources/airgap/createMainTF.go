@@ -19,18 +19,18 @@ import (
 
 const (
 	rancherRegistry = "registry"
-	rke2Bastion     = "rke2_bastion"
-	rke2ServerOne   = "rke2_server1"
-	rke2ServerTwo   = "rke2_server2"
-	rke2ServerThree = "rke2_server3"
+	bastion         = "bastion"
+	serverOne       = "server1"
+	serverTwo       = "server2"
+	serverThree     = "server3"
 
 	nonAuthRegistry = "non_auth_registry"
 
-	registryPublicDNS        = "registry_public_dns"
-	rke2BastionPublicDNS     = "rke2_bastion_public_dns"
-	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
-	rke2ServerTwoPrivateIP   = "rke2_server2_private_ip"
-	rke2ServerThreePrivateIP = "rke2_server3_private_ip"
+	registryPublicDNS    = "registry_public_dns"
+	bastionPublicDNS     = "bastion_public_dns"
+	serverOnePrivateIP   = "server1_private_ip"
+	serverTwoPrivateIP   = "server2_private_ip"
+	serverThreePrivateIP = "server3_private_ip"
 
 	terraformConst = "terraform"
 )
@@ -48,7 +48,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2Bastion, rancherRegistry}
+	instances := []string{bastion, rancherRegistry}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
 	file, err := providerTunnel.CreateAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -64,10 +64,10 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	}
 
 	registryPublicDNS := terraform.Output(t, terraformOptions, registryPublicDNS)
-	rke2BastionPublicDNS := terraform.Output(t, terraformOptions, rke2BastionPublicDNS)
-	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPrivateIP := terraform.Output(t, terraformOptions, rke2ServerTwoPrivateIP)
-	rke2ServerThreePrivateIP := terraform.Output(t, terraformOptions, rke2ServerThreePrivateIP)
+	bastionPublicDNS := terraform.Output(t, terraformOptions, bastionPublicDNS)
+	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
+	serverTwoPrivateIP := terraform.Output(t, terraformOptions, serverTwoPrivateIP)
+	serverThreePrivateIP := terraform.Output(t, terraformOptions, serverThreePrivateIP)
 
 	logrus.Infof("Creating registry...")
 	file = sanity.OpenFile(file, keyPath)
@@ -85,7 +85,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, registryPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, registryPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	if err != nil {
 		return "", "", err
 	}
@@ -99,7 +99,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, registryPublicDNS)
+	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, registryPublicDNS)
 	if err != nil {
 		return "", "", err
 	}
@@ -111,5 +111,5 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	return registryPublicDNS, rke2BastionPublicDNS, nil
+	return registryPublicDNS, bastionPublicDNS, nil
 }
