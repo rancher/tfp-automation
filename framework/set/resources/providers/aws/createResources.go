@@ -34,7 +34,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	CreateAWSLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	if terraformConfig.Standalone.RancherHostname != "" {
+	if terraformConfig.Standalone.CertManagerVersion != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
 			CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
@@ -88,40 +88,42 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 	CreateAWSLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	ports := []int64{80, 443, 6443, 9345}
-	for _, port := range ports {
-		CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+	if terraformConfig.Standalone.CertManagerVersion != "" {
+		ports := []int64{80, 443, 6443, 9345}
+		for _, port := range ports {
+			CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+			rootBody.AppendNewline()
+
+			CreateInternalTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)
+			rootBody.AppendNewline()
+		}
+
+		CreateLoadBalancer(rootBody, terraformConfig)
 		rootBody.AppendNewline()
 
-		CreateInternalTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)
+		CreateInternalLoadBalancer(rootBody, terraformConfig)
+		rootBody.AppendNewline()
+
+		for _, port := range ports {
+			CreateTargetGroups(rootBody, terraformConfig, port)
+			rootBody.AppendNewline()
+
+			CreateInternalTargetGroups(rootBody, terraformConfig, port)
+			rootBody.AppendNewline()
+
+			CreateLoadBalancerListeners(rootBody, port)
+			rootBody.AppendNewline()
+
+			CreateInternalLoadBalancerListeners(rootBody, port)
+			rootBody.AppendNewline()
+		}
+
+		CreateRoute53Record(rootBody, terraformConfig)
+		rootBody.AppendNewline()
+
+		CreateRoute53InternalRecord(rootBody, terraformConfig)
 		rootBody.AppendNewline()
 	}
-
-	CreateLoadBalancer(rootBody, terraformConfig)
-	rootBody.AppendNewline()
-
-	CreateInternalLoadBalancer(rootBody, terraformConfig)
-	rootBody.AppendNewline()
-
-	for _, port := range ports {
-		CreateTargetGroups(rootBody, terraformConfig, port)
-		rootBody.AppendNewline()
-
-		CreateInternalTargetGroups(rootBody, terraformConfig, port)
-		rootBody.AppendNewline()
-
-		CreateLoadBalancerListeners(rootBody, port)
-		rootBody.AppendNewline()
-
-		CreateInternalLoadBalancerListeners(rootBody, port)
-		rootBody.AppendNewline()
-	}
-
-	CreateRoute53Record(rootBody, terraformConfig)
-	rootBody.AppendNewline()
-
-	CreateRoute53InternalRecord(rootBody, terraformConfig)
-	rootBody.AppendNewline()
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
@@ -155,25 +157,27 @@ func CreateIPv6AWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 	CreateAWSLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	ports := []int64{80, 443, 6443, 9345}
-	for _, port := range ports {
-		CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+	if terraformConfig.Standalone.CertManagerVersion != "" {
+		ports := []int64{80, 443, 6443, 9345}
+		for _, port := range ports {
+			CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+			rootBody.AppendNewline()
+		}
+
+		CreateLoadBalancer(rootBody, terraformConfig)
+		rootBody.AppendNewline()
+
+		for _, port := range ports {
+			CreateTargetGroups(rootBody, terraformConfig, port)
+			rootBody.AppendNewline()
+
+			CreateLoadBalancerListeners(rootBody, port)
+			rootBody.AppendNewline()
+		}
+
+		CreateRoute53Record(rootBody, terraformConfig)
 		rootBody.AppendNewline()
 	}
-
-	CreateLoadBalancer(rootBody, terraformConfig)
-	rootBody.AppendNewline()
-
-	for _, port := range ports {
-		CreateTargetGroups(rootBody, terraformConfig, port)
-		rootBody.AppendNewline()
-
-		CreateLoadBalancerListeners(rootBody, port)
-		rootBody.AppendNewline()
-	}
-
-	CreateRoute53Record(rootBody, terraformConfig)
-	rootBody.AppendNewline()
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {

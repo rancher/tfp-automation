@@ -148,6 +148,8 @@ terraform:
     region: ""
     prefix: ""
     awsUser: ""
+    clusterCIDR: "10.42.0.0/16,2001:cafe:42::/56"
+    serviceCIDR: "10.43.0.0/16,2001:cafe:43::/112"
     sshConnectionType: "ssh"
     timeout: "5m"
   ###################################
@@ -217,6 +219,8 @@ terraform:
     region: ""
     prefix: ""
     awsUser: ""
+    clusterCIDR: "2001:cafe:42::/56"
+    serviceCIDR: "2001:cafe:43::/112"
     sshConnectionType: "ssh"
     timeout: "5m"
   ###################################
@@ -538,6 +542,51 @@ See the below examples on how to run the tests:
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateAirgappedRKE2ClusterTestSuite$"`
 
+## Setup Dualstack RKE2 cluster
+
+See below an example config on setting up a standalone dual-stack RKE2 cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    ipAddressType: "ipv4"
+    loadBalancerType: "dualstack"
+    targetType: "instance"
+    region: ""
+    prefix: ""
+    awsUser: ""
+    clusterCIDR: "10.42.0.0/16,2001:cafe:42::/56"
+    serviceCIDR: "10.43.0.0/16,2001:cafe:43::/112"
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  standalone:
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    repo: ""                                      # REQUIRED - fill with desired value
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
+```
+
+See the below examples on how to run the test:
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestCreateDualStackRKE2ClusterTestSuite$"`
+
 ## Setup IPv6 RKE2 Cluster
 
 See below an example config on setting up a standalone IPv6 RKE2 cluster:
@@ -567,6 +616,8 @@ terraform:
     region: ""
     prefix: ""
     awsUser: ""
+    clusterCIDR: "2001:cafe:42::/56"
+    serviceCIDR: "2001:cafe:43::/112"
     sshConnectionType: "ssh"
     timeout: "5m"
   standalone:
