@@ -28,8 +28,8 @@ func CreateK3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 	terratestConfig *config.TerratestConfig, k3sServerOnePublicDNS, k3sServerOnePrivateIP, k3sServerTwoPublicDNS, k3sServerThreePublicDNS string) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.K3sKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	serverScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
+	serverScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/k3s/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/k3s/add-servers.sh")
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
 	if err != nil {
@@ -62,7 +62,8 @@ func CreateK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + k3sToken + " " +
-		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 
 	command += " || true'"
 
@@ -85,7 +86,8 @@ func AddK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + instance + " " + k3sToken + " " +
-			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 
 		command += " || true'"
 

@@ -18,10 +18,10 @@ import (
 )
 
 const (
-	rke2Bastion     = "rke2_bastion"
-	rke2ServerOne   = "rke2_server1"
-	rke2ServerTwo   = "rke2_server2"
-	rke2ServerThree = "rke2_server3"
+	rke2Bastion     = "bastion"
+	rke2ServerOne   = "server1"
+	rke2ServerTwo   = "server2"
+	rke2ServerThree = "server3"
 	token           = "token"
 )
 
@@ -88,7 +88,8 @@ func createIPv6RKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terra
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		rke2ServerOnePublicIP + " " + rke2ServerOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " +
-		terraformConfig.CNI + " " + rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+		terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+		rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 
 	command += " || true'"
@@ -122,7 +123,8 @@ func addIPv6RKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Ter
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			rke2ServerOnePublicIP + " " + publicIPInstance + " " + privateInstance + " " + terraformConfig.Standalone.RancherHostname + " " +
-			terraformConfig.CNI + " " + rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+			terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+			rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 
 		command += " || true'"

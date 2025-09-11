@@ -101,6 +101,8 @@ terraform:
     rancherHostname: ""                           # REQUIRED - fill with desired value
     rancherImage: ""                              # REQUIRED - fill with desired value
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    registryPassword: ""                          # REQUIRED
+    registryUsername: ""                          # REQUIRED
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created

@@ -17,13 +17,13 @@ import (
 )
 
 const (
-	rke2ServerOne           = "rke2_server1"
-	rke2ServerTwo           = "rke2_server2"
-	rke2ServerThree         = "rke2_server3"
-	rke2ServerOnePublicIP   = "rke2_server1_public_ip"
-	rke2ServerOnePrivateIP  = "rke2_server1_private_ip"
-	rke2ServerTwoPublicIP   = "rke2_server2_public_ip"
-	rke2ServerThreePublicIP = "rke2_server3_public_ip"
+	serverOne           = "server1"
+	serverTwo           = "server2"
+	serverThree         = "server3"
+	serverOnePublicIP   = "server1_public_ip"
+	serverOnePrivateIP  = "server1_private_ip"
+	serverTwoPublicIP   = "server2_public_ip"
+	serverThreePublicIP = "server3_public_ip"
 
 	terraformConst = "terraform"
 )
@@ -44,7 +44,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	var err error
 	var nodeBalancerHostname string
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances := []string{serverOne, serverTwo, serverThree}
 
 	providerTunnel := tunnel.TunnelToProvider(terraformConfig.Provider)
 	file, err = providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -59,14 +59,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	rke2ServerOnePublicIP := terraform.Output(t, terraformOptions, rke2ServerOnePublicIP)
-	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPublicIP := terraform.Output(t, terraformOptions, rke2ServerTwoPublicIP)
-	rke2ServerThreePublicIP := terraform.Output(t, terraformOptions, rke2ServerThreePublicIP)
+	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
+	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
+	serverTwoPublicIP := terraform.Output(t, terraformOptions, serverTwoPublicIP)
+	serverThreePublicIP := terraform.Output(t, terraformOptions, serverThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
 	if err != nil {
 		return "", err
 	}
@@ -80,7 +80,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicIP, nodeBalancerHostname)
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, nodeBalancerHostname)
 	if err != nil {
 		return "", err
 	}
@@ -92,5 +92,5 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	return rke2ServerOnePublicIP, nil
+	return serverOnePublicIP, nil
 }

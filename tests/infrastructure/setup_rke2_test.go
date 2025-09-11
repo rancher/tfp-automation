@@ -27,22 +27,22 @@ type CreateRKE2ClusterTestSuite struct {
 }
 
 const (
-	rke2Bastion     = "rke2_bastion"
-	rke2ServerOne   = "rke2_server1"
-	rke2ServerTwo   = "rke2_server2"
-	rke2ServerThree = "rke2_server3"
+	bastion     = "bastion"
+	serverOne   = "server1"
+	serverTwo   = "server2"
+	serverThree = "server3"
 
-	rke2ServerOnePublicIP = "rke2_server1_public_ip"
-	registryPublicIP      = "registry_public_ip"
+	serverOnePublicIP = "server1_public_ip"
+	registryPublicIP  = "registry_public_ip"
 
 	nonAuthRegistry = "non_auth_registry"
 
-	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
-	rke2ServerTwoPublicIP    = "rke2_server2_public_ip"
-	rke2ServerThreePublicIP  = "rke2_server3_public_ip"
-	rke2BastionPublicIP      = "rke2_bastion_public_ip"
-	rke2ServerTwoPrivateIP   = "rke2_server2_private_ip"
-	rke2ServerThreePrivateIP = "rke2_server3_private_ip"
+	serverOnePrivateIP   = "server1_private_ip"
+	serverTwoPublicIP    = "server2_public_ip"
+	serverThreePublicIP  = "server3_public_ip"
+	bastionPublicIP      = "bastion_public_ip"
+	serverTwoPrivateIP   = "server2_private_ip"
+	serverThreePrivateIP = "server3_private_ip"
 
 	terraformConst = "terraform"
 )
@@ -67,7 +67,7 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree}
+	instances := []string{serverOne, serverTwo, serverThree}
 
 	providerTunnel := providers.TunnelToProvider(i.terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
@@ -75,14 +75,14 @@ func (i *CreateRKE2ClusterTestSuite) TestCreateRKE2Cluster() {
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
-	rke2ServerOnePublicIP := terraform.Output(i.T(), terraformOptions, rke2ServerOnePublicIP)
-	rke2ServerOnePrivateIP := terraform.Output(i.T(), terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPublicIP := terraform.Output(i.T(), terraformOptions, rke2ServerTwoPublicIP)
-	rke2ServerThreePublicIP := terraform.Output(i.T(), terraformOptions, rke2ServerThreePublicIP)
+	serverOnePublicIP := terraform.Output(i.T(), terraformOptions, serverOnePublicIP)
+	serverOnePrivateIP := terraform.Output(i.T(), terraformOptions, serverOnePrivateIP)
+	serverTwoPublicIP := terraform.Output(i.T(), terraformOptions, serverTwoPublicIP)
+	serverThreePublicIP := terraform.Output(i.T(), terraformOptions, serverThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)

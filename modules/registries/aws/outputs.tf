@@ -14,18 +14,18 @@ output "ecr_registry_public_dns" {
   value = aws_instance.ecr_registry.public_dns
 }
 
-output "rke2_server1_public_dns" {
-  value = aws_instance.rke2_server1.public_dns
+output "server1_public_dns" {
+  value = aws_instance.server1.public_dns
 }
 
-output "rke2_server1_private_ip" {
-  value = aws_instance.rke2_server1.private_ip
+output "server1_private_ip" {
+  value = aws_instance.server1.private_ip
 }
 
-output "rke2_server2_public_dns" {
-  value = aws_instance.rke2_server2.public_dns
+output "server2_public_dns" {
+  value = aws_instance.server2.public_dns
 }
 
-output "rke2_server3_public_dns" {
-  value = aws_instance.rke2_server3.public_dns
+output "server3_public_dns" {
+  value = aws_instance.server3.public_dns
 }

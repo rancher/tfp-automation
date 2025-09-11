@@ -29,13 +29,13 @@ const (
 	globalRegistry  = "global_registry"
 	ecrRegistry     = "ecr_registry"
 
-	rke2ServerOne            = "rke2_server1"
-	rke2ServerTwo            = "rke2_server2"
-	rke2ServerThree          = "rke2_server3"
-	rke2ServerOnePublicDNS   = "rke2_server1_public_dns"
-	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
-	rke2ServerTwoPublicDNS   = "rke2_server2_public_dns"
-	rke2ServerThreePublicDNS = "rke2_server3_public_dns"
+	serverOne            = "server1"
+	serverTwo            = "server2"
+	serverThree          = "server3"
+	serverOnePublicDNS   = "server1_public_dns"
+	serverOnePrivateIP   = "server1_private_ip"
+	serverTwoPublicDNS   = "server2_public_dns"
+	serverThreePublicDNS = "server3_public_dns"
 
 	terraformConst = "terraform"
 )
@@ -53,7 +53,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{rke2ServerOne, rke2ServerTwo, rke2ServerThree, authRegistry, nonAuthRegistry, globalRegistry, ecrRegistry}
+	instances := []string{serverOne, serverTwo, serverThree, authRegistry, nonAuthRegistry, globalRegistry, ecrRegistry}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -72,10 +72,10 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	nonAuthRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthRegistryPublicDNS)
 	globalRegistryPublicDNS := terraform.Output(t, terraformOptions, globalRegistryPublicDNS)
 	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
-	rke2ServerOnePublicDNS := terraform.Output(t, terraformOptions, rke2ServerOnePublicDNS)
-	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPublicDNS := terraform.Output(t, terraformOptions, rke2ServerTwoPublicDNS)
-	rke2ServerThreePublicDNS := terraform.Output(t, terraformOptions, rke2ServerThreePublicDNS)
+	serverOnePublicDNS := terraform.Output(t, terraformOptions, serverOnePublicDNS)
+	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
+	serverTwoPublicDNS := terraform.Output(t, terraformOptions, serverTwoPublicDNS)
+	serverThreePublicDNS := terraform.Output(t, terraformOptions, serverThreePublicDNS)
 
 	// Will create the authenticated registry, unauthenticated registry, and global registry in parallel using goroutines.
 	var wg sync.WaitGroup
@@ -145,8 +145,8 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicDNS, rke2ServerOnePrivateIP,
-		rke2ServerTwoPublicDNS, rke2ServerThreePublicDNS, globalRegistryPublicDNS)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicDNS, serverOnePrivateIP,
+		serverTwoPublicDNS, serverThreePublicDNS, globalRegistryPublicDNS)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -160,7 +160,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2ServerOnePublicDNS, globalRegistryPublicDNS)
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicDNS, globalRegistryPublicDNS)
 	if err != nil {
 		return "", "", "", err
 	}

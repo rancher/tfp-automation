@@ -21,16 +21,16 @@ import (
 const (
 	nodeBalancerHostname = "linode_node_balancer_hostname"
 
-	rke2Bastion     = "rke2_bastion"
-	rke2ServerOne   = "rke2_server1"
-	rke2ServerTwo   = "rke2_server2"
-	rke2ServerThree = "rke2_server3"
+	bastion     = "bastion"
+	serverOne   = "server1"
+	serverTwo   = "server2"
+	serverThree = "server3"
 
-	rke2BastionPublicDNS     = "rke2_bastion_public_dns"
-	rke2BastionPrivateIP     = "rke2_bastion_private_ip"
-	rke2ServerOnePrivateIP   = "rke2_server1_private_ip"
-	rke2ServerTwoPrivateIP   = "rke2_server2_private_ip"
-	rke2ServerThreePrivateIP = "rke2_server3_private_ip"
+	bastionPublicDNS     = "bastion_public_dns"
+	bastionPrivateIP     = "bastion_private_ip"
+	serverOnePrivateIP   = "server1_private_ip"
+	serverTwoPrivateIP   = "server2_private_ip"
+	serverThreePrivateIP = "server3_private_ip"
 
 	terraformConst = "terraform"
 )
@@ -51,7 +51,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	var err error
 	var linodeNodeBalancerHostname string
 
-	instances := []string{rke2Bastion}
+	instances := []string{bastion}
 
 	providerTunnel := tunnel.TunnelToProvider(terraformConfig.Provider)
 	file, err = providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -70,15 +70,15 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		linodeNodeBalancerHostname = terraform.Output(t, terraformOptions, nodeBalancerHostname)
 	}
 
-	rke2BastionPublicDNS := terraform.Output(t, terraformOptions, rke2BastionPublicDNS)
-	rke2BastionPrivateIP := terraform.Output(t, terraformOptions, rke2BastionPrivateIP)
-	rke2ServerOnePrivateIP := terraform.Output(t, terraformOptions, rke2ServerOnePrivateIP)
-	rke2ServerTwoPrivateIP := terraform.Output(t, terraformOptions, rke2ServerTwoPrivateIP)
-	rke2ServerThreePrivateIP := terraform.Output(t, terraformOptions, rke2ServerThreePrivateIP)
+	bastionPublicDNS := terraform.Output(t, terraformOptions, bastionPublicDNS)
+	bastionPrivateIP := terraform.Output(t, terraformOptions, bastionPrivateIP)
+	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
+	serverTwoPrivateIP := terraform.Output(t, terraformOptions, serverTwoPrivateIP)
+	serverThreePrivateIP := terraform.Output(t, terraformOptions, serverThreePrivateIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")
-	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	if err != nil {
 		return "", "", err
 	}
@@ -92,7 +92,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	if err != nil {
 		return "", "", err
 	}
@@ -106,7 +106,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, rke2BastionPublicDNS, rke2BastionPrivateIP, linodeNodeBalancerHostname)
+	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, linodeNodeBalancerHostname)
 	if err != nil {
 		return "", "", err
 	}
@@ -118,7 +118,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	terraformConfig.Proxy.ProxyBastion = rke2BastionPublicDNS
+	terraformConfig.Proxy.ProxyBastion = bastionPublicDNS
 
-	return rke2BastionPublicDNS, rke2BastionPrivateIP, nil
+	return bastionPublicDNS, bastionPrivateIP, nil
 }
