@@ -71,14 +71,14 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
+			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client, p.client.RancherConfig.AdminToken)
 			require.NoError(p.T(), err)
 
 			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(p.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

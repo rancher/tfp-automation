@@ -237,7 +237,7 @@ const (
 	RKE               = "rke"
 	RKECluster        = "rke_cluster"
 	RequiredProviders = "required_providers"
-	StandardUser      = "standard_user"
+	AdminUser         = "admin_user"
 	Source            = "source"
 	Terraform         = "terraform"
 	TokenKey          = "token_key"

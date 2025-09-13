@@ -10,8 +10,8 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
@@ -19,6 +19,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/infrastructure"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -26,13 +27,14 @@ import (
 
 type KubernetesUpgradeHostedTestSuite struct {
 	suite.Suite
-	client           *rancher.Client
-	session          *session.Session
-	cattleConfig     map[string]any
-	rancherConfig    *rancher.Config
-	terraformConfig  *config.TerraformConfig
-	terratestConfig  *config.TerratestConfig
-	terraformOptions *terraform.Options
+	client             *rancher.Client
+	standardUserClient *rancher.Client
+	session            *session.Session
+	cattleConfig       map[string]any
+	rancherConfig      *rancher.Config
+	terraformConfig    *config.TerraformConfig
+	terratestConfig    *config.TerratestConfig
+	terraformOptions   *terraform.Options
 }
 
 func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
@@ -53,13 +55,24 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 }
 
 func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
+	var err error
+	var testUser, testPassword string
+
 	tests := []struct {
 		name string
 	}{
 		{"Upgrade_Hosted_Cluster"},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	adminToken := k.client.RancherConfig.AdminToken
+
+	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
+	require.NoError(k.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(k.T(), k.terraformOptions, k.rancherConfig, testUser, testPassword)
+	require.NoError(k.T(), err)
+
+	k.client.RancherConfig.AdminToken = standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(k.terratestConfig)
@@ -72,20 +85,20 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
+			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client, adminToken)
 			require.NoError(k.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.standardUserClient, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
+			provisioning.KubernetesUpgrade(k.T(), k.standardUserClient, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
 
 			time.Sleep(4 * time.Minute)
 
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(k.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

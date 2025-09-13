@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -12,7 +11,7 @@ import (
 )
 
 // GetProvisioningSchemaParams gets a set of params from the cattle config and returns a qase params object
-func GetProvisioningSchemaParams(client *rancher.Client, configMap map[string]any) []upstream.Params {
+func GetProvisioningSchemaParams(configMap map[string]any) []upstream.Params {
 	var params []upstream.Params
 	var amiParam, windows2019AMIParam, windows2022AMIParam upstream.Params
 

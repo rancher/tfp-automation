@@ -86,7 +86,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -130,7 +130,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, configMap, newFile, rootBody, file)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

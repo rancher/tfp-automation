@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -27,13 +28,14 @@ import (
 
 type RBACTestSuite struct {
 	suite.Suite
-	client           *rancher.Client
-	session          *session.Session
-	cattleConfig     map[string]any
-	rancherConfig    *rancher.Config
-	terraformConfig  *config.TerraformConfig
-	terratestConfig  *config.TerratestConfig
-	terraformOptions *terraform.Options
+	client             *rancher.Client
+	standardUserClient *rancher.Client
+	session            *session.Session
+	cattleConfig       map[string]any
+	rancherConfig      *rancher.Config
+	terraformConfig    *config.TerraformConfig
+	terratestConfig    *config.TerratestConfig
+	terraformOptions   *terraform.Options
 }
 
 func (r *RBACTestSuite) SetupSuite() {
@@ -54,6 +56,9 @@ func (r *RBACTestSuite) SetupSuite() {
 }
 
 func (r *RBACTestSuite) TestTfpRBAC() {
+	var err error
+	var testUser, testPassword string
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -64,7 +69,10 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		{"Project_Owner", config.ProjectOwner},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	adminToken := r.client.RancherConfig.AdminToken
+
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -84,15 +92,15 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
+			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client, adminToken)
 			require.NoError(r.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), adminClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
-			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
+			rb.RBAC(r.T(), r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

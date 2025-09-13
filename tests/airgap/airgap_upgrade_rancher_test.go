@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -28,6 +29,7 @@ import (
 type TfpAirgapUpgradeRancherTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
+	standardUserClient         *rancher.Client
 	session                    *session.Session
 	cattleConfig               map[string]any
 	rancherConfig              *rancher.Config
@@ -61,19 +63,35 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 
 func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	var clusterIDs []string
+	var err error
+	var testUser, testPassword string
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	adminToken := a.client.RancherConfig.AdminToken
 
-	a.provisionAndVerifyCluster("Airgap_Pre_Rancher_Upgrade_", clusterIDs, testUser, testPassword)
+	a.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(a.client)
+	require.NoError(a.T(), err)
 
-	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = infrastructure.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig)
+	standardUserToken, err := infrastructure.CreateStandardUserToken(a.T(), a.terraformOptions, a.rancherConfig, testUser, testPassword)
+	require.NoError(a.T(), err)
+
+	standardToken := standardUserToken.Token
+	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
+
+	a.provisionAndVerifyCluster("Airgap_Pre_Rancher_Upgrade_", clusterIDs, testUser, testPassword, adminToken, standardToken)
+
+	a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = infrastructure.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig)
 
 	if a.standaloneConfig.UpgradedRancherTagVersion != "head" {
 		provisioning.VerifyRancherVersion(a.T(), a.rancherConfig.Host, a.standaloneConfig.UpgradedRancherTagVersion)
 	}
 
+	standardUserToken, err = infrastructure.CreateStandardUserToken(a.T(), a.terraformOptions, a.rancherConfig, testUser, testPassword)
+	require.NoError(a.T(), err)
+
+	standardToken = standardUserToken.Token
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
-	a.provisionAndVerifyCluster("Airgap_Post_Rancher_Upgrade_", clusterIDs, testUser, testPassword)
+
+	a.provisionAndVerifyCluster("Airgap_Post_Rancher_Upgrade_", clusterIDs, testUser, testPassword, adminToken, standardToken)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 	cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
@@ -83,7 +101,8 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	}
 }
 
-func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, testUser, testPassword string) []string {
+func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, testUser, testPassword,
+	adminToken, standardToken string) []string {
 	tests := []struct {
 		name   string
 		module string
@@ -103,7 +122,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
 		require.NoError(a.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, a.client.RancherConfig.AdminToken, configMap[0])
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
 		require.NoError(a.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
@@ -115,23 +134,26 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
 		require.NoError(a.T(), err)
 
-		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(a.T(), a.standardUserClient, a.terratestConfig, a.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name
 
+		adminClient, err := provisioning.FetchAdminClient(a.T(), a.client, adminToken)
+		require.NoError(a.T(), err)
+
 		a.Run((tt.name), func() {
-			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
-			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
+			provisioning.VerifyClustersState(a.T(), adminClient, clusterIDs)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
-				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				provisioning.VerifyClustersState(a.T(), adminClient, clusterIDs)
 			}
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(a.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

@@ -11,8 +11,8 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
@@ -20,6 +20,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/infrastructure"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -27,13 +28,14 @@ import (
 
 type ScaleHostedTestSuite struct {
 	suite.Suite
-	client           *rancher.Client
-	session          *session.Session
-	cattleConfig     map[string]any
-	rancherConfig    *rancher.Config
-	terraformConfig  *config.TerraformConfig
-	terratestConfig  *config.TerratestConfig
-	terraformOptions *terraform.Options
+	client             *rancher.Client
+	standardUserClient *rancher.Client
+	session            *session.Session
+	cattleConfig       map[string]any
+	rancherConfig      *rancher.Config
+	terraformConfig    *config.TerraformConfig
+	terratestConfig    *config.TerratestConfig
+	terraformOptions   *terraform.Options
 }
 
 func (s *ScaleHostedTestSuite) SetupSuite() {
@@ -54,13 +56,24 @@ func (s *ScaleHostedTestSuite) SetupSuite() {
 }
 
 func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
+	var err error
+	var testUser, testPassword string
+
 	tests := []struct {
 		name string
 	}{
 		{"Scaling_Hosted_Cluster"},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	adminToken := s.client.RancherConfig.AdminToken
+
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	require.NoError(s.T(), err)
+
+	s.client.RancherConfig.AdminToken = standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)
@@ -73,34 +86,34 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
+			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client, adminToken)
 			require.NoError(s.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.standardUserClient, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledUpNodepools, configMap[0])
 			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.standardUserClient, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			time.Sleep(4 * time.Minute)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyNodeCount(s.T(), s.client, s.terraformConfig.ResourcePrefix, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
+			provisioning.VerifyNodeCount(s.T(), adminClient, s.terraformConfig.ResourcePrefix, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledUpNodeCount)
 
 			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, s.terratestConfig.ScalingInput.ScaledDownNodepools, configMap[0])
 			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.standardUserClient, s.rancherConfig, s.terraformConfig, s.terratestConfig, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			time.Sleep(4 * time.Minute)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyNodeCount(s.T(), s.client, s.terraformConfig.ResourcePrefix, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledDownNodeCount)
+			provisioning.VerifyNodeCount(s.T(), adminClient, s.terraformConfig.ResourcePrefix, s.terraformConfig, s.terratestConfig.ScalingInput.ScaledDownNodeCount)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
