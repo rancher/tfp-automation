@@ -1,6 +1,7 @@
 package rke2k3s
 
 import (
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
@@ -20,6 +21,12 @@ const (
 func CreateRegistrySecret(terraformConfig *config.TerraformConfig, rootBody *hclwrite.Body) {
 	secretBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.SecretV2, terraformConfig.ResourcePrefix})
 	secretBlockBody := secretBlock.Body()
+
+	provider := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Rancher2 + "." + defaults.AdminUser)},
+	}
+
+	secretBlockBody.SetAttributeRaw(defaults.Provider, provider)
 
 	secretBlockBody.SetAttributeValue(clusterID, cty.StringVal(localCluster))
 

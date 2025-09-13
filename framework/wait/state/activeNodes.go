@@ -16,7 +16,7 @@ import (
 func AreNodesActive(client *rancher.Client, clusterID string) error {
 	err := kwait.PollUntilContextTimeout(context.TODO(), 10*time.Second, defaults.ThirtyMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
 		nodes, err := client.Management.Node.ListAll(&types.ListOpts{
-			Filters: map[string]interface{}{
+			Filters: map[string]any{
 				"clusterId": clusterID,
 			},
 		})

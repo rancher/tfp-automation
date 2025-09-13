@@ -46,7 +46,7 @@ func (t *RKEProviderTestSuite) TestCreateRKECluster() {
 	_, err := rke.CreateRKEMainTF(t.T(), t.terraformOptions, keyPath, t.rancherConfig, t.terraformConfig, t.terratestConfig)
 	require.NoError(t.T(), err)
 
-	params := tfpQase.GetProvisioningSchemaParams(t.client, t.cattleConfig)
+	params := tfpQase.GetProvisioningSchemaParams(t.cattleConfig)
 	err = qase.UpdateSchemaParameters("Standalone_RKE1_Cluster", params)
 	if err != nil {
 		logrus.Warningf("Failed to upload schema parameters %s", err)

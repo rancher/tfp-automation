@@ -1,7 +1,6 @@
 package rke1
 
 import (
-	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
@@ -14,12 +13,6 @@ func SetRancher2Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	clusterBlockBody := clusterBlock.Body()
 
 	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
-
-	provider := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Rancher2 + "." + defaults.StandardUser)},
-	}
-
-	clusterBlockBody.SetAttributeRaw(defaults.Provider, provider)
 
 	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()

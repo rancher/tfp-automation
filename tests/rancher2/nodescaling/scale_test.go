@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -20,6 +21,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/infrastructure"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -27,13 +29,14 @@ import (
 
 type ScaleTestSuite struct {
 	suite.Suite
-	client           *rancher.Client
-	session          *session.Session
-	cattleConfig     map[string]any
-	rancherConfig    *rancher.Config
-	terraformConfig  *config.TerraformConfig
-	terratestConfig  *config.TerratestConfig
-	terraformOptions *terraform.Options
+	client             *rancher.Client
+	standardUserClient *rancher.Client
+	session            *session.Session
+	cattleConfig       map[string]any
+	rancherConfig      *rancher.Config
+	terraformConfig    *config.TerraformConfig
+	terratestConfig    *config.TerratestConfig
+	terraformOptions   *terraform.Options
 }
 
 func (s *ScaleTestSuite) SetupSuite() {
@@ -54,6 +57,9 @@ func (s *ScaleTestSuite) SetupSuite() {
 }
 
 func (s *ScaleTestSuite) TestTfpScale() {
+	var err error
+	var testUser, testPassword string
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	scaleUpRolesDedicated := []config.Nodepool{config.ScaleUpEtcdNodePool, config.ScaleUpControlPlaneNodePool, config.ScaleUpWorkerNodePool}
 	scaleDownRolesDedicated := []config.Nodepool{config.ScaleUpEtcdNodePool, config.ScaleUpControlPlaneNodePool, config.WorkerNodePool}
@@ -67,7 +73,13 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		{"Scaling_8_nodes_to_13_nodes_11_nodes", nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	require.NoError(s.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)
@@ -76,7 +88,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
 		require.NoError(s.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, s.rancherConfig.AdminToken, configMap[0])
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
 		require.NoError(s.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
@@ -103,27 +115,27 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.scaleUpNodeRoles, configMap[0])
 			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyNodeCount(s.T(), s.client, terraform.ResourcePrefix, terraform, scaledUpCount)
+			provisioning.VerifyNodeCount(s.T(), adminClient, terraform.ResourcePrefix, terraform, scaledUpCount)
 
 			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.scaleDownNodeRoles, configMap[0])
 			require.NoError(s.T(), err)
 
-			provisioning.Scale(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyNodeCount(s.T(), s.client, terraform.ResourcePrefix, s.terraformConfig, scaledDownCount)
+			provisioning.VerifyNodeCount(s.T(), adminClient, terraform.ResourcePrefix, terraform, scaledDownCount)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -136,13 +148,17 @@ func (s *ScaleTestSuite) TestTfpScale() {
 }
 
 func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
+	var err error
+	var testUser, testPassword string
+
 	tests := []struct {
 		name string
 	}{
 		{config.StandardClientName.String()},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)
@@ -162,12 +178,12 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 
 			operations.ReplaceValue([]string{"terratest", "nodepools"}, terratest.ScalingInput.ScaledUpNodepools, configMap[0])
 
-			provisioning.Scale(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
+			provisioning.Scale(s.T(), s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			time.Sleep(2 * time.Minute)
 
@@ -184,7 +200,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			provisioning.VerifyNodeCount(s.T(), adminClient, terraform.ResourcePrefix, s.terraformConfig, terratest.ScalingInput.ScaledDownNodeCount)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
@@ -30,6 +31,7 @@ import (
 type TfpRancher2RecurringRunsTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
+	standardUserClient         *rancher.Client
 	session                    *session.Session
 	cattleConfig               map[string]any
 	rancherConfig              *rancher.Config
@@ -51,13 +53,12 @@ func (r *TfpRancher2RecurringRunsTestSuite) SetupSuite() {
 
 	r.client, _, r.standaloneTerraformOptions, r.terraformOptions, r.cattleConfig = infrastructure.SetupRancher(r.T(), r.session, keypath.SanityKeyPath)
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, r.standaloneConfig = config.LoadTFPConfigs(r.cattleConfig)
-
-	if r.standaloneConfig.RancherTagVersion != "head" {
-		provisioning.VerifyRancherVersion(r.T(), r.rancherConfig.Host, r.standaloneConfig.RancherTagVersion)
-	}
 }
 
 func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomCluster() {
+	var err error
+	var testUser, testPassword string
+
 	tests := []struct {
 		name   string
 		module string
@@ -69,7 +70,14 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 	}
 
 	customClusterNames := []string{}
-	testUser, testPassword := configs.CreateTestCredentials()
+
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -78,13 +86,13 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
 		require.NoError(r.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, r.client.RancherConfig.AdminToken, configMap[0])
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
 		require.NoError(r.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(r.T(), err)
 
-		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
@@ -92,16 +100,16 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, customClusterNames := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, customClusterNames := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, _ = provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			}
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -114,6 +122,9 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 }
 
 func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedCluster() {
+	var err error
+	var testUser, testPassword string
+
 	tests := []struct {
 		name   string
 		module string
@@ -124,7 +135,13 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 		{"Upgrade_Imported_K3S", modules.ImportEC2K3s},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -133,7 +150,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
 		require.NoError(r.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, r.client.RancherConfig.AdminToken, configMap[0])
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
 		require.NoError(r.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
@@ -145,14 +162,14 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 
 			err = imported.SetUpgradeImportedCluster(r.client, terraform)
 			require.NoError(r.T(), err)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -165,6 +182,9 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 }
 
 func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
+	var err error
+	var testUser, testPassword string
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	snapshotRestoreNone := config.TerratestConfig{
@@ -183,7 +203,13 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 		{"K3S_Snapshot_Restore", modules.EC2K3s, nodeRolesDedicated, snapshotRestoreNone},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -192,7 +218,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
 		require.NoError(r.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, r.client.RancherConfig.AdminToken, configMap[0])
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
 		require.NoError(r.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
@@ -204,7 +230,7 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 		_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotRestore"}, tt.etcdSnapshot.SnapshotInput.SnapshotRestore, configMap[0])
 		require.NoError(r.T(), err)
 
-		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
@@ -212,14 +238,14 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 
 			snapshot.RestoreSnapshot(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

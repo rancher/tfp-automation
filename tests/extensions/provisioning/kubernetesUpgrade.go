@@ -15,7 +15,7 @@ import (
 
 // KubernetesUpgrade is a function that will run terraform apply and uprade the
 // Kubernetes version of the provisioned cluster.
-func KubernetesUpgrade(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
+func KubernetesUpgrade(t *testing.T, client, standardUserClient *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options, configMap []map[string]any,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows bool) ([]string, []string) {
 	var err error

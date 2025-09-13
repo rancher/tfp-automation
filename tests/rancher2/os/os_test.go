@@ -19,8 +19,8 @@ import (
 	"github.com/rancher/tests/actions/workloads/daemonset"
 	"github.com/rancher/tests/actions/workloads/deployment"
 	"github.com/rancher/tests/actions/workloads/statefulset"
+	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
@@ -36,15 +36,16 @@ import (
 
 type OSValidationTestSuite struct {
 	suite.Suite
-	client           *rancher.Client
-	session          *session.Session
-	rancherConfig    *rancher.Config
-	terraformConfig  *config.TerraformConfig
-	terratestConfig  *config.TerratestConfig
-	terraformOptions *terraform.Options
-	cattleConfig     map[string]any
-	permutedConfigs  []map[string]any
-	awsCredentials   cloudcredentials.AmazonEC2CredentialConfig
+	client             *rancher.Client
+	standardUserClient *rancher.Client
+	session            *session.Session
+	rancherConfig      *rancher.Config
+	terraformConfig    *config.TerraformConfig
+	terratestConfig    *config.TerratestConfig
+	terraformOptions   *terraform.Options
+	cattleConfig       map[string]any
+	permutedConfigs    []map[string]any
+	awsCredentials     cloudcredentials.AmazonEC2CredentialConfig
 }
 
 func (o *OSValidationTestSuite) SetupSuite() {
@@ -95,6 +96,9 @@ func (o *OSValidationTestSuite) SetupSuite() {
 }
 
 func (o *OSValidationTestSuite) TestDynamicOSValidation() {
+	var err error
+	var testUser, testPassword string
+
 	//Batch configs so that not all AMIs run in parallel
 	configBatches := map[string][]map[string]any{}
 	for _, cattleConfig := range o.permutedConfigs {
@@ -110,7 +114,9 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 	for ami, batch := range configBatches {
 		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, o.terratestConfig.PathToRepo, "")
 		defer cleanup.Cleanup(o.T(), o.terraformOptions, keyPath)
-		testUser, testPassword := configs.CreateTestCredentials()
+
+		o.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(o.client)
+		require.NoError(o.T(), err)
 
 		var clusterIDs []string
 
@@ -128,7 +134,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
-			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, customClusterNames)
 			time.Sleep(2 * time.Minute)
 			provisioning.VerifyClustersState(o.T(), o.client, clusterIDs)
 		})
@@ -170,7 +176,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 			})
 
 			for _, cattleConfig := range batch {
-				params := tfpQase.GetProvisioningSchemaParams(o.client, cattleConfig)
+				params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 				err = qase.UpdateSchemaParameters(testName, params)
 				if err != nil {
 					logrus.Warningf("Failed to upload schema parameters %s", err)

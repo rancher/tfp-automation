@@ -9,15 +9,9 @@ import (
 )
 
 // setMachineConfig is a function that will set the machine configurations in the main.tf file.
-func setMachineConfig(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, psact string) (*hclwrite.Body, hclwrite.Tokens, error) {
+func setMachineConfig(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, psact string) (*hclwrite.Body, error) {
 	machineConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{machineConfigV2, terraformConfig.ResourcePrefix})
 	machineConfigBlockBody := machineConfigBlock.Body()
-
-	provider := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Rancher2 + "." + defaults.StandardUser)},
-	}
-
-	machineConfigBlockBody.SetAttributeRaw(defaults.Provider, provider)
 
 	if psact == defaults.RancherBaseline {
 		dependsOnTemp := hclwrite.Tokens{
@@ -30,5 +24,5 @@ func setMachineConfig(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 
 	machineConfigBlockBody.SetAttributeValue(defaults.GenerateName, cty.StringVal(terraformConfig.ResourcePrefix))
 
-	return machineConfigBlockBody, provider, nil
+	return machineConfigBlockBody, nil
 }
