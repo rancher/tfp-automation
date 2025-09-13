@@ -8,11 +8,11 @@ import (
 )
 
 // FetchAdminClient will return the admin client for the cluster.
-func FetchAdminClient(t *testing.T, client *rancher.Client) (*rancher.Client, error) {
+func FetchAdminClient(t *testing.T, client *rancher.Client, adminToken string) (*rancher.Client, error) {
 	client, err := client.ReLogin()
 	require.NoError(t, err)
 
-	adminClient, err := rancher.NewClient(client.RancherConfig.AdminToken, client.Session)
+	adminClient, err := rancher.NewClient(adminToken, client.Session)
 	require.NoError(t, err)
 
 	return adminClient, err

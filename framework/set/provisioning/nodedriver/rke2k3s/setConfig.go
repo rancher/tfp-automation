@@ -81,7 +81,7 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 		rootBody.AppendNewline()
 	}
 
-	machineConfigBlockBody, provider, err := setMachineConfig(rootBody, terraformConfig, terratestConfig.PSACT)
+	machineConfigBlockBody, err := setMachineConfig(rootBody, terraformConfig, terratestConfig.PSACT)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -101,7 +101,7 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 
 	rootBody.AppendNewline()
 
-	clusterBlockBody, err := setClusterConfig(rootBody, terraformConfig, provider, terratestConfig.PSACT, terratestConfig.KubernetesVersion)
+	clusterBlockBody, err := setClusterConfig(rootBody, terraformConfig, terratestConfig.PSACT, terratestConfig.KubernetesVersion)
 	if err != nil {
 		return nil, nil, err
 	}

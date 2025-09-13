@@ -15,8 +15,8 @@ import (
 )
 
 // UpgradeAirgapRancher upgrades an existing airgapped Rancher server and returns the client, configuration, and Terraform options.
-func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registry string, session *session.Session, cattleConfig map[string]any) (*rancher.Client,
-	map[string]any, *terraform.Options, *terraform.Options) {
+func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registry string, session *session.Session, cattleConfig map[string]any) (map[string]any,
+	*terraform.Options, *terraform.Options) {
 	var err error
 
 	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
@@ -35,12 +35,12 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
 	require.NoError(t, err)
 
-	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
+	return updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
 
 // UpgradeProxyRancher upgrades an existing proxy Rancher server and returns the client, configuration, and Terraform options.
-func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, proxyBastion string, session *session.Session, cattleConfig map[string]any) (*rancher.Client,
-	map[string]any, *terraform.Options, *terraform.Options) {
+func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, proxyBastion string, session *session.Session, cattleConfig map[string]any) (map[string]any,
+	*terraform.Options, *terraform.Options) {
 	var err error
 
 	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
@@ -59,12 +59,12 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
 	require.NoError(t, err)
 
-	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
+	return updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
 
 // UpgradeRancher upgrades an existing Rancher server and returns the client, configuration, and Terraform options.
-func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, session *session.Session, cattleConfig map[string]any) (*rancher.Client,
-	map[string]any, *terraform.Options, *terraform.Options) {
+func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, session *session.Session, cattleConfig map[string]any) (map[string]any,
+	*terraform.Options, *terraform.Options) {
 	var err error
 
 	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
@@ -83,5 +83,5 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
 	require.NoError(t, err)
 
-	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
+	return updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }

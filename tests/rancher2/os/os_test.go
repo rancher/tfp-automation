@@ -170,7 +170,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 			})
 
 			for _, cattleConfig := range batch {
-				params := tfpQase.GetProvisioningSchemaParams(o.client, cattleConfig)
+				params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 				err = qase.UpdateSchemaParameters(testName, params)
 				if err != nil {
 					logrus.Warningf("Failed to upload schema parameters %s", err)

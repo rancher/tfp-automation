@@ -15,7 +15,7 @@ import (
 	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/registries"
-	sanity "github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/stretchr/testify/require"
 )
 

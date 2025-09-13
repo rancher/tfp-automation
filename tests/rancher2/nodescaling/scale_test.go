@@ -100,7 +100,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
+			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client, s.rancherConfig.AdminToken)
 			require.NoError(s.T(), err)
 
 			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
@@ -123,7 +123,7 @@ func (s *ScaleTestSuite) TestTfpScale() {
 			provisioning.VerifyNodeCount(s.T(), s.client, terraform.ResourcePrefix, s.terraformConfig, scaledDownCount)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -159,7 +159,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
+			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client, s.rancherConfig.AdminToken)
 			require.NoError(s.T(), err)
 
 			clusterIDs, _ := provisioning.Provision(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
@@ -184,7 +184,7 @@ func (s *ScaleTestSuite) TestTfpScaleDynamicInput() {
 			provisioning.VerifyNodeCount(s.T(), adminClient, terraform.ResourcePrefix, s.terraformConfig, terratest.ScalingInput.ScaledDownNodeCount)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(s.client, configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
