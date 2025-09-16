@@ -33,7 +33,6 @@ env:
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: ^TestTfpRegistriesTestSuite$
   SUITE_TIMEOUT: 7h
-  TIMEOUT: 30m
 
 permissions:
   id-token: write
@@ -102,13 +101,21 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-12 }}
+          value: | 
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-12)
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: ${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-12 }}
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-12)
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo

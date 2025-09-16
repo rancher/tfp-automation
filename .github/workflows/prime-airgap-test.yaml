@@ -39,7 +39,6 @@ env:
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   SUITE: "^TestTfpAirgapProvisioningTestSuite$"
   SUITE_TIMEOUT: "7h"
-  TIMEOUT: "30m"
 
 permissions:
   id-token: write
@@ -108,13 +107,21 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-11 }}
+          value: | 
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-11)
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: "${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-11 }}"
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-11)
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
@@ -168,7 +175,7 @@ jobs:
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
-              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY}}
+              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY }}
               awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
               awsUser: "${{ secrets.AWS_USER }}"
               sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
@@ -330,13 +337,21 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: ${{ inputs.rancher_version || github.event.inputs.rancher-version-2-10 }}
+          value: | 
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-version-2-10)
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: "${{ inputs.rancher_chart_version || github.event.inputs.rancher-chart-version-2-10 }}"
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher-chart-version-2-10)
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
@@ -390,7 +405,7 @@ jobs:
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
-              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY}}
+              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY }}
               awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
               awsUser: "${{ secrets.AWS_USER }}"
               sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
