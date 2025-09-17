@@ -8,12 +8,10 @@ import (
 )
 
 // setClusterConfig is a function that will set the cluster configurations in the main.tf file.
-func setClusterConfig(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, provider hclwrite.Tokens, psact,
-	kubernetesVersion string) (*hclwrite.Body, error) {
+func setClusterConfig(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, psact, kubernetesVersion string) (*hclwrite.Body, error) {
 	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterV2, terraformConfig.ResourcePrefix})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeRaw(defaults.Provider, provider)
 	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 	clusterBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(kubernetesVersion))
 	clusterBlockBody.SetAttributeValue(defaults.EnableNetworkPolicy, cty.BoolVal(terraformConfig.EnableNetworkPolicy))

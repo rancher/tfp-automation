@@ -1,7 +1,6 @@
 package azure
 
 import (
-	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/azure"
@@ -48,11 +47,6 @@ func SetAzureRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.Te
 	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, terraformConfig.ResourcePrefix})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	provider := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Rancher2 + "." + defaults.StandardUser)},
-	}
-
-	cloudCredBlockBody.SetAttributeRaw(defaults.Provider, provider)
 	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	azureCredBlock := cloudCredBlockBody.AppendNewBlock(azure.AzureCredentialConfig, nil)
