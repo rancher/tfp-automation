@@ -60,6 +60,9 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 	var err error
 	var testUser, testPassword string
 
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	tests := []struct {
 		name   string
 		module string
@@ -69,9 +72,6 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 		{"Upgrade_Imported_RKE2_Windows_2022", modules.ImportEC2RKE2Windows2022},
 		{"Upgrade_Imported_K3S", modules.ImportEC2K3s},
 	}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
@@ -115,14 +115,14 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicIn
 	var err error
 	var testUser, testPassword string
 
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	tests := []struct {
 		name string
 	}{
 		{config.StandardClientName.String()},
 	}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)

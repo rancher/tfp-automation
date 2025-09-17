@@ -57,14 +57,14 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 	var err error
 	var testUser, testPassword string
 
+	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
+	require.NoError(k.T(), err)
+
 	tests := []struct {
 		name string
 	}{
 		{"Upgrade_Hosted_Cluster"},
 	}
-
-	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
-	require.NoError(k.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(k.terratestConfig)

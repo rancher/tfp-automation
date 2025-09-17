@@ -82,16 +82,6 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	var err error
 	var testUser, testPassword string
 
-	tests := []struct {
-		name   string
-		module string
-	}{
-		{"RKE2", modules.AirgapRKE2},
-		{"RKE2_Windows_2019", modules.AirgapRKE2Windows2019},
-		{"RKE2_Windows_2022", modules.AirgapRKE2Windows2022},
-		{"K3S", modules.AirgapK3S},
-	}
-
 	newFile, rootBody, file := rancher2.InitializeMainTF(a.terratestConfig)
 	defer file.Close()
 
@@ -104,6 +94,16 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	require.NoError(a.T(), err)
 
 	standardToken := standardUserToken.Token
+
+	tests := []struct {
+		name   string
+		module string
+	}{
+		{"RKE2", modules.AirgapRKE2},
+		{"RKE2_Windows_2019", modules.AirgapRKE2Windows2019},
+		{"RKE2_Windows_2022", modules.AirgapRKE2Windows2022},
+		{"K3S", modules.AirgapK3S},
+	}
 
 	for _, tt := range tests {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})

@@ -133,6 +133,16 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 	var err error
 	var testUser, testPassword string
 
+	customClusterNames := []string{}
+
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
+	require.NoError(p.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -145,16 +155,6 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 		{"Proxy_Provisioning_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
 		{"Proxy_Provisioning_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
-
-	customClusterNames := []string{}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
-	require.NoError(p.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)

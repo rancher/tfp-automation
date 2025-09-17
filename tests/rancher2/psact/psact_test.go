@@ -55,6 +55,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 	var err error
 	var testUser, testPassword string
 
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -66,9 +69,6 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		{"Rancher_Restricted", nodeRolesDedicated, "rancher-restricted"},
 		{"Rancher_Baseline", nodeRolesDedicated, "rancher-baseline"},
 	}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)

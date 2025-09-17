@@ -58,14 +58,14 @@ func (s *ScaleHostedTestSuite) TestTfpScaleHosted() {
 	var err error
 	var testUser, testPassword string
 
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
+
 	tests := []struct {
 		name string
 	}{
 		{"Scaling_Hosted_Cluster"},
 	}
-
-	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
-	require.NoError(s.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)

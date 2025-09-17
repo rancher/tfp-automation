@@ -59,6 +59,9 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	var err error
 	var testUser, testPassword string
 
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -68,9 +71,6 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		{"Cluster_Owner", config.ClusterOwner},
 		{"Project_Owner", config.ProjectOwner},
 	}
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)

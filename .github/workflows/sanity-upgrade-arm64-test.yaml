@@ -10,12 +10,6 @@ on:
         description: "Rancher tag version provided from check-rancher-tag workflow"
       rancher_chart_version:
         description: "Rancher chart version provided from check-rancher-tag workflow"
-      upgraded-rancher-version-2-12:
-        description: "Upgraded Rancher version for v2.12.x"
-        default: "v2.12-head"
-      upgraded-rancher-chart-version-2-12:
-        description: "Upgraded Rancher chart version for v2.12.x"
-        default: "2.12.1"
 
 permissions:
   id-token: write
@@ -33,7 +27,7 @@ env:
 jobs:
   v2-12:
     if: ${{ github.event_name == 'schedule' }}
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version || github.event.inputs.upgraded-rancher-version-2-12 }}
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -94,7 +88,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-version-2-12) || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
               (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) 
             }}
 
@@ -105,7 +99,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.upgraded-rancher-chart-version-2-12) ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
               (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
             }}
 

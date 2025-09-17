@@ -60,6 +60,14 @@ func (s *ScaleTestSuite) TestTfpScale() {
 	var err error
 	var testUser, testPassword string
 
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	require.NoError(s.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	scaleUpRolesDedicated := []config.Nodepool{config.ScaleUpEtcdNodePool, config.ScaleUpControlPlaneNodePool, config.ScaleUpWorkerNodePool}
 	scaleDownRolesDedicated := []config.Nodepool{config.ScaleUpEtcdNodePool, config.ScaleUpControlPlaneNodePool, config.WorkerNodePool}
@@ -72,14 +80,6 @@ func (s *ScaleTestSuite) TestTfpScale() {
 	}{
 		{"Scaling_8_nodes_to_13_nodes_11_nodes", nodeRolesDedicated, scaleUpRolesDedicated, scaleDownRolesDedicated},
 	}
-
-	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
-	require.NoError(s.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
-	require.NoError(s.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)

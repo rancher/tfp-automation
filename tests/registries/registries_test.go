@@ -62,6 +62,14 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	tests := []struct {
 		name      string
 		module    string
@@ -70,14 +78,6 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		{"Global_RKE2", modules.EC2RKE2, nodeRolesDedicated},
 		{"Global_K3S", modules.EC2K3s, nodeRolesAll},
 	}
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -139,6 +139,14 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 	var err error
 	var testUser, testPassword string
 
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
@@ -150,14 +158,6 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		{"Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
 		{"Auth_K3S", modules.EC2K3s, nodeRolesAll},
 	}
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -213,6 +213,14 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 	var err error
 	var testUser, testPassword string
 
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
@@ -224,14 +232,6 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		{"Non_Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
 		{"Non_Auth_K3S", modules.EC2K3s, nodeRolesAll},
 	}
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -293,6 +293,14 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 	var err error
 	var testUser, testPassword string
 
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -302,14 +310,6 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 	}{
 		{"ECR_RKE2", "ec2_rke2", nodeRolesDedicated},
 	}
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)

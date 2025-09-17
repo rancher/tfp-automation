@@ -59,16 +59,6 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 	var err error
 	var testUser, testPassword string
 
-	tests := []struct {
-		name   string
-		module string
-	}{
-		{"Custom_TFP_RKE2", modules.CustomEC2RKE2},
-		{"Custom_TFP_RKE2_Windows_2019", modules.CustomEC2RKE2Windows2019},
-		{"Custom_TFP_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022},
-		{"Custom_TFP_K3S", modules.CustomEC2K3s},
-	}
-
 	customClusterNames := []string{}
 
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
@@ -78,6 +68,16 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionCustomClust
 	require.NoError(r.T(), err)
 
 	standardToken := standardUserToken.Token
+
+	tests := []struct {
+		name   string
+		module string
+	}{
+		{"Custom_TFP_RKE2", modules.CustomEC2RKE2},
+		{"Custom_TFP_RKE2_Windows_2019", modules.CustomEC2RKE2Windows2019},
+		{"Custom_TFP_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022},
+		{"Custom_TFP_K3S", modules.CustomEC2K3s},
+	}
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -125,6 +125,14 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 	var err error
 	var testUser, testPassword string
 
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	tests := []struct {
 		name   string
 		module string
@@ -134,14 +142,6 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 		{"Upgrade_Imported_RKE2_Windows_2022", modules.ImportEC2RKE2Windows2022},
 		{"Upgrade_Imported_K3S", modules.ImportEC2K3s},
 	}
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
@@ -185,6 +185,14 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 	var err error
 	var testUser, testPassword string
 
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	snapshotRestoreNone := config.TerratestConfig{
@@ -202,14 +210,6 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 		{"RKE2_Snapshot_Restore", modules.EC2RKE2, nodeRolesDedicated, snapshotRestoreNone},
 		{"K3S_Snapshot_Restore", modules.EC2K3s, nodeRolesDedicated, snapshotRestoreNone},
 	}
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
