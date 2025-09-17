@@ -81,19 +81,6 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	var err error
 	var testUser, testPassword string
 
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-
-	tests := []struct {
-		name      string
-		nodeRoles []config.Nodepool
-		module    string
-	}{
-		{"RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"K3S", nodeRolesDedicated, modules.EC2K3s},
-	}
-
 	newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)
 	defer file.Close()
 
@@ -106,6 +93,19 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	require.NoError(s.T(), err)
 
 	standardToken := standardUserToken.Token
+
+	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+
+	tests := []struct {
+		name      string
+		nodeRoles []config.Nodepool
+		module    string
+	}{
+		{"RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
+		{"RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
+		{"K3S", nodeRolesDedicated, modules.EC2K3s},
+	}
 
 	for _, tt := range tests {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})

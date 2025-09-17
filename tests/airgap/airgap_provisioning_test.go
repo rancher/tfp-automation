@@ -58,16 +58,6 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 	var err error
 	var testUser, testPassword string
 
-	tests := []struct {
-		name   string
-		module string
-	}{
-		{"Airgap_RKE2", modules.AirgapRKE2},
-		{"Airgap_RKE2_Windows_2019", modules.AirgapRKE2Windows2019},
-		{"Airgap_RKE2_Windows_2022", modules.AirgapRKE2Windows2022},
-		{"Airgap_K3S", modules.AirgapK3S},
-	}
-
 	customClusterNames := []string{}
 
 	a.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(a.client)
@@ -77,6 +67,16 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 	require.NoError(a.T(), err)
 
 	standardToken := standardUserToken.Token
+
+	tests := []struct {
+		name   string
+		module string
+	}{
+		{"Airgap_RKE2", modules.AirgapRKE2},
+		{"Airgap_RKE2_Windows_2019", modules.AirgapRKE2Windows2019},
+		{"Airgap_RKE2_Windows_2022", modules.AirgapRKE2Windows2022},
+		{"Airgap_K3S", modules.AirgapK3S},
+	}
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(a.terratestConfig)

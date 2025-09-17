@@ -61,6 +61,11 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 	var err error
 	var testUser, testPassword string
 
+	customClusterNames := []string{}
+
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	tests := []struct {
 		name   string
 		module string
@@ -70,11 +75,6 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 		{"Custom_TFP_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022},
 		{"Custom_TFP_K3S", modules.CustomEC2K3s},
 	}
-
-	customClusterNames := []string{}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
@@ -124,16 +124,16 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 	var err error
 	var testUser, testPassword string
 
+	customClusterNames := []string{}
+
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	tests := []struct {
 		name string
 	}{
 		{config.StandardClientName.String()},
 	}
-
-	customClusterNames := []string{}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)

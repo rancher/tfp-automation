@@ -58,6 +58,9 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	var err error
 	var testUser, testPassword string
 
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -66,9 +69,6 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	}{
 		{"8_nodes_3_etcd_2_cp_3_worker", nodeRolesDedicated},
 	}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
@@ -111,14 +111,14 @@ func (p *ProvisionTestSuite) TestTfpProvisionDynamicInput() {
 	var err error
 	var testUser, testPassword string
 
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	tests := []struct {
 		name string
 	}{
 		{config.StandardClientName.String()},
 	}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)

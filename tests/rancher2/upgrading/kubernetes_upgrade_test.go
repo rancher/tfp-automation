@@ -58,6 +58,9 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 	var err error
 	var testUser, testPassword string
 
+	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
+	require.NoError(k.T(), err)
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -66,9 +69,6 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 	}{
 		{"8_nodes_3_etcd_2_cp_3_worker", nodeRolesDedicated},
 	}
-
-	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
-	require.NoError(k.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(k.terratestConfig)
@@ -114,14 +114,14 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 	var err error
 	var testUser, testPassword string
 
+	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
+	require.NoError(k.T(), err)
+
 	tests := []struct {
 		name string
 	}{
 		{config.StandardClientName.String()},
 	}
-
-	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
-	require.NoError(k.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(k.terratestConfig)

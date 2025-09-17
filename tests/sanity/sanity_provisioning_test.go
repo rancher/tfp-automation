@@ -57,6 +57,16 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 	var err error
 	var testUser, testPassword string
 
+	customClusterNames := []string{}
+
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	require.NoError(s.T(), err)
+
+	standardToken := standardUserToken.Token
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -69,16 +79,6 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		{"Sanity_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
 		{"Sanity_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
-
-	customClusterNames := []string{}
-
-	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
-	require.NoError(s.T(), err)
-
-	standardUserToken, err := infrastructure.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
-	require.NoError(s.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)

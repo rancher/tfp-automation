@@ -56,14 +56,14 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 	var err error
 	var testUser, testPassword string
 
+	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
+	require.NoError(p.T(), err)
+
 	tests := []struct {
 		name string
 	}{
 		{"Provision_Hosted_Cluster"},
 	}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)

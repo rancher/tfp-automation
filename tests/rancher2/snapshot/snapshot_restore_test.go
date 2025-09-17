@@ -57,6 +57,9 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 	var err error
 	var testUser, testPassword string
 
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
+
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	snapshotRestoreNone := config.TerratestConfig{
@@ -72,9 +75,6 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 	}{
 		{"Snapshot_Restore", nodeRolesDedicated, snapshotRestoreNone},
 	}
-
-	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
-	require.NoError(s.T(), err)
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)

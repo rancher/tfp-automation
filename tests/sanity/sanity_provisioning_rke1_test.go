@@ -55,16 +55,6 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) TestTfpRKE1ProvisioningSanity() {
 	var err error
 	var testUser, testPassword string
 
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-
-	tests := []struct {
-		name      string
-		nodeRoles []config.Nodepool
-		module    string
-	}{
-		{"Sanity_RKE1", nodeRolesDedicated, modules.EC2RKE1},
-	}
-
 	customClusterNames := []string{}
 
 	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
@@ -74,6 +64,16 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) TestTfpRKE1ProvisioningSanity() {
 	require.NoError(s.T(), err)
 
 	standardToken := standardUserToken.Token
+
+	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+
+	tests := []struct {
+		name      string
+		nodeRoles []config.Nodepool
+		module    string
+	}{
+		{"Sanity_RKE1", nodeRolesDedicated, modules.EC2RKE1},
+	}
 
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)

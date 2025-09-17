@@ -17,22 +17,14 @@ jobs:
     strategy:
       matrix:
         workflow:
-          - community-airgap-test.yaml
-          - community-airgap-upgrade-test.yaml
-          - community-proxy-test.yaml
-          - community-proxy-upgrade-test.yaml
-          - community-rancher2-recurring-test.yaml
-          - community-registry-test.yaml
-          - community-sanity-test.yaml
-          - community-sanity-upgrade-test.yaml
-          - prime-airgap-test.yaml
-          - prime-airgap-upgrade-test.yaml
-          - prime-proxy-test.yaml
-          - prime-proxy-upgrade-test.yaml
-          - prime-rancher2-recurring-test.yaml
-          - prime-registry-test.yaml
-          - prime-sanity-test.yaml
-          - prime-sanity-upgrade-test.yaml
+          - airgap-test.yaml
+          - airgap-upgrade-test.yaml
+          - proxy-test.yaml
+          - proxy-upgrade-test.yaml
+          - rancher2-recurring-test.yaml
+          - registry-test.yaml
+          - sanity-test.yaml
+          - sanity-upgrade-test.yaml
 
     steps:
       - name: Trigger test workflow ${{ matrix.workflow }}
