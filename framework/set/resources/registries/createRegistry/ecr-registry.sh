@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 
 ECR=$1
-REGISTRY_USERNAME=$2
-REGISTRY_PASSWORD=$3
+DOCKERHUB_USERNAME=$2
+DOCKERHUB_PASSWORD=$3
 RANCHER_VERSION=$4
 RANCHER_IMAGE=$5
 USER=$6
@@ -34,7 +34,7 @@ manageImages() {
         action "${ACTION}" "${IMAGE}"
         COUNTER=$((COUNTER+1))
         
-        if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
+        if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
             wait
         fi
     done
@@ -53,14 +53,49 @@ action() {
     fi
 }
 
+verifyImages() {
+    echo "Verifying images in ECR registry..."
+
+    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
+    PARALLEL_ACTIONS=10
+    COUNTER=0
+
+    for IMAGE in "${IMAGES[@]}"; do
+        {
+            TARGET_IMAGE=${ECR}/${IMAGE}
+            if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
+                echo "${IMAGE} exists"
+            else
+                echo "${IMAGE} is missing, fixing..."
+                sudo docker pull ${IMAGE}
+                sudo docker tag ${IMAGE} ${TARGET_IMAGE}
+                sudo docker push ${TARGET_IMAGE}
+                echo "${IMAGE} pushed successfully."
+            fi
+        } &
+        
+        COUNTER=$((COUNTER+1))
+        if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
+            wait
+        fi
+    done
+
+    wait
+    echo "Image verification complete."
+}
+
 configureAWS
 
 echo "Logging into Docker Hub..."
-sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+sudo docker login https://registry-1.docker.io -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
 
 echo "Creating a self-signed certificate..."
 mkdir -p certs
-openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key -addext "subjectAltName = DNS:${ECR}" -x509 -days 365 -out certs/domain.crt -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${ECR}"
+openssl req -newkey rsa:4096 -nodes -sha256 \
+    -keyout certs/domain.key \
+    -addext "subjectAltName = DNS:${ECR}" \
+    -x509 -days 365 -out certs/domain.crt \
+    -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${ECR}"
 
 echo "Copying the certificate to the /etc/docker/certs.d/${ECR} directory..."
 sudo mkdir -p /etc/docker/certs.d/${ECR}
@@ -80,7 +115,7 @@ for IMAGE in $(cat rancher-images-no-tags.txt); do
     if aws ecr describe-repositories --repository-names ${IMAGE} >/dev/null 2>&1; then
         echo "Repository ${IMAGE} already exists. Skipping."
     else
-        echo "Creating repository $IMAGE..."
+        echo "Creating repository ${IMAGE}..."
         aws ecr create-repository --repository-name ${IMAGE}
     fi
 done
@@ -101,3 +136,6 @@ manageImages "pull"
 
 echo "Pushing the newly tagged images..."
 manageImages "push"
+
+echo "Verifying all images exist in ECR..."
+verifyImages
