@@ -57,7 +57,7 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -82,7 +82,7 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -106,7 +106,7 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

@@ -38,7 +38,10 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	require.NoError(t, err)
 
 	if standaloneConfig.UpgradedRancherTagVersion != "head" {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion)
+		_, airgapKeyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, airgapKeyPath)
+
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, airgapKeyPath, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -70,7 +73,10 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 	require.NoError(t, err)
 
 	if standaloneConfig.UpgradedRancherTagVersion != "head" {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion)
+		_, proxyKeyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, proxyKeyPath)
+
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, proxyKeyPath, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -102,7 +108,10 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 	require.NoError(t, err)
 
 	if standaloneConfig.UpgradedRancherTagVersion != "head" {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion)
+		_, sanityKeyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, sanityKeyPath)
+
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, sanityKeyPath, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
