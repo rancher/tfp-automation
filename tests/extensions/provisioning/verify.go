@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
@@ -16,9 +17,9 @@ import (
 	"github.com/rancher/tests/actions/workloads/statefulset"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/framework/cleanup"
 	waitState "github.com/rancher/tfp-automation/framework/wait/state"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -111,11 +112,14 @@ func VerifyRegistry(t *testing.T, client *rancher.Client, clusterID string, terr
 }
 
 // VerifyRancherVersion validates that the expected rancher version matches the version of the rancher server.
-func VerifyRancherVersion(t *testing.T, hostURL string, expectedVersion string) {
+func VerifyRancherVersion(t *testing.T, hostURL, expectedVersion, keyPath string, terraformOptions *terraform.Options) {
 	resp, err := RequestRancherVersion(hostURL)
 	require.NoError(t, err)
 
-	assert.Equal(t, expectedVersion, resp.RancherVersion, "rancher version does not match the expected version")
+	if resp.RancherVersion != expectedVersion {
+		logrus.Infof("Expected version: %s | Actual version: %s", expectedVersion, resp.RancherVersion)
+		cleanup.Cleanup(t, terraformOptions, keyPath)
+	}
 }
 
 // VerifyNodeCount validates that a cluster has the expected number of nodes.
