@@ -19,6 +19,7 @@ jobs:
         workflow:
           - airgap-test.yaml
           - airgap-upgrade-test.yaml
+          - post-release-upgrade.yaml
           - proxy-test.yaml
           - proxy-upgrade-test.yaml
           - rancher2-recurring-test.yaml
