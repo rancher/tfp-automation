@@ -585,13 +585,6 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
 
-      - name: Set Rancher chart url
-        uses: ./.github/actions/set-rancher-chart-url
-        with:
-          rancher-repo: ${{ env.RANCHER_REPO }}
-          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
-          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
-
       - name: Get Qase ID
         id: get-qase-id
         uses: ./.github/actions/get-qase-id
@@ -661,7 +654,7 @@ jobs:
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
-              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
@@ -825,13 +818,6 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
 
-      - name: Set Rancher chart url
-        uses: ./.github/actions/set-rancher-chart-url
-        with:
-          rancher-repo: ${{ env.RANCHER_REPO }}
-          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
-          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
-
       - name: Get Qase ID
         id: get-qase-id
         uses: ./.github/actions/get-qase-id
@@ -900,7 +886,7 @@ jobs:
               k3sVersion: "${{ vars.K3S_VERSION_2_10 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
-              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
