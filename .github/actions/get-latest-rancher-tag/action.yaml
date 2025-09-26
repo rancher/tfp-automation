@@ -15,12 +15,6 @@ outputs:
   latest_tag_v211:
     description: "Latest tag for v2.11"
     value: ${{ steps.set-outputs.outputs.latest_tag_v211 }}
-  latest_tag_v210:
-    description: "Latest tag for v2.10"
-    value: ${{ steps.set-outputs.outputs.latest_tag_v210 }}
-  latest_tag_v29:
-    description: "Latest tag for v2.9"
-    value: ${{ steps.set-outputs.outputs.latest_tag_v29 }}
 runs:
   using: composite
   steps:
@@ -62,6 +56,4 @@ runs:
       run: |
         echo "latest_tag_v212=$LATEST_TAG_v212" >> $GITHUB_OUTPUT
         echo "latest_tag_v211=$LATEST_TAG_v211" >> $GITHUB_OUTPUT
-        echo "latest_tag_v210=$LATEST_TAG_v210" >> $GITHUB_OUTPUT
-        echo "latest_tag_v29=$LATEST_TAG_v29" >> $GITHUB_OUTPUT
       shell: bash
