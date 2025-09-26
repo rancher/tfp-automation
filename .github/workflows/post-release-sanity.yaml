@@ -1,9 +1,7 @@
 ---
-name: Sanity Testing
+name: Post Release Sanity Testing
 
 on:
-  schedule:
-    - cron: "0 7 * * 1,2,4,5"
   workflow_dispatch:
     inputs:
       rancher_version:
@@ -34,14 +32,18 @@ env:
   SUITE: "^TestTfpSanityProvisioningTestSuite$"
   TIMEOUT: "5h"
 
-jobs:
-  head:
+jobs:  
+  v2-12-prime:
     if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
-    name: head
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && !contains(github.event.inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && !contains(github.event.inputs.rancher_version, '-head') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && !contains(inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && !contains(inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && !contains(inputs.rancher_version, '-head')
+    name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: prime
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
@@ -100,8 +102,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -111,8 +112,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) || 
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -126,8 +126,8 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_rc_id: ${{ vars.QASE_RC_TEST_RUN_ID_2_13 }}
-          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}
+          qase_rc_id: ${{ vars.QASE_RC_TEST_RUN_ID_2_12 }}
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}
 
       - name: Create config.yaml
         run: |
@@ -267,13 +267,12 @@ jobs:
   
   v2-12:
     if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && contains(github.event.inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && contains(github.event.inputs.rancher_version, '-head') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-head')
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && !contains(github.event.inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && !contains(github.event.inputs.rancher_version, '-head') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && !contains(inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && !contains(inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && !contains(inputs.rancher_version, '-head')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
@@ -335,8 +334,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -346,8 +344,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) || 
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -502,16 +499,15 @@ jobs:
 
   v2-11:
     if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && contains(github.event.inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && contains(github.event.inputs.rancher_version, '-head') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-head')
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && !contains(github.event.inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && !contains(github.event.inputs.rancher_version, '-head') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && !contains(inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && !contains(inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && !contains(inputs.rancher_version, '-head')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: staging
+    environment: prime
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
@@ -570,8 +566,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) ||
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -581,8 +576,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) || 
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_11) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -659,7 +653,6 @@ jobs:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
@@ -738,16 +731,15 @@ jobs:
 
   v2-10:
     if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) && contains(github.event.inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) && contains(github.event.inputs.rancher_version, '-head') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10')) && contains(inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10')) && contains(inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10')) && contains(inputs.rancher_version, '-head')
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) && !contains(github.event.inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.10')) && !contains(github.event.inputs.rancher_version, '-head') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10')) && !contains(inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10')) && !contains(inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.10')) && !contains(inputs.rancher_version, '-head')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: staging
+    environment: prime
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
@@ -806,8 +798,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_10_HEAD) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -817,8 +808,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) || 
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_10) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -898,7 +888,6 @@ jobs:
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
@@ -974,16 +963,15 @@ jobs:
 
   v2-9:
     if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9')) && contains(github.event.inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9')) && contains(github.event.inputs.rancher_version, '-head') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9')) && contains(inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9')) && contains(inputs.rancher_version, '-rc') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9')) && contains(inputs.rancher_version, '-head')
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9')) && !contains(github.event.inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.9')) && !contains(github.event.inputs.rancher_version, '-head') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9')) && !contains(inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9')) && !contains(inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.9')) && !contains(inputs.rancher_version, '-head')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: staging
+    environment: prime
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_10 }}"
 
@@ -1042,8 +1030,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_9_HEAD) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -1053,8 +1040,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) || 
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_9) 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -1134,7 +1120,6 @@ jobs:
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
