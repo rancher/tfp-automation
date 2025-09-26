@@ -146,4 +146,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy  --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run TestTfpProxyProvisioningTestSuite$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/proxy  --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestTfpProxyProvisioningTestSuite$";/path/to/tfp-automation/reporter`

@@ -13,11 +13,23 @@ import (
 // GetProvisioningSchemaParams gets a set of params from the cattle config and returns a qase params object
 func GetProvisioningSchemaParams(configMap map[string]any) []upstream.Params {
 	var params []upstream.Params
-	var amiParam, windows2019AMIParam, windows2022AMIParam upstream.Params
+	var rancherType, upgradedRancherType, amiParam, windows2019AMIParam, windows2022AMIParam upstream.Params
 
 	_, terraform, terratest, _ := config.LoadTFPConfigs(configMap)
 
 	currentDate := time.Now().Format("2006-01-02 03:04PM")
+
+	if terraform.Standalone.RancherImage == "rancher/rancher" {
+		rancherType = upstream.Params{Title: "Rancher Community", Values: []string{terraform.Standalone.RancherTagVersion}}
+	} else {
+		rancherType = upstream.Params{Title: "Rancher Prime", Values: []string{terraform.Standalone.RancherTagVersion}}
+	}
+
+	if terraform.Standalone.UpgradedRancherImage == "rancher/rancher" {
+		upgradedRancherType = upstream.Params{Title: "Upgraded to Rancher Community", Values: []string{terraform.Standalone.UpgradedRancherTagVersion}}
+	} else {
+		upgradedRancherType = upstream.Params{Title: "Upgraded to Rancher Prime", Values: []string{terraform.Standalone.UpgradedRancherTagVersion}}
+	}
 
 	if strings.Contains(terraform.Module, modules.EC2) {
 		amiParam = upstream.Params{Title: "AMI", Values: []string{terraform.AWSConfig.AMI}}
@@ -36,7 +48,7 @@ func GetProvisioningSchemaParams(configMap map[string]any) []upstream.Params {
 	cniParam := upstream.Params{Title: "CNI", Values: []string{terraform.CNI}}
 	timeParam := upstream.Params{Title: "Time", Values: []string{currentDate}}
 
-	params = append(params, amiParam, windows2019AMIParam, windows2022AMIParam, moduleParam, k8sParam, cniParam, timeParam)
+	params = append(params, rancherType, upgradedRancherType, amiParam, windows2019AMIParam, windows2022AMIParam, moduleParam, k8sParam, cniParam, timeParam)
 
 	return params
 }
