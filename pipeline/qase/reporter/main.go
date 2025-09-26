@@ -176,12 +176,7 @@ func reportTestQases(qaseService *qase.Service, testRunID int64) error {
 			basePathDirs := strings.Split(basepath, "/")
 			baseTestPathDir := basePathDirs[len(basePathDirs)-1]
 
-			logrus.Infof("base path: %s", basepath)
-			logrus.Infof("base path dirs: %s", basePathDirs)
-			logrus.Infof("baseTestPathDir: %s", baseTestPathDir)
-
 			packagePath := strings.Split(goTestResult.Package, baseTestPathDir)
-			logrus.Infof("packagePath: %v", packagePath)
 			if len(packagePath) > 2 {
 				return errors.New("Error base path directory is not unique")
 			}
