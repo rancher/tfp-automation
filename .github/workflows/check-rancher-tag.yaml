@@ -17,17 +17,13 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     env:
-      RANCHER_RELEASE_LINES: "v2.12 v2.11 v2.10 v2.9"
-      SANITIZED_RELEASES: "v212 v211 v210 v29"
+      RANCHER_RELEASE_LINES: "v2.12 v2.11"
+      SANITIZED_RELEASES: "v212 v211"
     outputs:
       latest_tag_v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
       latest_tag_v211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
-      latest_tag_v210: ${{ steps.get-latest-tag.outputs.latest_tag_v210 }}
-      latest_tag_v29: ${{ steps.get-latest-tag.outputs.latest_tag_v29 }}
       is_tag_new_v212: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v212 }}
       is_tag_new_v211: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v211 }}
-      is_tag_new_v210: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v210 }}
-      is_tag_new_v29: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v29 }}
 
     steps:
       - name: Checkout repository
@@ -72,19 +68,13 @@ jobs:
         with:
           cached-tag-v212: ${{ env.CACHED_TAG_v212 }}
           cached-tag-v211: ${{ env.CACHED_TAG_v211 }}
-          cached-tag-v210: ${{ env.CACHED_TAG_v210 }}
-          cached-tag-v29: ${{ env.CACHED_TAG_v29 }}
           latest-tag-v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
           latest-tag-v211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
-          latest-tag-v210: ${{ steps.get-latest-tag.outputs.latest_tag_v210 }}
-          latest-tag-v29: ${{ steps.get-latest-tag.outputs.latest_tag_v29 }}
 
       - name: Write latest tags to files
         env:
           LATEST_TAG_V212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
           LATEST_TAG_V211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
-          LATEST_TAG_V210: ${{ steps.get-latest-tag.outputs.latest_tag_v210 }}
-          LATEST_TAG_V29: ${{ steps.get-latest-tag.outputs.latest_tag_v29 }}
         run: |
           mkdir -p tag
           for release in $SANITIZED_RELEASES; do
@@ -104,8 +94,6 @@ jobs:
     outputs:
       chart_version_v212: ${{ steps.set-latest-chart-version.outputs.chart_version_v212 }}
       chart_version_v211: ${{ steps.set-latest-chart-version.outputs.chart_version_v211 }}
-      chart_version_v210: ${{ steps.set-latest-chart-version.outputs.chart_version_v210 }}
-      chart_version_v29: ${{ steps.set-latest-chart-version.outputs.chart_version_v29 }}
 
     steps:
       - name: Chart versions
@@ -113,13 +101,9 @@ jobs:
         run: |
           CHART_V212="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v212 }}"
           CHART_V211="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v211 }}"
-          CHART_V210="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v210 }}"
-          CHART_V29="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v29 }}"
 
           echo "chart_version_v212=${CHART_V212#v}" >> $GITHUB_OUTPUT
           echo "chart_version_v211=${CHART_V211#v}" >> $GITHUB_OUTPUT
-          echo "chart_version_v210=${CHART_V210#v}" >> $GITHUB_OUTPUT
-          echo "chart_version_v29=${CHART_V29#v}" >> $GITHUB_OUTPUT
 
   trigger-tests-v212:
     needs: [check-latest-rancher-tag, set-latest-chart-version]
@@ -136,19 +120,3 @@ jobs:
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v211 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v211 }}
-
-  trigger-tests-v210:
-    needs: [check-latest-rancher-tag, set-latest-chart-version]
-    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v210 == 'true' }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
-    with:
-      rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v210 }}
-      rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v210 }}
-
-  trigger-tests-v29:
-    needs: [check-latest-rancher-tag, set-latest-chart-version]
-    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v29 == 'true' }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
-    with:
-      rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v29 }}
-      rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v29 }}
