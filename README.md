@@ -1,5 +1,27 @@
 # <p align="center">RANCHER :small_blue_diamond: TFP-AUTOMATION</p>
 
+[![Airgap](https://github.com/rancher/tfp-automation/actions/workflows/airgap-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/airgap-test.yaml)
+[![Airgap Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/airgap-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/airgap-upgrade-test.yaml)
+
+[![Post Release Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-test.yaml)
+
+[![Post Release Upgrade Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade-test.yaml)
+
+[![Proxy](https://github.com/rancher/tfp-automation/actions/workflows/proxy-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-test.yaml)
+[![Proxy ARM64](https://github.com/rancher/tfp-automation/actions/workflows/proxy-arm64-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-arm64-test.yaml)
+[![Proxy Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/proxy-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-upgrade-test.yaml)
+[![Proxy Upgrade ARM64](https://github.com/rancher/tfp-automation/actions/workflows/proxy-upgrade-arm64-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-upgrade-arm64-test.yaml)
+
+[![Rancher2 Recurring](https://github.com/rancher/tfp-automation/actions/workflows/rancher2-recurring-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/rancher2-recurring-test.yaml)
+
+[![Registry](https://github.com/rancher/tfp-automation/actions/workflows/registry-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/registry-test.yaml)
+
+[![Sanity](https://github.com/rancher/tfp-automation/actions/workflows/sanity-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-test.yaml)
+[![Sanity ARM64](https://github.com/rancher/tfp-automation/actions/workflows/sanity-arm64-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-arm64-test.yaml)
+[![Sanity Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-test.yaml)
+[![Sanity Upgrade ARM64](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-arm64-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-arm64-test.yaml)
+
+
 `tfp-automation` is a Github Actions based testing framework designed to handle the following tasks:
 - Conduct daily regression testing amongst supported Rancher release lines
 - Automate release testing across different permutations of a Rancher HA environment (e.g. normal, airgap, proxy)
