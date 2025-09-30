@@ -3,9 +3,9 @@
 [![Airgap](https://github.com/rancher/tfp-automation/actions/workflows/airgap-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/airgap-test.yaml)
 [![Airgap Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/airgap-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/airgap-upgrade-test.yaml)
 
-[![Post Release Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity.yaml)
+[![Post Release Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity.yaml)
 
-[![Post Release Upgrade Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade.yaml)
+[![Post Release Upgrade Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade.yaml)
 
 [![Proxy](https://github.com/rancher/tfp-automation/actions/workflows/proxy-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-test.yaml)
 [![Proxy ARM64](https://github.com/rancher/tfp-automation/actions/workflows/proxy-arm64-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-arm64-test.yaml)
