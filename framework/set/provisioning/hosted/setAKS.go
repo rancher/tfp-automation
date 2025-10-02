@@ -11,7 +11,6 @@ import (
 	format "github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -51,7 +50,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceLocation, cty.StringVal(terraformConfig.AzureConfig.ResourceLocation))
 	aksConfigBlockBody.SetAttributeValue(azure.DNSPrefix, cty.StringVal(terraformConfig.ResourcePrefix))
 	aksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
-	aksConfigBlockBody.SetAttributeValue(azure.NetworkPlugin, cty.StringVal(terraformConfig.NetworkPlugin))
+	aksConfigBlockBody.SetAttributeValue(azure.NetworkPlugin, cty.StringVal(terraformConfig.AzureConfig.NetworkPlugin))
 	aksConfigBlockBody.SetAttributeValue(azure.VirtualNetwork, cty.StringVal(terraformConfig.AzureConfig.Vnet))
 	aksConfigBlockBody.SetAttributeValue(azure.Subnet, cty.StringVal(terraformConfig.AzureConfig.Subnet))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkDNSServiceIP, cty.StringVal(terraformConfig.AzureConfig.NetworkDNSServiceIP))
@@ -81,12 +80,6 @@ func SetAKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 
 		taints := format.ListOfStrings(terraformConfig.AzureConfig.Taints)
 		nodePoolsBlockBody.SetAttributeRaw(azure.Taints, taints)
-	}
-
-	_, err := file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write AKS configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
 	}
 
 	return newFile, file, nil

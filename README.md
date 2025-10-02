@@ -41,7 +41,6 @@ The above points are done with an emphasis on testing the Rancher2 Terraform pro
             -   [GKE Nodepools](#configurations-terratest-nodepools-gke)
             -   [RKE1, RKE2, K3S Nodepools](#configurations-terratest-nodepools-rke1_rke2_k3s)
         -  [Provision](#configurations-terratest-provision)
-        -  [Scale](#configurations-terratest-scale)
         -  [Kubernetes Upgrade](#configurations-terratest-kubernetes_upgrade)
         -  [Snapshots](#configurations-terratest-snapshots)
         -  [Build Module](#configurations-terratest-build_module)
@@ -293,6 +292,7 @@ terraform:
     name: "agentpool"
     networkDNSServiceIP: ""
     networkDockerBridgeCIDR: ""
+    networkPlugin: ""
     networkServiceCIDR: ""
     noPublicIp: false
     osDiskSizeGB: 128
@@ -303,7 +303,6 @@ terraform:
     taints: ["none:PreferNoSchedule"]
     vmSize: Standard_DS2_v2
     vnet: ""
-    tfLogging: false
 ```
 
 ---
@@ -780,6 +779,9 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
+  aksKubernetesVersion: ""
+  eksKubernetesVersion: ""
+  gkeKubernetesVersion: ""
   kubernetesVersion: ""
   nodeCount: 3
 
@@ -808,63 +810,6 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
 
 ---
 
-<a name="configurations-terratest-scale"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-##### Scale
-
-```yaml
-terratest:
-  pathToRepo: # REQUIRED - path to repo from user's go directory i.e. ../go/<path/to/repo/tfp-automation>
-  kubernetesVersion: ""
-  nodeCount: 3
-  scaledUpNodeCount: 8
-  scaledDownNodeCount: 6
-  nodepools:
-    - quantity: 1
-      etcd: true
-      controlplane: false
-      worker: false
-    - quantity: 1
-      etcd: false
-      controlplane: true
-      worker: false
-    - quantity: 1
-      etcd: false
-      controlplane: false
-      worker: true
-  scalingInput:
-    scaledUpNodepools:
-      - quantity: 3
-        etcd: true
-        controlplane: false
-        worker: false
-      - quantity: 2
-        etcd: false
-        controlplane: true
-        worker: false
-      - quantity: 3
-        etcd: false
-        controlplane: false
-        worker: true
-    scaledDownNodepools:
-      - quantity: 3
-        etcd: true
-        controlplane: false
-        worker: false
-      - quantity: 2
-        etcd: false
-        controlplane: true
-        worker: false
-      - quantity: 1
-        etcd: false
-        controlplane: false
-        worker: true
-```
-Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
-
----
-
 <a name="configurations-terratest-kubernetes_upgrade"></a>
 #### :small_red_triangle: [Back to top](#top)
 
@@ -887,7 +832,13 @@ terratest:
       controlplane: false
       worker: true
   nodeCount: 3
+  aksKubernetesVersion: ""
+  eksKubernetesVersion: ""
+  gkeKubernetesVersion: ""
   kubernetesVersion: ""
+  upgradedAKSKubernetesVersion: ""
+  upgradedEKSKubernetesVersion: ""
+  upgradedGKEKubernetesVersion: ""
   upgradedKubernetesVersion: ""
 ```
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
@@ -902,11 +853,7 @@ Note: In this test suite, Terraform explicitly cleans up resources after each te
 ```yaml
 terratest:
   pathToRepo: # REQUIRED - path to repo from user's go directory i.e. ../go/<path/to/repo/tfp-automation>
-  snapshotInput:
-    snapshotRestore: "none"
-    upgradeKubernetesVersion: ""
-    controlPlaneConcurrencyValue: "15%"
-    workerConcurrencyValue: "20%"
+  snapshotInput: {}
 ```
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 

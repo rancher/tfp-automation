@@ -6,7 +6,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
 )
 
@@ -25,9 +24,9 @@ func SupportedModules(terraformOptions *terraform.Options, configMap []map[strin
 
 func verifyModule(module string) bool {
 	supportedModules := []string{
-		clustertypes.AKS,
-		clustertypes.EKS,
-		clustertypes.GKE,
+		modules.AKS,
+		modules.EKS,
+		modules.GKE,
 		modules.AzureRKE1,
 		modules.AzureRKE2,
 		modules.AzureK3s,

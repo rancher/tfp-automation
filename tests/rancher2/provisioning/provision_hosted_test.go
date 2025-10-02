@@ -7,11 +7,13 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -59,10 +61,19 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
+	aksNodePools := []config.Nodepool{{Quantity: 3}}
+	eksNodePools := []config.Nodepool{{DiskSize: 100, InstanceType: p.terraformConfig.AWSConfig.AWSInstanceType, DesiredSize: 3, MaxSize: 3, MinSize: 3}}
+	gkeNodePools := []config.Nodepool{{Quantity: 3, MaxPodsConstraint: 110}}
+
 	tests := []struct {
-		name string
+		name              string
+		module            string
+		nodePools         []config.Nodepool
+		kubernetesVersion string
 	}{
-		{"Provision_Hosted_Cluster"},
+		{"Provision_AKS_Cluster", modules.AKS, aksNodePools, p.terratestConfig.AKSKubernetesVersion},
+		{"Provision_EKS_Cluster", modules.EKS, eksNodePools, p.terratestConfig.EKSKubernetesVersion},
+		{"Provision_GKE_Cluster", modules.GKE, gkeNodePools, p.terratestConfig.GKEKubernetesVersion},
 	}
 
 	for _, tt := range tests {
@@ -72,6 +83,17 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
 		require.NoError(p.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodePools, configMap[0])
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "kubernetesVersion"}, tt.kubernetesVersion, configMap[0])
+		require.NoError(p.T(), err)
+
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
@@ -79,7 +101,7 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, p.rancherConfig, p.terraformConfig, p.terratestConfig, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 		})
 

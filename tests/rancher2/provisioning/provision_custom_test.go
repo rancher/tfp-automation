@@ -90,8 +90,6 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-		tt.name = tt.name + " Kubernetes version: " + terratest.KubernetesVersion
-
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)

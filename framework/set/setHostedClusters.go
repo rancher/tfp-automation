@@ -11,7 +11,8 @@ import (
 )
 
 // HostedClusters is a function that will set the hosted clusters in the main.tf file.
-func HostedClusters(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
+func HostedClusters(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File,
+	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	var err error
 
 	if strings.Contains(terraformConfig.Module, clustertypes.AKS) {
@@ -19,7 +20,6 @@ func HostedClusters(terraformConfig *config.TerraformConfig, terratestConfig *co
 		if err != nil {
 			return newFile, file, err
 		}
-
 	}
 
 	if strings.Contains(terraformConfig.Module, clustertypes.EKS) {
@@ -27,7 +27,6 @@ func HostedClusters(terraformConfig *config.TerraformConfig, terratestConfig *co
 		if err != nil {
 			return newFile, file, err
 		}
-
 	}
 
 	if strings.Contains(terraformConfig.Module, clustertypes.GKE) {

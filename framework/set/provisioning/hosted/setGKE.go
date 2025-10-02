@@ -10,7 +10,6 @@ import (
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/google"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -60,15 +59,9 @@ func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 		nodePoolsBlockBody := nodePoolsBlock.Body()
 
 		nodePoolsBlockBody.SetAttributeValue(google.InitialNodeCount, cty.NumberIntVal(pool.Quantity))
-		nodePoolsBlockBody.SetAttributeValue(google.MaxPodsConstraint, cty.NumberIntVal(pool.MaxPodsContraint))
+		nodePoolsBlockBody.SetAttributeValue(google.MaxPodsConstraint, cty.NumberIntVal(pool.MaxPodsConstraint))
 		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
 		nodePoolsBlockBody.SetAttributeValue(google.Version, cty.StringVal(terratestConfig.KubernetesVersion))
-	}
-
-	_, err := file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write GKE configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
 	}
 
 	return newFile, file, nil

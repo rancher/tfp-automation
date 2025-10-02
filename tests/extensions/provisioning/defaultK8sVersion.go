@@ -87,21 +87,27 @@ func DefaultUpgradedK8sVersion(t *testing.T, client *rancher.Client, terratestCo
 	var defaultVersion string
 
 	if terratestConfig.UpgradedKubernetesVersion == "" {
-		if strings.Contains(terratestConfig.KubernetesVersion, clustertypes.RANCHER) {
+		switch {
+		case strings.Contains(terratestConfig.KubernetesVersion, clustertypes.RANCHER):
 			defaultVersions, err := kubernetesversions.Default(client, clusters.RKE1ClusterType.String(), nil)
 			require.NoError(t, err)
 
 			defaultVersion = defaultVersions[0]
-		} else if strings.Contains(terratestConfig.KubernetesVersion, clustertypes.RKE2) {
+		case strings.Contains(terratestConfig.KubernetesVersion, clustertypes.RKE2):
 			defaultVersions, err := kubernetesversions.Default(client, clusters.RKE2ClusterType.String(), nil)
 			require.NoError(t, err)
 
 			defaultVersion = defaultVersions[0]
-		} else if strings.Contains(terratestConfig.KubernetesVersion, clustertypes.K3S) {
+		case strings.Contains(terratestConfig.KubernetesVersion, clustertypes.K3S):
 			defaultVersions, err := kubernetesversions.Default(client, clusters.K3SClusterType.String(), nil)
 			require.NoError(t, err)
 
 			defaultVersion = defaultVersions[0]
+		default:
+			terratest := new(config.TerratestConfig)
+			operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
+
+			defaultVersion = terratest.UpgradedKubernetesVersion
 		}
 	} else {
 		terratest := new(config.TerratestConfig)

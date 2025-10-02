@@ -20,6 +20,7 @@ const (
 	RootSize      = "root_size"
 
 	NodeGroups   = "node_groups"
+	DiskSize     = "disk_size"
 	InstanceType = "instance_type"
 	VolumeType   = "volume_type"
 	SSHUser      = "ssh_user"
