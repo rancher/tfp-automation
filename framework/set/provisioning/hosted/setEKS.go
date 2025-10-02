@@ -11,7 +11,6 @@ import (
 	format "github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -65,16 +64,11 @@ func SetEKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 		nodePoolsBlockBody := nodePoolsBlock.Body()
 
 		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
+		nodePoolsBlockBody.SetAttributeValue(amazon.DiskSize, cty.NumberIntVal(pool.DiskSize))
 		nodePoolsBlockBody.SetAttributeValue(amazon.InstanceType, cty.StringVal(pool.InstanceType))
 		nodePoolsBlockBody.SetAttributeValue(amazon.DesiredSize, cty.NumberIntVal(pool.DesiredSize))
 		nodePoolsBlockBody.SetAttributeValue(amazon.MaxSize, cty.NumberIntVal(pool.MaxSize))
 		nodePoolsBlockBody.SetAttributeValue(amazon.MinSize, cty.NumberIntVal(pool.MinSize))
-	}
-
-	_, err := file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write EKS configurations to main.tf file. Error: %v", err)
-		return nil, nil, err
 	}
 
 	return newFile, file, nil

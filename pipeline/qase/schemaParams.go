@@ -19,16 +19,20 @@ func GetProvisioningSchemaParams(configMap map[string]any) []upstream.Params {
 
 	currentDate := time.Now().Format("2006-01-02 03:04PM")
 
-	if terraform.Standalone.RancherImage == "rancher/rancher" {
-		rancherType = upstream.Params{Title: "Rancher Community", Values: []string{terraform.Standalone.RancherTagVersion}}
-	} else {
-		rancherType = upstream.Params{Title: "Rancher Prime", Values: []string{terraform.Standalone.RancherTagVersion}}
+	if terraform.Standalone != nil && terraform.Standalone.RancherImage != "" {
+		if terraform.Standalone.RancherImage == "rancher/rancher" {
+			rancherType = upstream.Params{Title: "Rancher Community", Values: []string{terraform.Standalone.RancherTagVersion}}
+		} else {
+			rancherType = upstream.Params{Title: "Rancher Prime", Values: []string{terraform.Standalone.RancherTagVersion}}
+		}
 	}
 
-	if terraform.Standalone.UpgradedRancherImage == "rancher/rancher" {
-		upgradedRancherType = upstream.Params{Title: "Upgraded to Rancher Community", Values: []string{terraform.Standalone.UpgradedRancherTagVersion}}
-	} else {
-		upgradedRancherType = upstream.Params{Title: "Upgraded to Rancher Prime", Values: []string{terraform.Standalone.UpgradedRancherTagVersion}}
+	if terraform.Standalone != nil && terraform.Standalone.UpgradedRancherImage != "" {
+		if terraform.Standalone.UpgradedRancherImage == "rancher/rancher" {
+			upgradedRancherType = upstream.Params{Title: "Upgraded to Rancher Community", Values: []string{terraform.Standalone.UpgradedRancherTagVersion}}
+		} else {
+			upgradedRancherType = upstream.Params{Title: "Upgraded to Rancher Prime", Values: []string{terraform.Standalone.UpgradedRancherTagVersion}}
+		}
 	}
 
 	if strings.Contains(terraform.Module, modules.EC2) {

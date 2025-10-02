@@ -135,6 +135,9 @@
       data: ""
       position: 4
       attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
 
   - description: Upgrade imported RKE2 Windows 2019 cluster
     title: Upgrade_Imported_RKE2_Windows_2019
@@ -163,6 +166,9 @@
       data: ""
       position: 4
       attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
 
   - description: Upgrade imported RKE2 Windows 2022 cluster
     title: Upgrade_Imported_RKE2_Windows_2022
@@ -191,6 +197,9 @@
       data: ""
       position: 4
       attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
 
   - description: Upgrade imported K3S cluster
     title: Upgrade_Imported_K3S
@@ -219,15 +228,18 @@
       data: ""
       position: 4
       attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
 
-  - description: Provision hosted cluster
-    title: Provision_Hosted_Cluster
+  - description: Provision AKS hosted cluster
+    title: Provision_AKS_Cluster
     priority: 4
     type: 8
     is_flaky: 0
     automation: 2
     steps:
-    - action: Provision hosted cluster
+    - action: Provision AKS hosted cluster
       expectedresult: ""
       data: ""
       position: 1
@@ -237,7 +249,48 @@
       data: ""
       position: 2
       attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
 
+  - description: Provision EKS hosted cluster
+    title: Provision_EKS_Cluster
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision EKS hosted cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provision GKE hosted cluster
+    title: Provision_GKE_Cluster
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision GKE hosted cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
     custom_field:
       "14": Validation
       "18": Hostbusters

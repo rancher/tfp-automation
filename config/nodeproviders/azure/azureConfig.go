@@ -14,6 +14,7 @@ type Config struct {
 	Name                    string   `json:"name,omitempty" yaml:"name,omitempty"`
 	NetworkDNSServiceIP     string   `json:"networkDNSServiceIp,omitempty" yaml:"networkDNSServiceIp,omitempty"`
 	NetworkDockerBridgeCIDR string   `json:"networkDockerBridgeCIDR,omitempty" yaml:"networkDockerBridgeCIDR,omitempty"`
+	NetworkPlugin           string   `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
 	NetworkServiceCIDR      string   `json:"networkServiceCIDR,omitempty" yaml:"networkServiceCIDR,omitempty"`
 	NoPublicIP              bool     `json:"noPublicIp,omitempty" yaml:"noPublicIp,omitempty"`
 	NSG                     string   `json:"nsg,omitempty" yaml:"nsg,omitempty"`

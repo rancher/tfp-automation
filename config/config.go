@@ -71,42 +71,22 @@ var AllRolesNodePool = Nodepool{
 	Quantity:     1,
 }
 
-var ScaleUpEtcdNodePool = Nodepool{
-	Etcd:         true,
-	Controlplane: false,
-	Worker:       false,
-	Quantity:     5,
-}
-
-var ScaleUpControlPlaneNodePool = Nodepool{
-	Etcd:         false,
-	Controlplane: true,
-	Worker:       false,
-	Quantity:     3,
-}
-
-var ScaleUpWorkerNodePool = Nodepool{
-	Etcd:         false,
-	Controlplane: false,
-	Worker:       true,
-	Quantity:     5,
-}
-
 // String stringer for the TestClientName
 func (c TestClientName) String() string {
 	return string(c)
 }
 
 type Nodepool struct {
-	Quantity         int64  `json:"quantity,omitempty" yaml:"quantity,omitempty"`
-	Etcd             bool   `json:"etcd,omitempty" yaml:"etcd,omitempty"`
-	Controlplane     bool   `json:"controlplane,omitempty" yaml:"controlplane,omitempty"`
-	Worker           bool   `json:"worker,omitempty" yaml:"worker,omitempty"`
-	InstanceType     string `json:"instanceType,omitempty" yaml:"instanceType,omitempty"`
-	DesiredSize      int64  `json:"desiredSize,omitempty" yaml:"desiredSize,omitempty"`
-	MaxSize          int64  `json:"maxSize,omitempty" yaml:"maxSize,omitempty"`
-	MinSize          int64  `json:"minSize,omitempty" yaml:"minSize,omitempty"`
-	MaxPodsContraint int64  `json:"maxPodsContraint,omitempty" yaml:"maxPodsContraint,omitempty"`
+	Quantity          int64  `json:"quantity,omitempty" yaml:"quantity,omitempty"`
+	Etcd              bool   `json:"etcd,omitempty" yaml:"etcd,omitempty"`
+	Controlplane      bool   `json:"controlplane,omitempty" yaml:"controlplane,omitempty"`
+	DiskSize          int64  `json:"diskSize,omitempty" yaml:"diskSize,omitempty"`
+	Worker            bool   `json:"worker,omitempty" yaml:"worker,omitempty"`
+	InstanceType      string `json:"instanceType,omitempty" yaml:"instanceType,omitempty"`
+	DesiredSize       int64  `json:"desiredSize,omitempty" yaml:"desiredSize,omitempty"`
+	MaxSize           int64  `json:"maxSize,omitempty" yaml:"maxSize,omitempty"`
+	MinSize           int64  `json:"minSize,omitempty" yaml:"minSize,omitempty"`
+	MaxPodsConstraint int64  `json:"maxPodsConstraint,omitempty" yaml:"maxPodsConstraint,omitempty"`
 }
 
 type Proxy struct {
@@ -208,13 +188,6 @@ type TerraformConfig struct {
 	WindowsPrivateKeyPath               string                       `json:"windowsPrivateKeyPath,omitempty" yaml:"windowsPrivateKeyPath,omitempty"`
 }
 
-type Scaling struct {
-	ScaledDownNodeCount int64      `json:"scaledDownNodeCount,omitempty" yaml:"scaledDownNodeCount,omitempty"`
-	ScaledDownNodepools []Nodepool `json:"scaledDownNodepools,omitempty" yaml:"scaledDownNodepools,omitempty"`
-	ScaledUpNodeCount   int64      `json:"scaledUpNodeCount,omitempty" yaml:"scaledUpNodeCount,omitempty"`
-	ScaledUpNodepools   []Nodepool `json:"scaledUpNodepools,omitempty" yaml:"scaledUpNodepools,omitempty"`
-}
-
 type Snapshots struct {
 	CreateSnapshot  bool   `json:"createSnapshot,omitempty" yaml:"createSnapshot,omitempty"`
 	RestoreSnapshot bool   `json:"restoreSnapshot,omitempty" yaml:"restoreSnapshot,omitempty"`
@@ -223,18 +196,23 @@ type Snapshots struct {
 }
 
 type TerratestConfig struct {
-	KubernetesVersion         string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
-	LocalQaseReporting        bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
-	NodeCount                 int64      `json:"nodeCount,omitempty" yaml:"nodeCount,omitempty"`
-	Nodepools                 []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
-	PathToRepo                string     `json:"pathToRepo,omitempty" yaml:"pathToRepo,omitempty"`
-	PSACT                     string     `json:"psact,omitempty" yaml:"psact,omitempty"`
-	ScalingInput              Scaling    `json:"scalingInput,omitempty" yaml:"scalingInput,omitempty"`
-	SnapshotInput             Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
-	StandaloneLogging         bool       `json:"standaloneLogging,omitempty" yaml:"standaloneLogging,omitempty"`
-	TFLogging                 bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
-	UpgradedKubernetesVersion string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
-	WindowsNodeCount          int64      `json:"windowsNodeCount,omitempty" yaml:"windowsNodeCount,omitempty"`
+	AKSKubernetesVersion         string     `json:"aksKubernetesVersion,omitempty" yaml:"aksKubernetesVersion,omitempty"`
+	EKSKubernetesVersion         string     `json:"eksKubernetesVersion,omitempty" yaml:"eksKubernetesVersion,omitempty"`
+	GKEKubernetesVersion         string     `json:"gkeKubernetesVersion,omitempty" yaml:"gkeKubernetesVersion,omitempty"`
+	KubernetesVersion            string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
+	LocalQaseReporting           bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
+	NodeCount                    int64      `json:"nodeCount,omitempty" yaml:"nodeCount,omitempty"`
+	Nodepools                    []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
+	PathToRepo                   string     `json:"pathToRepo,omitempty" yaml:"pathToRepo,omitempty"`
+	PSACT                        string     `json:"psact,omitempty" yaml:"psact,omitempty"`
+	SnapshotInput                Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
+	StandaloneLogging            bool       `json:"standaloneLogging,omitempty" yaml:"standaloneLogging,omitempty"`
+	TFLogging                    bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
+	UpgradedAKSKubernetesVersion string     `json:"upgradedAKSKubernetesVersion,omitempty" yaml:"upgradedAKSKubernetesVersion,omitempty"`
+	UpgradedEKSKubernetesVersion string     `json:"upgradedEKSKubernetesVersion,omitempty" yaml:"upgradedEKSKubernetesVersion,omitempty"`
+	UpgradedGKEKubernetesVersion string     `json:"upgradedGKEKubernetesVersion,omitempty" yaml:"upgradedGKEKubernetesVersion,omitempty"`
+	UpgradedKubernetesVersion    string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
+	WindowsNodeCount             int64      `json:"windowsNodeCount,omitempty" yaml:"windowsNodeCount,omitempty"`
 }
 
 // LoadTFPConfigs loads the TFP configurations from the provided map

@@ -48,7 +48,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 			customClusterNames = append(customClusterNames, terraformConfig.ResourcePrefix)
 		}
 
-		if terraformConfig.Module == clustertypes.AKS || terraformConfig.Module == clustertypes.EKS || terraformConfig.Module == clustertypes.GKE {
+		if strings.Contains(terraformConfig.Module, clustertypes.AKS) || strings.Contains(terraformConfig.Module, clustertypes.EKS) || strings.Contains(terraformConfig.Module, clustertypes.GKE) {
 			newFile, file, err = HostedClusters(terraformConfig, terratestConfig, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, nil, err

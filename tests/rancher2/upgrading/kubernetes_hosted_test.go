@@ -8,11 +8,13 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -60,10 +62,20 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
 	require.NoError(k.T(), err)
 
+	aksNodePools := []config.Nodepool{{Quantity: 3}}
+	eksNodePools := []config.Nodepool{{DiskSize: 100, InstanceType: k.terraformConfig.AWSConfig.AWSInstanceType, DesiredSize: 3, MaxSize: 3, MinSize: 3}}
+	gkeNodePools := []config.Nodepool{{Quantity: 3, MaxPodsConstraint: 110}}
+
 	tests := []struct {
-		name string
+		name                      string
+		module                    string
+		nodePools                 []config.Nodepool
+		kubernetesVersion         string
+		upgradedKubernetesVersion string
 	}{
-		{"Upgrade_Hosted_Cluster"},
+		{"Upgrade_AKS_Cluster", modules.AKS, aksNodePools, k.terratestConfig.AKSKubernetesVersion, k.terratestConfig.UpgradedAKSKubernetesVersion},
+		{"Upgrade_EKS_Cluster", modules.EKS, eksNodePools, k.terratestConfig.EKSKubernetesVersion, k.terratestConfig.UpgradedEKSKubernetesVersion},
+		{"Upgrade_GKE_Cluster", modules.GKE, gkeNodePools, k.terratestConfig.GKEKubernetesVersion, k.terratestConfig.UpgradedGKEKubernetesVersion},
 	}
 
 	for _, tt := range tests {
@@ -73,6 +85,20 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
 		require.NoError(k.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(k.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodePools, configMap[0])
+		require.NoError(k.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "kubernetesVersion"}, tt.kubernetesVersion, configMap[0])
+		require.NoError(k.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "upgradedKubernetesVersion"}, tt.upgradedKubernetesVersion, configMap[0])
+		require.NoError(k.T(), err)
+
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
 		k.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
@@ -80,13 +106,11 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			adminClient, err := provisioning.FetchAdminClient(k.T(), k.client)
 			require.NoError(k.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 
-			provisioning.KubernetesUpgrade(k.T(), k.client, k.standardUserClient, k.rancherConfig, k.terraformConfig, k.terratestConfig, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false)
-
+			provisioning.KubernetesUpgrade(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			time.Sleep(4 * time.Minute)
-
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 		})
 

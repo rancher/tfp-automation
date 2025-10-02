@@ -99,7 +99,9 @@ For running the imported clusters, reference the example config block below:
 rancher:
   host: ""
   adminToken: ""
+  adminPassword: ""
   cleanup: true
+  insecure: true
 
 terraform:
   cni: ""
@@ -169,6 +171,107 @@ terratest:
   nodeCount: 3
   windowsNodeCount: 1
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
+```
+
+For running the hosted clusters, reference the example config block below:
+
+```yaml
+rancher:
+  host: ""
+  adminToken: ""
+  adminPassword: ""
+  cleanup: true
+  insecure: true
+
+terraform:
+  defaultClusterRoleForProjectMembers: "true"
+  enableNetworkPolicy: false
+  resourcePrefix: ""
+
+  azureCredentials:
+    clientId: ""
+    clientSecret: ""
+    environment: "AzurePublicCloud"
+    subscriptionId: ""
+    tenantId: ""
+  
+  azureConfig:
+    availabilitySet: "docker-machine"
+    availabilityZones:
+      - '1'
+      - '2'
+      - '3'
+    customData: ""
+    diskSize: "100"
+    dockerPort: "2376"
+    faultDomainCount: "3"
+    image: ""
+    location: "westus2"
+    managedDisks: false
+    mode: "System"
+    name: "agentpool"
+    networkDNSServiceIP: "10.30.0.16"
+    networkDockerBridgeCIDR: "172.17.0.1/16"
+    networkPlugin: "kubenet"
+    networkServiceCIDR: "10.30.0.0/24"
+    noPublicIp: false
+    openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
+    osDiskSizeGB: 128
+    outboundType: "loadBalancer"
+    privateIpAddress: ""
+    resourceGroup: ""
+    resourceLocation: "westus2"
+    size: "Standard_D2_v2"
+    sshUser: "azureuser"
+    staticPublicIp: false
+    storageType: "Standard_LRS"
+    subnet: ""
+    taints: ["none:PreferNoSchedule"]
+    updateDomainCount: "5"
+    vmSize: Standard_DS2_v2
+    vnet: ""
+
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    awsInstanceType: ""
+    region: "us-east-2"
+    awsSubnets:
+      - subnet-placeholder
+      - subnet-placeholder
+    awsSecurityGroups:
+      - sg-placeholder
+      - sg-placeholder
+    publicAccess: true
+    privateAccess: true
+
+  googleCredentials:
+    authEncodedJson: |-
+      {
+        "type": "service_account",
+        "project_id": "",
+        "private_key_id": "",
+        "private_key": "",
+        "client_email": "",
+        "client_id": "",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": ""
+      }
+  googleConfig:
+    region: "us-central1-c"
+    projectID: ""
+    network: "default"
+    subnetwork: "default"
+    zone: "us-central1-c"
+
+terratest:
+  pathToRepo: "go/src/github.com/rancher/tfp-automation"
+  aksKubernetesVersion: ""
+  eksKubernetesVersion: ""
+  gkeKubernetesVersion: ""
 ```
 
 If you would like a private registry associated to your downstream cluster, enter in the optional parameters underneath the `terraform` block:

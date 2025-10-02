@@ -28,13 +28,11 @@ rancher:
 To see what goes into the `terraform` block in addition to the `rancher`, please refer to the tfp-automation [README](../../README.md).
 
 ## Upgrading Clusters
-Similar to the `provisioning` tests, the node scaling tests have static test cases as well as dynamicInput tests you can specify. In order to run the dynamicInput tests, you will need to define the `terratest` block in your config file. See an example below:
+Similar to the `provisioning` tests, the upgrading tests have static test cases as well as dynamicInput tests you can specify. In order to run the dynamicInput tests, you will need to define the `terratest` block in your config file. See an example below:
 
 ```yaml
 terratest:
   kubernetesVersion: ""
-  upgradedKubernetesVersion: "" # If left blank or is omitted completely, the latest version in Rancher will be used. This is only for RKE1/RKE2/K3s. Hosted clusters MUST have this filled out.
-  psact: "" # Optional, can be left out or can have values `rancher-privileged` or `rancher-restricted`
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
   ```
 

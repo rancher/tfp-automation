@@ -1,6 +1,10 @@
 package modules
 
 const (
+	AKS = "aks"
+	EKS = "eks"
+	GKE = "gke"
+
 	AzureRKE1 = "azure_rke1"
 	AzureRKE2 = "azure_rke2"
 	AzureK3s  = "azure_k3s"
