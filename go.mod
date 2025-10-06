@@ -11,6 +11,7 @@ replace (
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20250806201723-9a7af3779b9d
 
 	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20250627195016-142ff3dfec16
+	go.qase.io/qase-api-client => github.com/qase-tms/qase-go/qase-api-client v1.2.0
 	k8s.io/api => k8s.io/api v0.33.2
 	k8s.io/apimachinery => k8s.io/apimachinery v0.33.2
 	k8s.io/apiserver => k8s.io/apiserver v0.33.2
@@ -52,10 +53,11 @@ require (
 	github.com/imdario/mergo v0.3.16
 	github.com/rancher/norman v0.7.0
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20250909212212-7933bb572f70
-	github.com/rancher/tests v0.0.0-20250912201502-f3fc74d763e3
-	github.com/rancher/tests/actions v0.0.0-20250912201502-f3fc74d763e3
+	github.com/rancher/shepherd v0.0.0-20251003203259-669abb78af51
+	github.com/rancher/tests v0.0.0-20251006163815-7499db2c8b31
+	github.com/rancher/tests/actions v0.0.0-20251006163815-7499db2c8b31
 	github.com/sirupsen/logrus v1.9.3
+	go.qase.io/qase-api-client v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -73,13 +75,14 @@ require (
 	github.com/kubereboot/kured v1.13.1 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
-	github.com/rancher/wrangler/v3 v3.2.3-rc.1 // indirect
+	github.com/rancher/wrangler/v3 v3.2.4 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/otel v1.36.0 // indirect
 	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 	k8s.io/component-helpers v0.33.2 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 )
@@ -134,7 +137,7 @@ require (
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
@@ -162,11 +165,11 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/rancher/aks-operator v1.12.0 // indirect
+	github.com/rancher/aks-operator v1.12.1 // indirect
 	github.com/rancher/apiserver v0.7.0 // indirect
-	github.com/rancher/eks-operator v1.12.0 // indirect
+	github.com/rancher/eks-operator v1.12.1 // indirect
 	github.com/rancher/fleet/pkg/apis v0.13.0 // indirect
-	github.com/rancher/gke-operator v1.12.0 // indirect
+	github.com/rancher/gke-operator v1.12.1 // indirect
 	github.com/rancher/lasso v0.2.3 // indirect
 	github.com/rancher/rke v1.8.0-rc.4 // indirect
 	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250710162344-185ff9f785cd // indirect
@@ -197,5 +200,5 @@ require (
 	sigs.k8s.io/kustomize/api v0.19.0 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.19.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
-	sigs.k8s.io/yaml v1.5.0 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
