@@ -11,9 +11,6 @@ inputs:
   slack-token:
     description: "Slack token"
     required: true
-  pr-url:
-    description: "Pull request URL"
-    required: false
 runs:
   using: "composite"
   steps:

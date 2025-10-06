@@ -592,6 +592,7 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
+          is-prime: true
 
       - name: Get Qase ID
         id: get-qase-id

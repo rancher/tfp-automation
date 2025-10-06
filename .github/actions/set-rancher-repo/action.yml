@@ -8,6 +8,9 @@ inputs:
   fallback-repo:
     description: "The fallback repo to use if no RC/alpha detected"
     default: ""
+  is-prime:
+    description: "Determines if the Rancher is Prime or Community"
+    default: false
   env-var-name:
     description: "The name of the environment variable to set"
     default: "RANCHER_REPO"
@@ -24,11 +27,14 @@ runs:
       run: |
         RANCHER_VERSION="${{ inputs.rancher-version }}"
         FALLBACK_REPO="${{ inputs.fallback-repo }}"
-        
+        IS_PRIME="${{ inputs.is-prime }}"
+
         if [[ "$RANCHER_VERSION" == *"-rc"* ]]; then
           REPO="latest"
         elif [[ "$RANCHER_VERSION" == *"-alpha"* ]]; then
           REPO="alpha"
+        elif [[ "$RANCHER_VERSION" != *"-rc"* && "$RANCHER_VERSION" != *"-alpha"* && "$IS_PRIME" == "true" ]]; then
+          REPO="prime"
         else
           REPO="$FALLBACK_REPO"
         fi
