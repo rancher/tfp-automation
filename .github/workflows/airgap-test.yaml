@@ -338,6 +338,7 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
+          is-prime: true
 
       - name: Create config.yaml
         run: |

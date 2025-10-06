@@ -336,6 +336,7 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
+          is-prime: true
 
       - name: Retrieve and set ECR password
         id: get-ecr-password

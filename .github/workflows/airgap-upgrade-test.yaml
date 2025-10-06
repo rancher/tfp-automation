@@ -342,6 +342,7 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          is-prime: true
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Create config.yaml
