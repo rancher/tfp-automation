@@ -24,7 +24,7 @@ env:
 
 jobs:
   head:
-    if: startsWith(github.event.inputs.rancher_version, 'head'))
+    if: startsWith(github.event.inputs.rancher_version, 'head')
     name: head
     runs-on: ubuntu-latest
     environment: latest
@@ -233,7 +233,7 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
   
   v2-12:
-    if: startsWith(github.event.inputs.rancher_version, 'v2.12'))
+    if: startsWith(github.event.inputs.rancher_version, 'v2.12')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
@@ -442,7 +442,7 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-11:
-    if: startsWith(github.event.inputs.rancher_version, 'v2.11')) 
+    if: startsWith(github.event.inputs.rancher_version, 'v2.11') 
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: staging
