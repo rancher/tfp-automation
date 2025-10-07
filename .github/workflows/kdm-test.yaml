@@ -83,13 +83,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: github.event.inputs.rancher_version
+          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: github.event.inputs.rancher_chart_version
+          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
@@ -196,7 +196,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run KDM Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -292,13 +292,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: github.event.inputs.rancher_version
+          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: github.event.inputs.rancher_chart_version
+          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
@@ -405,7 +405,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run KDM Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -501,13 +501,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: github.event.inputs.rancher_version
+          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: github.event.inputs.rancher_chart_version
+          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
@@ -616,7 +616,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run KDM Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
