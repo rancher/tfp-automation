@@ -12,9 +12,11 @@ on:
     inputs:
       rancher_version:
         description: "Rancher tag version"
+        type: string
         required: true
       rancher_chart_version:
         description: "Rancher chart version"
+        type: string
         required: true
 
 permissions:
