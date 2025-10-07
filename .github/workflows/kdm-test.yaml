@@ -8,6 +8,14 @@ on:
         description: "Rancher version"
       rancher_chart_version:
         description: "Rancher chart version"
+  workflow_call:
+    inputs:
+      rancher_version:
+        description: "Rancher tag version"
+        required: true
+      rancher_chart_version:
+        description: "Rancher chart version"
+        required: true
 
 permissions:
   id-token: write
@@ -83,13 +91,21 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+          value: |
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
@@ -292,13 +308,21 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+          value: |
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
@@ -442,7 +466,7 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-11:
-    if: startsWith(github.event.inputs.rancher_version, 'v2.11') 
+    if: startsWith(github.event.inputs.rancher_version, 'v2.11')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: staging
@@ -501,13 +525,21 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+          value: |
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          value: (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
