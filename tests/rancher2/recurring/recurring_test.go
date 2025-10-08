@@ -181,6 +181,77 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringProvisionImportedClu
 	}
 }
 
+func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringPSACT() {
+	if strings.Contains(r.terraformConfig.Standalone.RancherTagVersion, "v2.11") {
+		r.T().Skip("Rancher Baseline has a known issue with Rancher versions 2.11 and below. Skipping PSACT tests.")
+	}
+
+	var err error
+	var testUser, testPassword string
+
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
+	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+
+	tests := []struct {
+		name      string
+		module    string
+		nodeRoles []config.Nodepool
+		psact     config.PSACT
+	}{
+		{"RKE2_Rancher_Privileged", modules.EC2RKE2, nodeRolesDedicated, "rancher-privileged"},
+		{"RKE2_Rancher_Restricted", modules.EC2RKE2, nodeRolesDedicated, "rancher-restricted"},
+		{"RKE2_Rancher_Baseline", modules.EC2RKE2, nodeRolesDedicated, "rancher-baseline"},
+		{"K3S_Rancher_Privileged", modules.EC2K3s, nodeRolesDedicated, "rancher-privileged"},
+		{"K3S_Rancher_Restricted", modules.EC2K3s, nodeRolesDedicated, "rancher-restricted"},
+		{"K3S_Rancher_Baseline", modules.EC2K3s, nodeRolesDedicated, "rancher-baseline"},
+	}
+
+	for _, tt := range tests {
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
+		defer file.Close()
+
+		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+		require.NoError(r.T(), err)
+
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
+		r.Run((tt.name), func() {
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
+
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyClusterPSACT(r.T(), r.client, clusterIDs)
+		})
+
+		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+		err = qase.UpdateSchemaParameters(tt.name, params)
+		if err != nil {
+			logrus.Warningf("Failed to upload schema parameters %s", err)
+		}
+	}
+
+	if r.terratestConfig.LocalQaseReporting {
+		results.ReportTest(r.terratestConfig)
+	}
+}
+
 func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringSnapshotRestore() {
 	var err error
 	var testUser, testPassword string
