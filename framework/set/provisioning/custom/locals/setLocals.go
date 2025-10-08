@@ -23,13 +23,23 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	localsBlock := rootBody.AppendNewBlock(defaults.Locals, nil)
 	localsBlockBody := localsBlock.Body()
 
-	localsBlockBody.SetAttributeValue(defaults.RoleFlags, cty.ListVal([]cty.Value{
-		cty.StringVal(defaults.EtcdRoleFlag),
-		cty.StringVal(defaults.ControlPlaneRoleFlag),
-		cty.StringVal(defaults.WorkerRoleFlag),
-	}))
+	var roleFlags []cty.Value
+	for range terratestConfig.EtcdCount {
+		roleFlags = append(roleFlags, cty.StringVal(defaults.EtcdRoleFlag))
+	}
 
-	resourcePrefixExpression := fmt.Sprintf(`[for i in range(%d) : "%s-${i}"]`, terratestConfig.NodeCount, terraformConfig.ResourcePrefix)
+	for range terratestConfig.ControlPlaneCount {
+		roleFlags = append(roleFlags, cty.StringVal(defaults.ControlPlaneRoleFlag))
+	}
+
+	for range terratestConfig.WorkerCount {
+		roleFlags = append(roleFlags, cty.StringVal(defaults.WorkerRoleFlag))
+	}
+
+	localsBlockBody.SetAttributeValue(defaults.RoleFlags, cty.ListVal(roleFlags))
+
+	totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+	resourcePrefixExpression := fmt.Sprintf(`[for i in range(%d) : "%s-${i}"]`, totalNodeCount, terraformConfig.ResourcePrefix)
 	resourcePrefixValue := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(resourcePrefixExpression)},
 	}

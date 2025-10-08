@@ -185,7 +185,9 @@ jobs:
               upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
+            etcdCount: ${{ vars.ETCD_COUNT }}
+            controlPlaneCount: ${{ vars.CP_COUNT }}
+            workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
           EOF
 
@@ -411,7 +413,9 @@ jobs:
               upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
+            etcdCount: ${{ vars.ETCD_COUNT }}
+            controlPlaneCount: ${{ vars.CP_COUNT }}
+            workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
           EOF
 

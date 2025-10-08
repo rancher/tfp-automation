@@ -89,7 +89,9 @@ terraform:
     standaloneNetwork: ""
     vsphereUser: ""
 terratest:
-  nodeCount: 3
+  etcdCount: 3
+  controlPlaneCount: 2
+  workerCount: 3
   windowsNodeCount: 1
 ```
 
@@ -167,8 +169,9 @@ terraform:
     rke2Version: ""                     # Ensure rke2r1 suffix is appended (i.e. v1.xx.x+rke2r1)
 
 terratest:
-  tfLogging: true
-  nodeCount: 3
+  etcdCount: 3
+  controlPlaneCount: 2
+  workerCount: 3
   windowsNodeCount: 1
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```

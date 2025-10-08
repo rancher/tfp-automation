@@ -111,7 +111,9 @@ terraform:
 # TERRATEST CONFIG
 #######################
 terratest:  
-  nodeCount: 3
+  etcdCount: 3
+  controlPlaneCount: 2
+  workerCount: 3
   windowsNodeCount: 1
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```

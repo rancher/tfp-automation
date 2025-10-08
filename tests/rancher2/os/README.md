@@ -48,6 +48,7 @@ terraform:
     k3sVersion: "v1.32.2+k3s1"
     osGroup: "docker"
     osUser: "ec2-user"
+```
 
 ```yaml
 terratest:
@@ -65,7 +66,9 @@ terratest:
       controlplane: false
       worker: true
   kubernetesVersion: [v1.32.2-rancher1-1, v1.32.2+rke2r1, v1.32.2+k3s1]
-  nodeCount: 3
+  etcdCount: 3
+  controlPlaneCount: 2
+  workerCount: 3
 ```
 
 ### Run Command:

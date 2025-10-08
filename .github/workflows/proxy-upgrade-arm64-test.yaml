@@ -191,7 +191,9 @@ jobs:
               registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
+            etcdCount: ${{ vars.ETCD_COUNT }}
+            controlPlaneCount: ${{ vars.CP_COUNT }}
+            workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
           EOF
 
@@ -423,7 +425,9 @@ jobs:
               registryUsername: "${{ secrets.REGISTRY_USERNAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
+            etcdCount: ${{ vars.ETCD_COUNT }}
+            controlPlaneCount: ${{ vars.CP_COUNT }}
+            workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
           EOF
 
