@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: latest
     env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
 
     steps:
       - name: Checkout repository
