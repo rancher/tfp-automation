@@ -18,8 +18,9 @@ func CreateLinodeInstances(rootBody *hclwrite.Body, terraformConfig *config.Terr
 	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LinodeInstance, hostnamePrefix})
 	configBlockBody := configBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, "custom") {
-		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
+	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(totalNodeCount))
 	}
 
 	configBlockBody.SetAttributeValue(linode.Image, cty.StringVal(terraformConfig.LinodeConfig.LinodeImage))

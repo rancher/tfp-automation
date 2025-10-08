@@ -85,7 +85,9 @@ terraform:
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (make sure it's not the highest version)
 
 terratest:
-  nodeCount: 3
+  etcdCount: 3
+  controlPlaneCount: 2
+  workerCount: 3
   windowsNodeCount: 1
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
   snapshotInput: {}

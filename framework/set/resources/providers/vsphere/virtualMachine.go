@@ -19,7 +19,8 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 	vmBlockBody := vmBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, defaults.Custom) {
-		vmBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
+		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+		vmBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(totalNodeCount))
 
 		vmNameExpression := fmt.Sprintf(` "%s-${%s.%s}"`, hostnamePrefix, defaults.Count, defaults.Index)
 		vmNameValue := hclwrite.Tokens{

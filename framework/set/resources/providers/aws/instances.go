@@ -23,7 +23,8 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	configBlockBody := configBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, defaults.Custom) {
-		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(terratestConfig.NodeCount))
+		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(totalNodeCount))
 	}
 
 	configBlockBody.SetAttributeValue(defaults.Ami, cty.StringVal(terraformConfig.AWSConfig.AMI))

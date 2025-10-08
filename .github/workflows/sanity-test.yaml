@@ -199,7 +199,9 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
+            etcdCount: ${{ vars.ETCD_COUNT }}
+            controlPlaneCount: ${{ vars.CP_COUNT }}
+            workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
           EOF
 
@@ -434,7 +436,9 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
+            etcdCount: ${{ vars.ETCD_COUNT }}
+            controlPlaneCount: ${{ vars.CP_COUNT }}
+            workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
           EOF
 
@@ -671,7 +675,9 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            nodeCount: ${{ vars.NODE_COUNT }}
+            etcdCount: ${{ vars.ETCD_COUNT }}
+            controlPlaneCount: ${{ vars.CP_COUNT }}
+            workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
           EOF
 

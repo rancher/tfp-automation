@@ -52,5 +52,7 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
-  nodeCount: 3
+  etcdCount: 3
+  controlPlaneCount: 2
+  workerCount: 3
   kubernetesVersion: [v1.32.3-rancher1-1, v1.32.3+rke2r1, v1.32.3+k3s1]
