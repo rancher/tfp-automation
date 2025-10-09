@@ -229,6 +229,8 @@ func (r *TfpRancher2RecurringRunsTestSuite) TestTfpRecurringPSACT() {
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 		require.NoError(r.T(), err)
 
+		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		r.Run((tt.name), func() {
