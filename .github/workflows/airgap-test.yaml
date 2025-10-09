@@ -95,7 +95,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: | 
+          value: |
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
@@ -192,6 +192,8 @@ jobs:
               registryName: "${{ secrets.REGISTRY_NAME }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
+            tfLogging: ${{ vars.TERRAFORM_LOGGING}}
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -317,7 +319,7 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          value: | 
+          value: |
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
