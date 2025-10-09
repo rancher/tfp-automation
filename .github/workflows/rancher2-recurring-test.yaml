@@ -3,7 +3,7 @@ name: Rancher2 Recurring Runs Testing
 
 on:
   schedule:
-    - cron: "0 7 * * 2,4"
+    - cron: "0 7 * * 2"
   workflow_dispatch:
     inputs:
       rancher_version:
@@ -29,9 +29,9 @@ env:
   CLOUD_PROVIDER_VERSION: "5.95.0"
   HOSTNAME_PREFIX: "tfp-recur"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
-  PACKAGE: "rancher2/recurring"
+  PACKAGE: "rancher2"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
-  SUITE: "^TestTfpRancher2RecurringRunsTestSuite$"
+  TEST_SUITE: "^TestTfpRancher2RecurringRunsTestSuite$"
   TIMEOUT: "7h"
 
 jobs:
@@ -42,6 +42,12 @@ jobs:
     name: head
     runs-on: ubuntu-latest
     environment: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - rancher-server-one
+          - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
 
@@ -232,20 +238,26 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
+      - name: Creating Rancher server
+        run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
+
       - name: Run Rancher2 Test Suite
+        env:
+          QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
+          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
         uses: ./.github/actions/run-test-suite
         with:
+          suite: ${{ matrix.suite }}
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
+          tag: recurring
 
-      - name: Reporting Results to Qase
+      - name: Cleanup Infrastructure
         if: always()
-        uses: ./.github/actions/report-to-qase
-        with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
-          qase-automation-token: ${{ secrets.QASE_TOKEN }}
+        working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
+        run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Reporting Results to Slack
         uses: ./.github/actions/report-to-slack
@@ -276,6 +288,12 @@ jobs:
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - rancher-server-one
+          - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
@@ -466,20 +484,26 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
+      - name: Creating Rancher server
+        run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
+
       - name: Run Rancher2 Test Suite
+        env:
+          QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
+          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
         uses: ./.github/actions/run-test-suite
         with:
+          suite: ${{ matrix.suite }}
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
+          tag: recurring
 
-      - name: Reporting Results to Qase
+      - name: Cleanup Infrastructure
         if: always()
-        uses: ./.github/actions/report-to-qase
-        with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
-          qase-automation-token: ${{ secrets.QASE_TOKEN }}
+        working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
+        run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Reporting Results to Slack
         uses: ./.github/actions/report-to-slack
@@ -510,6 +534,12 @@ jobs:
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: staging
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - rancher-server-one
+          - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
 
@@ -702,20 +732,26 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
+      - name: Creating Rancher server
+        run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
+
       - name: Run Rancher2 Test Suite
+        env:
+          QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
+          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
         uses: ./.github/actions/run-test-suite
         with:
+          suite: ${{ matrix.suite }}
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
+          tag: recurring
 
-      - name: Reporting Results to Qase
+      - name: Cleanup Infrastructure
         if: always()
-        uses: ./.github/actions/report-to-qase
-        with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
-          qase-automation-token: ${{ secrets.QASE_TOKEN }}
+        working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
+        run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Reporting Results to Slack
         uses: ./.github/actions/report-to-slack

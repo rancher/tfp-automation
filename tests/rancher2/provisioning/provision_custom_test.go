@@ -1,3 +1,5 @@
+//go:build validation || recurring
+
 package provisioning
 
 import (
@@ -101,60 +103,6 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
-				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			}
-		})
-
-		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
-		err = qase.UpdateSchemaParameters(tt.name, params)
-		if err != nil {
-			logrus.Warningf("Failed to upload schema parameters %s", err)
-		}
-	}
-
-	if p.terratestConfig.LocalQaseReporting {
-		results.ReportTest(p.terratestConfig)
-	}
-}
-
-func (p *ProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
-	var err error
-	var testUser, testPassword string
-
-	customClusterNames := []string{}
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
-
-	tests := []struct {
-		name string
-	}{
-		{config.StandardClientName.String()},
-	}
-
-	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
-		defer file.Close()
-
-		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-		require.NoError(p.T(), err)
-
-		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
-
-		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
-
-		p.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
-
-			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
-			require.NoError(p.T(), err)
-
-			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
-			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-
-			if strings.Contains(p.terraformConfig.Module, clustertypes.WINDOWS) {
 				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			}

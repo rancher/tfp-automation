@@ -1,4 +1,4 @@
-//go:build validation
+//go:build dynamic
 
 package provisioning
 
@@ -9,7 +9,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
@@ -17,7 +16,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ProvisionTestSuite struct {
+type DynamicUpgradeImportedClusterTestSuite struct {
 	suite.Suite
 	client             *rancher.Client
 	standardUserClient *rancher.Client
@@ -39,7 +39,7 @@ type ProvisionTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (p *ProvisionTestSuite) SetupSuite() {
+func (p *DynamicUpgradeImportedClusterTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	p.session = testSession
 
@@ -56,20 +56,17 @@ func (p *ProvisionTestSuite) SetupSuite() {
 	p.terraformOptions = terraformOptions
 }
 
-func (p *ProvisionTestSuite) TestTfpProvision() {
+func (p *DynamicUpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicInput() {
 	var err error
 	var testUser, testPassword string
 
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-
 	tests := []struct {
-		name      string
-		nodeRoles []config.Nodepool
+		name string
 	}{
-		{"8_nodes_3_etcd_2_cp_3_worker", nodeRolesDedicated},
+		{config.StandardClientName.String()},
 	}
 
 	for _, tt := range tests {
@@ -77,9 +74,6 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-		require.NoError(p.T(), err)
-
-		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
 		require.NoError(p.T(), err)
 
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
@@ -93,8 +87,11 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
+
+			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
+			require.NoError(p.T(), err)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
@@ -109,6 +106,6 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	}
 }
 
-func TestTfpProvisionTestSuite(t *testing.T) {
-	suite.Run(t, new(ProvisionTestSuite))
+func TestDynamicUpgradeImportedClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(DynamicUpgradeImportedClusterTestSuite))
 }

@@ -1,3 +1,5 @@
+//go:build validation || recurring
+
 package rbac
 
 import (
@@ -14,6 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -66,10 +69,13 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 	tests := []struct {
 		name     string
+		module   string
 		rbacRole config.Role
 	}{
-		{"Cluster_Owner", config.ClusterOwner},
-		{"Project_Owner", config.ProjectOwner},
+		{"RKE2_Cluster_Owner", modules.EC2RKE2, config.ClusterOwner},
+		{"RKE2_Project_Owner", modules.EC2RKE2, config.ProjectOwner},
+		{"K3S_Cluster_Owner", modules.EC2K3s, config.ClusterOwner},
+		{"K3S_Project_Owner", modules.EC2K3s, config.ProjectOwner},
 	}
 
 	for _, tt := range tests {
@@ -77,6 +83,9 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(r.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])

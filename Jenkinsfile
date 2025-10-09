@@ -68,7 +68,7 @@ node {
       try {
         sh """
           docker run --name ${testContainer} -t --env-file ${envFile} ${imageName} sh -c "
-          /root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile ${testResultsOut} --jsonfile ${testResultsJSON} -- -timeout=${timeout} -v ${params.TEST_CASE};
+          /root/go/bin/gotestsum --format standard-verbose --packages=${testsDir} --junitfile ${testResultsOut} --jsonfile ${testResultsJSON} -- -timeout=${timeout} -tags=validation -v ${params.TEST_CASE};
           ${rootPath}pipeline/scripts/build_qase_reporter.sh;
           if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"
         """

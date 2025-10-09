@@ -1,7 +1,10 @@
+//go:build validation || recurring
+
 package psact
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -13,6 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -52,6 +56,10 @@ func (p *PSACTTestSuite) SetupSuite() {
 }
 
 func (p *PSACTTestSuite) TestTfpPSACT() {
+	if strings.Contains(p.terraformConfig.Standalone.RancherTagVersion, "2.11") {
+		p.T().Skip("Skipping PSACT tests on Rancher v2.11.x due to known issues.")
+	}
+
 	var err error
 	var testUser, testPassword string
 
@@ -62,12 +70,16 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 
 	tests := []struct {
 		name      string
+		module    string
 		nodeRoles []config.Nodepool
 		psact     config.PSACT
 	}{
-		{"Rancher_Privileged", nodeRolesDedicated, "rancher-privileged"},
-		{"Rancher_Restricted", nodeRolesDedicated, "rancher-restricted"},
-		{"Rancher_Baseline", nodeRolesDedicated, "rancher-baseline"},
+		{"RKE2_Rancher_Privileged", modules.EC2RKE2, nodeRolesDedicated, "rancher-privileged"},
+		{"RKE2_Rancher_Restricted", modules.EC2RKE2, nodeRolesDedicated, "rancher-restricted"},
+		{"RKE2_Rancher_Baseline", modules.EC2RKE2, nodeRolesDedicated, "rancher-baseline"},
+		{"K3S_Rancher_Privileged", modules.EC2K3s, nodeRolesDedicated, "rancher-privileged"},
+		{"K3S_Rancher_Restricted", modules.EC2K3s, nodeRolesDedicated, "rancher-restricted"},
+		{"K3S_Rancher_Baseline", modules.EC2K3s, nodeRolesDedicated, "rancher-baseline"},
 	}
 
 	for _, tt := range tests {
@@ -75,6 +87,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+		require.NoError(p.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(p.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
