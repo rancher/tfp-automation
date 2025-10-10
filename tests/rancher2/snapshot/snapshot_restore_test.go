@@ -1,3 +1,5 @@
+//go:build validation || recurring
+
 package snapshot
 
 import (
@@ -15,6 +17,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -70,10 +73,12 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 
 	tests := []struct {
 		name         string
+		module       string
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
 	}{
-		{"Snapshot_Restore", nodeRolesDedicated, snapshotRestoreNone},
+		{"RKE2_Snapshot_Restore", modules.EC2RKE2, nodeRolesDedicated, snapshotRestoreNone},
+		{"K3S_Snapshot_Restore", modules.EC2K3s, nodeRolesDedicated, snapshotRestoreNone},
 	}
 
 	for _, tt := range tests {
@@ -81,6 +86,9 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
+		require.NoError(s.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(s.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])

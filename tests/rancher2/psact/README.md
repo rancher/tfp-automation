@@ -54,7 +54,7 @@ terratest:
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/psact --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/psact --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$"`
 
 ## Local Qase Reporting
 If you are planning to report to Qase locally, then you will need to have the following done:
@@ -63,4 +63,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/psact --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/psact --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestTfpPSACTTestSuite/TestTfpPSACT$";/path/to/tfp-automation/reporter`

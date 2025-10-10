@@ -25,7 +25,7 @@ env:
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: registries
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
-  SUITE: ^TestTfpRegistriesTestSuite$
+  TEST_SUITE: ^TestTfpRegistriesTestSuite$
   SUITE_TIMEOUT: 7h
 
 permissions:
@@ -223,7 +223,7 @@ jobs:
         with:
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
       - name: Reporting Results to Qase
@@ -444,7 +444,7 @@ jobs:
         with:
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
       - name: Reporting Results to Qase

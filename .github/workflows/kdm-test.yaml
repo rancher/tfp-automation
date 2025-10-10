@@ -29,7 +29,7 @@ env:
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "kdm"
   RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
-  SUITE: "^TestKDMTestSuite$"
+  TEST_SUITE: "^TestKDMTestSuite$"
   TIMEOUT: "5h"
 
 jobs:
@@ -219,7 +219,7 @@ jobs:
         with:
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase
@@ -436,7 +436,7 @@ jobs:
         with:
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase
@@ -655,7 +655,7 @@ jobs:
         with:
           package: ${{ env.PACKAGE }}
           path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          suite: ${{ env.SUITE }}
+          test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase

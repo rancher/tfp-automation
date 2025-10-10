@@ -1,4 +1,4 @@
-//go:build validation
+//go:build dynamic
 
 package provisioning
 
@@ -9,7 +9,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
@@ -27,7 +26,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ProvisionTestSuite struct {
+type DynamicTfpProvisionTestSuite struct {
 	suite.Suite
 	client             *rancher.Client
 	standardUserClient *rancher.Client
@@ -39,7 +38,7 @@ type ProvisionTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (p *ProvisionTestSuite) SetupSuite() {
+func (p *DynamicTfpProvisionTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	p.session = testSession
 
@@ -56,20 +55,17 @@ func (p *ProvisionTestSuite) SetupSuite() {
 	p.terraformOptions = terraformOptions
 }
 
-func (p *ProvisionTestSuite) TestTfpProvision() {
+func (p *DynamicTfpProvisionTestSuite) TestTfpProvisionDynamicInput() {
 	var err error
 	var testUser, testPassword string
 
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-
 	tests := []struct {
-		name      string
-		nodeRoles []config.Nodepool
+		name string
 	}{
-		{"8_nodes_3_etcd_2_cp_3_worker", nodeRolesDedicated},
+		{config.StandardClientName.String()},
 	}
 
 	for _, tt := range tests {
@@ -79,12 +75,11 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
 		require.NoError(p.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		require.NoError(p.T(), err)
-
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
+		tt.name = tt.name + " Module: " + p.terraformConfig.Module + " Kubernetes version: " + terratest.KubernetesVersion
 
 		p.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
@@ -109,6 +104,6 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	}
 }
 
-func TestTfpProvisionTestSuite(t *testing.T) {
-	suite.Run(t, new(ProvisionTestSuite))
+func TestDynamicTfpProvisionTestSuite(t *testing.T) {
+	suite.Run(t, new(DynamicTfpProvisionTestSuite))
 }

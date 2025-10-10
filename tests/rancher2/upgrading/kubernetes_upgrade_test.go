@@ -1,3 +1,5 @@
+//go:build validation || recurring
+
 package upgrading
 
 import (
@@ -14,6 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -65,9 +68,11 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 
 	tests := []struct {
 		name      string
+		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"8_nodes_3_etcd_2_cp_3_worker", nodeRolesDedicated},
+		{"RKE2_Kubernetes_Upgrade", modules.EC2RKE2, nodeRolesDedicated},
+		{"K3S_Kubernetes_Upgrade", modules.EC2K3s, nodeRolesDedicated},
 	}
 
 	for _, tt := range tests {
@@ -75,6 +80,9 @@ func (k *KubernetesUpgradeTestSuite) TestTfpKubernetesUpgrade() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
+		require.NoError(k.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(k.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])

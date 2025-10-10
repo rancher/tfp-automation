@@ -1,3 +1,5 @@
+//go:build validation || recurring
+
 package provisioning
 
 import (
@@ -12,7 +14,6 @@ import (
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
@@ -82,56 +83,6 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(p.T(), err)
-
-		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
-
-		p.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
-
-			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
-			require.NoError(p.T(), err)
-
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
-			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-
-			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
-			require.NoError(p.T(), err)
-		})
-
-		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
-		err = qase.UpdateSchemaParameters(tt.name, params)
-		if err != nil {
-			logrus.Warningf("Failed to upload schema parameters %s", err)
-		}
-	}
-
-	if p.terratestConfig.LocalQaseReporting {
-		results.ReportTest(p.terratestConfig)
-	}
-}
-
-func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicInput() {
-	var err error
-	var testUser, testPassword string
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
-
-	tests := []struct {
-		name string
-	}{
-		{config.StandardClientName.String()},
-	}
-
-	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
-		defer file.Close()
-
-		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
-		require.NoError(p.T(), err)
-
-		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
