@@ -170,6 +170,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              awsSubnets: [${{ secrets.EKS_SUBNETS }}]
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
@@ -187,6 +188,66 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+              publicAccess: true
+              privateAccess: true
+            azureCredentials:
+              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
+              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
+              environment: "AzurePublicCloud"
+              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
+            azureConfig:
+              availabilitySet: "docker-machine"
+              availabilityZones: ["1", "2", "3"]
+              customData: ""
+              diskSize: "100"
+              dockerPort: "2376"
+              faultDomainCount: "3"
+              image: "${{ secrets.AZURE_IMAGE }}"
+              location: "${{ secrets.AZURE_LOCATION }}"
+              managedDisks: false
+              mode: "System"
+              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
+              networkDNSServiceIP: "10.30.0.16"
+              networkDockerBridgeCIDR: "172.17.0.1/16"
+              networkPlugin: "kubenet"
+              networkServiceCIDR: "10.30.0.0/24"
+              noPublicIp: false
+              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
+              osDiskSizeGB: 128
+              outboundType: "loadBalancer"
+              resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
+              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
+              size: "Standard_D2_v2"
+              sshUser: "${{ secrets.AZURE_SSH_USER }}"
+              staticPublicIp: false
+              storageType: "Standard_LRS"
+              subnet: "${{ secrets.AZURE_SUBNET }}"
+              taints: ["none:PreferNoSchedule"]
+              updateDomainCount: "5"
+              vmSize: Standard_DS2_v2
+              vnet: "${{ secrets.AZURE_VNET }}"
+            googleCredentials:
+              authEncodedJson: |-
+                {
+                  "type": "service_account",
+                  "project_id": "${{ secrets.GCP_PROJECT_ID }}",
+                  "private_key_id": "${{ secrets.GCP_PRIVATE_KEY_ID }}",
+                  "private_key": "${{ secrets.GCP_PRIVATE_KEY }}",
+                  "client_email": "${{ secrets.GCP_CLIENT_EMAIL }}",
+                  "client_id": "${{ secrets.GCP_CLIENT_ID }}",
+                  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                  "token_uri": "https://oauth2.googleapis.com/token",
+                  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                  "client_x509_cert_url": "${{ secrets.GCP_CLIENT_X509_CERT_URL }}",
+                  "universe_domain": "googleapis.com"
+                }
+            googleConfig:
+              region: "${{ secrets.GCP_REGION }}"
+              projectID: "${{ secrets.GCP_PROJECT_ID }}"
+              network: "default"
+              subnetwork: "default"
+              zone: "${{ secrets.GCP_ZONE }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -210,6 +271,12 @@ jobs:
             workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
             snapshotInput: {}
+            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_13 }}"
+            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_13 }}"
+            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_13 }}"
+            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_13 }}"
+            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_13 }}"
+            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_13 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -416,6 +483,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              awsSubnets: [${{ secrets.EKS_SUBNETS }}]
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
@@ -433,6 +501,66 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+              publicAccess: true
+              privateAccess: true
+            azureCredentials:
+              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
+              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
+              environment: "AzurePublicCloud"
+              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
+            azureConfig:
+              availabilitySet: "docker-machine"
+              availabilityZones: ["1", "2", "3"]
+              customData: ""
+              diskSize: "100"
+              dockerPort: "2376"
+              faultDomainCount: "3"
+              image: "${{ secrets.AZURE_IMAGE }}"
+              location: "${{ secrets.AZURE_LOCATION }}"
+              managedDisks: false
+              mode: "System"
+              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
+              networkDNSServiceIP: "10.30.0.16"
+              networkDockerBridgeCIDR: "172.17.0.1/16"
+              networkPlugin: "kubenet"
+              networkServiceCIDR: "10.30.0.0/24"
+              noPublicIp: false
+              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
+              osDiskSizeGB: 128
+              outboundType: "loadBalancer"
+              resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
+              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
+              size: "Standard_D2_v2"
+              sshUser: "${{ secrets.AZURE_SSH_USER }}"
+              staticPublicIp: false
+              storageType: "Standard_LRS"
+              subnet: "${{ secrets.AZURE_SUBNET }}"
+              taints: ["none:PreferNoSchedule"]
+              updateDomainCount: "5"
+              vmSize: Standard_DS2_v2
+              vnet: "${{ secrets.AZURE_VNET }}"
+            googleCredentials:
+              authEncodedJson: |-
+                {
+                  "type": "service_account",
+                  "project_id": "${{ secrets.GCP_PROJECT_ID }}",
+                  "private_key_id": "${{ secrets.GCP_PRIVATE_KEY_ID }}",
+                  "private_key": "${{ secrets.GCP_PRIVATE_KEY }}",
+                  "client_email": "${{ secrets.GCP_CLIENT_EMAIL }}",
+                  "client_id": "${{ secrets.GCP_CLIENT_ID }}",
+                  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                  "token_uri": "https://oauth2.googleapis.com/token",
+                  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                  "client_x509_cert_url": "${{ secrets.GCP_CLIENT_X509_CERT_URL }}",
+                  "universe_domain": "googleapis.com"
+                }
+            googleConfig:
+              region: "${{ secrets.GCP_REGION }}"
+              projectID: "${{ secrets.GCP_PROJECT_ID }}"
+              network: "default"
+              subnetwork: "default"
+              zone: "${{ secrets.GCP_ZONE }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -456,6 +584,12 @@ jobs:
             workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
             snapshotInput: {}
+            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_12 }}"
+            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_12 }}"
+            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_12 }}"
+            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_12 }}"
+            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_12 }}"
+            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_12 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -663,6 +797,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              awsSubnets: [${{ secrets.EKS_SUBNETS }}]
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
@@ -680,6 +815,66 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+              publicAccess: true
+              privateAccess: true
+            azureCredentials:
+              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
+              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
+              environment: "AzurePublicCloud"
+              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
+            azureConfig:
+              availabilitySet: "docker-machine"
+              availabilityZones: ["1", "2", "3"]
+              customData: ""
+              diskSize: "100"
+              dockerPort: "2376"
+              faultDomainCount: "3"
+              image: "${{ secrets.AZURE_IMAGE }}"
+              location: "${{ secrets.AZURE_LOCATION }}"
+              managedDisks: false
+              mode: "System"
+              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
+              networkDNSServiceIP: "10.30.0.16"
+              networkDockerBridgeCIDR: "172.17.0.1/16"
+              networkPlugin: "kubenet"
+              networkServiceCIDR: "10.30.0.0/24"
+              noPublicIp: false
+              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
+              osDiskSizeGB: 128
+              outboundType: "loadBalancer"
+              resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
+              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
+              size: "Standard_D2_v2"
+              sshUser: "${{ secrets.AZURE_SSH_USER }}"
+              staticPublicIp: false
+              storageType: "Standard_LRS"
+              subnet: "${{ secrets.AZURE_SUBNET }}"
+              taints: ["none:PreferNoSchedule"]
+              updateDomainCount: "5"
+              vmSize: Standard_DS2_v2
+              vnet: "${{ secrets.AZURE_VNET }}"
+            googleCredentials:
+              authEncodedJson: |-
+                {
+                  "type": "service_account",
+                  "project_id": "${{ secrets.GCP_PROJECT_ID }}",
+                  "private_key_id": "${{ secrets.GCP_PRIVATE_KEY_ID }}",
+                  "private_key": "${{ secrets.GCP_PRIVATE_KEY }}",
+                  "client_email": "${{ secrets.GCP_CLIENT_EMAIL }}",
+                  "client_id": "${{ secrets.GCP_CLIENT_ID }}",
+                  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                  "token_uri": "https://oauth2.googleapis.com/token",
+                  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                  "client_x509_cert_url": "${{ secrets.GCP_CLIENT_X509_CERT_URL }}",
+                  "universe_domain": "googleapis.com"
+                }
+            googleConfig:
+              region: "${{ secrets.GCP_REGION }}"
+              projectID: "${{ secrets.GCP_PROJECT_ID }}"
+              network: "default"
+              subnetwork: "default"
+              zone: "${{ secrets.GCP_ZONE }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -704,6 +899,12 @@ jobs:
             workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
             snapshotInput: {}
+            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_11 }}"
+            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_11 }}"
+            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_11 }}"
+            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_11 }}"
+            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_11 }}"
+            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_11 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG

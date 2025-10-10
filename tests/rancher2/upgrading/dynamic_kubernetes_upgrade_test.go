@@ -1,22 +1,20 @@
-//go:build validation || recurring
+//go:build dynamic
 
 package upgrading
 
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -28,7 +26,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type KubernetesUpgradeHostedTestSuite struct {
+type DynamicKubernetesUpgradeTestSuite struct {
 	suite.Suite
 	client             *rancher.Client
 	standardUserClient *rancher.Client
@@ -40,7 +38,7 @@ type KubernetesUpgradeHostedTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
+func (k *DynamicKubernetesUpgradeTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	k.session = testSession
 
@@ -57,27 +55,17 @@ func (k *KubernetesUpgradeHostedTestSuite) SetupSuite() {
 	k.terraformOptions = terraformOptions
 }
 
-func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
+func (k *DynamicKubernetesUpgradeTestSuite) TestTfpKubernetesUpgradeDynamicInput() {
 	var err error
 	var testUser, testPassword string
 
 	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
 	require.NoError(k.T(), err)
 
-	aksNodePools := []config.Nodepool{{Quantity: 3}}
-	eksNodePools := []config.Nodepool{{DiskSize: 100, InstanceType: k.terraformConfig.AWSConfig.AWSInstanceType, DesiredSize: 3, MaxSize: 3, MinSize: 3}}
-	gkeNodePools := []config.Nodepool{{Quantity: 3, MaxPodsConstraint: 110}}
-
 	tests := []struct {
-		name                      string
-		module                    string
-		nodePools                 []config.Nodepool
-		kubernetesVersion         string
-		upgradedKubernetesVersion string
+		name string
 	}{
-		{"Upgrade_AKS_Cluster", modules.AKS, aksNodePools, k.terratestConfig.AKSKubernetesVersion, k.terratestConfig.UpgradedAKSKubernetesVersion},
-		{"Upgrade_EKS_Cluster", modules.EKS, eksNodePools, k.terratestConfig.EKSKubernetesVersion, k.terratestConfig.UpgradedEKSKubernetesVersion},
-		{"Upgrade_GKE_Cluster", modules.GKE, gkeNodePools, k.terratestConfig.GKEKubernetesVersion, k.terratestConfig.UpgradedGKEKubernetesVersion},
+		{config.StandardClientName.String()},
 	}
 
 	for _, tt := range tests {
@@ -87,17 +75,7 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
 		require.NoError(k.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		require.NoError(k.T(), err)
-
-		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodePools, configMap[0])
-		require.NoError(k.T(), err)
-
-		_, err = operations.ReplaceValue([]string{"terratest", "kubernetesVersion"}, tt.kubernetesVersion, configMap[0])
-		require.NoError(k.T(), err)
-
-		_, err = operations.ReplaceValue([]string{"terratest", "upgradedKubernetesVersion"}, tt.upgradedKubernetesVersion, configMap[0])
-		require.NoError(k.T(), err)
+		provisioning.GetK8sVersion(k.T(), k.client, k.terratestConfig, k.terraformConfig, configs.DefaultK8sVersion, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
@@ -112,7 +90,6 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 
 			provisioning.KubernetesUpgrade(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
-			time.Sleep(4 * time.Minute)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 		})
 
@@ -128,6 +105,6 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 	}
 }
 
-func TestTfpKubernetesUpgradeHostedTestSuite(t *testing.T) {
-	suite.Run(t, new(KubernetesUpgradeHostedTestSuite))
+func TestDynamicTfpKubernetesUpgradeTestSuite(t *testing.T) {
+	suite.Run(t, new(DynamicKubernetesUpgradeTestSuite))
 }
