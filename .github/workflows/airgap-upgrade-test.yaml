@@ -8,6 +8,11 @@ on:
         description: "Rancher version to upgrade to"
       rancher_chart_version:
         description: "Rancher chart version to upgrade to"
+      run_all_versions:
+        description: "Run all supported versions if manually triggered"
+        required: false
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       rancher_version:
@@ -33,6 +38,7 @@ permissions:
 jobs:
   v2-12:
     if: |
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version }}
@@ -96,7 +102,8 @@ jobs:
           value: | 
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_version)
             }}
 
       - name: Set upgraded Rancher chart version
@@ -106,7 +113,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set upgraded Rancher repo
@@ -261,6 +269,7 @@ jobs:
 
   v2-11:
     if: |
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11.')) && contains(github.event.inputs.rancher_version, '-alpha') ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_11 }} -> ${{ github.event.inputs.rancher_version }}
@@ -324,7 +333,8 @@ jobs:
           value: | 
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_version)
             }}
 
       - name: Set upgraded Rancher chart version
@@ -334,7 +344,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set upgraded Rancher repo

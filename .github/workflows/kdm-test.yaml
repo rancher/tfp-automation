@@ -34,7 +34,9 @@ env:
 
 jobs:
   head:
-    if: startsWith(github.event.inputs.rancher_version, 'head')
+    if: |
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
     name: head
     runs-on: ubuntu-latest
     environment: latest
@@ -96,7 +98,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -106,7 +109,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -251,7 +255,9 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
   
   v2-12:
-    if: startsWith(github.event.inputs.rancher_version, 'v2.12')
+    if: |
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
@@ -313,7 +319,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -323,7 +330,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -468,7 +476,9 @@ jobs:
           region: "${{ secrets.AWS_REGION }}"
 
   v2-11:
-    if: startsWith(github.event.inputs.rancher_version, 'v2.11')
+    if: |
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: staging
@@ -530,7 +540,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -540,7 +551,8 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
