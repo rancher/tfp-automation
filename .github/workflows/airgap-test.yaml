@@ -105,7 +105,7 @@ jobs:
             ${{
               github.event.inputs.rancher_version ||
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) ||
-              (github.event.inputs.run_all_versions == 'true' || && github.event.inputs.rancher_version)
+              (github.event.inputs.run_all_versions == 'true' && github.event.inputs.rancher_version)
             }}
 
       - name: Set Rancher chart version
