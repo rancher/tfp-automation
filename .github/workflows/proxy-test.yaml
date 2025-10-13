@@ -10,6 +10,11 @@ on:
         description: "Rancher version"
       rancher_chart_version:
         description: "Rancher chart version"
+      run_all_versions:
+        description: "Run all supported versions if manually triggered"
+        required: false
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       rancher_version:
@@ -38,6 +43,7 @@ jobs:
   head:
     if: |
       github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
     name: head
     runs-on: ubuntu-latest
@@ -101,7 +107,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) 
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_HEAD)
             }}
 
       - name: Set Rancher chart version
@@ -112,7 +119,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) || 
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) 
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
             }}
 
       - name: Set Rancher repo
@@ -275,6 +283,7 @@ jobs:
   v2-12:
     if: |
       github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && contains(github.event.inputs.rancher_version, '-alpha') ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ github.event.inputs.rancher_version }}
@@ -339,7 +348,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) 
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_12_HEAD)
             }}
 
       - name: Set Rancher chart version
@@ -350,7 +360,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
             }}
 
       - name: Set Rancher repo
@@ -513,6 +524,7 @@ jobs:
   v2-11:
     if: |
       github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && contains(github.event.inputs.rancher_version, '-alpha') ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ github.event.inputs.rancher_version }}
@@ -577,7 +589,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) 
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_11_HEAD)
             }}
 
       - name: Set Rancher chart version
@@ -588,7 +601,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_11)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_11) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_11)
             }}
 
       - name: Set Rancher repo
