@@ -79,7 +79,6 @@ runs:
           -- -timeout=${{ inputs.timeout }} -v -run "${{ inputs.test-suite }}"
         fi
       shell: bash
-      continue-on-error: true
 
     - name: Show failed tests
       if: ${{ inputs.tag == '' }}
