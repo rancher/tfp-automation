@@ -317,7 +317,6 @@ jobs:
         run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
 
       - name: Run Rancher2 Test Suite
-        continue-on-error: true
         env:
           QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
           QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
@@ -634,7 +633,6 @@ jobs:
         run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
 
       - name: Run Rancher2 Test Suite
-        continue-on-error: true
         env:
           QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
           QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
@@ -953,7 +951,6 @@ jobs:
         run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
 
       - name: Run Rancher2 Test Suite
-        continue-on-error: true
         env:
           QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
           QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
