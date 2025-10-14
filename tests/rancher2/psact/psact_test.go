@@ -56,7 +56,7 @@ func (p *PSACTTestSuite) SetupSuite() {
 }
 
 func (p *PSACTTestSuite) TestTfpPSACT() {
-	if strings.Contains(p.terraformConfig.Standalone.RancherTagVersion, "2.11") {
+	if p.terraformConfig.Standalone != nil && strings.Contains(p.terraformConfig.Standalone.RancherTagVersion, "2.11") {
 		p.T().Skip("Skipping PSACT tests on Rancher v2.11.x due to known issues.")
 	}
 
