@@ -17,9 +17,9 @@ func CreateNodeBalancerNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	nodeBalancerNodeBlockBody := nodeBalancerNodeBlock.Body()
 
 	expression := `{
-        for instance in [` + defaults.LinodeInstance + `.` + rke2ServerOne + `, ` +
-		defaults.LinodeInstance + `.` + rke2ServerTwo + `, ` +
-		defaults.LinodeInstance + `.` + rke2ServerThree + `] : instance.label => instance
+        for instance in [` + defaults.LinodeInstance + `.` + serverOne + `, ` +
+		defaults.LinodeInstance + `.` + serverTwo + `, ` +
+		defaults.LinodeInstance + `.` + serverThree + `] : instance.label => instance
 	}`
 
 	values := hclwrite.Tokens{

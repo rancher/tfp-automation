@@ -13,14 +13,11 @@ import (
 
 const (
 	locals            = "locals"
-	k3sServerOne      = "k3s_server1"
-	k3sServerTwo      = "k3s_server2"
-	k3sServerThree    = "k3s_server3"
 	requiredProviders = "required_providers"
-	rke2InstanceIDs   = "rke2_instance_ids"
-	rke2ServerOne     = "rke2_server1"
-	rke2ServerTwo     = "rke2_server2"
-	rke2ServerThree   = "rke2_server3"
+	instanceIDs       = "instance_ids"
+	serverOne         = "server1"
+	serverTwo         = "server2"
+	serverThree       = "server3"
 )
 
 // CreateLinodeTerraformProviderBlock will up the terraform block with the required linode provider.
@@ -49,22 +46,13 @@ func CreateLinodeLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	localBlock := rootBody.AppendNewBlock(locals, nil)
 	localBlockBody := localBlock.Body()
 
-	var instanceIds map[string]interface{}
-	if terraformConfig.Standalone.RKE2Version != "" {
-		instanceIds = map[string]interface{}{
-			rke2ServerOne:   defaults.LinodeInstance + "." + rke2ServerOne + ".id",
-			rke2ServerTwo:   defaults.LinodeInstance + "." + rke2ServerTwo + ".id",
-			rke2ServerThree: defaults.LinodeInstance + "." + rke2ServerThree + ".id",
-		}
-	} else if terraformConfig.Standalone.K3SVersion != "" {
-		instanceIds = map[string]interface{}{
-			k3sServerOne:   defaults.LinodeInstance + "." + k3sServerOne + ".id",
-			k3sServerTwo:   defaults.LinodeInstance + "." + k3sServerTwo + ".id",
-			k3sServerThree: defaults.LinodeInstance + "." + k3sServerThree + ".id",
-		}
+	instanceIds := map[string]any{
+		serverOne:   defaults.LinodeInstance + "." + serverOne + ".id",
+		serverTwo:   defaults.LinodeInstance + "." + serverTwo + ".id",
+		serverThree: defaults.LinodeInstance + "." + serverThree + ".id",
 	}
 
-	instanceIdsBlock := localBlockBody.AppendNewBlock(rke2InstanceIDs+" =", nil)
+	instanceIdsBlock := localBlockBody.AppendNewBlock(instanceIDs+" =", nil)
 	instanceIdsBlockBody := instanceIdsBlock.Body()
 
 	for key, value := range instanceIds {

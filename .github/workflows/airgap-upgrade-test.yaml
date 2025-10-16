@@ -122,6 +122,7 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Create config.yaml
         run: |
@@ -440,7 +441,7 @@ jobs:
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
               upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
-              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherChartRepository: "${{ env.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"

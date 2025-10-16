@@ -24,6 +24,13 @@ wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
 wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 
+if [[ "${USER}" == "root" ]]; then
+  mkdir -p /home/root
+  mv rke2.linux-${ARCH}.tar.gz /home/root/
+  mv rke2-images.linux-${ARCH}.tar.zst /home/root/
+  mv sha256sum-${ARCH}.txt /home/root/
+fi
+
 sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
 
