@@ -13,13 +13,10 @@ import (
 const (
 	locals             = "locals"
 	requiredProviders  = "required_providers"
-	k3sServerOne       = "k3s_server1"
-	k3sServerTwo       = "k3s_server2"
-	k3sServerThree     = "k3s_server3"
-	rke2ServerOne      = "rke2_server1"
-	rke2ServerTwo      = "rke2_server2"
-	rke2ServerThree    = "rke2_server3"
-	rke2InstanceIDs    = "rke2_instance_ids"
+	serverOne          = "server1"
+	serverTwo          = "server2"
+	serverThree        = "server3"
+	instanceIDs        = "instance_ids"
 	allowUnverifiedSSL = "allow_unverified_ssl"
 )
 
@@ -51,22 +48,13 @@ func CreateVsphereLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Te
 	localBlock := rootBody.AppendNewBlock(locals, nil)
 	localBlockBody := localBlock.Body()
 
-	var instanceIds map[string]any
-	if terraformConfig.Standalone.RKE2Version != "" {
-		instanceIds = map[string]any{
-			rke2ServerOne:   defaults.VsphereVirtualMachine + "." + rke2ServerOne + ".id",
-			rke2ServerTwo:   defaults.VsphereVirtualMachine + "." + rke2ServerTwo + ".id",
-			rke2ServerThree: defaults.VsphereVirtualMachine + "." + rke2ServerThree + ".id",
-		}
-	} else if terraformConfig.Standalone.K3SVersion != "" {
-		instanceIds = map[string]any{
-			k3sServerOne:   defaults.VsphereVirtualMachine + "." + k3sServerOne + ".id",
-			k3sServerTwo:   defaults.VsphereVirtualMachine + "." + k3sServerTwo + ".id",
-			k3sServerThree: defaults.VsphereVirtualMachine + "." + k3sServerThree + ".id",
-		}
+	instanceIds := map[string]any{
+		serverOne:   defaults.VsphereVirtualMachine + "." + serverOne + ".id",
+		serverTwo:   defaults.VsphereVirtualMachine + "." + serverTwo + ".id",
+		serverThree: defaults.VsphereVirtualMachine + "." + serverThree + ".id",
 	}
 
-	instanceIdsBlock := localBlockBody.AppendNewBlock(rke2InstanceIDs+" =", nil)
+	instanceIdsBlock := localBlockBody.AppendNewBlock(instanceIDs+" =", nil)
 	instanceIdsBlockBody := instanceIdsBlock.Body()
 
 	for key, value := range instanceIds {

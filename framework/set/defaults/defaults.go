@@ -220,7 +220,7 @@ const (
 	AwsSource     = "hashicorp/aws"
 	LinodeSource  = "linode/linode"
 	RKESource     = "rancher/rke"
-	VsphereSource = "hashicorp/vsphere"
+	VsphereSource = "vmware/vsphere"
 
 	ApiUrl      = "api_url"
 	Destination = "destination"
