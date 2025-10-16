@@ -715,7 +715,7 @@ jobs:
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
-              upgradedRancherTagVersion: "${{ vars.UPGRADED_RANCHER_VERSION }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
             standaloneRegistry:
               registryName: "${{ secrets.REGISTRY_NAME }}"
               registryPassword: "${{ secrets.REGISTRY_PASSWORD }}"
