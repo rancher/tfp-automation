@@ -33,7 +33,7 @@ runs:
           REPO="latest"
         elif [[ "$RANCHER_VERSION" == *"-alpha"* ]]; then
           REPO="alpha"
-        elif [[ "$RANCHER_VERSION" != *"-rc"* && "$RANCHER_VERSION" != *"-alpha"* && "$IS_PRIME" == "true" ]]; then
+        elif [[ "$IS_PRIME" == "true" ]]; then
           REPO="prime"
         else
           REPO="$FALLBACK_REPO"
