@@ -112,6 +112,8 @@ const (
 	VsphereVirtualMachine         = "vsphere_virtual_machine"
 	VsphereVirtualMachineTemplate = "vsphere_virtual_machine_template"
 	CDROM                         = "cdrom"
+	Vapp                          = "vapp"
+	VappProperties                = "properties"
 	Customize                     = "customize"
 	ExtraConfig                   = "extra_config"
 	LinuxOptions                  = "linux_options"

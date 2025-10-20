@@ -24,6 +24,7 @@ const (
 	hostName              = "host_name"
 	network               = "network"
 	networkInterfaceTypes = "network_interface_types"
+	publicKeys            = "public-keys"
 	resourcePoolID        = "resource_pool_id"
 	template              = "template"
 	templateUUID          = "template_uuid"
