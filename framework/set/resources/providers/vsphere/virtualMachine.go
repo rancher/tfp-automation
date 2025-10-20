@@ -70,6 +70,14 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 	cdROMBlockBody.SetAttributeValue(clientDevice, cty.BoolVal(true))
 	vmBlockBody.AppendNewline()
 
+	vappBlock := vmBlockBody.AppendNewBlock(defaults.Vapp, nil)
+	vappBlockBody := vappBlock.Body()
+
+	propertiesBlock := vappBlockBody.AppendNewBlock(defaults.VappProperties+" =", nil)
+	propertiesBlockBody := propertiesBlock.Body()
+
+	propertiesBlockBody.SetAttributeValue(publicKeys, cty.StringVal(terraformConfig.PrivateKeyPath))
+
 	networkBlock := vmBlockBody.AppendNewBlock(defaults.NetworkInterface, nil)
 	networkBlockBody := networkBlock.Body()
 
