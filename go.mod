@@ -48,7 +48,6 @@ require (
 )
 
 require (
-	github.com/antihax/optional v1.0.0
 	github.com/gruntwork-io/terratest v0.49.0
 	github.com/imdario/mergo v0.3.16
 	github.com/rancher/norman v0.7.0
@@ -178,7 +177,6 @@ require (
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	go.qase.io/client v0.0.0-20231114201952-65195ec001fa
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/term v0.33.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
