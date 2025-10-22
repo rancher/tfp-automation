@@ -235,17 +235,19 @@ jobs:
           timeout: ${{ env.SUITE_TIMEOUT }}
 
       - name: Reporting Results to Qase
+        if: always()
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()
@@ -467,17 +469,19 @@ jobs:
           timeout: ${{ env.SUITE_TIMEOUT }}
 
       - name: Reporting Results to Qase
+        if: always()
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()

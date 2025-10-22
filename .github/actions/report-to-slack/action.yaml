@@ -8,8 +8,8 @@ inputs:
   slack-channel:
     description: "Slack channel"
     required: true
-  slack-token:
-    description: "Slack token"
+  slack-webhook-url:
+    description: "Slack webhook URL"
     required: true
 runs:
   using: "composite"
@@ -21,25 +21,20 @@ runs:
           echo "emoji=:vcheck1:" >> $GITHUB_OUTPUT
         elif [ "${{ inputs.job-status }}" == "failure" ]; then
           echo "emoji=:x:" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.job-status }}" == "cancelled" ]; then
+          echo "emoji=:warning:" >> $GITHUB_OUTPUT
         else
           echo "emoji=:help:" >> $GITHUB_OUTPUT
         fi
 
-    - uses: slackapi/slack-github-action@v2.1.0
+    - uses: slackapi/slack-github-action@v2.1.1
       with:
-        token: ${{ inputs.slack-token }}
-        method: chat.postMessage
+        webhook: ${{ inputs.slack-webhook-url }}
+        webhook-type: incoming-webhook
         payload: |
-          {
-            "channel": "${{ inputs.slack-channel }}",
-            "text": "${{ steps.slack-status.outputs.emoji }} *GitHub Action build result*: ${{ inputs.job-status }}\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "${{ steps.slack-status.outputs.emoji }} *GitHub Action build result*: `${{ inputs.job-status }}`\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"
-                }
-              }
-            ]
-          }  
+          text: "*GitHub Action build result*: ${{ job.status }}\nWorkflow: ${{ github.workflow }}\nJob: ${{ github.job }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+          blocks:
+            - type: "section"
+              text:
+                type: "mrkdwn"
+                text: "${{ steps.slack-status.outputs.emoji }} *${{ github.repository }} - ${{ github.workflow }}* — `${{ inputs.job-status }}`\n*Job:* `${{ github.job }}` • <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"

@@ -335,11 +335,12 @@ jobs:
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()
@@ -651,11 +652,12 @@ jobs:
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()
@@ -976,11 +978,12 @@ jobs:
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()
