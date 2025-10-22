@@ -18,7 +18,7 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.job-status }}" == "success" ]; then
-          echo "emoji=:vcheck1:" >> $GITHUB_OUTPUT
+          echo "emoji=:white_check_mark:" >> $GITHUB_OUTPUT
         elif [ "${{ inputs.job-status }}" == "failure" ]; then
           echo "emoji=:x:" >> $GITHUB_OUTPUT
         elif [ "${{ inputs.job-status }}" == "cancelled" ]; then
@@ -32,9 +32,4 @@ runs:
         webhook: ${{ inputs.slack-webhook-url }}
         webhook-type: incoming-webhook
         payload: |
-          text: "*GitHub Action build result*: ${{ job.status }}\nWorkflow: ${{ github.workflow }}\nJob: ${{ github.job }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-          blocks:
-            - type: "section"
-              text:
-                type: "mrkdwn"
-                text: "${{ steps.slack-status.outputs.emoji }} *${{ github.repository }} - ${{ github.workflow }}* — `${{ inputs.job-status }}`\n*Job:* `${{ github.job }}` • <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"
+          text: "*Repo: `${{ github.repository }}`*\n*Workflow: `${{ github.workflow }}`*\n*Job: `${{ github.job }}`*\n*Test Result: ${{ steps.slack-status.outputs.emoji }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"
