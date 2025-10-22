@@ -260,11 +260,12 @@ jobs:
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()
@@ -501,11 +502,12 @@ jobs:
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()
@@ -751,11 +753,12 @@ jobs:
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
+        if: always()
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ job.status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-token: ${{ secrets.SLACK_TOKEN }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Refresh AWS credentials
         if: always()
