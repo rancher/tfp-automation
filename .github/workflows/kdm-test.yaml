@@ -81,7 +81,7 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
             echo "Running head job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "head" ]]; then
             echo "Running head job"
           else
             echo "Skipping head job"
@@ -93,7 +93,7 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
             echo "Running v2-12 job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2.12.*" ]]; then
             echo "Running v2-12 job"
           else
             echo "Skipping v2-12 job"
@@ -105,7 +105,7 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
             echo "Running v2-11 job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2.11.*" ]]; then
             echo "Running v2-11 job"
           else
             echo "Skipping v2-11 job"
