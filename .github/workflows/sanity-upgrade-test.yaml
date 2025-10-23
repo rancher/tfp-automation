@@ -84,6 +84,11 @@ jobs:
       RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
       - name: Skip if not needed (head)
         if: ${{ matrix.version == 'head' }}
         run: |
@@ -91,11 +96,11 @@ jobs:
             echo "Running head job"
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             echo "Running head job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "head" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "Running head job"
           else
             echo "Skipping head job"
-            exit 1
+            exit 0
           fi
 
       - name: Skip if not needed (v2-12)
@@ -105,11 +110,11 @@ jobs:
             echo "Running v2-12 job"
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             echo "Running v2-12 job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2-12" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "Running v2-12 job"
           else
             echo "Skipping v2-12 job"
-            exit 1
+            exit 0
           fi
 
       - name: Skip if not needed (v2-11)
@@ -119,17 +124,12 @@ jobs:
             echo "Running v2-11 job"
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             echo "Running v2-11 job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2-11" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "Running v2-11 job"
           else
             echo "Skipping v2-11 job"
-            exit 1
+            exit 0
           fi
-      
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Set up environment variables
         run: |

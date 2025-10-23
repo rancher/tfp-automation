@@ -67,6 +67,11 @@ jobs:
       RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
       - name: Skip if not needed (v2-12)
         if: ${{ matrix.version == 'v2-12' }}
         run: |
@@ -78,7 +83,7 @@ jobs:
             echo "Running v2-12 job"
           else
             echo "Skipping v2-12 job"
-            exit 1
+            exit 0
           fi
 
       - name: Skip if not needed (v2-11)
@@ -92,13 +97,8 @@ jobs:
             echo "Running v2-11 job"
           else
             echo "Skipping v2-11 job"
-            exit 1
+            exit 0
           fi
-      
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Set up environment variables
         run: |
