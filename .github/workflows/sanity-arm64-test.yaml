@@ -55,7 +55,7 @@ jobs:
           submodules: recursive
       
       - name: Skip if not needed (head)
-        if: ${{ matrix.version == 'head' }}
+        if: ${{ github.event.inputs.rancher_version == 'head' }}
         run: |
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
             echo "Running head job"

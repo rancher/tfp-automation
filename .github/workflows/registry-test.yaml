@@ -71,7 +71,7 @@ jobs:
           submodules: recursive
       
       - name: Skip if not needed (v2-12)
-        if: ${{ matrix.version == 'v2-12' }}
+        if: ${{ github.event.inputs.rancher_version == 'v2.12.*' }}
         run: |
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
             echo "Running v2-12 job"
@@ -85,7 +85,7 @@ jobs:
           fi
 
       - name: Skip if not needed (v2-11)
-        if: ${{ matrix.version == 'v2-11' }}
+        if: ${{ github.event.inputs.rancher_version == 'v2.11.*' }}
         run: |
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
             echo "Running v2-11 job"
