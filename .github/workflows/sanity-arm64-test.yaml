@@ -61,7 +61,7 @@ jobs:
             echo "Running head job"
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             echo "Running head job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "head" ]]; then
             echo "Running head job"
           else
             echo "Skipping head job"
