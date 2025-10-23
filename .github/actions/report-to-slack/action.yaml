@@ -27,9 +27,14 @@ runs:
           echo "emoji=:help:" >> $GITHUB_OUTPUT
         fi
 
+    - id: prepare-summary
+      shell: bash
+      run: |
+        summary_json="{\"text\": \"*Repo:* ${{ github.repository }}\\n*Workflow:* ${{ github.workflow }}\\n*Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>\\n*Results:* ${{ steps.slack-status.outputs.emoji }}\"}"
+        echo "summary=$summary_json" >> $GITHUB_OUTPUT
+
     - uses: slackapi/slack-github-action@v2.1.1
       with:
         webhook: ${{ inputs.slack-webhook-url }}
         webhook-type: incoming-webhook
-        payload: |
-          text: "*Repo: `${{ github.repository }}`*\n*Workflow: `${{ github.workflow }}`*\n*Job: `${{ github.job }}`*\n*Test Result: ${{ steps.slack-status.outputs.emoji }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"
+        payload: ${{ steps.prepare-summary.outputs.summary }}

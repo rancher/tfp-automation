@@ -40,28 +40,119 @@ env:
   TIMEOUT: "7h"
 
 jobs:
-  head:
-    if: |
-      github.event_name == 'schedule' ||
-      github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
-    name: head
-    runs-on: ubuntu-latest
-    environment: latest
+  rancher2-recurring-tests:
     strategy:
       fail-fast: false
       matrix:
+        include:
+          - version: head
+            environment: latest
+            provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}
+            rke2_version: ${{ vars.RKE2_VERSION_2_12 }}
+            k3s_version: ${{ vars.K3S_VERSION_2_12 }}
+            rancher_version: ${{ vars.RANCHER_VERSION_HEAD }}
+            rancher_chart_version: ${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}
+            qase_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}
+            aks_version: ${{ vars.AKS_KUBERNETES_VERSION_2_13 }}
+            eks_version: ${{ vars.EKS_KUBERNETES_VERSION_2_13 }}
+            gke_version: ${{ vars.GKE_KUBERNETES_VERSION_2_13 }}
+            upgraded_aks_version: ${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_13 }}
+            upgraded_eks_version: ${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_13 }}
+            upgraded_gke_version: ${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_13 }}
+          
+          - version: v2-12
+            environment: latest
+            provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}
+            rke2_version: ${{ vars.RKE2_VERSION_2_12 }}
+            k3s_version: ${{ vars.K3S_VERSION_2_12 }}
+            rancher_version: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }}
+            rancher_chart_version: ${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}
+            qase_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}
+            aks_version: ${{ vars.AKS_KUBERNETES_VERSION_2_12 }}
+            eks_version: ${{ vars.EKS_KUBERNETES_VERSION_2_12 }}
+            gke_version: ${{ vars.GKE_KUBERNETES_VERSION_2_12 }}
+            upgraded_aks_version: ${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_12 }}
+            upgraded_eks_version: ${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_12 }}
+            upgraded_gke_version: ${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_12 }}
+
+          - version: v2-11
+            environment: upgrade-prime-staging
+            provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}
+            rke2_version: ${{ vars.RKE2_VERSION_2_11 }}
+            k3s_version: ${{ vars.K3S_VERSION_2_11 }}
+            rancher_version: ${{ vars.RELEASED_RANCHER_VERSION_2_11 }}
+            rancher_chart_version: ${{ vars.RELEASED_RANCHER_CHART_VERSION_2_11 }}"
+            qase_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}
+            aks_version: ${{ vars.AKS_KUBERNETES_VERSION_2_11 }}
+            eks_version: ${{ vars.EKS_KUBERNETES_VERSION_2_11 }}
+            gke_version: ${{ vars.GKE_KUBERNETES_VERSION_2_11 }}
+            upgraded_aks_version: ${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_11 }}
+            upgraded_eks_version: ${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_11 }}
+            upgraded_gke_version: ${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_11 }}
         suite:
           - rancher-server-one
           - rancher-server-two
+    name: ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}
     env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
+      RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
 
     steps:
+      - name: Skip if not needed (head)
+        if: ${{ matrix.version == 'head' }}
+        run: |
+          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
+            echo "Running head job"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "head" ]]; then
+            echo "Running head job"
+          else
+            echo "Skipping head job"
+            exit 1
+          fi
+
+      - name: Skip if not needed (v2-12)
+        if: ${{ matrix.version == 'v2-12' }}
+        run: |
+          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
+            echo "Running v2-12 job"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2-12" ]]; then
+            echo "Running v2-12 job"
+          else
+            echo "Skipping v2-12 job"
+            exit 1
+          fi
+
+      - name: Skip if not needed (v2-11)
+        if: ${{ matrix.version == 'v2-11' }}
+        run: |
+          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
+            echo "Running v2-11 job"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2-11" ]]; then
+            echo "Running v2-11 job"
+          else
+            echo "Skipping v2-11 job"
+            exit 1
+          fi
+      
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Set up environment variables
+        run: |
+          if [ "${{ matrix.environment }}" == "latest" ]; then
+            echo "PREFIX_LIST_ID=${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}" >> $GITHUB_ENV
+            echo "SECURITY_GROUPS=${{ secrets.AWS_SECURITY_GROUPS }}" >> $GITHUB_ENV
+            echo "SECURITY_GROUP_NAMES=${{ secrets.AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
+            echo "RANCHER_AGENT_IMAGE=" >> $GITHUB_ENV
+          elif [ "${{ matrix.environment }}" == "staging" ]; then
+            echo "PREFIX_LIST_ID=${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}" >> $GITHUB_ENV
+            echo "SECURITY_GROUPS=${{ secrets.AWS_SECURITY_GROUPS_PRIME }}" >> $GITHUB_ENV
+            echo "SECURITY_GROUP_NAMES=${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}" >> $GITHUB_ENV
+            echo "RANCHER_AGENT_IMAGE=${{ secrets.RANCHER_AGENT_IMAGE }}" >> $GITHUB_ENV
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -91,7 +182,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ env.PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -114,7 +205,7 @@ jobs:
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
               (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_HEAD)
+              (github.event.inputs.run_all_versions == 'true' && matrix.rancher_version)
             }}
 
       - name: Set Rancher chart version
@@ -126,7 +217,7 @@ jobs:
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
               (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
+              (github.event.inputs.run_all_versions == 'true' && matrix.rancher_chart_version)
             }}
 
       - name: Set Rancher repo
@@ -140,7 +231,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}"
+          qase_recurring_id: "${{ matrix.qase_id }}}"
 
       - name: Create config.yaml
         run: |
@@ -175,8 +266,8 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSecurityGroups: [${{ env.SECURITY_GROUPS }}]
+              awsSecurityGroupNames: [${{ env.SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsSubnets: [${{ secrets.EKS_SUBNETS }}]
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -261,7 +352,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              k3sVersion: "${{ vars.K3S_VERSION_2_12 }}${{ vars.K3S_VERSION_SUFFIX }}"
+              k3sVersion: "${{ matrix.k3s_version }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -271,7 +362,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ matrix.rke2_version }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             etcdCount: ${{ vars.ETCD_COUNT }}
@@ -279,12 +370,12 @@ jobs:
             workerCount: ${{ vars.WORKER_COUNT }}
             windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
             snapshotInput: {}
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_13 }}"
-            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_13 }}"
-            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_13 }}"
-            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_13 }}"
-            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_13 }}"
-            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_13 }}"
+            aksKubernetesVersion: "${{ matrix.aks_version }}"
+            eksKubernetesVersion: "${{ matrix.eks_version }}"
+            gkeKubernetesVersion: "${{ matrix.gke_version }}"
+            upgradedAKSKubernetesVersion: "${{ matrix.upgraded_aks_version }}"
+            upgradedEKSKubernetesVersion: "${{ matrix.upgraded_eks_version }}"
+            upgradedGKEKubernetesVersion: "${{ matrix.upgraded_gke_version }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -334,14 +425,6 @@ jobs:
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
-      - name: Reporting Results to Slack
-        if: always()
-        uses: ./.github/actions/report-to-slack
-        with:
-          job-status: ${{ job.status }}
-          slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-
       - name: Refresh AWS credentials
         if: always()
         uses: aws-actions/configure-aws-credentials@v4
@@ -353,648 +436,22 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ env.PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
-  
-  v2-12:
-    if: |
-      github.event_name == 'schedule' ||
-      github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12.')) && contains(inputs.rancher_version, '-alpha')
-    name: ${{ github.event.inputs.rancher_version }}
-    runs-on: ubuntu-latest
-    environment: latest
-    strategy:
-      fail-fast: false
-      matrix:
-        suite:
-          - rancher-server-one
-          - rancher-server-two
-    env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
+  report-to-slack:
+    needs: rancher2-recurring-tests
+    runs-on: ubuntu-latest
+    if: always()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Get AWS credentials from Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
-        with:
-          secret-ids: |
-            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: "Fetch and Set DockerHub Credentials"
-        uses: rancher-eio/read-vault-secrets@main
-        with:
-          secrets: |
-            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
-            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
-
-      - name: Mask Dockerhub Credentials
-        run: |
-          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
-          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
-
-      - name: Whitelist Runner IP
-        uses: ./.github/actions/whitelist-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
-      - name: Set up SSH Keys
-        uses: ./.github/actions/setup-ssh-keys
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
-          windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
-          windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
-
-      - name: Uniquify hostname prefix
-        uses: ./.github/actions/uniquify-hostname
-
-      - name: Set Rancher version
-        uses: ./.github/actions/set-env-var
-        with:
-          key: RANCHER_VERSION
-          value: |
-            ${{ 
-              github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_12_HEAD) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_12_HEAD)
-            }}
-
-      - name: Set Rancher chart version
-        uses: ./.github/actions/set-env-var
-        with:
-          key: RANCHER_CHART_VERSION
-          value: |
-            ${{ 
-              github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
-            }}
-
-      - name: Set Rancher repo
-        uses: ./.github/actions/set-rancher-repo
-        with:
-          rancher-version: ${{ env.RANCHER_VERSION }}
-          fallback-repo: ${{ secrets.RANCHER_REPO }}
-
-      - name: Get Qase ID
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}"
-
-      - name: Create config.yaml
-        run: |
-          cat > config.yaml <<EOF
-          rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
-            adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
-            insecure: true
-            cleanup: true
-          terraform:
-            cni: "${{ secrets.CNI }}"
-            defaultClusterRoleForProjectMembers: "true"
-            enableNetworkPolicy: false
-            provider: "${{ vars.PROVIDER_AMAZON }}"
-            privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
-            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
-            windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            privateRegistries:
-              url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
-              username: "${{ env.DOCKERHUB_USERNAME }}"
-              password: "${{ env.DOCKERHUB_PASSWORD }}"
-              insecure: true
-              authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
-              mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
-              mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
-            awsCredentials:
-              awsAccessKey: "$AWS_ACCESS_KEY"
-              awsSecretKey: "$AWS_SECRET_KEY"
-            awsConfig:
-              ami: "${{ secrets.AWS_AMI }}"
-              awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
-              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
-              awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
-              region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
-              awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
-              awsSubnets: [${{ secrets.EKS_SUBNETS }}]
-              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
-              awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
-              awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
-              awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
-              awsUser: "${{ secrets.AWS_USER }}"
-              sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
-              timeout: "${{ vars.TIMEOUT }}"
-              windowsAWSUser: "${{ secrets.AWS_WINDOWS_USER }}" 
-              windows2019AMI: "${{ secrets.WINDOWS_2019_AMI }}"
-              windows2022AMI: "${{ secrets.WINDOWS_2022_AMI }}"
-              windows2019Password: "${{ secrets.AWS_WINDOWS_2019_PASSWORD }}"
-              windows2022Password: "${{ secrets.AWS_WINDOWS_2022_PASSWORD }}"
-              windowsInstanceType: "${{ vars.AWS_WINDOWS_INSTANCE_TYPE }}"
-              windowsKeyName: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}"
-              ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
-              loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
-              targetType: "${{ vars.TARGET_TYPE }}"
-              publicAccess: true
-              privateAccess: true
-            azureCredentials:
-              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
-              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
-              environment: "AzurePublicCloud"
-              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
-            azureConfig:
-              availabilitySet: "docker-machine"
-              availabilityZones: ["1", "2", "3"]
-              customData: ""
-              diskSize: "100"
-              dockerPort: "2376"
-              faultDomainCount: "3"
-              image: "${{ secrets.AZURE_IMAGE }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
-              managedDisks: false
-              mode: "System"
-              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
-              networkDNSServiceIP: "10.30.0.16"
-              networkDockerBridgeCIDR: "172.17.0.1/16"
-              networkPlugin: "kubenet"
-              networkServiceCIDR: "10.30.0.0/24"
-              noPublicIp: false
-              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
-              osDiskSizeGB: 128
-              outboundType: "loadBalancer"
-              resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
-              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
-              size: "Standard_D2_v2"
-              sshUser: "${{ secrets.AZURE_SSH_USER }}"
-              staticPublicIp: false
-              storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
-              taints: ["none:PreferNoSchedule"]
-              updateDomainCount: "5"
-              vmSize: Standard_DS2_v2
-              vnet: "${{ secrets.AZURE_VNET }}"
-            googleCredentials:
-              authEncodedJson: |-
-                {
-                  "type": "service_account",
-                  "project_id": "${{ secrets.GCP_PROJECT_ID }}",
-                  "private_key_id": "${{ secrets.GCP_PRIVATE_KEY_ID }}",
-                  "private_key": "${{ secrets.GCP_PRIVATE_KEY }}",
-                  "client_email": "${{ secrets.GCP_CLIENT_EMAIL }}",
-                  "client_id": "${{ secrets.GCP_CLIENT_ID }}",
-                  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                  "token_uri": "https://oauth2.googleapis.com/token",
-                  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                  "client_x509_cert_url": "${{ secrets.GCP_CLIENT_X509_CERT_URL }}",
-                  "universe_domain": "googleapis.com"
-                }
-            googleConfig:
-              region: "${{ secrets.GCP_REGION }}"
-              projectID: "${{ secrets.GCP_PROJECT_ID }}"
-              network: "default"
-              subnetwork: "default"
-              zone: "${{ secrets.GCP_ZONE }}"
-            standalone:
-              bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
-              certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              k3sVersion: "${{ vars.K3S_VERSION_2_12 }}${{ vars.K3S_VERSION_SUFFIX }}"
-              osUser: "${{ secrets.OS_USER }}"
-              osGroup: "${{ secrets.OS_GROUP }}"
-              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
-              rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
-              registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
-              repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
-          terratest:
-            pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            etcdCount: ${{ vars.ETCD_COUNT }}
-            controlPlaneCount: ${{ vars.CP_COUNT }}
-            workerCount: ${{ vars.WORKER_COUNT }}
-            windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
-            snapshotInput: {}
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_12 }}"
-            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_12 }}"
-            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_12 }}"
-            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_12 }}"
-            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_12 }}"
-            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_12 }}"
-          EOF
-
-      - name: Export CATTLE_TEST_CONFIG
-        run: echo "CATTLE_TEST_CONFIG=${{ github.workspace }}/config.yaml" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Set up Go environment
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "./go.mod"
-
-      - name: Build Packages
-        run: ./.github/scripts/build-packages.sh
-
-      - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
-          terraform_wrapper: false
-
-      - name: Setup Rancher2 Provider if RC is present
-        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
-        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
-        shell: bash
-
-      - name: Creating Rancher server
-        run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
-
-      - name: Run Rancher2 Test Suite
-        env:
-          QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
-          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
-        uses: ./.github/actions/run-test-suite
-        with:
-          suite: ${{ matrix.suite }}
-          package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          test-suite: ${{ env.TEST_SUITE }}
-          timeout: ${{ env.TIMEOUT }}
-          tag: recurring
-
-      - name: Cleanup Infrastructure
-        if: always()
-        working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
-        run: terraform destroy -auto-approve > /dev/null 2>&1
-
-      - name: Reporting Results to Slack
-        if: always()
-        uses: ./.github/actions/report-to-slack
-        with:
-          job-status: ${{ job.status }}
-          slack-channel: ${{ secrets.SLACK_CHANNEL }}
-          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Revoke Runner IP
-        if: always()
-        uses: ./.github/actions/revoke-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
-          region: "${{ secrets.AWS_REGION }}"
-
-  v2-11:
-    if: |
-      github.event_name == 'schedule' ||
-      github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11.')) && contains(inputs.rancher_version, '-alpha')
-    name: ${{ github.event.inputs.rancher_version }}
-    runs-on: ubuntu-latest
-    environment: staging
-    strategy:
-      fail-fast: false
-      matrix:
-        suite:
-          - rancher-server-one
-          - rancher-server-two
-    env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Get AWS credentials from Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
-        with:
-          secret-ids: |
-            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: "Fetch and Set DockerHub Credentials"
-        uses: rancher-eio/read-vault-secrets@main
-        with:
-          secrets: |
-            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
-            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
-
-      - name: Mask Dockerhub Credentials
-        run: |
-          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
-          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
-
-      - name: Whitelist Runner IP
-        uses: ./.github/actions/whitelist-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
-          region: "${{ secrets.AWS_REGION }}"
-
-      - name: Set up SSH Keys
-        uses: ./.github/actions/setup-ssh-keys
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
-          windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
-          windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
-
-      - name: Uniquify hostname prefix
-        uses: ./.github/actions/uniquify-hostname
-
-      - name: Set Rancher version
-        uses: ./.github/actions/set-env-var
-        with:
-          key: RANCHER_VERSION
-          value: |
-            ${{ 
-              github.event.inputs.rancher_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_11_HEAD) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_11_HEAD)
-            }}
       
-      - name: Set Rancher chart version
-        uses: ./.github/actions/set-env-var
-        with:
-          key: RANCHER_CHART_VERSION
-          value: |
-            ${{ 
-              github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_11) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_11)
-            }}
-
-      - name: Set Rancher repo
-        uses: ./.github/actions/set-rancher-repo
-        with:
-          rancher-version: ${{ env.RANCHER_VERSION }}
-          fallback-repo: ${{ secrets.RANCHER_REPO }}
-          is-prime: true
-
-      - name: Set Rancher chart url
-        uses: ./.github/actions/set-rancher-chart-url
-        with:
-          rancher-repo: ${{ env.RANCHER_REPO }}
-          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
-          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
-
-      - name: Get Qase ID
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}"
-
-      - name: Create config.yaml
-        run: |
-          cat > config.yaml <<EOF
-          rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
-            adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
-            insecure: true
-            cleanup: true
-          terraform:
-            cni: "${{ secrets.CNI }}"
-            defaultClusterRoleForProjectMembers: "true"
-            enableNetworkPolicy: false
-            provider: "${{ vars.PROVIDER_AMAZON }}"
-            privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
-            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
-            windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            privateRegistries:
-              url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
-              username: "${{ env.DOCKERHUB_USERNAME }}"
-              password: "${{ env.DOCKERHUB_PASSWORD }}"
-              insecure: true
-              authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
-              mirrorHostname: "${{ secrets.PRIVATE_REGISTRY_MIRROR_HOSTNAME }}"
-              mirrorEndpoint: "${{ secrets.PRIVATE_REGISTRY_MIRROR_ENDPOINT }}"
-            awsCredentials:
-              awsAccessKey: "$AWS_ACCESS_KEY"
-              awsSecretKey: "$AWS_SECRET_KEY"
-            awsConfig:
-              ami: "${{ secrets.AWS_AMI }}"
-              awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
-              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
-              awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
-              region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
-              awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
-              awsSubnets: [${{ secrets.EKS_SUBNETS }}]
-              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
-              awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
-              awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
-              awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
-              awsUser: "${{ secrets.AWS_USER }}"
-              sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
-              timeout: "${{ vars.TIMEOUT }}"
-              windowsAWSUser: "${{ secrets.AWS_WINDOWS_USER }}" 
-              windows2019AMI: "${{ secrets.WINDOWS_2019_AMI }}"
-              windows2022AMI: "${{ secrets.WINDOWS_2022_AMI }}"
-              windows2019Password: "${{ secrets.AWS_WINDOWS_2019_PASSWORD }}"
-              windows2022Password: "${{ secrets.AWS_WINDOWS_2022_PASSWORD }}"
-              windowsInstanceType: "${{ vars.AWS_WINDOWS_INSTANCE_TYPE }}"
-              windowsKeyName: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}"
-              ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
-              loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
-              targetType: "${{ vars.TARGET_TYPE }}"
-              publicAccess: true
-              privateAccess: true
-            azureCredentials:
-              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
-              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
-              environment: "AzurePublicCloud"
-              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
-            azureConfig:
-              availabilitySet: "docker-machine"
-              availabilityZones: ["1", "2", "3"]
-              customData: ""
-              diskSize: "100"
-              dockerPort: "2376"
-              faultDomainCount: "3"
-              image: "${{ secrets.AZURE_IMAGE }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
-              managedDisks: false
-              mode: "System"
-              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
-              networkDNSServiceIP: "10.30.0.16"
-              networkDockerBridgeCIDR: "172.17.0.1/16"
-              networkPlugin: "kubenet"
-              networkServiceCIDR: "10.30.0.0/24"
-              noPublicIp: false
-              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
-              osDiskSizeGB: 128
-              outboundType: "loadBalancer"
-              resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
-              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
-              size: "Standard_D2_v2"
-              sshUser: "${{ secrets.AZURE_SSH_USER }}"
-              staticPublicIp: false
-              storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
-              taints: ["none:PreferNoSchedule"]
-              updateDomainCount: "5"
-              vmSize: Standard_DS2_v2
-              vnet: "${{ secrets.AZURE_VNET }}"
-            googleCredentials:
-              authEncodedJson: |-
-                {
-                  "type": "service_account",
-                  "project_id": "${{ secrets.GCP_PROJECT_ID }}",
-                  "private_key_id": "${{ secrets.GCP_PRIVATE_KEY_ID }}",
-                  "private_key": "${{ secrets.GCP_PRIVATE_KEY }}",
-                  "client_email": "${{ secrets.GCP_CLIENT_EMAIL }}",
-                  "client_id": "${{ secrets.GCP_CLIENT_ID }}",
-                  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                  "token_uri": "https://oauth2.googleapis.com/token",
-                  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                  "client_x509_cert_url": "${{ secrets.GCP_CLIENT_X509_CERT_URL }}",
-                  "universe_domain": "googleapis.com"
-                }
-            googleConfig:
-              region: "${{ secrets.GCP_REGION }}"
-              projectID: "${{ secrets.GCP_PROJECT_ID }}"
-              network: "default"
-              subnetwork: "default"
-              zone: "${{ secrets.GCP_ZONE }}"
-            standalone:
-              bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
-              certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              k3sVersion: "${{ vars.K3S_VERSION_2_11 }}${{ vars.K3S_VERSION_SUFFIX }}"
-              osUser: "${{ secrets.OS_USER }}"
-              osGroup: "${{ secrets.OS_GROUP }}"
-              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
-              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
-              rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ env.RANCHER_VERSION }}"
-              registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
-              registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
-              repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_11 }}"
-          terratest:
-            pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            etcdCount: ${{ vars.ETCD_COUNT }}
-            controlPlaneCount: ${{ vars.CP_COUNT }}
-            workerCount: ${{ vars.WORKER_COUNT }}
-            windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
-            snapshotInput: {}
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_11 }}"
-            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_11 }}"
-            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_11 }}"
-            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_11 }}"
-            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_11 }}"
-            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_11 }}"
-          EOF
-
-      - name: Export CATTLE_TEST_CONFIG
-        run: echo "CATTLE_TEST_CONFIG=${{ github.workspace }}/config.yaml" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Set up Go environment
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "./go.mod"
-
-      - name: Build Packages
-        run: ./.github/scripts/build-packages.sh
-
-      - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
-          terraform_wrapper: false
-
-      - name: Setup Rancher2 Provider if RC is present
-        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
-        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
-        shell: bash
-
-      - name: Creating Rancher server
-        run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
-
-      - name: Run Rancher2 Test Suite
-        env:
-          QASE_TEST_RUN_ID: ${{ steps.get-qase-id.outputs.id }}
-          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
-        uses: ./.github/actions/run-test-suite
-        with:
-          suite: ${{ matrix.suite }}
-          package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
-          test-suite: ${{ env.TEST_SUITE }}
-          timeout: ${{ env.TIMEOUT }}
-          tag: recurring
-
-      - name: Cleanup Infrastructure
-        if: always()
-        working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
-        run: terraform destroy -auto-approve > /dev/null 2>&1
-
       - name: Reporting Results to Slack
-        if: always()
         uses: ./.github/actions/report-to-slack
         with:
-          job-status: ${{ job.status }}
+          job-status: ${{ needs.rancher2-recurring-tests.outputs.job-status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Revoke Runner IP
-        if: always()
-        uses: ./.github/actions/revoke-runner-ip
-        with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
-          region: "${{ secrets.AWS_REGION }}"
