@@ -47,11 +47,11 @@ jobs:
     name: ${{ matrix.version }} -> ${{ matrix.upgraded_rancher_version }}
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
+    env:
+      RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true'
-    env:
-      RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
 
     steps:
       - name: Checkout repository
