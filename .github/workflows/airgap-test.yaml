@@ -75,15 +75,15 @@ jobs:
           (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, matrix.rancher_prefix_version)) && contains(github.event.inputs.rancher_version, '-alpha') ||
           (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, matrix.rancher_prefix_version)) && contains(inputs.rancher_version, '-alpha')
         run: |
-          INPUT_VERSION="${{ github.event.inputs.rancher_version }}"
-          PREFIX="${{ matrix.rancher_prefix_version }}"
+          MATRIX_VERSION="${matrix.version//-/.}"
+          PREFIX_VERSION="${{ matrix.rancher_prefix_version }}"
           EVENT_NAME="${{ github.event_name }}"
-          echo "INPUT_VERSION=$INPUT_VERSION"
-          echo "PREFIX=$PREFIX"
+          echo "MATRIX_VERSION=$MATRIX_VERSION"
+          echo "PREFIX_VERSION=$PREFIX_VERSION"
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" || \
                 "$EVENT_NAME" == "schedule" || \
-                ("$EVENT_NAME" == "workflow_dispatch" && "$INPUT_VERSION" == "$PREFIX"*) || \
-                ("$EVENT_NAME" == "workflow_call" && "$INPUT_VERSION" == "$PREFIX"*) ]]; then
+                ("$EVENT_NAME" == "workflow_dispatch" && "$MATRIX_VERSION" == "$PREFIX_VERSION"*) || \
+                ("$EVENT_NAME" == "workflow_call" && "$MATRIX_VERSION" == "$PREFIX_VERSION"*) ]]; then
             echo "run=true" >> $GITHUB_OUTPUT
           else
             echo "run=false" >> $GITHUB_OUTPUT
