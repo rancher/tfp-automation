@@ -45,6 +45,9 @@ jobs:
     name: ${{ matrix.version }}
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true'
     env:
       RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
 
@@ -53,20 +56,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
-      - name: Skip if not needed (head)
-        if: ${{ github.event.inputs.rancher_version == 'head' }}
-        run: |
-          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
-            echo "Running head job"
-          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
-            echo "Running head job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "head" ]]; then
-            echo "Running head job"
-          else
-            echo "Skipping head job"
-            exit 0
-          fi
 
       - name: Set up environment variables
         run: |
