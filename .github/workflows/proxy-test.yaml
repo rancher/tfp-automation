@@ -93,12 +93,12 @@ jobs:
           echo "PREFIX=$PREFIX"
           if [[ "${{ github.event.inputs.run_all_versions }}" == "true" || \
                 "$EVENT_NAME" == "schedule" || \
-                ("$EVENT_NAME" == "workflow_dispatch" && "$INPUT_VERSION" && "$INPUT_VERSION" == "$PREFIX"*) || \
-                ("$EVENT_NAME" == "workflow_call" && "$INPUT_VERSION" && "$INPUT_VERSION" == "$PREFIX"*) ]]; then
+                ("$EVENT_NAME" == "workflow_dispatch" && "$INPUT_VERSION" == "$PREFIX"*) || \
+                ("$EVENT_NAME" == "workflow_call" && "$INPUT_VERSION" == "$PREFIX"*) ]]; then
             echo "run=true" >> $GITHUB_OUTPUT
           else
             echo "run=false" >> $GITHUB_OUTPUT
-            echo "Skipping matrix.version ${{ matrix.version }}"
+            echo "Skipping version ${{ matrix.version }}"
             exit 0
           fi
       
