@@ -112,9 +112,13 @@ jobs:
         run: |
           INPUT_VERSION="${{ github.event.inputs.rancher_version }}"
           PREFIX="${{ matrix.rancher_prefix_version }}"
+          EVENT_NAME="${{ github.event_name }}"
           echo "INPUT_VERSION=$INPUT_VERSION"
           echo "PREFIX=$PREFIX"
-          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" || "${{ github.event_name }}" == "schedule" || "$INPUT_VERSION" == "$PREFIX"* ]]; then
+          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" || \
+                "$EVENT_NAME" == "schedule" || \
+                ("$EVENT_NAME" == "workflow_dispatch" && "$INPUT_VERSION" && "$INPUT_VERSION" == "$PREFIX"*) || \
+                ("$EVENT_NAME" == "workflow_call" && "$INPUT_VERSION" && "$INPUT_VERSION" == "$PREFIX"*) ]]; then
             echo "run=true" >> $GITHUB_OUTPUT
           else
             echo "run=false" >> $GITHUB_OUTPUT
