@@ -67,13 +67,17 @@ jobs:
     name: ${{ matrix.version }}
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
-    if: |
-      github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, matrix.rancher_version))
     env:
       RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
 
     steps:
+      - name: Skip non-matching matrix versions
+        if: |
+          github.event_name == 'schedule' ||
+          github.event.inputs.run_all_versions == 'true' ||
+          (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, matrix.version)) && contains(github.event.inputs.rancher_version, '-alpha')
+        run: echo "Skipping matrix.version ${{ matrix.version }}"; exit 0
+      
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
