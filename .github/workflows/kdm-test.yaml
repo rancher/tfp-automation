@@ -81,7 +81,7 @@ jobs:
           github.event.inputs.run_all_versions == 'true' ||
           (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, matrix.rancher_prefix_version)) && contains(github.event.inputs.rancher_version, '-alpha')
         run: |
-          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" || "${{ github.event_name }}" == "schedule" || "${{ matrix.rancher_version }}" == "${{ github.event.inputs.rancher_version }}" ]]; then
+          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" || "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.rancher_version }}" == "${{ matrix.rancher_prefix_version }}"* ]]; then
             echo "run=true" >> $GITHUB_OUTPUT
           else
             echo "run=false" >> $GITHUB_OUTPUT
