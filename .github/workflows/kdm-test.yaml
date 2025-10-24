@@ -67,6 +67,9 @@ jobs:
     name: ${{ matrix.version }}
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
+    if: |
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, matrix.rancher_version))
     env:
       RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
 
@@ -75,42 +78,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
-      - name: Skip if not needed (head)
-        if: ${{ github.event.inputs.rancher_version == 'head' }}
-        run: |
-          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
-            echo "Running head job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "head" ]]; then
-            echo "Running head job"
-          else
-            echo "Skipping head job"
-            exit 0
-          fi
-
-      - name: Skip if not needed (v2-12)
-        if: ${{ github.event.inputs.rancher_version == 'v2.12.*' }}
-        run: |
-          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
-            echo "Running v2-12 job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2.12.*" ]]; then
-            echo "Running v2-12 job"
-          else
-            echo "Skipping v2-12 job"
-            exit 0
-          fi
-
-      - name: Skip if not needed (v2-11)
-        if: ${{ github.event.inputs.rancher_version == 'v2.11.*' }}
-        run: |
-          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" ]]; then
-            echo "Running v2-11 job"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.rancher_version }}" == "v2.11.*" ]]; then
-            echo "Running v2-11 job"
-          else
-            echo "Skipping v2-11 job"
-            exit 0
-          fi
 
       - name: Set up environment variables
         run: |
