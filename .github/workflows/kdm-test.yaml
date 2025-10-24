@@ -41,6 +41,7 @@ jobs:
           - version: head
             environment: latest
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}
+            rancher_prefix_version: "head"
             rke2_version: ${{ vars.RKE2_VERSION_2_12 }}
             rancher_chart_version: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
             rancher_version: "${{ vars.RANCHER_VERSION_HEAD }}"
@@ -50,6 +51,7 @@ jobs:
           - version: v2-12
             environment: latest
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}
+            rancher_prefix_version: "v2.12"
             rke2_version: ${{ vars.RKE2_VERSION_2_12 }}
             rancher_chart_version: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
             rancher_version: "${{ vars.RANCHER_VERSION_2_12_HEAD }}"
@@ -59,6 +61,7 @@ jobs:
           - version: v2-11
             environment: staging
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}
+            rancher_prefix_version: "v2.11"
             rke2_version: ${{ vars.RKE2_VERSION_2_11 }}
             rancher_chart_version: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_11 }}"
             rancher_version: "${{ vars.RANCHER_VERSION_2_11_HEAD }}"
@@ -72,18 +75,28 @@ jobs:
 
     steps:
       - name: Skip non-matching matrix versions
+        id: skip-matrix-version
         if: |
           github.event_name == 'schedule' ||
           github.event.inputs.run_all_versions == 'true' ||
-          (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, matrix.version)) && contains(github.event.inputs.rancher_version, '-alpha')
-        run: echo "Skipping matrix.version ${{ matrix.version }}"; exit 0
+          (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, matrix.rancher_prefix_version)) && contains(github.event.inputs.rancher_version, '-alpha')
+        run: |
+          if [[ "${{ github.event.inputs.run_all_versions }}" == "true" || "${{ github.event_name }}" == "schedule" || "${{ matrix.rancher_version }}" == "${{ github.event.inputs.rancher_version }}" ]]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+            echo "Skipping matrix.version ${{ matrix.version }}"
+            exit 0
+          fi
       
       - name: Checkout repository
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Set up environment variables
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         run: |
           if [ "${{ matrix.environment }}" == "latest" ]; then
             echo "PREFIX_LIST_ID=${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}" >> $GITHUB_ENV
@@ -98,12 +111,14 @@ jobs:
           fi
 
       - name: Configure AWS credentials
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Get AWS credentials from Secrets Manager
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
           secret-ids: |
@@ -111,6 +126,7 @@ jobs:
             AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: "Fetch and Set DockerHub Credentials"
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -118,17 +134,20 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
 
       - name: Mask Dockerhub Credentials
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         run: |
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
       - name: Whitelist Runner IP
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: ./.github/actions/whitelist-runner-ip
         with:
           prefix-list-id: ${{ env.PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: ./.github/actions/setup-ssh-keys
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -137,9 +156,11 @@ jobs:
           windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
 
       - name: Uniquify hostname prefix
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: ./.github/actions/uniquify-hostname
 
       - name: Set Rancher version
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
@@ -151,6 +172,7 @@ jobs:
             }}
 
       - name: Set Rancher chart version
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
@@ -162,12 +184,14 @@ jobs:
             }}
 
       - name: Set Rancher repo
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: ./.github/actions/set-rancher-repo
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
 
       - name: Get Qase ID
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         id: get-qase-id
         uses: ./.github/actions/get-qase-id
         with:
@@ -176,6 +200,7 @@ jobs:
           qase_recurring_id: ${{ matrix.qase_id }}
 
       - name: Create config.yaml
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         run: |
           cat > config.yaml <<EOF
           rancher:
@@ -241,32 +266,38 @@ jobs:
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         run: echo "CATTLE_TEST_CONFIG=${{ github.workspace }}/config.yaml" >> $GITHUB_ENV
         shell: bash
 
       - name: Set up Go environment
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: actions/setup-go@v5
         with:
           go-version-file: "./go.mod"
 
       - name: Build Packages
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         run: ./.github/scripts/build-packages.sh
 
       - name: Install gotestsum
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         run: go install gotest.tools/gotestsum@latest
 
       - name: Set up Terraform
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: "${{ vars.TERRAFORM_VERSION }}"
           terraform_wrapper: false
 
       - name: Setup Rancher2 Provider if RC is present
-        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' && contains(env.RANCHER2_PROVIDER_VERSION, '-rc') }}
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
       - name: Run KDM Test Suite
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' }}
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -275,21 +306,21 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Reporting Results to Qase
-        if: always()
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' && always() }}
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ matrix.qase_id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Refresh AWS credentials
-        if: always()
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' && always() }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Revoke Runner IP
-        if: always()
+        if: ${{ steps.skip-matrix-version.outputs.run == 'true' && always() }}
         uses: ./.github/actions/revoke-runner-ip
         with:
           prefix-list-id: ${{ env.PREFIX_LIST_ID }}
