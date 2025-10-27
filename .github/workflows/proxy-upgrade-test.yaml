@@ -123,13 +123,11 @@ jobs:
             echo "PREFIX_LIST_ID=${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}" >> $GITHUB_ENV
             echo "SECURITY_GROUPS=${{ secrets.AWS_SECURITY_GROUPS }}" >> $GITHUB_ENV
             echo "SECURITY_GROUP_NAMES=${{ secrets.AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
-            echo "RANCHER_AGENT_IMAGE=" >> $GITHUB_ENV
             echo "UPGRADED_RANCHER_AGENT_IMAGE=" >> $GITHUB_ENV
           elif [ "${{ matrix.environment }}" == "upgrade-prime-staging" ]; then
             echo "PREFIX_LIST_ID=${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}" >> $GITHUB_ENV
             echo "SECURITY_GROUPS=${{ secrets.AWS_SECURITY_GROUPS_PRIME }}" >> $GITHUB_ENV
             echo "SECURITY_GROUP_NAMES=${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}" >> $GITHUB_ENV
-            echo "RANCHER_AGENT_IMAGE=${{ secrets.RANCHER_AGENT_IMAGE }}" >> $GITHUB_ENV
             echo "UPGRADED_RANCHER_AGENT_IMAGE=${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}" >> $GITHUB_ENV
           fi
 
