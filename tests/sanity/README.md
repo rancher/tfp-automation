@@ -107,6 +107,9 @@ terraform:
     upgradedRancherImage: ""                      # OPTIONAL - fill out if you are performing an upgrade
     upgradedRancherRepo: ""                       # OPTIONAL - fill out if you are performing an upgrade
     upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
+    featureFlags:
+      turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
+      upgradedTurtles: ""                         # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
 #######################
 # TERRATEST CONFIG
 #######################

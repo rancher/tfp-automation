@@ -288,4 +288,8 @@ const (
 	LinodeNodeBalancerNode   = "linode_nodebalancer_node"
 	LinodeDomain             = "linode_domain"
 	LinodeDomainRecord       = "linode_domain_record"
+
+	Turtles    = "turtles"
+	ToggledOff = "toggledOff"
+	ToggledOn  = "toggledOn"
 )

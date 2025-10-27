@@ -76,6 +76,11 @@ func (c TestClientName) String() string {
 	return string(c)
 }
 
+type FeatureFlags struct {
+	Turtles         string `json:"turtles,omitempty" yaml:"turtles,omitempty"`
+	UpgradedTurtles string `json:"upgradedTurtles,omitempty" yaml:"upgradedTurtles,omitempty"`
+}
+
 type Nodepool struct {
 	Quantity          int64  `json:"quantity,omitempty" yaml:"quantity,omitempty"`
 	Etcd              bool   `json:"etcd,omitempty" yaml:"etcd,omitempty"`
@@ -109,32 +114,35 @@ type PrivateRegistries struct {
 }
 
 type Standalone struct {
-	AirgapInternalFQDN             string `json:"airgapInternalFQDN,omitempty" yaml:"airgapInternalFQDN,omitempty"`
-	BootstrapPassword              string `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
-	CertManagerVersion             string `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
-	CertType                       string `json:"certType,omitempty" yaml:"certType,omitempty"`
-	ChartVersion                   string `json:"chartVersion,omitempty" yaml:"chartVersion,omitempty"`
-	K3SVersion                     string `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
-	RancherAgentImage              string `json:"rancherAgentImage,omitempty" yaml:"rancherAgentImage,omitempty"`
-	RancherChartRepository         string `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
-	RancherHostname                string `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
-	RancherImage                   string `json:"rancherImage,omitempty" yaml:"rancherImage,omitempty"`
-	RancherTagVersion              string `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
-	RegistryUsername               string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
-	RegistryPassword               string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
-	Repo                           string `json:"repo,omitempty" yaml:"repo,omitempty"`
-	OSUser                         string `json:"osUser,omitempty" yaml:"osUser,omitempty"`
-	OSGroup                        string `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
-	RKE2Version                    string `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
-	UpgradeAirgapRancher           bool   `json:"upgradeAirgapRancher,omitempty" yaml:"upgradeAirgapRancher,omitempty"`
-	UpgradeProxyRancher            bool   `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
-	UpgradeRancher                 bool   `json:"upgradeRancher,omitempty" yaml:"upgradeRancher,omitempty"`
-	UpgradedRancherChartRepository string `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`
-	UpgradedRancherChartVersion    string `json:"upgradedRancherChartVersion,omitempty" yaml:"upgradedRancherChartVersion,omitempty"`
-	UpgradedRancherImage           string `json:"upgradedRancherImage,omitempty" yaml:"upgradedRancherImage,omitempty"`
-	UpgradedRancherAgentImage      string `json:"upgradedRancherAgentImage,omitempty" yaml:"upgradedRancherAgentImage,omitempty"`
-	UpgradedRancherRepo            string `json:"upgradedRancherRepo,omitempty" yaml:"upgradedRancherRepo,omitempty"`
-	UpgradedRancherTagVersion      string `json:"upgradedRancherTagVersion,omitempty" yaml:"upgradedRancherTagVersion,omitempty"`
+	AirgapInternalFQDN             string        `json:"airgapInternalFQDN,omitempty" yaml:"airgapInternalFQDN,omitempty"`
+	BootstrapPassword              string        `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
+	CertManagerVersion             string        `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
+	CertType                       string        `json:"certType,omitempty" yaml:"certType,omitempty"`
+	ChartVersion                   string        `json:"chartVersion,omitempty" yaml:"chartVersion,omitempty"`
+	K3SVersion                     string        `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
+	FeatureFlags                   *FeatureFlags `json:"featureFlags,omitempty" yaml:"featureFlags,omitempty"`
+	RancherAgentImage              string        `json:"rancherAgentImage,omitempty" yaml:"rancherAgentImage,omitempty"`
+	RancherChartRepository         string        `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
+	RancherHostname                string        `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
+	RancherImage                   string        `json:"rancherImage,omitempty" yaml:"rancherImage,omitempty"`
+	RancherTagVersion              string        `json:"rancherTagVersion,omitempty" yaml:"rancherTagVersion,omitempty"`
+	RegistryUsername               string        `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
+	RegistryPassword               string        `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
+	Repo                           string        `json:"repo,omitempty" yaml:"repo,omitempty"`
+	OSUser                         string        `json:"osUser,omitempty" yaml:"osUser,omitempty"`
+	OSGroup                        string        `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
+	RKE2Version                    string        `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
+	Turtles                        string        `json:"turtles,omitempty" yaml:"turtles,omitempty"`
+	UpgradedTurtles                string        `json:"upgradedTurtles,omitempty" yaml:"upgradedTurtles,omitempty"`
+	UpgradeAirgapRancher           bool          `json:"upgradeAirgapRancher,omitempty" yaml:"upgradeAirgapRancher,omitempty"`
+	UpgradeProxyRancher            bool          `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
+	UpgradeRancher                 bool          `json:"upgradeRancher,omitempty" yaml:"upgradeRancher,omitempty"`
+	UpgradedRancherChartRepository string        `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`
+	UpgradedRancherChartVersion    string        `json:"upgradedRancherChartVersion,omitempty" yaml:"upgradedRancherChartVersion,omitempty"`
+	UpgradedRancherImage           string        `json:"upgradedRancherImage,omitempty" yaml:"upgradedRancherImage,omitempty"`
+	UpgradedRancherAgentImage      string        `json:"upgradedRancherAgentImage,omitempty" yaml:"upgradedRancherAgentImage,omitempty"`
+	UpgradedRancherRepo            string        `json:"upgradedRancherRepo,omitempty" yaml:"upgradedRancherRepo,omitempty"`
+	UpgradedRancherTagVersion      string        `json:"upgradedRancherTagVersion,omitempty" yaml:"upgradedRancherTagVersion,omitempty"`
 }
 
 type StandaloneRegistry struct {

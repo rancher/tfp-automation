@@ -54,7 +54,7 @@ require (
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/shepherd v0.0.0-20251003203259-669abb78af51
 	github.com/rancher/tests v0.0.0-20251006163815-7499db2c8b31
-	github.com/rancher/tests/actions v0.0.0-20251006163815-7499db2c8b31
+	github.com/rancher/tests/actions v0.0.0-20251027225328-d9bc557674d7
 	github.com/sirupsen/logrus v1.9.3
 	go.qase.io/qase-api-client v0.0.0-00010101000000-000000000000
 )
