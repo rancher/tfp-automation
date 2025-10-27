@@ -103,7 +103,7 @@ jobs:
             AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: "Fetch and Set DockerHub Credentials"
+      - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -304,6 +304,14 @@ jobs:
         with:
           prefix-list-id: ${{ env.PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
+
+      - name: Set job status output
+        if: always()
+        run: echo "job_status=${{ job.status }}" >> $GITHUB_OUTPUT
+        id: set-job-status
+
+    outputs:
+      job-status: ${{ steps.set-job-status.outputs.job_status }}
 
   report-to-slack:
     needs: post-release-sanity-upgrade-tests
