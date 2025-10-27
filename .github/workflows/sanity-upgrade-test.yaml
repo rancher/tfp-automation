@@ -198,7 +198,7 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) ||
+              (github.event_name == 'schedule' && matrix.upgraded_rancher_version) ||
               (github.event.inputs.run_all_versions == 'true' && matrix.upgraded_rancher_version)
             }}
 
@@ -211,7 +211,7 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
+              (github.event_name == 'schedule' && matrix.upgraded_rancher_chart_version) ||
               (github.event.inputs.run_all_versions == 'true' && matrix.upgraded_rancher_chart_version)
             }}
 
