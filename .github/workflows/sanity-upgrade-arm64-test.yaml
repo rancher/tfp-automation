@@ -34,7 +34,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [head]
         include:
           - if: |
               github.event_name == 'schedule' ||
