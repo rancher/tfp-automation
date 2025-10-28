@@ -44,30 +44,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [head, v2-12, v2-11]
-        exclude:
-          - version: head
-            if: |
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
-              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-alpha')
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) ||
-              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-alpha')
-          - version: v2-12
-            if: |
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) ||
-              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-alpha')
-          - version: v2-11
-            if: |
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) ||
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
-              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-alpha') ||
-              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-alpha')
         include:
-          - if: |
-              github.event_name == 'schedule' ||
-              github.event.inputs.run_all_versions == 'true'
-            version: head
+          - version: head
             environment: latest
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}
             rancher_prefix_version: "head"
@@ -76,11 +54,7 @@ jobs:
             rancher_chart_version: ${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}
             qase_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}
           
-          - if: |
-              github.event_name == 'schedule' ||
-              github.event.inputs.run_all_versions == 'true' ||
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12'))
-            version: v2-12
+          - version: v2-12
             environment: latest
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}
             rancher_prefix_version: "v2.12"
@@ -89,10 +63,7 @@ jobs:
             rancher_chart_version: ${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}
             qase_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}
 
-          - if: |
-              github.event_name == 'schedule' ||
-              github.event.inputs.run_all_versions == 'true'
-            version: v2-11
+          - version: v2-11
             environment: staging
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}
             rancher_prefix_version: "v2.11"
@@ -105,6 +76,18 @@ jobs:
     environment: ${{ matrix.environment }}
     env:
       RANCHER2_PROVIDER_VERSION: ${{ matrix.provider_version }}
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && (
+        (startsWith(github.event.inputs.rancher_version, 'v2.11')) ||
+        (startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
+        (startsWith(github.event.inputs.rancher_version, 'head'))
+      )) ||
+      (github.event_name == 'workflow_call' && (
+        (startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-alpha') ||
+        (startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-alpha')
+      ))
 
     steps:      
       - name: Checkout repository
