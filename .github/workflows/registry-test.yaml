@@ -42,12 +42,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        version: [v2-12, v2-11]
+        exclude:
+          - version: v2-12
+            if: |
+              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) ||
+              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-alpha')
+          - version: v2-11
+            if: |
+              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
+              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-alpha')
         include:
           - if: |
               github.event_name == 'schedule' ||
-              github.event.inputs.run_all_versions == 'true' ||
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
-              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-alpha')
+              github.event.inputs.run_all_versions == 'true'
             version: v2-12
             environment: alpha
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}
@@ -59,9 +67,7 @@ jobs:
 
           - if: |
               github.event_name == 'schedule' ||
-              github.event.inputs.run_all_versions == 'true' ||
-              (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.11')) ||
-              (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-alpha')
+              github.event.inputs.run_all_versions == 'true'
             version: v2-11
             environment: staging-alpha
             provider_version: ${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}
