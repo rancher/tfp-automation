@@ -125,6 +125,13 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
 
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
+        with:
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}
+
       - name: Retrieve and set ECR password
         id: get-ecr-password
         uses: ./.github/actions/get-ecr-password
@@ -362,6 +369,13 @@ jobs:
           rancher-repo: ${{ env.RANCHER_REPO }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
+
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
+        with:
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}
 
       - name: Retrieve and set ECR password
         id: get-ecr-password
