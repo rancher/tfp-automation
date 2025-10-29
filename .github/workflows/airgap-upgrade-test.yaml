@@ -124,6 +124,13 @@ jobs:
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
           env-var-name: UPGRADED_RANCHER_REPO
 
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
+        with:
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -375,6 +382,13 @@ jobs:
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
           env-var-name: UPGRADED_RANCHER_HELM_CHART_URL
+
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
+        with:
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}
 
       - name: Create config.yaml
         run: |
