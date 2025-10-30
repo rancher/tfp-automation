@@ -130,21 +130,23 @@ func getK8sParam(terratest *config.TerratestConfig) upstream.TestCaseParameterCr
 func getTurtlesParam(terraform *config.TerraformConfig) upstream.TestCaseParameterCreate {
 	var prevTurtles, turtles, upgradedTurtles, title, value string
 
-	if terraform.Standalone != nil && terraform.Standalone.FeatureFlags.UpgradedTurtles == "" {
-		turtles = terraform.Standalone.FeatureFlags.Turtles
+	if terraform.Standalone != nil && terraform.Standalone.FeatureFlags != nil {
+		if terraform.Standalone.FeatureFlags.UpgradedTurtles == "" {
+			turtles = terraform.Standalone.FeatureFlags.Turtles
 
-		title = "Turtles status: "
-		value = turtles
+			title = "Turtles status: "
+			value = turtles
 
-		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
-	} else if terraform.Standalone != nil && terraform.Standalone.FeatureFlags.UpgradedTurtles != "" {
-		upgradedTurtles = terraform.Standalone.FeatureFlags.UpgradedTurtles
-		prevTurtles = terraform.Standalone.FeatureFlags.Turtles
+			return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
+		} else if terraform.Standalone.FeatureFlags.UpgradedTurtles != "" {
+			upgradedTurtles = terraform.Standalone.FeatureFlags.UpgradedTurtles
+			prevTurtles = terraform.Standalone.FeatureFlags.Turtles
 
-		title = "Turtles status pre-upgrade: " + prevTurtles + " to Turtles status post-upgrade: "
-		value = upgradedTurtles
+			title = "Turtles status pre-upgrade: " + prevTurtles + " to Turtles status post-upgrade: "
+			value = upgradedTurtles
 
-		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
+			return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
+		}
 	}
 
 	return upstream.TestCaseParameterCreate{}

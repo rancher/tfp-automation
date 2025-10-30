@@ -33,7 +33,7 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.AirgapKeyPath)
-	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, true)
+	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.AirgapInternalFQDN, keyPath, true, true)
 	require.NoError(t, err)
 
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)

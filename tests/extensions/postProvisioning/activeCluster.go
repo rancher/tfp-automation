@@ -1,4 +1,4 @@
-package state
+package postProvisioning
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	kwait "k8s.io/apimachinery/pkg/util/wait"
 )
 
-// IsActiveCluster is a function that will wait for the cluster to be in an active state.
-func IsActiveCluster(client *rancher.Client, clusterID string) error {
+// IsClusterActive is a function that will wait for the cluster to be in an active state.
+func IsClusterActive(client *rancher.Client, clusterID string) error {
 	err := kwait.PollUntilContextTimeout(context.TODO(), 10*time.Second, 60*time.Minute, true, func(ctx context.Context) (done bool, err error) {
 		cluster, err := client.Management.Cluster.ByID(clusterID)
 		if err != nil {
