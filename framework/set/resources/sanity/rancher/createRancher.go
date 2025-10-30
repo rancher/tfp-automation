@@ -42,6 +42,10 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.ChartVersion + " " +
 		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage
 
+	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.Turtles != "" {
+		command += " " + terraformConfig.Standalone.FeatureFlags.Turtles
+	}
+
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}

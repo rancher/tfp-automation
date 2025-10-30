@@ -8,9 +8,11 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
+	"github.com/rancher/tests/actions/featureflags"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -83,6 +85,15 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 
 	if standaloneConfig.RancherTagVersion != "head" {
 		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
+	}
+
+	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
+		switch standaloneConfig.FeatureFlags.Turtles {
+		case defaults.ToggledOff:
+			featureflags.UpdateFeatureFlag(client, defaults.Turtles, false)
+		case defaults.ToggledOn:
+			featureflags.UpdateFeatureFlag(client, defaults.Turtles, true)
+		}
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
