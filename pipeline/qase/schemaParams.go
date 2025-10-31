@@ -132,18 +132,20 @@ func getTurtlesParam(terraform *config.TerraformConfig) upstream.TestCaseParamet
 
 	if terraform.Standalone != nil && terraform.Standalone.FeatureFlags.UpgradedTurtles == "" {
 		turtles = terraform.Standalone.FeatureFlags.Turtles
+
+		title = "Turtles status: "
+		value = turtles
+
+		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
 	} else if terraform.Standalone != nil && terraform.Standalone.FeatureFlags.UpgradedTurtles != "" {
 		upgradedTurtles = terraform.Standalone.FeatureFlags.UpgradedTurtles
 		prevTurtles = terraform.Standalone.FeatureFlags.Turtles
-	}
 
-	if terraform.Standalone.FeatureFlags.UpgradedTurtles != "" {
 		title = "Turtles status pre-upgrade: " + prevTurtles + " to Turtles status post-upgrade: "
 		value = upgradedTurtles
-	} else {
-		title = "Turtles status: "
-		value = turtles
+
+		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
 	}
 
-	return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
+	return upstream.TestCaseParameterCreate{}
 }
