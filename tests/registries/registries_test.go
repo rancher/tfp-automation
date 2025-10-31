@@ -5,14 +5,17 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
+	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
@@ -120,6 +123,12 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			require.NoError(r.T(), err)
+
+			pods.VerifyClusterPods(r.T(), r.client, cluster)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 
@@ -194,6 +203,12 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			require.NoError(r.T(), err)
+
+			pods.VerifyClusterPods(r.T(), r.client, cluster)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 
@@ -274,6 +289,12 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			require.NoError(r.T(), err)
+
+			pods.VerifyClusterPods(r.T(), r.client, cluster)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 
@@ -355,6 +376,12 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			require.NoError(r.T(), err)
+
+			pods.VerifyClusterPods(r.T(), r.client, cluster)
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 

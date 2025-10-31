@@ -207,10 +207,10 @@ github.com/rancher/shepherd v0.0.0-20251003203259-669abb78af51 h1:xi4qsdR2UtySDv
 github.com/rancher/shepherd v0.0.0-20251003203259-669abb78af51/go.mod h1:BdEW/H1ZkLUn3/A/73pacOSfgh9nn5ITjg5qj02CyS4=
 github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250710162344-185ff9f785cd h1:M3oVcVktMhNk8l3ZRW94kroqzWzE/VGbZfLw/F0rw5Y=
 github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250710162344-185ff9f785cd/go.mod h1:VfRrgue4yl6O0GYakMGYgyByu7ySooPQWWRxTt2MIEI=
-github.com/rancher/tests v0.0.0-20251006163815-7499db2c8b31 h1:/If2pEHvXORxQ7EW00VwHrero1tGaJbhBtrVklfCwOY=
-github.com/rancher/tests v0.0.0-20251006163815-7499db2c8b31/go.mod h1:q2Z/dAsAQf7XuYBzP2LYaeO9v3oYW0qDerTScjitNOI=
-github.com/rancher/tests/actions v0.0.0-20251027225328-d9bc557674d7 h1:yTt9r3aMofgNPQDiVadyskf1smDeg7KzrZQOXXguJ+M=
-github.com/rancher/tests/actions v0.0.0-20251027225328-d9bc557674d7/go.mod h1:QMHDDNNIyxK6I3Hq7p6i7nNcZwAIONicipIAtfrqu+M=
+github.com/rancher/tests v0.0.0-20251029202427-cb31d162ce83 h1:tNkrA/896UkeTLmbBOh31ZmQsqsKQ5uA+8nIfZV8D9U=
+github.com/rancher/tests v0.0.0-20251029202427-cb31d162ce83/go.mod h1:3sF6NgasbQZIlymbn358+tuM+WawcwzXYUFeWLoj31w=
+github.com/rancher/tests/actions v0.0.0-20251029202427-cb31d162ce83 h1:8iR0rBwsvIrgX774U79iFffUIj2sJqK8WtRsTcIXDZA=
+github.com/rancher/tests/actions v0.0.0-20251029202427-cb31d162ce83/go.mod h1:QMHDDNNIyxK6I3Hq7p6i7nNcZwAIONicipIAtfrqu+M=
 github.com/rancher/wrangler v1.1.2 h1:oXbXo9k7y/H4drUpb4RM1c++vT9O3rpoNEfyusGykiU=
 github.com/rancher/wrangler v1.1.2/go.mod h1:2k9MyhlBdjcutcBGoOJSUAz0HgDAXnMjv81d3n/AaQc=
 github.com/rancher/wrangler/v3 v3.2.4 h1:pgpLwsmgQvTSSknxddJDq+ObIiOXFggCWdDyB0z7YcA=

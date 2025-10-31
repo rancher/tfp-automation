@@ -1,13 +1,11 @@
 package provisioning
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
-	"github.com/rancher/shepherd/extensions/workloads/pods"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	"github.com/rancher/tests/actions/psact"
 	"github.com/rancher/tests/actions/registries"
@@ -16,9 +14,8 @@ import (
 	"github.com/rancher/tests/actions/workloads/deployment"
 	"github.com/rancher/tests/actions/workloads/statefulset"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	waitState "github.com/rancher/tfp-automation/framework/wait/state"
+	"github.com/rancher/tfp-automation/tests/extensions/postProvisioning"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -30,23 +27,12 @@ func VerifyClustersState(t *testing.T, client *rancher.Client, clusterIDs []stri
 		require.NoError(t, err)
 
 		logrus.Infof("Waiting for cluster %v to be in an active state...", cluster.Name)
-		if err := waitState.IsActiveCluster(client, clusterID); err != nil {
-			require.NoError(t, err)
-		}
-
-		if err := waitState.AreNodesActive(client, clusterID); err != nil {
-			require.NoError(t, err)
-		}
-
-		clusterName, err := clusterExtensions.GetClusterNameByID(client, clusterID)
+		err = postProvisioning.IsClusterActive(client, clusterID)
 		require.NoError(t, err)
 
-		clusterToken, err := clusterActions.CheckServiceAccountTokenSecret(client, clusterName)
+		logrus.Infof("Waiting for all nodes to be active on cluster: %s", cluster.Name)
+		err = postProvisioning.AreNodesActive(client, clusterID)
 		require.NoError(t, err)
-		require.NotEmpty(t, clusterToken)
-
-		podErrors := pods.StatusPods(client, cluster.ID)
-		require.Empty(t, podErrors)
 	}
 }
 
@@ -89,6 +75,18 @@ func VerifyWorkloads(t *testing.T, client *rancher.Client, clusterIDs []string) 
 	}
 }
 
+// VerifyServiceAccountTokenSecret validates that the service account token secret exists for each cluster
+func VerifyServiceAccountTokenSecret(t *testing.T, client *rancher.Client, clusterIDs []string) {
+	for _, clusterID := range clusterIDs {
+		clusterName, err := clusterExtensions.GetClusterNameByID(client, clusterID)
+		require.NoError(t, err)
+
+		clusterToken, err := clusterActions.CheckServiceAccountTokenSecret(client, clusterName)
+		require.NoError(t, err)
+		require.NotEmpty(t, clusterToken)
+	}
+}
+
 // VerifyClusterPSACT validates that psact clusters can provision an nginx deployment
 func VerifyClusterPSACT(t *testing.T, client *rancher.Client, clusterIDs []string) {
 	for _, clusterID := range clusterIDs {
@@ -119,42 +117,5 @@ func VerifyRancherVersion(t *testing.T, hostURL, expectedVersion, keyPath string
 	if resp.RancherVersion != expectedVersion {
 		logrus.Infof("Expected version: %s | Actual version: %s", expectedVersion, resp.RancherVersion)
 		cleanup.Cleanup(t, terraformOptions, keyPath)
-	}
-}
-
-// VerifyNodeCount validates that a cluster has the expected number of nodes.
-func VerifyNodeCount(t *testing.T, client *rancher.Client, clusterName string, terraformConfig *config.TerraformConfig, nodeCount int64) {
-	clusterID, err := clusterExtensions.GetClusterIDByName(client, clusterName)
-	require.NoError(t, err)
-
-	cluster, err := client.Management.Cluster.ByID(clusterID)
-	require.NoError(t, err)
-
-	var module string
-
-	if strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
-		module = clustertypes.RKE1
-	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
-		module = clustertypes.RKE2
-	} else if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
-		module = clustertypes.K3S
-	} else {
-		module = terraformConfig.Module
-	}
-
-	switch module {
-	case clustertypes.AKS:
-		var aksConfig = cluster.AKSConfig
-		require.Equal(t, (*aksConfig.NodePools)[0].Count, cluster.NodeCount)
-	case clustertypes.EKS:
-		var eksConfig = cluster.EKSConfig
-		require.Equal(t, (*eksConfig.NodeGroups)[0].DesiredSize, cluster.NodeCount)
-	case clustertypes.GKE:
-		var gkeConfig = cluster.GKEConfig
-		require.Equal(t, (*gkeConfig.NodePools)[0].InitialNodeCount, cluster.NodeCount)
-	case clustertypes.RKE1, clustertypes.RKE2, clustertypes.K3S:
-		require.Equal(t, nodeCount, cluster.NodeCount)
-	default:
-		logrus.Errorf("Unsupported module: %v", module)
 	}
 }

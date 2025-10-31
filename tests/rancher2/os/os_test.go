@@ -137,6 +137,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, customClusterNames)
 			time.Sleep(2 * time.Minute)
 			provisioning.VerifyClustersState(o.T(), o.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(o.T(), o.client, clusterIDs)
 		})
 
 		workloadTests := []struct {
