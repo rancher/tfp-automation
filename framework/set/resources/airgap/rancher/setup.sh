@@ -15,7 +15,7 @@ RANCHER_AGENT_IMAGE=${12}
 
 set -ex
 
-checkClusterStatus() {
+check_cluster_status() {
     EXPECTED_NODES=3
     TIMEOUT=300
     INTERVAL=10
@@ -42,56 +42,34 @@ checkClusterStatus() {
     done
 }
 
-waitForIngress() {
-  EXPECTED_INGRESS=1
-  TIMEOUT=300
-  INTERVAL=10
-  ELAPSED=0
-
-  while true; do
-    TOTAL_INGRESS=$(kubectl get ingress rancher -n cattle-system | awk '$1 == "rancher"' | wc -l)
-    
-    if [ "$TOTAL_INGRESS" -ne "$EXPECTED_INGRESS" ]; then
-      echo "Waiting for $TOTAL_INGRESS Rancher ingress to be created...$ELAPSED/$TIMEOUT seconds elapsed."
-      sleep $INTERVAL
-
-      ELAPSED=$((ELAPSED + INTERVAL))
-      
-      if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-        echo "Timeout reached: Rancher ingress not found after $TIMEOUT seconds."
-        exit 1
-      fi
-    else
-      echo "Rancher ingress found!"
-      break
-    fi
-  done
+install_helm() {
+  echo "Installing Helm"
+  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  chmod +x get_helm.sh
+  ./get_helm.sh
+  rm get_helm.sh
 }
 
-checkClusterStatus
+setup_helm_repo() {
+  echo "Adding Helm chart repo"
+  helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+}
 
-echo "Installing Helm"
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod +x get_helm.sh
-./get_helm.sh
-rm get_helm.sh
+install_cert_manager() {
+  echo "Installing cert manager"
+  kubectl create ns cattle-system
+  kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
+  helm repo add jetstack https://charts.jetstack.io
+  helm repo update
+  helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
+  kubectl get pods --namespace cert-manager
 
-echo "Adding Helm chart repo"
-helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+  echo "Waiting 1 minute for Rancher"
+  sleep 60
+}
 
-echo "Installing cert manager"
-kubectl create ns cattle-system
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
-kubectl get pods --namespace cert-manager
-
-echo "Waiting 1 minute for Rancher"
-sleep 60
-
-echo "Installing Rancher with ${CERT_TYPE} certs"
-if [ "$CERT_TYPE" == "self-signed" ]; then
+install_self_signed_rancher() {
+  echo "Installing Rancher with self-signed certs"
   if [ -n "$RANCHER_AGENT_IMAGE" ]; then
       helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                   --set hostname=${HOSTNAME} \
@@ -120,8 +98,11 @@ if [ "$CERT_TYPE" == "self-signed" ]; then
                                                                                   --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                   --devel
   fi
-elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-    if [ -n "$RANCHER_AGENT_IMAGE" ]; then
+}
+
+install_lets_encrypt_rancher() {
+  echo "Installing Rancher with Let's Encrypt certs"
+  if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      --version ${CHART_VERSION} \
@@ -154,54 +135,105 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel
     fi
-else
-    echo "Unsupported CERT_TYPE: $CERT_TYPE"
-    exit 1
-fi
+}
 
-echo "Waiting for Rancher to be rolled out"
-kubectl -n cattle-system rollout status deploy/rancher
-kubectl -n cattle-system get deploy rancher
+wait_for_rollout() {
+  echo "Waiting for Rancher to be rolled out"
+  kubectl -n cattle-system rollout status deploy/rancher
+  kubectl -n cattle-system get deploy rancher
+}
 
-echo "Waiting 3 minutes for Rancher to be ready to deploy downstream clusters"
-sleep 180
+wait_for_rancher() {
+  echo "Waiting 3 minutes for Rancher to be ready to deploy downstream clusters"
+  sleep 180
+}
 
-waitForIngress
+wait_for_ingress() {
+  EXPECTED_INGRESS=1
+  TIMEOUT=300
+  INTERVAL=10
+  ELAPSED=0
 
-kubectl patch ingress rancher -n cattle-system --type=json -p="[{
-  \"op\": \"add\", 
-  \"path\": \"/spec/rules/-\", 
-  \"value\": {
-    \"host\": \"${INTERNAL_FQDN}\", 
-    \"http\": {
-      \"paths\": [{
-        \"backend\": {
-          \"service\": {
-            \"name\": \"rancher\",
-            \"port\": {
-              \"number\": 80
+  while true; do
+    TOTAL_INGRESS=$(kubectl get ingress rancher -n cattle-system | awk '$1 == "rancher"' | wc -l)
+    
+    if [ "$TOTAL_INGRESS" -ne "$EXPECTED_INGRESS" ]; then
+      echo "Waiting for $TOTAL_INGRESS Rancher ingress to be created...$ELAPSED/$TIMEOUT seconds elapsed."
+      sleep $INTERVAL
+
+      ELAPSED=$((ELAPSED + INTERVAL))
+      
+      if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+        echo "Timeout reached: Rancher ingress not found after $TIMEOUT seconds."
+        exit 1
+      fi
+    else
+      echo "Rancher ingress found!"
+      break
+    fi
+  done
+}
+
+patch_rancher_internal_fqdn() {
+  echo "Patching Rancher to add internal FQDN: ${INTERNAL_FQDN}"
+  kubectl patch ingress rancher -n cattle-system --type=json -p="[{
+    \"op\": \"add\", 
+    \"path\": \"/spec/rules/-\", 
+    \"value\": {
+      \"host\": \"${INTERNAL_FQDN}\", 
+      \"http\": {
+        \"paths\": [{
+          \"backend\": {
+            \"service\": {
+              \"name\": \"rancher\",
+              \"port\": {
+                \"number\": 80
+              }
             }
-          }
-        },
-        \"pathType\": \"ImplementationSpecific\"
-      }]
+          },
+          \"pathType\": \"ImplementationSpecific\"
+        }]
+      }
     }
-  }
-}]"
+  }]"
 
-kubectl patch ingress rancher -n cattle-system --type=json -p="[{
-  \"op\": \"add\", 
-  \"path\": \"/spec/tls/0/hosts/-\", 
-  \"value\": \"${INTERNAL_FQDN}\"
-}]"
+  kubectl patch ingress rancher -n cattle-system --type=json -p="[{
+    \"op\": \"add\", 
+    \"path\": \"/spec/tls/0/hosts/-\", 
+    \"value\": \"${INTERNAL_FQDN}\"
+  }]"
 
-kubectl patch setting server-url --type=json -p="[{
-  \"op\": \"add\", 
-  \"path\": \"/value\", 
-  \"value\": \"https://${INTERNAL_FQDN}\"
-}]"
+  kubectl patch setting server-url --type=json -p="[{
+    \"op\": \"add\", 
+    \"path\": \"/value\", 
+    \"value\": \"https://${INTERNAL_FQDN}\"
+  }]"
 
-echo "Restarting Rancher"
-kubectl -n cattle-system rollout restart deploy/rancher
-kubectl -n cattle-system rollout status deploy/rancher
-kubectl -n cattle-system get deploy rancher
+  echo "Restarting Rancher"
+  kubectl -n cattle-system rollout restart deploy/rancher
+  kubectl -n cattle-system rollout status deploy/rancher
+  kubectl -n cattle-system get deploy rancher
+}
+
+check_cluster_status
+install_helm
+setup_helm_repo
+install_cert_manager
+
+case "$CERT_TYPE" in
+    "self-signed")
+        install_self_signed_rancher
+        ;;
+    "lets-encrypt")
+        install_lets_encrypt_rancher
+        ;;
+      *)
+        echo "Unsupported CERT_TYPE: $CERT_TYPE"
+        exit 1
+        ;;
+esac
+
+wait_for_rollout
+wait_for_rancher
+wait_for_ingress
+patch_rancher_internal_fqdn

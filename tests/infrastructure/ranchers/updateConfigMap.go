@@ -1,4 +1,4 @@
-package infrastructure
+package ranchers
 
 import "github.com/rancher/shepherd/clients/rancher"
 

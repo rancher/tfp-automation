@@ -23,7 +23,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -53,7 +53,7 @@ func (p *TfpProxyProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	p.session = testSession
 
-	p.client, p.proxyBastion, _, p.standaloneTerraformOptions, p.terraformOptions, p.cattleConfig = infrastructure.SetupProxyRancher(p.T(), p.session, keypath.ProxyKeyPath)
+	p.client, p.proxyBastion, _, p.standaloneTerraformOptions, p.terraformOptions, p.cattleConfig = ranchers.SetupProxyRancher(p.T(), p.session, keypath.ProxyKeyPath)
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, p.standaloneConfig = config.LoadTFPConfigs(p.cattleConfig)
 }
 
@@ -79,7 +79,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
 	require.NoError(p.T(), err)
 
 	standardToken := standardUserToken.Token
@@ -149,7 +149,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
 	require.NoError(p.T(), err)
 
 	standardToken := standardUserToken.Token

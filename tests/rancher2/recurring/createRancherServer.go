@@ -12,7 +12,7 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	infraConfig "github.com/rancher/tests/validation/recurring/infrastructure/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,7 +39,7 @@ func main() {
 
 func setupRancher(t *testing.T) (*rancher.Client, string, *terraform.Options, *terraform.Options, map[string]any, error) {
 	testSession := session.NewSession()
-	client, serverNodeOne, standaloneTerraformOptions, terraformOptions, cattleConfig := infrastructure.SetupRancher(t, testSession, keypath.SanityKeyPath)
+	client, serverNodeOne, standaloneTerraformOptions, terraformOptions, cattleConfig := ranchers.SetupRancher(t, testSession, keypath.SanityKeyPath)
 
 	return client, serverNodeOne, standaloneTerraformOptions, terraformOptions, cattleConfig, nil
 }

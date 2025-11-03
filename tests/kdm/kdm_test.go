@@ -25,7 +25,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -54,7 +54,7 @@ func (k *KDMTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	k.session = testSession
 
-	k.client, _, k.standaloneTerraformOptions, k.terraformOptions, k.cattleConfig = infrastructure.SetupRancher(k.T(), k.session, keypath.SanityKeyPath)
+	k.client, _, k.standaloneTerraformOptions, k.terraformOptions, k.cattleConfig = ranchers.SetupRancher(k.T(), k.session, keypath.SanityKeyPath)
 	k.rancherConfig, k.terraformConfig, k.terratestConfig, k.standaloneConfig = config.LoadTFPConfigs(k.cattleConfig)
 }
 
@@ -90,7 +90,7 @@ func (k *KDMTestSuite) TestKDM() {
 	k.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(k.client)
 	require.NoError(k.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(k.T(), k.terraformOptions, k.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(k.T(), k.terraformOptions, k.rancherConfig, testUser, testPassword)
 	require.NoError(k.T(), err)
 
 	standardToken := standardUserToken.Token
