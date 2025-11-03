@@ -125,6 +125,14 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
 
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
+        with:
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
@@ -361,6 +369,14 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
           is-prime: true
+
+      - name: Get Qase ID
+        id: get-qase-id
+        uses: ./.github/actions/get-qase-id
+        with:
+          triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}
 
       - name: Set Rancher chart url
         uses: ./.github/actions/set-rancher-chart-url

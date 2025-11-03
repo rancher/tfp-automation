@@ -5,8 +5,8 @@ inputs:
   triggered_tag:
     description: "Rancher server tag version from triggered action"
     required: true
-  qase_rc_id:
-    description: "Qase ID for the RC test run"
+  qase_release_id:
+    description: "Qase ID for the release test run (alpha or rc)"
     required: false
   qase_recurring_id:
     description: "Qase ID for the recurring test run"
@@ -26,8 +26,8 @@ runs:
         QASE_ID=""
 
         if [[ -n "$TRIGGERED_TAG" ]]; then
-          if [[ "$TRIGGERED_TAG" == *"-rc"* ]]; then
-            QASE_ID="${{ inputs.qase_rc_id }}"
+          if [[ "$TRIGGERED_TAG" == *"-rc"* || "$TRIGGERED_TAG" == *"-alpha"* ]]; then
+            QASE_ID="${{ inputs.qase_release_id }}"
           else
             QASE_ID="${{ inputs.qase_recurring_id }}"
           fi

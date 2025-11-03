@@ -3,7 +3,7 @@ name: Proxy Upgrade Testing
 
 on:
   schedule:
-    - cron: "0 9 * * 1"
+    - cron: "0 9 * * 4"
   workflow_dispatch:
     inputs:
       rancher_version:
@@ -135,6 +135,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}"
 
       - name: Create config.yaml
@@ -388,6 +389,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}"
 
       - name: Create config.yaml
@@ -650,6 +652,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}"
 
       - name: Create config.yaml
