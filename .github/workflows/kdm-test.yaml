@@ -33,15 +33,16 @@ env:
   TIMEOUT: "5h"
 
 jobs:
-  head:
+  v2-13:
     if: |
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
-    name: head
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13'))
+    name: v2.13
     runs-on: ubuntu-latest
     environment: latest
     env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
 
     steps:
       - name: Checkout repository
@@ -187,7 +188,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
@@ -266,7 +267,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: staging
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
@@ -304,7 +305,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -345,6 +346,7 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
+          is-prime: true
 
       - name: Get Qase ID
         id: get-qase-id
@@ -464,7 +466,7 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set job status output
@@ -580,7 +582,7 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}"
+          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}
 
       - name: Create config.yaml
         run: |

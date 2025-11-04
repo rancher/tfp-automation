@@ -40,12 +40,13 @@ env:
   TIMEOUT: "5h"
 
 jobs:
-  head:
+  v2-13:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> head
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13'))
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -207,7 +208,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
@@ -301,7 +302,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: upgrade-prime-staging
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
@@ -339,7 +340,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -382,7 +383,16 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          is-prime: true
           env-var-name: UPGRADED_RANCHER_REPO
+
+      - name: Set upgraded Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
+          env-var-name: UPGRADED_RANCHER_HELM_CHART_URL
 
       - name: Get Qase ID
         id: get-qase-id
@@ -524,7 +534,7 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set job status output
