@@ -2,14 +2,8 @@
 name: Run Test Suite
 description: "Runs test suite"
 inputs:
-  suite:
-    description: "The specific Rancher2 suite to run on the specific Rancher server"
-    required: false
   package:
     description: "Package to test"
-    required: true
-  path-to-repo:
-    description: "Path from userDir to tfp-automation repo"
     required: true
   test-suite:
     description: "Suite to test"
@@ -17,10 +11,6 @@ inputs:
   timeout:
     description: "Timeout"
     required: true
-  tag:
-    description: "Tag to filter tests"
-    required: false
-    default: ""
 runs:
   using: composite
   steps:
@@ -28,77 +18,6 @@ runs:
       id: tests
       run: |
         set +e
-        if [ -n "${{ inputs.tag }}" ]; then
-          case "${{ inputs.suite }}" in
-            rancher-server-one)
-              gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/provisioning \
-              --junitfile /home/runner/${{ inputs.path-to-repo }}/results.xml --jsonfile /home/runner/${{ inputs.path-to-repo }}/results.json \
-              -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
-              provision_code=$?;
-              echo "provision_code=$provision_code" >> $GITHUB_ENV;
-              ./pipeline/scripts/build_qase_reporter.sh;
-              ./reporter;
-
-              gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/psact \
-              --junitfile /home/runner/${{ inputs.path-to-repo }}/results.xml --jsonfile /home/runner/${{ inputs.path-to-repo }}/results.json \
-              -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
-              psact_code=$?;
-              echo "psact_code=$psact_code" >> $GITHUB_ENV;
-              ./pipeline/scripts/build_qase_reporter.sh;
-              ./reporter;
-              ;;
-            rancher-server-two)
-              gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/rbac \
-              --junitfile /home/runner/${{ inputs.path-to-repo }}/results.xml --jsonfile /home/runner/${{ inputs.path-to-repo }}/results.json \
-              -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
-              rbac_code=$?;
-              echo "rbac_code=$rbac_code" >> $GITHUB_ENV;
-              ./pipeline/scripts/build_qase_reporter.sh;
-              ./reporter;
-              
-              gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/snapshot \
-              --junitfile /home/runner/${{ inputs.path-to-repo }}/results.xml --jsonfile /home/runner/${{ inputs.path-to-repo }}/results.json \
-              -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
-              snapshot_code=$?;
-              echo "snapshot_code=$snapshot_code" >> $GITHUB_ENV;
-              ./pipeline/scripts/build_qase_reporter.sh;
-              ./reporter;
-
-              gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/upgrading \
-              --junitfile /home/runner/${{ inputs.path-to-repo }}/results.xml --jsonfile /home/runner/${{ inputs.path-to-repo }}/results.json \
-              -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
-              upgrading_code=$?;
-              echo "upgrading_code=$upgrading_code" >> $GITHUB_ENV;
-              ./pipeline/scripts/build_qase_reporter.sh;
-              ./reporter;
-              ;;
-          esac
-        else
-          gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }} \
-          --junitfile /home/runner/${{ inputs.path-to-repo }}/results.xml --jsonfile /home/runner/${{ inputs.path-to-repo }}/results.json \
-          -- -timeout=${{ inputs.timeout }} -v -run "${{ inputs.test-suite }}"
-        fi
-      shell: bash
-
-    - name: Show failed tests
-      if: ${{ inputs.tag == '' }}
-      run: |
-         declare -A suites=(
-           [provision_code]="Provisioning"
-           [psact_code]="PSACT"
-           [rbac_code]="RBAC"
-           [snapshot_code]="Snapshot"
-           [upgrading_code]="Upgrading"
-         )
-
-         for exit_code in "${!suites[@]}"; do
-           exit_val="${!exit_code}"
-
-           if [ "$exit_val" != "" ] && [ "$exit_val" -ne 0 ]; then
-             echo "Failed ${suites[$exit_code]} tests:"
-             jq -r 'select(.Action=="fail" and .Test != null) | "- " + .Test' results.json
-             echo ""
-             exit 1
-           fi
-         done
+        gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }} \
+        --junitfile results.xml --jsonfile results.json -- -timeout=${{ inputs.timeout }} -v -run "${{ inputs.test-suite }}"
       shell: bash
