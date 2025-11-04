@@ -2,15 +2,21 @@
 name: Compare Rancher tag
 description: "Compares the latest Rancher tag for specified release lines with cached values"
 inputs:
+  cached-tag-v213:
+    required: true
   cached-tag-v212:
     required: true
   cached-tag-v211:
+    required: true
+  latest-tag-v213:
     required: true
   latest-tag-v212:
     required: true
   latest-tag-v211:
     required: true
 outputs:
+  is_tag_new_v213:
+    value: ${{ steps.compare.outputs.is_tag_new_v213 }}
   is_tag_new_v212:
     value: ${{ steps.compare.outputs.is_tag_new_v212 }}
   is_tag_new_v211:
@@ -20,8 +26,11 @@ runs:
   steps:
     - id: compare
       run: |
-        for RELEASE_LINE in v212 v211; do
-          if [[ "$RELEASE_LINE" = "v212" ]]; then
+        for RELEASE_LINE in v213 v212 v211; do
+          if [[ "$RELEASE_LINE" = "v213" ]]; then
+            TAG_INPUT="${{ inputs.latest-tag-v213 }}"
+            CACHED_TAG="${{ inputs.cached-tag-v213 }}"
+          elif [[ "$RELEASE_LINE" = "v212" ]]; then
             TAG_INPUT="${{ inputs.latest-tag-v212 }}"
             CACHED_TAG="${{ inputs.cached-tag-v212 }}"
           elif [[ "$RELEASE_LINE" = "v211" ]]; then
@@ -41,6 +50,7 @@ runs:
           fi
         done
 
+        echo "is_tag_new_v213=$IS_TAG_NEW_v213" >> $GITHUB_OUTPUT
         echo "is_tag_new_v212=$IS_TAG_NEW_v212" >> $GITHUB_OUTPUT
         echo "is_tag_new_v211=$IS_TAG_NEW_v211" >> $GITHUB_OUTPUT
       shell: bash

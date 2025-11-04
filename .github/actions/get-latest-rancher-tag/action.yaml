@@ -9,6 +9,9 @@ inputs:
     description: "Path to prime artifacts"
     required: true
 outputs:
+  latest_tag_v213:
+    description: "Latest tag for v2.13"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v213 }}
   latest_tag_v212:
     description: "Latest tag for v2.12"
     value: ${{ steps.set-outputs.outputs.latest_tag_v212 }}
@@ -28,7 +31,7 @@ runs:
 
           echo "Latest tag for $RELEASE_LINE: $LATEST_VERSION"
 
-          if [[ "$RELEASE_LINE" == "v2.12" ]]; then
+          if [[ "$RELEASE_LINE" == "v2.13" ]]; then
             RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST_VERSION")
             ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
 
@@ -54,6 +57,7 @@ runs:
       shell: bash
     - id: set-outputs
       run: |
+        echo "latest_tag_v213=$LATEST_TAG_v213" >> $GITHUB_OUTPUT
         echo "latest_tag_v212=$LATEST_TAG_v212" >> $GITHUB_OUTPUT
         echo "latest_tag_v211=$LATEST_TAG_v211" >> $GITHUB_OUTPUT
       shell: bash

@@ -30,11 +30,13 @@ env:
   TIMEOUT: "5h"
 
 jobs:
-  head:
+  v2-13:
     if: |
       github.event_name == 'schedule' ||
-      github.event.inputs.run_all_versions == 'true'
-    name: head
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13'))
+    name: v2-13
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -192,7 +194,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
             etcdCount: ${{ vars.ETCD_COUNT }}
