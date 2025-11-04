@@ -1,0 +1,99 @@
+---
+name: Run Rancher2 Test Suite
+description: "Runs rancher2 test suite"
+inputs:
+  suite:
+    description: "The specific Rancher2 suite to run on the specific Rancher server"
+    required: false
+  package:
+    description: "Package to test"
+    required: true
+  test-suite:
+    description: "Suite to test"
+    required: true
+  timeout:
+    description: "Timeout"
+    required: true
+  tag:
+    description: "Tag to filter tests"
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Run Tests
+      id: tests
+      run: |
+        set +e
+        case "${{ inputs.suite }}" in
+          rancher-server-one)
+            gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/provisioning \
+            --junitfile results.xml --jsonfile results_provision.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            provision_code=$?;
+            echo "provision_code=$provision_code" >> $GITHUB_ENV;
+            cp results_provision.json results.json
+            ./pipeline/scripts/build_qase_reporter.sh;
+            ./reporter;
+
+            gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/psact \
+            --junitfile results.xml --jsonfile results_psact.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            psact_code=$?;
+            echo "psact_code=$psact_code" >> $GITHUB_ENV;
+            cp results_psact.json results.json
+            ./pipeline/scripts/build_qase_reporter.sh;
+            ./reporter;
+            ;;
+          rancher-server-two)
+            gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/rbac \
+            --junitfile results.xml --jsonfile results_rbac.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            rbac_code=$?;
+            echo "rbac_code=$rbac_code" >> $GITHUB_ENV;
+            cp results_rbac.json results.json
+            ./pipeline/scripts/build_qase_reporter.sh;
+            ./reporter;
+              
+            gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/snapshot \
+            --junitfile results.xml --jsonfile results_snapshot.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            snapshot_code=$?;
+            echo "snapshot_code=$snapshot_code" >> $GITHUB_ENV;
+            cp results_snapshot.json results.json
+            ./pipeline/scripts/build_qase_reporter.sh;
+            ./reporter;
+
+            gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/upgrading \
+            --junitfile results.xml --jsonfile results_upgrade.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            upgrading_code=$?;
+            echo "upgrading_code=$upgrading_code" >> $GITHUB_ENV;
+            cp results_upgrade.json results.json
+            ./pipeline/scripts/build_qase_reporter.sh;
+            ./reporter;
+            ;;
+        esac
+      shell: bash
+      continue-on-error: true
+
+    - name: Show failed tests
+      run: |
+         declare -A suites=(
+           [provision_code]="Provisioning"
+           [psact_code]="PSACT"
+           [rbac_code]="RBAC"
+           [snapshot_code]="Snapshot"
+           [upgrading_code]="Upgrading"
+         )
+
+         failed=0
+         for exit_code in "${!suites[@]}"; do
+          IFS=: read suite_name results_file <<< "${suites[$exit_code]}"
+          exit_val="${!exit_code}"
+           
+          if [ "$exit_val" != "" ] && [ "$exit_val" -ne 0 ]; then
+            echo "Failed $suite_name tests:"
+            jq -r 'select(.Action=="fail" and .Test != null) | "- " + .Test' "$results_file"
+            failed=1
+          fi
+         done
+
+         if [ "$failed" -eq 1 ]; then
+          exit 1
+         fi
+      shell: bash

@@ -714,7 +714,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
@@ -954,7 +953,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 

@@ -250,7 +250,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
   
@@ -465,7 +464,8 @@ jobs:
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
-              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
+              upgradedRancherChartRepository: "${{ env.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
@@ -508,7 +508,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
@@ -767,7 +766,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 

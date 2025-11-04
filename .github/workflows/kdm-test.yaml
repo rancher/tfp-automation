@@ -223,7 +223,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
@@ -409,6 +408,7 @@ jobs:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
+              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
@@ -451,7 +451,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
@@ -680,7 +679,6 @@ jobs:
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
-          path-to-repo: ${{ secrets.PATH_TO_REPO }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
