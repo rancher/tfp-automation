@@ -7,8 +7,8 @@ HOSTNAME=$4
 RANCHER_TAG_VERSION=$5
 CHART_VERSION=$6
 RANCHER_IMAGE=$7
-UPGRADED_TURTLES=${8:-""}
-RANCHER_AGENT_IMAGE=${9:-""}
+RANCHER_AGENT_IMAGE=${8:}
+UPGRADED_TURTLES=${9:}
 
 set -ex
 
@@ -166,14 +166,18 @@ wait_for_rancher() {
 
 setup_helm_repo
 
-case "$TURTLES" in
-    "false"|"toggledOn")
-        upgrade_turtles_off
-        ;;
-    *)
-        upgrade_default_rancher
-        ;;
-esac
+if [ -n "$TURTLES" ]; then
+    case "$TURTLES" in
+        "false"|"toggledOn")
+            upgrade_turtles_off
+            ;;
+        *)
+            upgrade_default_rancher
+            ;;
+    esac
+else
+    upgrade_default_rancher
+fi
 
 wait_for_rollout
 wait_for_rancher

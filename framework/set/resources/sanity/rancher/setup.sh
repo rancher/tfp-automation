@@ -9,8 +9,8 @@ RANCHER_TAG_VERSION=$6
 CHART_VERSION=$7
 BOOTSTRAP_PASSWORD=$8
 RANCHER_IMAGE=$9
-TURTLES=${10:-""}
-RANCHER_AGENT_IMAGE=${11:-""}
+RANCHER_AGENT_IMAGE=${10}
+TURTLES=${11}
 
 set -ex
 
@@ -256,14 +256,18 @@ install_helm
 setup_helm_repo
 install_cert_manager
 
-case "$TURTLES" in
-    "false"|"toggledOn")
-        install_turtles_off
-        ;;
-    *)
-        install_default_rancher
-        ;;
-esac
+if [ -n "$TURTLES" ]; then
+    case "$TURTLES" in
+        "false"|"toggledOn")
+            install_turtles_off
+            ;;
+        *)
+            install_default_rancher
+            ;;
+    esac
+else
+    install_default_rancher
+fi
 
 wait_for_rollout
 ipv6_cordns_update
