@@ -37,12 +37,16 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
 		terraformConfig.Standalone.UpgradedRancherChartVersion + " " + terraformConfig.Standalone.UpgradedRancherImage
 
-	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.UpgradedTurtles != "" {
-		command += " " + terraformConfig.Standalone.FeatureFlags.UpgradedTurtles
-	}
-
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
+	} else {
+		command += " \"\""
+	}
+
+	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.UpgradedTurtles != "" {
+		command += " " + terraformConfig.Standalone.FeatureFlags.UpgradedTurtles
+	} else {
+		command += " \"\""
 	}
 
 	command += " || true'"
