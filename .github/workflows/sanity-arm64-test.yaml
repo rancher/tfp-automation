@@ -277,7 +277,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: staging
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
 
@@ -427,7 +427,7 @@ jobs:
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
-              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
