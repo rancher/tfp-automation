@@ -90,8 +90,15 @@ terraform:
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using staging registry
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
+    upgradedRancherAgentImage: ""                 # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartRepository: ""            # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartVersion: ""               # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherImage: ""                      # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherRepo: ""                       # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
     featureFlags:
       turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
+      upgradedTurtles: ""                         # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
 ```
 
 Note: Depending on what `provider` is set to, only fill out the appropriate section. Before running locally, be sure to run the following commands:
@@ -107,7 +114,8 @@ export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a va
 
 See the below examples on how to run the test:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestRancherTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestRancherTestSuite$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestUpgradeRancherTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -182,7 +190,7 @@ terraform:
 
 See the below examples on how to run the test:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestDualStackRancherTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestDualStackRancherTestSuite$"`
 
 ## Setup Rancher IPv6
 
@@ -257,7 +265,7 @@ terraform:
 
 See the below examples on how to run the test:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestRancherIPv6TestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestRancherIPv6TestSuite$"`
 
 ## Setup Airgap Rancher
 
@@ -304,8 +312,12 @@ terraform:
     rancherTagVersion: ""                         # REQUIRED - fill with desired value
     repo: ""                                      # REQUIRED - fill with desired value
     rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
-    featureFlags:
-      turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
+    upgradedRancherAgentImage: ""                 # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartRepository: ""            # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartVersion: ""               # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherImage: ""                      # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherRepo: ""                       # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
   standaloneRegistry:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
     authenticated: true                           # REQUIRED - true if you want an authenticated registry, false for a non-authenticated registry
@@ -326,7 +338,8 @@ export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a va
 
 See the below examples on how to run the test:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=7h -v -run "TestAirgapRancherTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=7h -v -run "TestAirgapRancherTestSuite$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=7h -v -run "TestUpgradeAirgapRancherTestSuite$"`
 
 ## Setup Proxy Rancher
 
@@ -375,8 +388,12 @@ terraform:
     rke2Group: ""                                 # REQUIRED - fill with group of the instance created
     rke2User: ""                                  # REQUIRED - fill with username of the instance created
     rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
-    featureFlags:
-      turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
+    upgradedRancherAgentImage: ""                 # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartRepository: ""            # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherChartVersion: ""               # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherImage: ""                      # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherRepo: ""                       # OPTIONAL - fill out if you are performing an upgrade
+    upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
   standaloneRegistry:
     registryName: ""                              # REQUIRED - fill with desired value
     registryPassword: ""                          # REQUIRED - fill with desired value
@@ -395,7 +412,82 @@ export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a va
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestProxyRancherTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestProxyRancherTestSuite$"` \
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestUpgradeProxyRancherTestSuite$"`
+
+## Setup Registry Rancher
+
+See below an example config on setting up a Rancher server with registries configured, powered by an RKE2 HA cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsSecurityGroups: [""]
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    region: ""
+    awsUser: ""
+    sshConnectionType: "ssh"
+    timeout: "5m"
+    ipAddressType: "ipv4"
+    loadBalancerType: "ipv4"
+    targetType: "instance"
+  standalone:
+    bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
+    certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
+    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
+    chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
+    osGroup: ""                                   # REQUIRED - fill with desired value
+    osUser: ""                                    # REQUIRED - fill with desired value
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
+    rancherChartVersion: ""                       # REQUIRED - fill with desired value
+    rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    registryPassword: ""                          # REQUIRED
+    registryUsername: ""                          # REQUIRED
+    repo: ""                                      # REQUIRED - fill with desired value
+    rke2Group: ""                                 # REQUIRED - fill with group of the instance created
+    rke2User: ""                                  # REQUIRED - fill with username of the instance created
+    rke2Version: ""                               # REQUIRED - fill with desired RKE2 k8s value (i.e. v1.32.6)
+    featureFlags:
+      turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
+  standaloneRegistry:
+    assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
+    registryName: ""                              # REQUIRED (authenticated registry only)
+    registryPassword: ""                          # REQUIRED (authenticated registry only)
+    registryUsername: ""                          # REQUIRED (authenticated registry only)
+    ecrPassword: ""                               # REQUIRED (ecr registry only)
+    ecrUsername: ""                               # REQUIRED (ecr registry only)
+    ecrURI: ""                                    # REQUIRED (ecr registry only)
+    ecrAMI: ""                                    # REQUIRED (ecr registry only) - with Amazon ECR Credential Helper
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export RANCHER2_PROVIDER_VERSION=""
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export LOCALS_PROVIDER_VERSION=""
+export CLOUD_PROVIDER_VERSION=""
+export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
+```
+
+See the below examples on how to run the tests:
+
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestRegistryRancherTestSuite$"`
 
 ## Setup RKE1 Cluster
 
@@ -436,7 +528,7 @@ export CLOUD_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestRKEProviderTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestRKEProviderTestSuite$"`
 
 ## Setup RKE2 Cluster
 
@@ -506,7 +598,7 @@ export LOCALS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestCreateRKE2ClusterTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestCreateRKE2ClusterTestSuite$"`
 
 ## Setup Airgap RKE2 Cluster
 
@@ -560,7 +652,7 @@ export LOCALS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateAirgappedRKE2ClusterTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateAirgappedRKE2ClusterTestSuite$"`
 
 ## Setup Dualstack RKE2 cluster
 
@@ -611,7 +703,7 @@ export LOCALS_PROVIDER_VERSION=""
 
 See the below examples on how to run the test:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestCreateDualStackRKE2ClusterTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestCreateDualStackRKE2ClusterTestSuite$"`
 
 ## Setup Dualstack K3S cluster
 
@@ -663,7 +755,7 @@ export LOCALS_PROVIDER_VERSION=""
 
 See the below examples on how to run the test:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestCreateDualStackK3SClusterTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestCreateDualStackK3SClusterTestSuite$"`
 
 ## Setup IPv6 RKE2 Cluster
 
@@ -765,7 +857,7 @@ export LOCALS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateIPv6K3SClusterTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateIPv6K3SClusterTestSuite$"`
 
 Before running, be sure to run the following commands:
 
@@ -777,7 +869,7 @@ export LOCALS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateIPv6RKE2ClusterTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateIPv6RKE2ClusterTestSuite$"`
 
 ## Setup K3S Cluster
 
@@ -839,4 +931,4 @@ export LOCALS_PROVIDER_VERSION=""
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestCreateK3SClusterTestSuite$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestCreateK3SClusterTestSuite$"`

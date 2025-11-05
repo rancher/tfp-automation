@@ -23,7 +23,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -52,7 +52,7 @@ func (s *TfpSanityProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
 
-	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = infrastructure.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
+	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = ranchers.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
 }
 
@@ -65,7 +65,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
 	require.NoError(s.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
 	require.NoError(s.T(), err)
 
 	standardToken := standardUserToken.Token

@@ -21,7 +21,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -54,7 +54,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 	r.session = testSession
 
 	r.client, r.authRegistry, r.nonAuthRegistry, r.globalRegistry, r.standaloneTerraformOptions, r.terraformOptions,
-		r.cattleConfig = infrastructure.SetupRegistryRancher(r.T(), r.session, keypath.RegistryKeyPath)
+		r.cattleConfig = ranchers.SetupRegistryRancher(r.T(), r.session, keypath.RegistryKeyPath)
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, r.standaloneConfig = config.LoadTFPConfigs(r.cattleConfig)
 }
 
@@ -68,7 +68,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
 	require.NoError(r.T(), err)
 
 	standardToken := standardUserToken.Token
@@ -151,7 +151,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
 	require.NoError(r.T(), err)
 
 	standardToken := standardUserToken.Token
@@ -231,7 +231,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
 	require.NoError(r.T(), err)
 
 	standardToken := standardUserToken.Token
@@ -317,7 +317,7 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
 	require.NoError(r.T(), err)
 
 	standardToken := standardUserToken.Token

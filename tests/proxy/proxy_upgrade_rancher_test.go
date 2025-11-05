@@ -23,7 +23,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -58,7 +58,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	p.session = testSession
 
-	p.client, p.proxyBastion, p.proxyPrivateIP, p.standaloneTerraformOptions, p.terraformOptions, p.cattleConfig = infrastructure.SetupProxyRancher(p.T(), p.session, keypath.ProxyKeyPath)
+	p.client, p.proxyBastion, p.proxyPrivateIP, p.standaloneTerraformOptions, p.terraformOptions, p.cattleConfig = ranchers.SetupProxyRancher(p.T(), p.session, keypath.ProxyKeyPath)
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, p.standaloneConfig = config.LoadTFPConfigs(p.cattleConfig)
 }
 
@@ -68,7 +68,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) TestTfpUpgradeProxyRancher() {
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 	p.provisionAndVerifyCluster("Proxy_Pre_Rancher_Upgrade_", clusterIDs)
 
-	p.client, p.cattleConfig, p.terraformOptions, p.upgradeTerraformOptions = infrastructure.UpgradeProxyRancher(p.T(), p.client, p.proxyPrivateIP, p.proxyBastion, p.session, p.cattleConfig)
+	p.client, p.cattleConfig, p.terraformOptions, p.upgradeTerraformOptions = ranchers.UpgradeProxyRancher(p.T(), p.client, p.proxyPrivateIP, p.proxyBastion, p.session, p.cattleConfig)
 
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 	p.provisionAndVerifyCluster("Proxy_Post_Rancher_Upgrade_", clusterIDs)
@@ -93,7 +93,7 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
-	standardUserToken, err := infrastructure.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchers.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
 	require.NoError(p.T(), err)
 
 	standardToken := standardUserToken.Token

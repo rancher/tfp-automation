@@ -12,11 +12,13 @@ RANCHER_AGENT_IMAGE=${9:-""}
 
 set -ex
 
-echo "Adding Helm chart repo"
-helm repo add upgraded-rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+setup_helm_repo() {
+    echo "Adding Helm chart repo"
+    helm repo add upgraded-rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+}
 
-echo "Upgrading Rancher"
-if [[ "$TURTLES" == "false" || "$TURTLES" == "toggledOn" ]]; then
+upgrade_turtles_off() {
+    echo "Upgrading Rancher with Turtles off"
     if [ "$CERT_TYPE" == "self-signed" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -85,7 +87,10 @@ if [[ "$TURTLES" == "false" || "$TURTLES" == "toggledOn" ]]; then
         echo "Unsupported CERT_TYPE: $CERT_TYPE"
         exit 1
     fi
-else
+}
+
+upgrade_default_rancher() {
+    echo "Upgrading Rancher"
     if [ "$CERT_TYPE" == "self-signed" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -146,11 +151,29 @@ else
         echo "Unsupported CERT_TYPE: $CERT_TYPE"
         exit 1
     fi
-fi
+}
 
-echo "Waiting for Rancher to be rolled out"
-kubectl -n cattle-system rollout status deploy/rancher
-kubectl -n cattle-system get deploy rancher
+wait_for_rollout() {
+    echo "Waiting for Rancher to be rolled out"
+    kubectl -n cattle-system rollout status deploy/rancher
+    kubectl -n cattle-system get deploy rancher
+}
 
-echo "Waiting 15 seconds to be able to login to Rancher"
-sleep 15
+wait_for_rancher() {
+    echo "Waiting 15 seconds to be able to login to Rancher"
+    sleep 15
+}
+
+setup_helm_repo
+
+case "$TURTLES" in
+    "false"|"toggledOn")
+        upgrade_turtles_off
+        ;;
+    *)
+        upgrade_default_rancher
+        ;;
+esac
+
+wait_for_rollout
+wait_for_rancher

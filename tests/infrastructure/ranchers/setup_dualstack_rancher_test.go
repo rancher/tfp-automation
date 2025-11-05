@@ -1,4 +1,4 @@
-package infrastructure
+package ranchers
 
 import (
 	"os"
@@ -8,12 +8,10 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tests/actions/featureflags"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/dualstack"
+	"github.com/rancher/tfp-automation/framework/set/resources/dualstack"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -38,23 +36,14 @@ func (i *DualStackRancherTestSuite) TestCreateRancher() {
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
-	_, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
+	_, err := dualstack.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
 	testSession := session.NewSession()
 	i.session = testSession
 
-	client, err := PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
 	require.NoError(i.T(), err)
-
-	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.Turtles != "" {
-		switch i.standaloneConfig.FeatureFlags.Turtles {
-		case defaults.ToggledOff:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, false)
-		case defaults.ToggledOn:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, true)
-		}
-	}
 }
 
 func TestDualStackRancherTestSuite(t *testing.T) {

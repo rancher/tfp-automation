@@ -1,4 +1,4 @@
-package infrastructure
+package clusters
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/resources/dualstack/k3s"
+	"github.com/rancher/tfp-automation/framework/set/resources/ipv6/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
@@ -19,20 +19,20 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type CreateDualStackK3SClusterTestSuite struct {
+type CreateIPv6RKE2ClusterTestSuite struct {
 	suite.Suite
 	terraformConfig  *config.TerraformConfig
 	terratestConfig  *config.TerratestConfig
 	terraformOptions *terraform.Options
 }
 
-func (i *CreateDualStackK3SClusterTestSuite) TestCreateDualStackK3SCluster() {
+func (i *CreateIPv6RKE2ClusterTestSuite) TestCreateIPv6RKE2Cluster() {
 	i.terraformConfig = new(config.TerraformConfig)
 	ranchFrame.LoadConfig(config.TerraformConfigurationFileKey, i.terraformConfig)
 
 	i.terratestConfig = new(config.TerratestConfig)
 	ranchFrame.LoadConfig(config.TerratestConfigurationFileKey, i.terratestConfig)
-	_, keyPath := rancher2.SetKeyPath(keypath.DualStackRKE2K3SKeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.IPv6RKE2K3SKeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
@@ -46,27 +46,31 @@ func (i *CreateDualStackK3SClusterTestSuite) TestCreateDualStackK3SCluster() {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{serverOne, serverTwo, serverThree}
+	instances := []string{bastion}
 
 	providerTunnel := providers.TunnelToProvider(i.terraformConfig.Provider)
-	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
+	file, err := providerTunnel.CreateIPv6(file, newFile, tfBlockBody, rootBody, i.terraformConfig, i.terratestConfig, instances)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 
-	serverOnePublicIP := terraform.Output(i.T(), terraformOptions, serverOnePublicIP)
+	bastionPublicIP := terraform.Output(i.T(), terraformOptions, bastionPublicIP)
 	serverOnePrivateIP := terraform.Output(i.T(), terraformOptions, serverOnePrivateIP)
+	serverOnePublicIP := terraform.Output(i.T(), terraformOptions, serverOnePublicIP)
+	serverTwoPrivateIP := terraform.Output(i.T(), terraformOptions, serverTwoPrivateIP)
 	serverTwoPublicIP := terraform.Output(i.T(), terraformOptions, serverTwoPublicIP)
+	serverThreePrivateIP := terraform.Output(i.T(), terraformOptions, serverThreePrivateIP)
 	serverThreePublicIP := terraform.Output(i.T(), terraformOptions, serverThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
-	logrus.Infof("Creating K3S cluster...")
-	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
+	logrus.Infof("Creating RKE2 cluster...")
+	file, err = rke2.CreateIPv6RKE2Cluster(file, newFile, rootBody, i.terraformConfig, i.terratestConfig, bastionPublicIP, serverOnePublicIP, serverTwoPublicIP, serverThreePublicIP,
+		serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(i.T(), err)
 
 	terraform.InitAndApply(i.T(), terraformOptions)
 }
 
-func TestCreateDualStackK3SClusterTestSuite(t *testing.T) {
-	suite.Run(t, new(CreateDualStackK3SClusterTestSuite))
+func TestCreateIPv6RKE2ClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(CreateIPv6RKE2ClusterTestSuite))
 }

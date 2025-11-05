@@ -14,7 +14,7 @@ RANCHER_AGENT_IMAGE=${11}
 
 set -ex
 
-checkClusterStatus() {
+check_cluster_status() {
     EXPECTED_NODES=3
     TIMEOUT=300
     INTERVAL=10
@@ -41,72 +41,81 @@ checkClusterStatus() {
     done
 }
 
-ARCH=$(uname -m)
-if [[ $ARCH == "x86_64" ]]; then
-    ARCH="amd64"
-elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-    ARCH="arm64"
-fi
+install_kubectl() {
+    ARCH=$(uname -m)
+    if [[ $ARCH == "x86_64" ]]; then
+        ARCH="amd64"
+    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+        ARCH="arm64"
+    fi
 
-echo "Installing kubectl"
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-mkdir -p ~/.kube
-rm kubectl
+    echo "Installing kubectl"
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    mkdir -p ~/.kube
+    rm kubectl
+}
 
-checkClusterStatus
+install_helm() {
+    echo "Installing Helm"
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    chmod +x get_helm.sh
+    ./get_helm.sh
+    rm get_helm.sh
+}
 
-echo "Installing Helm"
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod +x get_helm.sh
-./get_helm.sh
-rm get_helm.sh
+setup_helm_repo() {
+    echo "Adding Helm chart repo"
+    helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+}
 
-echo "Adding Helm chart repo"
-helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+install_cert_manager() {
+    echo "Installing cert manager"
+    kubectl create ns cattle-system
+    kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
+    helm repo add jetstack https://charts.jetstack.io
+    helm repo update
+    helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
+    kubectl get pods --namespace cert-manager
 
-echo "Installing cert manager"
-kubectl create ns cattle-system
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
-kubectl get pods --namespace cert-manager
+    echo "Waiting 1 minute for Rancher"
+    sleep 60
+}
 
-echo "Waiting 1 minute for Rancher"
-sleep 60
-
-echo "Installing Rancher with ${CERT_TYPE} certs"
-if [ "$CERT_TYPE" == "self-signed" ]; then
+install_self_signed_rancher() {
+    echo "Setting up self-signed certs for Rancher"
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                    --set hostname=${HOSTNAME} \
-                                                                                    --version ${CHART_VERSION} \
-                                                                                    --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                    --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
-                                                                                    --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                    --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                    --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                    --set 'extraEnv[1].value=prime' \
-                                                                                    --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                    --set 'extraEnv[2].value=suse' \
-                                                                                    --set systemDefaultRegistry=${REGISTRY} \
-                                                                                    --set agentTLSMode=system-store \
-                                                                                    --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                    --devel
+                                                                                         --set hostname=${HOSTNAME} \
+                                                                                         --version ${CHART_VERSION} \
+                                                                                         --set rancherImageTag=${RANCHER_TAG_VERSION} \
+                                                                                         --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
+                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
+                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                         --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
+                                                                                         --set 'extraEnv[1].value=prime' \
+                                                                                         --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
+                                                                                         --set 'extraEnv[2].value=suse' \
+                                                                                         --set systemDefaultRegistry=${REGISTRY} \
+                                                                                         --set agentTLSMode=system-store \
+                                                                                         --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                         --devel
 
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                    --set hostname=${HOSTNAME} \
-                                                                                    --version ${CHART_VERSION} \
-                                                                                    --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
-                                                                                    --set rancherImageTag=${RANCHER_TAG_VERSION} \
-                                                                                    --set systemDefaultRegistry=${REGISTRY} \
-                                                                                    --set agentTLSMode=system-store \
-                                                                                    --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                    --devel
+                                                                                         --set hostname=${HOSTNAME} \
+                                                                                         --version ${CHART_VERSION} \
+                                                                                         --set rancherImage=${REGISTRY}/${RANCHER_IMAGE} \
+                                                                                         --set rancherImageTag=${RANCHER_TAG_VERSION} \
+                                                                                         --set systemDefaultRegistry=${REGISTRY} \
+                                                                                         --set agentTLSMode=system-store \
+                                                                                         --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                         --devel
     fi
-elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
+}
+
+install_lets_encrypt_rancher() {
+    echo "Setting up Let's Encrypt certs for Rancher"
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \
@@ -140,14 +149,37 @@ elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --devel
     fi
-else
-    echo "Unsupported CERT_TYPE: $CERT_TYPE"
-    exit 1
-fi
+}
 
-echo "Waiting for Rancher to be rolled out"
-kubectl -n cattle-system rollout status deploy/rancher
-kubectl -n cattle-system get deploy rancher
+wait_for_rollout() {
+    echo "Waiting for Rancher to be rolled out"
+    kubectl -n cattle-system rollout status deploy/rancher
+    kubectl -n cattle-system get deploy rancher
+}
 
-echo "Waiting 3 minutes for Rancher to be ready to deploy downstream clusters"
-sleep 180
+wait_for_rancher() {
+    echo "Waiting 3 minutes for Rancher to be ready to deploy downstream clusters"
+    sleep 180
+}
+
+check_cluster_status
+install_kubectl
+install_helm
+setup_helm_repo
+install_cert_manager
+
+case "$CERT_TYPE" in
+    "self-signed")
+        install_self_signed_rancher
+        ;;
+    "lets-encrypt")
+        install_lets_encrypt_rancher
+        ;;
+      *)
+        echo "Unsupported CERT_TYPE: $CERT_TYPE"
+        exit 1
+        ;;
+esac
+
+wait_for_rollout
+wait_for_rancher

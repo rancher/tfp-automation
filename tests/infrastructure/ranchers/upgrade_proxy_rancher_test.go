@@ -1,4 +1,4 @@
-package infrastructure
+package ranchers
 
 import (
 	"os"
@@ -10,16 +10,15 @@ import (
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tests/actions/featureflags"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/proxy"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
-type ProxyRancherTestSuite struct {
+type UpgradeProxyRancherTestSuite struct {
 	suite.Suite
 	session          *session.Session
 	terraformConfig  *config.TerraformConfig
@@ -30,7 +29,7 @@ type ProxyRancherTestSuite struct {
 	terraformOptions *terraform.Options
 }
 
-func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
+func (i *UpgradeProxyRancherTestSuite) TestUpgradeProxyRancher() {
 	i.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	i.rancherConfig, i.terraformConfig, i.terratestConfig, i.standaloneConfig = config.LoadTFPConfigs(i.cattleConfig)
 
@@ -38,25 +37,28 @@ func (i *ProxyRancherTestSuite) TestCreateProxyRancher() {
 	terraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keyPath)
 	i.terraformOptions = terraformOptions
 
-	_, _, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
+	proxyBastion, proxyPrivateIP, err := resources.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
 	testSession := session.NewSession()
 	i.session = testSession
 
-	client, err := PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
 	require.NoError(i.T(), err)
 
-	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.Turtles != "" {
-		switch i.standaloneConfig.FeatureFlags.Turtles {
-		case defaults.ToggledOff:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, false)
-		case defaults.ToggledOn:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, true)
-		}
-	}
+	i.terraformConfig.Standalone.UpgradeProxyRancher = true
+
+	_, upgradeKeyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, i.terratestConfig.PathToRepo, i.terraformConfig.Provider)
+	upgradeTerraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, upgradeKeyPath)
+
+	err = upgrade.CreateMainTF(i.T(), upgradeTerraformOptions, upgradeKeyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig, proxyPrivateIP, proxyBastion, "", "")
+	require.NoError(i.T(), err)
+
+	standaloneTerraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keypath.ProxyKeyPath)
+	_, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, true)
+	require.NoError(i.T(), err)
 }
 
-func TestProxyRancherTestSuite(t *testing.T) {
-	suite.Run(t, new(ProxyRancherTestSuite))
+func TestUpgradeProxyRancherTestSuite(t *testing.T) {
+	suite.Run(t, new(UpgradeProxyRancherTestSuite))
 }
