@@ -8,17 +8,14 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
-	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
@@ -99,11 +96,7 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
-
-			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-			require.NoError(p.T(), err)
-
-			pods.VerifyClusterPods(p.T(), adminClient, cluster)
+			provisioning.VerifyV3ClustersPods(p.T(), adminClient, clusterIDs)
 
 			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
 			require.NoError(p.T(), err)
