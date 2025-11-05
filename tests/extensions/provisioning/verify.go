@@ -6,6 +6,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
+	"github.com/rancher/shepherd/extensions/workloads/pods"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	"github.com/rancher/tests/actions/psact"
 	"github.com/rancher/tests/actions/registries"
@@ -33,6 +34,14 @@ func VerifyClustersState(t *testing.T, client *rancher.Client, clusterIDs []stri
 		logrus.Infof("Waiting for all nodes to be active on cluster: %s", cluster.Name)
 		err = postProvisioning.AreNodesActive(client, clusterID)
 		require.NoError(t, err)
+	}
+}
+
+// VerifyV3ClustersPods validates that all pods in the v3 clusters are running without errors.
+func VerifyV3ClustersPods(t *testing.T, client *rancher.Client, clusterIDs []string) {
+	for _, clusterID := range clusterIDs {
+		podErrors := pods.StatusPods(client, clusterID)
+		require.Empty(t, podErrors)
 	}
 }
 
