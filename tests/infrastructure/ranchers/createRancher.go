@@ -8,7 +8,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tests/actions/featureflags"
+	"github.com/rancher/tests/actions/features"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
@@ -142,9 +142,9 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
 		switch standaloneConfig.FeatureFlags.Turtles {
 		case defaults.ToggledOff:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, false)
+			features.UpdateFeatureFlag(client, defaults.Turtles, false)
 		case defaults.ToggledOn:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, true)
+			features.UpdateFeatureFlag(client, defaults.Turtles, true)
 		}
 	}
 
