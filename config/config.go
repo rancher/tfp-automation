@@ -77,7 +77,9 @@ func (c TestClientName) String() string {
 }
 
 type FeatureFlags struct {
+	MCM             string `json:"mcm,omitempty" yaml:"mcm,omitempty"`
 	Turtles         string `json:"turtles,omitempty" yaml:"turtles,omitempty"`
+	UpgradedMCM     string `json:"upgradedMCM,omitempty" yaml:"upgradedMCM,omitempty"`
 	UpgradedTurtles string `json:"upgradedTurtles,omitempty" yaml:"upgradedTurtles,omitempty"`
 }
 
@@ -119,8 +121,8 @@ type Standalone struct {
 	CertManagerVersion             string        `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
 	CertType                       string        `json:"certType,omitempty" yaml:"certType,omitempty"`
 	ChartVersion                   string        `json:"chartVersion,omitempty" yaml:"chartVersion,omitempty"`
-	K3SVersion                     string        `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
 	FeatureFlags                   *FeatureFlags `json:"featureFlags,omitempty" yaml:"featureFlags,omitempty"`
+	K3SVersion                     string        `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
 	RancherAgentImage              string        `json:"rancherAgentImage,omitempty" yaml:"rancherAgentImage,omitempty"`
 	RancherChartRepository         string        `json:"rancherChartRepository,omitempty" yaml:"rancherChartRepository,omitempty"`
 	RancherHostname                string        `json:"rancherHostname,omitempty" yaml:"rancherHostname,omitempty"`
@@ -132,8 +134,6 @@ type Standalone struct {
 	OSUser                         string        `json:"osUser,omitempty" yaml:"osUser,omitempty"`
 	OSGroup                        string        `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
 	RKE2Version                    string        `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
-	Turtles                        string        `json:"turtles,omitempty" yaml:"turtles,omitempty"`
-	UpgradedTurtles                string        `json:"upgradedTurtles,omitempty" yaml:"upgradedTurtles,omitempty"`
 	UpgradeAirgapRancher           bool          `json:"upgradeAirgapRancher,omitempty" yaml:"upgradeAirgapRancher,omitempty"`
 	UpgradeProxyRancher            bool          `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
 	UpgradeRancher                 bool          `json:"upgradeRancher,omitempty" yaml:"upgradeRancher,omitempty"`

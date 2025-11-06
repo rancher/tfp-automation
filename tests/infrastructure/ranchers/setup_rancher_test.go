@@ -42,21 +42,32 @@ func (i *RancherTestSuite) TestCreateRancher() {
 	_, err := sanity.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
-	if i.terraformConfig.Provider != providers.Linode && i.terraformConfig.Provider != providers.Vsphere {
+	if i.terraformConfig.Provider == providers.AWS {
 		testSession := session.NewSession()
 		i.session = testSession
 
-		client, err := PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
-		require.NoError(i.T(), err)
+		var client *rancher.Client
+		var err error
 
-		if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.Turtles != "" {
-			switch i.standaloneConfig.FeatureFlags.Turtles {
-			case defaults.ToggledOff:
-				featureflags.UpdateFeatureFlag(client, defaults.Turtles, false)
-			case defaults.ToggledOn:
-				featureflags.UpdateFeatureFlag(client, defaults.Turtles, true)
+		if i.standaloneConfig.FeatureFlags.MCM == "" {
+			client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+			require.NoError(i.T(), err)
+		}
+
+		if i.standaloneConfig.FeatureFlags != nil {
+			if i.standaloneConfig.FeatureFlags.Turtles != "" {
+				toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.Turtles)
 			}
 		}
+	}
+}
+
+func toggleFeatureFlag(client *rancher.Client, feature string, toggledState string) {
+	switch toggledState {
+	case defaults.ToggledOff, "true":
+		featureflags.UpdateFeatureFlag(client, feature, false)
+	case defaults.ToggledOn, "false":
+		featureflags.UpdateFeatureFlag(client, feature, true)
 	}
 }
 

@@ -289,6 +289,7 @@ const (
 	LinodeDomain             = "linode_domain"
 	LinodeDomainRecord       = "linode_domain_record"
 
+	MCM        = "mcm"
 	Turtles    = "turtles"
 	ToggledOff = "toggledOff"
 	ToggledOn  = "toggledOn"
