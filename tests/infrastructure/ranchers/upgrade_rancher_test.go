@@ -8,7 +8,6 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tests/actions/featureflags"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
@@ -45,11 +44,17 @@ func (i *UpgradeRancherTestSuite) TestUpgradeRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	client, err := PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
-	require.NoError(i.T(), err)
+	var client *rancher.Client
 
-	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.Turtles != "" {
-		toggleTurtlesFeatureFlag(client, i.standaloneConfig.FeatureFlags.Turtles)
+	if i.standaloneConfig.FeatureFlags.MCM == "" {
+		client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+		require.NoError(i.T(), err)
+	}
+
+	if i.standaloneConfig.FeatureFlags != nil {
+		if i.standaloneConfig.FeatureFlags.Turtles != "" {
+			toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.Turtles)
+		}
 	}
 
 	i.terraformConfig.Standalone.UpgradeRancher = true
@@ -61,23 +66,22 @@ func (i *UpgradeRancherTestSuite) TestUpgradeRancher() {
 	require.NoError(i.T(), err)
 
 	standaloneTerraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keypath.SanityKeyPath)
-	client, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, true)
-	require.NoError(i.T(), err)
 
-	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
-		toggleTurtlesFeatureFlag(client, i.standaloneConfig.FeatureFlags.UpgradedTurtles)
+	if i.standaloneConfig.FeatureFlags.UpgradedMCM == "" {
+		client, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, true)
+		require.NoError(i.T(), err)
+	}
+
+	if i.standaloneConfig.FeatureFlags != nil {
+		if i.standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
+			toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.UpgradedTurtles)
+		}
+
+		if i.standaloneConfig.FeatureFlags.UpgradedMCM != "" {
+			toggleFeatureFlag(client, defaults.MCM, i.standaloneConfig.FeatureFlags.UpgradedMCM)
+		}
 	}
 }
-
-func toggleTurtlesFeatureFlag(client *rancher.Client, toggledState string) {
-	switch toggledState {
-	case defaults.ToggledOff:
-		featureflags.UpdateFeatureFlag(client, defaults.Turtles, false)
-	case defaults.ToggledOn:
-		featureflags.UpdateFeatureFlag(client, defaults.Turtles, true)
-	}
-}
-
 func TestUpgradeRancherTestSuite(t *testing.T) {
 	suite.Run(t, new(UpgradeRancherTestSuite))
 }

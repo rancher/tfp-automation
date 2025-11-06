@@ -54,6 +54,12 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		command += " \"\""
 	}
 
+	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.MCM != "" {
+		command += " " + terraformConfig.Standalone.FeatureFlags.MCM
+	} else {
+		command += " \"\""
+	}
+
 	command += " || true"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{

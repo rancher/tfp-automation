@@ -49,6 +49,12 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		command += " \"\""
 	}
 
+	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.UpgradedMCM != "" {
+		command += " " + terraformConfig.Standalone.FeatureFlags.UpgradedMCM
+	} else {
+		command += " \"\""
+	}
+
 	command += " || true'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
