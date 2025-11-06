@@ -318,7 +318,7 @@ jobs:
             AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: "Fetch and Set DockerHub Credentials"
+      - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -383,7 +383,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_12 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_12 }}"
 
       - name: Create config.yaml
@@ -567,7 +567,7 @@ jobs:
             AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: "Fetch and Set DockerHub Credentials"
+      - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -632,7 +632,7 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_11 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_11 }}"
 
       - name: Create config.yaml
