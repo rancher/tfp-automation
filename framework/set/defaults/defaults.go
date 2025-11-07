@@ -32,6 +32,8 @@ const (
 
 	AgentEnvVars                        = "agent_env_vars"
 	RkeConfig                           = "rke_config"
+	Networking                          = "networking"
+	StackPreference                     = "stack_preference"
 	KubernetesVersion                   = "kubernetes_version"
 	Network                             = "network"
 	Plugin                              = "plugin"
@@ -77,6 +79,7 @@ const (
 	EnablePrimaryIPv6        = "enable_primary_ipv6"
 	InstanceType             = "instance_type"
 	IPAddressType            = "ip_address_type"
+	IPv6                     = "ipv6"
 	IPV6AddressCount         = "ipv6_address_count"
 	SecurityGroups           = "security_groups"
 	SubnetId                 = "subnet_id"

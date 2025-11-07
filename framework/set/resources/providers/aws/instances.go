@@ -38,7 +38,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	configBlockBody.AppendNewline()
 
-	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+	if terraformConfig.AWSConfig.IPAddressType == defaults.IPv6 {
 		configBlockBody.SetAttributeValue(defaults.EnablePrimaryIPv6, cty.BoolVal(true))
 		configBlockBody.SetAttributeValue(defaults.IPV6AddressCount, cty.NumberIntVal(1))
 
@@ -153,7 +153,7 @@ func CreateAirgappedAWSInstances(rootBody *hclwrite.Body, terraformConfig *confi
 	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
 	var hostExpression string
-	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+	if terraformConfig.AWSConfig.IPAddressType == defaults.IPv6 {
 		hostExpression = defaults.Self + "." + defaults.IPV6Addresses + `[0]`
 	} else {
 		hostExpression = defaults.Self + "." + defaults.PrivateIp

@@ -58,6 +58,7 @@ terraform:
     awsKeyName: ""
     awsInstanceType: ""
     awsSubnetID: ""
+    rancherSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
     awsRootSize: 100

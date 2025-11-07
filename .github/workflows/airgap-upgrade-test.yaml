@@ -27,7 +27,6 @@ env:
   HOSTNAME_PREFIX: "tfp-airgap"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "airgap"
-  RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   TEST_SUITE: "^TestTfpAirgapUpgradeRancherTestSuite$"
   SUITE_TIMEOUT: "7h"
 
@@ -168,6 +167,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
@@ -419,6 +419,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
@@ -672,6 +673,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}

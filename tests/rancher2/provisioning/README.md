@@ -57,6 +57,7 @@ terraform:
     region: ""
     awsSecurityGroupNames: [""]
     awsSubnetID: ""
+    rancherSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
     awsRootSize: 100
@@ -126,6 +127,7 @@ terraform:
     region: ""
     awsSecurityGroupNames: [""]
     awsSubnetID: ""
+    rancherSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
     awsRootSize: 100
@@ -297,7 +299,7 @@ In addition, when running locally, you will need to ensure that you have `export
 
 See the below examples on how to run the tests:
 
-### RKE1/RKE2/K3S
+### Node Driver
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestTfpProvisionTestSuite/TestTfpProvision$"` \
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=dynamic -v -run "TestTfpProvisionTestSuite/TestTfpProvisionDynamicInput$"`

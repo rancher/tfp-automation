@@ -38,7 +38,7 @@ runs:
             echo "Asset count for $LATEST_VERSION: $ASSET_COUNT"
 
             if [ "$ASSET_COUNT" -lt 17 ]; then
-              echo "Asset count: $ASSET_COUNT. Expected at least 17 assets..."
+              echo "Asset count: $ASSET_COUNT. Skipping $RELEASE_LINE tests due to not all assets being available."
               LATEST_VERSION=""
             fi
           else

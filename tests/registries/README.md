@@ -58,6 +58,7 @@ terraform:
     awsSecurityGroups: [""]
     awsSecurityGroupNames: [""]
     awsSubnetID: ""
+    rancherSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
     awsRootSize: 100
