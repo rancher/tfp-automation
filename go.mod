@@ -53,8 +53,8 @@ require (
 	github.com/rancher/norman v0.7.0
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/shepherd v0.0.0-20251003203259-669abb78af51
-	github.com/rancher/tests v0.0.0-20251029202427-cb31d162ce83
-	github.com/rancher/tests/actions v0.0.0-20251029202427-cb31d162ce83
+	github.com/rancher/tests v0.0.0-20251107185050-eccd0d53adb2
+	github.com/rancher/tests/actions v0.0.0-20251107185050-eccd0d53adb2
 	github.com/sirupsen/logrus v1.9.3
 	go.qase.io/qase-api-client v0.0.0-00010101000000-000000000000
 )
