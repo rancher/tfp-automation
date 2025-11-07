@@ -38,7 +38,7 @@ func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	healthCheckGroupBlock := targetGroupBlockBody.AppendNewBlock(defaults.HealthCheck, nil)
 	healthCheckGroupBlockBody := healthCheckGroupBlock.Body()
 
-	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+	if terraformConfig.AWSConfig.IPAddressType == defaults.IPv6 {
 		healthCheckGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(TCP))
 	} else {
 		healthCheckGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(HTTP))

@@ -28,12 +28,21 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 	rkeConfigBlock := rancher2ClusterV2BlockBody.AppendNewBlock(defaults.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, "rke2") {
-		machineGlobalConfigValue := hclwrite.TokensForTraversal(hcl.Traversal{
-			hcl.TraverseRoot{Name: "<<EOF\ncni: " + terraformConfig.CNI + "\nEOF"},
+	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		cidrValues := hclwrite.TokensForTraversal(hcl.Traversal{
+			hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " + terraformConfig.AWSConfig.ServiceCIDR + "\nEOF"},
 		})
 
-		rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, machineGlobalConfigValue)
+		rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, cidrValues)
+	}
+
+	if terraformConfig.AWSConfig.Networking != nil {
+		if terraformConfig.AWSConfig.Networking.StackPreference != "" {
+			err := v2.SetNetworkingConfig(rkeConfigBlockBody, terraformConfig)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	if terraformConfig.PrivateRegistries != nil {
@@ -42,8 +51,15 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 			v2.CreateRegistrySecret(terraformConfig, rootBody)
 		}
 
-		v2.SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
-		v2.SetPrivateRegistryConfig(rkeConfigBlockBody, terraformConfig)
+		err := v2.SetMachineSelectorConfig(rkeConfigBlockBody, terraformConfig)
+		if err != nil {
+			return err
+		}
+
+		err = v2.SetPrivateRegistryConfig(rkeConfigBlockBody, terraformConfig)
+		if err != nil {
+			return err
+		}
 	}
 
 	if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) && strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {

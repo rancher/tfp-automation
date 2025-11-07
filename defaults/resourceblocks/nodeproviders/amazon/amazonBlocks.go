@@ -27,4 +27,9 @@ const (
 	DesiredSize  = "desired_size"
 	MaxSize      = "max_size"
 	MinSize      = "min_size"
+
+	EnablePrimaryIPv6 = "enable_primary_ipv6"
+	HTTPProtocolIPv6  = "http_protocol_ipv6"
+	IPv6AddressCount  = "ipv6_address_count"
+	IPv6AddressOnly   = "ipv6_address_only"
 )

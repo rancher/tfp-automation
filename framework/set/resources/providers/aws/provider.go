@@ -47,13 +47,13 @@ func CreateAWSLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	localBlockBody := localBlock.Body()
 
 	var instanceIds map[string]any
-	if !terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+	if terraformConfig.AWSConfig.IPAddressType != defaults.IPv6 {
 		instanceIds = map[string]any{
 			serverOne:   defaults.AwsInstance + "." + serverOne + ".id",
 			serverTwo:   defaults.AwsInstance + "." + serverTwo + ".id",
 			serverThree: defaults.AwsInstance + "." + serverThree + ".id",
 		}
-	} else if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+	} else if terraformConfig.AWSConfig.IPAddressType == defaults.IPv6 {
 		instanceIds = map[string]any{
 			serverOne:   defaults.AwsInstance + "." + serverOne + ".ipv6_addresses[0]",
 			serverTwo:   defaults.AwsInstance + "." + serverTwo + ".ipv6_addresses[0]",

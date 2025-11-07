@@ -35,7 +35,6 @@ env:
   HOSTNAME_PREFIX: "tfp-recur"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "rancher2"
-  RKE_PROVIDER_VERSION: "${{ vars.RKE_PROVIDER_VERSION }}"
   TEST_SUITE: "^TestTfpRancher2RecurringRunsTestSuite$"
   TIMEOUT: "7h"
 
@@ -45,8 +44,8 @@ jobs:
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13'))
-    name: v2-13
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.13')) && contains(inputs.rancher_version, '-alpha')
+    name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
     strategy:
@@ -180,6 +179,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsSubnets: [${{ secrets.EKS_SUBNETS }}]
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
@@ -503,6 +503,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsSubnets: [${{ secrets.EKS_SUBNETS }}]
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
@@ -827,6 +828,7 @@ jobs:
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsSubnets: [${{ secrets.EKS_SUBNETS }}]
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"

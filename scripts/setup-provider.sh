@@ -11,11 +11,10 @@
 # ./setup-provider.sh <provider> <version>
 
 # Example
-# ./setup-provider.sh rancher2 v3.0.0-rc1
+# ./setup-provider.sh rancher2 v13.0.0-rc.6
 
 set -e 
 
-# Validate user input
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <provider> <version>"
   exit 1
@@ -34,15 +33,23 @@ else
   PLATFORM="linux_amd64"
 fi
 
-# Download binary
 DIR=~/.terraform.d/plugins/terraform.local/local/${PROVIDER}/${VERSION_TAG}/${PLATFORM}
 (umask u=rwx,g=rwx,o=rwx && mkdir -p $DIR)
-curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_${PLATFORM}.zip | gunzip -c - > ${DIR}/terraform-provider-${PROVIDER}
+curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_${PLATFORM}.zip -o /tmp/provider.zip
+unzip -o /tmp/provider.zip -d ${DIR}
 
-# Mod binary
-chmod +x ${DIR}/terraform-provider-${PROVIDER}
+BINARY=$(find ${DIR} -type f -name "terraform-provider-${PROVIDER}_v${VERSION_TAG}")
 
-echo -e "Terraform provider ${PROVIDER} ${VERSION} is ready to test!
+if [ -f "$BINARY" ]; then
+  mv "$BINARY" "${DIR}/terraform-provider-${PROVIDER}"
+  chmod +x "${DIR}/terraform-provider-${PROVIDER}"
+else
+  echo "ERROR: Provider binary not found after unzip!"
+  exit 1
+fi
+
+cat <<EOF
+Terraform provider ${PROVIDER} ${VERSION} is ready to test!
 Please update the required_providers block in your Terraform config file
 
 terraform {
@@ -52,4 +59,5 @@ terraform {
       version = "${VERSION_TAG}"
     }
   }
-}"
+}
+EOF

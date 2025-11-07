@@ -20,11 +20,14 @@ func setRKEConfig(clusterBlockBody *hclwrite.Body, terraformConfig *config.Terra
 		rkeConfigBlockBody.SetAttributeRaw(defaults.ChartValues, chartValues)
 	}
 
-	machineGlobalConfigValue := hclwrite.TokensForTraversal(hcl.Traversal{
-		hcl.TraverseRoot{Name: "<<EOF\ncni: " + terraformConfig.CNI + "\ndisable-kube-proxy: " + terraformConfig.DisableKubeProxy + "\nEOF"},
-	})
+	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		cidrValues := hclwrite.TokensForTraversal(hcl.Traversal{
+			hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " + terraformConfig.AWSConfig.ServiceCIDR + "\nEOF"},
+		})
 
-	rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, machineGlobalConfigValue)
+		rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, cidrValues)
+
+	}
 
 	return rkeConfigBlockBody, nil
 }

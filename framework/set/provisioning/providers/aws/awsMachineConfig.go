@@ -25,7 +25,14 @@ func SetAWSRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraform
 	securityGroups := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroupNames)
 	awsConfigBlockBody.SetAttributeRaw(amazon.SecurityGroup, securityGroups)
 
-	awsConfigBlockBody.SetAttributeValue(amazon.SubnetID, cty.StringVal(terraformConfig.AWSConfig.AWSSubnetID))
+	awsConfigBlockBody.SetAttributeValue(amazon.SubnetID, cty.StringVal(terraformConfig.AWSConfig.RancherSubnetID))
 	awsConfigBlockBody.SetAttributeValue(amazon.VPCID, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
 	awsConfigBlockBody.SetAttributeValue(amazon.Zone, cty.StringVal(terraformConfig.AWSConfig.AWSZoneLetter))
+
+	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
+		awsConfigBlockBody.SetAttributeValue(amazon.EnablePrimaryIPv6, cty.BoolVal(true))
+		awsConfigBlockBody.SetAttributeValue(amazon.HTTPProtocolIPv6, cty.StringVal(terraformConfig.AWSConfig.HTTPProtocolIPv6))
+		awsConfigBlockBody.SetAttributeValue(amazon.IPv6AddressCount, cty.StringVal(terraformConfig.AWSConfig.IPv6AddressCount))
+		awsConfigBlockBody.SetAttributeValue(amazon.IPv6AddressOnly, cty.BoolVal(terraformConfig.AWSConfig.IPv6AddressOnly))
+	}
 }

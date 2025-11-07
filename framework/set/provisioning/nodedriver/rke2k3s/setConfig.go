@@ -125,6 +125,15 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 		}
 	}
 
+	if terraformConfig.AWSConfig.Networking != nil {
+		if terraformConfig.AWSConfig.Networking.StackPreference != "" {
+			err = SetNetworkingConfig(rkeConfigBlockBody, terraformConfig)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+	}
+
 	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
 		if terraformConfig.PrivateRegistries.Username != "" {
 			rootBody.AppendNewline()

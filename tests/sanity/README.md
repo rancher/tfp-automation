@@ -61,12 +61,21 @@ terraform:
     awsKeyName: ""
     awsInstanceType: ""
     awsSubnetID: ""
+    rancherSubnetID: ""
     awsVpcID: ""
     awsZoneLetter: ""
     awsRootSize: 100
     awsRoute53Zone: ""
     awsSecurityGroups: [""]
     awsSecurityGroupNames: [""]
+    clusterCIDR: ""             # OPTIONAL - Use for IPv6/dual-stack
+    serviceCIDR: ""             # OPTIONAL - Use for IPv6/dual-stack
+    enablePrimaryIPv6: true     # OPTIONAL - Use for IPv6/dual-stack (true or false)
+    httpProtocolIpv6: ""        # OPTIONAL - Use for IPv6/dual-stack (enabled or disabled)
+    ipv6AddressOnly: true       # OPTIONAL - Use for IPv6/dual-stack (true or false)
+    ipv6AddressCount: "1"       # OPTIONAL - Use for IPv6/dual-stack
+    networking:
+      stackPreference: ""       # OPTIONAL - USE for IPv6/dual-stack (ipv6 or dual)
     region: ""
     awsUser: ""
     sshConnectionType: "ssh"
@@ -133,7 +142,19 @@ export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a va
 
 See the below examples on how to run the tests:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityProvisioningTestSuite$"` \
+### RKE1
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityRKE1ProvisioningTestSuite$"`
+
+### RKE2 / K3s
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityProvisioningTestSuite$"`
+
+### IPv6
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityIPv6ProvisioningTestSuite$"`
+
+### Dual-stack
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityDualStackProvisioningTestSuite$"`
+
+### Upgrade
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityUpgradeRancherTestSuite$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
