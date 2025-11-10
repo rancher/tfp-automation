@@ -49,15 +49,13 @@ func (i *RancherTestSuite) TestCreateRancher() {
 		var client *rancher.Client
 		var err error
 
-		if i.standaloneConfig.FeatureFlags.MCM == "" {
+		if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.MCM == "" {
 			client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
 			require.NoError(i.T(), err)
 		}
 
-		if i.standaloneConfig.FeatureFlags != nil {
-			if i.standaloneConfig.FeatureFlags.Turtles != "" {
-				toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.Turtles)
-			}
+		if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.Turtles != "" {
+			toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.Turtles)
 		}
 	}
 }

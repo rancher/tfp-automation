@@ -46,15 +46,13 @@ func (i *UpgradeRancherTestSuite) TestUpgradeRancher() {
 
 	var client *rancher.Client
 
-	if i.standaloneConfig.FeatureFlags.MCM == "" {
+	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.MCM == "" {
 		client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
 		require.NoError(i.T(), err)
 	}
 
-	if i.standaloneConfig.FeatureFlags != nil {
-		if i.standaloneConfig.FeatureFlags.Turtles != "" {
-			toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.Turtles)
-		}
+	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.Turtles != "" {
+		toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.Turtles)
 	}
 
 	i.terraformConfig.Standalone.UpgradeRancher = true
@@ -67,19 +65,13 @@ func (i *UpgradeRancherTestSuite) TestUpgradeRancher() {
 
 	standaloneTerraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keypath.SanityKeyPath)
 
-	if i.standaloneConfig.FeatureFlags.UpgradedMCM == "" {
+	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.UpgradedMCM == "" {
 		client, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, true)
 		require.NoError(i.T(), err)
 	}
 
-	if i.standaloneConfig.FeatureFlags != nil {
-		if i.standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
-			toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.UpgradedTurtles)
-		}
-
-		if i.standaloneConfig.FeatureFlags.UpgradedMCM != "" {
-			toggleFeatureFlag(client, defaults.MCM, i.standaloneConfig.FeatureFlags.UpgradedMCM)
-		}
+	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
+		toggleFeatureFlag(client, defaults.Turtles, i.standaloneConfig.FeatureFlags.UpgradedTurtles)
 	}
 }
 func TestUpgradeRancherTestSuite(t *testing.T) {
