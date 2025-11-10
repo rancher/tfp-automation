@@ -8,7 +8,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tests/actions/featureflags"
+	"github.com/rancher/tests/actions/features"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/providers"
@@ -65,9 +65,9 @@ func (i *RancherTestSuite) TestCreateRancher() {
 func toggleFeatureFlag(client *rancher.Client, feature string, toggledState string) {
 	switch toggledState {
 	case defaults.ToggledOff, "true":
-		featureflags.UpdateFeatureFlag(client, feature, false)
+		features.UpdateFeatureFlag(client, feature, false)
 	case defaults.ToggledOn, "false":
-		featureflags.UpdateFeatureFlag(client, feature, true)
+		features.UpdateFeatureFlag(client, feature, true)
 	}
 }
 

@@ -6,7 +6,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tests/actions/featureflags"
+	"github.com/rancher/tests/actions/features"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
@@ -119,9 +119,9 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
 		switch standaloneConfig.FeatureFlags.UpgradedTurtles {
 		case defaults.ToggledOff:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, false)
+			features.UpdateFeatureFlag(client, defaults.Turtles, false)
 		case defaults.ToggledOn:
-			featureflags.UpdateFeatureFlag(client, defaults.Turtles, true)
+			features.UpdateFeatureFlag(client, defaults.Turtles, true)
 		}
 	}
 
