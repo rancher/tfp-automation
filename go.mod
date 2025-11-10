@@ -7,8 +7,8 @@ replace (
 	github.com/docker/distribution => github.com/docker/distribution v2.8.2+incompatible // rancher-machine requires a replace is set
 	github.com/docker/docker => github.com/docker/docker v20.10.27+incompatible // rancher-machine requires a replace is set
 	github.com/docker/go-connections => github.com/docker/go-connections v0.4.0
-	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20250806201723-9a7af3779b9d
-	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20250806201723-9a7af3779b9d
+	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20251029210211-fd1057ed2062
+	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20251029210211-fd1057ed2062
 
 	go.qase.io/client => github.com/rancher/qase-go/client v0.0.0-20250627195016-142ff3dfec16
 	go.qase.io/qase-api-client => github.com/qase-tms/qase-go/qase-api-client v1.2.0
@@ -52,9 +52,9 @@ require (
 	github.com/imdario/mergo v0.3.16
 	github.com/rancher/norman v0.7.1
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20251003203259-669abb78af51
-	github.com/rancher/tests v0.0.0-20251029202427-cb31d162ce83
-	github.com/rancher/tests/actions v0.0.0-20251029202427-cb31d162ce83
+	github.com/rancher/shepherd v0.0.0-20251106204618-0f330e53bbc0
+	github.com/rancher/tests v0.0.0-20251110212725-072c07d47741
+	github.com/rancher/tests/actions v0.0.0-20251110212725-072c07d47741
 	github.com/sirupsen/logrus v1.9.3
 	go.qase.io/qase-api-client v0.0.0-00010101000000-000000000000
 )
@@ -74,6 +74,7 @@ require (
 	github.com/kubereboot/kured v1.13.1 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
+	github.com/rancher/ali-operator v0.0.5 // indirect
 	github.com/rancher/wrangler/v3 v3.3.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/otel v1.37.0 // indirect
