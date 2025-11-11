@@ -62,6 +62,13 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 		}
 	}
 
+	if terraformConfig.DataDirectories != nil && (terraformConfig.DataDirectories.SystemAgentPath != "" && terraformConfig.DataDirectories.ProvisioningPath != "" && terraformConfig.DataDirectories.K8sDistroPath != "") {
+		err := v2.SetDataDirectories(terraformConfig, rkeConfigBlockBody)
+		if err != nil {
+			return err
+		}
+	}
+
 	if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) && strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {
 		dependsOnBlock := `[` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows]`
 

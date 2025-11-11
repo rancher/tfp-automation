@@ -174,6 +174,13 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 		}
 	}
 
+	if terraformConfig.DataDirectories != nil && (terraformConfig.DataDirectories.SystemAgentPath != "" && terraformConfig.DataDirectories.ProvisioningPath != "" && terraformConfig.DataDirectories.K8sDistroPath != "") {
+		err = SetDataDirectories(terraformConfig, rkeConfigBlockBody)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
 	rootBody.AppendNewline()
 
 	return newFile, file, nil

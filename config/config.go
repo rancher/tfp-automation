@@ -76,6 +76,12 @@ func (c TestClientName) String() string {
 	return string(c)
 }
 
+type DataDirectories struct {
+	SystemAgentPath  string `json:"systemAgentPath,omitempty" yaml:"systemAgentPath,omitempty"`
+	ProvisioningPath string `json:"provisioningPath,omitempty" yaml:"provisioningPath,omitempty"`
+	K8sDistroPath    string `json:"k8sDistroPath,omitempty" yaml:"k8sDistroPath,omitempty"`
+}
+
 type FeatureFlags struct {
 	MCM             string `json:"mcm,omitempty" yaml:"mcm,omitempty"`
 	Turtles         string `json:"turtles,omitempty" yaml:"turtles,omitempty"`
@@ -179,6 +185,7 @@ type TerraformConfig struct {
 	ResourcePrefix                      string                       `json:"resourcePrefix,omitempty" yaml:"resourcePrefix,omitempty"`
 	CNI                                 string                       `json:"cni,omitempty" yaml:"cni,omitempty"`
 	ChartValues                         string                       `json:"chartValues,omitempty" yaml:"chartValues,omitempty"`
+	DataDirectories                     *DataDirectories             `json:"dataDirectories,omitempty" yaml:"dataDirectories,omitempty"`
 	DisableKubeProxy                    string                       `json:"disable-kube-proxy,omitempty" yaml:"disable-kube-proxy,omitempty"`
 	DefaultClusterRoleForProjectMembers string                       `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`

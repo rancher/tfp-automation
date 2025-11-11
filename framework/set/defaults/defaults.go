@@ -63,6 +63,11 @@ const (
 	Quantity              = "quantity"
 	ChartValues           = "chart_values"
 
+	DataDirectories = "data_directories"
+	SystemAgent     = "system_agent"
+	Provisioning    = "provisioning"
+	K8sDistro       = "k8s_distro"
+
 	Endpoint = "endpoint"
 	Folder   = "folder"
 	Region   = "region"
