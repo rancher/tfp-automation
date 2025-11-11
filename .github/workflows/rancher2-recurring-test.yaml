@@ -329,7 +329,6 @@ jobs:
           package: ${{ env.PACKAGE }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
-          tag: recurring
 
       - name: Cleanup Infrastructure
         if: always()
@@ -654,7 +653,6 @@ jobs:
           package: ${{ env.PACKAGE }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
-          tag: recurring
 
       - name: Cleanup Infrastructure
         if: always()
@@ -979,7 +977,6 @@ jobs:
           package: ${{ env.PACKAGE }}
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
-          tag: recurring
 
       - name: Cleanup Infrastructure
         if: always()

@@ -14,9 +14,6 @@ inputs:
   timeout:
     description: "Timeout"
     required: true
-  tag:
-    description: "Tag to filter tests"
-    required: true
 runs:
   using: composite
   steps:
@@ -27,7 +24,7 @@ runs:
         case "${{ inputs.suite }}" in
           rancher-server-one)
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/provisioning \
-            --junitfile results.xml --jsonfile results_provision.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            --junitfile results.xml --jsonfile results_provision.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
             provision_code=$?;
             echo "provision_code=$provision_code" >> $GITHUB_ENV;
             cp results_provision.json results.json
@@ -35,7 +32,7 @@ runs:
             ./reporter;
 
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/psact \
-            --junitfile results.xml --jsonfile results_psact.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            --junitfile results.xml --jsonfile results_psact.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
             psact_code=$?;
             echo "psact_code=$psact_code" >> $GITHUB_ENV;
             cp results_psact.json results.json
@@ -44,7 +41,7 @@ runs:
             ;;
           rancher-server-two)
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/rbac \
-            --junitfile results.xml --jsonfile results_rbac.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            --junitfile results.xml --jsonfile results_rbac.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
             rbac_code=$?;
             echo "rbac_code=$rbac_code" >> $GITHUB_ENV;
             cp results_rbac.json results.json
@@ -52,7 +49,7 @@ runs:
             ./reporter;
               
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/snapshot \
-            --junitfile results.xml --jsonfile results_snapshot.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            --junitfile results.xml --jsonfile results_snapshot.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
             snapshot_code=$?;
             echo "snapshot_code=$snapshot_code" >> $GITHUB_ENV;
             cp results_snapshot.json results.json
@@ -60,7 +57,7 @@ runs:
             ./reporter;
 
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/upgrading \
-            --junitfile results.xml --jsonfile results_upgrade.json -- -timeout=${{ inputs.timeout }} -tags=${{ inputs.tag }} -v;
+            --junitfile results.xml --jsonfile results_upgrade.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
             upgrading_code=$?;
             echo "upgrading_code=$upgrading_code" >> $GITHUB_ENV;
             cp results_upgrade.json results.json
@@ -74,18 +71,18 @@ runs:
     - name: Show failed tests
       run: |
          declare -A suites=(
-           [provision_code]="Provisioning"
-           [psact_code]="PSACT"
-           [rbac_code]="RBAC"
-           [snapshot_code]="Snapshot"
-           [upgrading_code]="Upgrading"
+           [provision_code]="Provisioning:results_provision.json"
+           [psact_code]="PSACT:results_psact.json"
+           [rbac_code]="RBAC:results_rbac.json"
+           [snapshot_code]="Snapshot:results_snapshot.json"
+           [upgrading_code]="Upgrading:results_upgrade.json"
          )
 
          failed=0
          for exit_code in "${!suites[@]}"; do
           IFS=: read suite_name results_file <<< "${suites[$exit_code]}"
           exit_val="${!exit_code}"
-           
+
           if [ "$exit_val" != "" ] && [ "$exit_val" -ne 0 ]; then
             echo "Failed $suite_name tests:"
             jq -r 'select(.Action=="fail" and .Test != null) | "- " + .Test' "$results_file"
