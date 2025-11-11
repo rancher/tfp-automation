@@ -178,7 +178,7 @@ jobs:
               awsZoneLetter: "${{ vars.AWS_IPV6_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
               awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
-              awsUser: "${{ secrets.AWS_USER }}"
+              awsUser: "${{ secrets.IPV6_AWS_USER }}"
               clusterCIDR: "${{ secrets.IPV6_CLUSTER_CIDR }}"
               serviceCIDR: "${{ secrets.IPV6_SERVICE_CIDR }}"
               enablePrimaryIPv6: true
@@ -197,8 +197,8 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              osUser: "${{ secrets.OS_USER }}"
-              osGroup: "${{ secrets.OS_GROUP }}"
+              osUser: "${{ secrets.IPV6_OS_USER }}"
+              osGroup: "${{ secrets.IPV6_OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
