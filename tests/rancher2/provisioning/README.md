@@ -45,6 +45,10 @@ terraform:
   privateKeyPath: ""
   provider: ""                  # aws or vsphere
   windowsPrivateKeyPath: ""
+  dataDirectories:              # OPTIONAL - configure for custom data directory test only
+    systemAgentPath: ""
+    provisioningPath: ""
+    k8sDistroPath: ""
   
   # Set if provider: aws
   awsCredentials:
@@ -114,6 +118,10 @@ terraform:
   privateKeyPath: ""
   provider: ""                     # aws or vsphere
   windowsPrivateKeyPath: ""
+  dataDirectories:                 # OPTIONAL - configure for custom data directory test only
+    systemAgentPath: ""
+    provisioningPath: ""
+    k8sDistroPath: ""
 
   # Set if provider: aws
   awsCredentials:
@@ -192,6 +200,10 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   enableNetworkPolicy: false
   resourcePrefix: ""
+  dataDirectories:                      # OPTIONAL - configure for custom data directory test only
+    systemAgentPath: ""
+    provisioningPath: ""
+    k8sDistroPath: ""
 
   azureCredentials:
     clientId: ""
