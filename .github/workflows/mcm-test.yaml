@@ -255,7 +255,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) && contains(inputs.rancher_version, '-rc')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: staging
+    environment: staging-latest
 
     steps:
       - name: Checkout repository
@@ -480,7 +480,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.11')) && contains(inputs.rancher_version, '-rc')
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: staging
+    environment: staging-latest
 
     steps:
       - name: Checkout repository
