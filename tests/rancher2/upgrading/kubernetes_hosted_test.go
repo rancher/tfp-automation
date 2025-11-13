@@ -9,17 +9,14 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
-	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -114,17 +111,13 @@ func (k *KubernetesUpgradeHostedTestSuite) TestTfpKubernetesUpgradeHosted() {
 			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(k.T(), adminClient, clusterIDs)
-
-			cluster, err := k.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-			require.NoError(k.T(), err)
-
-			pods.VerifyClusterPods(k.T(), adminClient, cluster)
+			provisioning.VerifyV3ClustersPods(k.T(), adminClient, clusterIDs)
 
 			provisioning.KubernetesUpgrade(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
 			time.Sleep(4 * time.Minute)
 			provisioning.VerifyClustersState(k.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(k.T(), adminClient, clusterIDs)
-			pods.VerifyClusterPods(k.T(), adminClient, cluster)
+			provisioning.VerifyV3ClustersPods(k.T(), adminClient, clusterIDs)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
