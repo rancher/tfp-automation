@@ -25,6 +25,21 @@ fi
 
 set -ex
 
+install_kubectl() {
+    ARCH=$(uname -m)
+    if [[ $ARCH == "x86_64" ]]; then
+        ARCH="amd64"
+    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+        ARCH="arm64"
+    fi
+
+    echo "Installing kubectl"
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    mkdir -p ~/.kube
+    rm kubectl
+}
+
 check_cluster_status() {
     EXPECTED_NODES=3
     TIMEOUT=300
@@ -50,21 +65,6 @@ check_cluster_status() {
             break
         fi
     done
-}
-
-install_kubectl() {
-    ARCH=$(uname -m)
-    if [[ $ARCH == "x86_64" ]]; then
-        ARCH="amd64"
-    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-        ARCH="arm64"
-    fi
-
-    echo "Installing kubectl"
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    mkdir -p ~/.kube
-    rm kubectl
 }
 
 install_helm() {
@@ -173,8 +173,8 @@ wait_for_rancher() {
     sleep 180
 }
 
-check_cluster_status
 install_kubectl
+check_cluster_status
 install_helm
 setup_helm_repo
 install_cert_manager

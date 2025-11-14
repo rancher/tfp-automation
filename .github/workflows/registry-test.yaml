@@ -155,8 +155,8 @@ jobs:
             privateRegistries:
               authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
               insecure: true
-              password: "${{ env.DOCKERHUB_PASSWORD }}"
-              username: "${{ env.DOCKERHUB_USERNAME }}"
+              password: "${{ secrets.REGISTRY_PASSWORD }}"
+              username: "${{ secrets.REGISTRY_USERNAME }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
@@ -173,7 +173,7 @@ jobs:
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
-              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY}}
+              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY }}
               awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
               awsUser: "${{ secrets.AWS_USER }}"
               sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
@@ -401,8 +401,8 @@ jobs:
             privateRegistries:
               authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
               insecure: true
-              password: "${{ env.DOCKERHUB_PASSWORD }}"
-              username: "${{ env.DOCKERHUB_USERNAME }}"
+              password: "${{ secrets.REGISTRY_PASSWORD }}"
+              username: "${{ secrets.REGISTRY_USERNAME }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
@@ -419,7 +419,7 @@ jobs:
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
-              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY}}
+              registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY }}
               awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
               awsUser: "${{ secrets.AWS_USER }}"
               sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
@@ -648,8 +648,8 @@ jobs:
             privateRegistries:
               authConfigSecretName: "${{ secrets.AUTH_CONFIG_SECRET_NAME }}"
               insecure: true
-              password: "${{ env.DOCKERHUB_PASSWORD }}"
-              username: "${{ env.DOCKERHUB_USERNAME }}"
+              password: "${{ secrets.REGISTRY_PASSWORD }}"
+              username: "${{ secrets.REGISTRY_USERNAME }}"
             awsCredentials:
               awsAccessKey: "$AWS_ACCESS_KEY"
               awsSecretKey: "$AWS_SECRET_KEY"
