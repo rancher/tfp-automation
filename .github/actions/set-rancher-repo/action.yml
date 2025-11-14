@@ -29,9 +29,7 @@ runs:
         FALLBACK_REPO="${{ inputs.fallback-repo }}"
         IS_PRIME="${{ inputs.is-prime }}"
 
-        if [[ "$RANCHER_VERSION" == *"-rc"* && "$IS_PRIME" == "true" ]]; then
-          REPO="rc"
-        elif [[ "$RANCHER_VERSION" == *"-rc"* ]]; then
+        if [[ "$RANCHER_VERSION" == *"-rc"* ]]; then
           REPO="latest"
         elif [[ "$RANCHER_VERSION" == *"-alpha"* ]]; then
           REPO="alpha"
