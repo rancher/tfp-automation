@@ -35,7 +35,6 @@ jobs:
   v2-13:
     if: |
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13'))
     name: v2.13
     runs-on: ubuntu-latest
