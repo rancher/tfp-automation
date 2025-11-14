@@ -51,8 +51,8 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'head')) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) &&
+      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'false'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles OFF
     runs-on: ubuntu-latest
@@ -116,8 +116,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_HEAD)
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_13_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_13_HEAD)
             }}
 
       - name: Set upgraded Rancher chart version
@@ -302,8 +302,8 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'head')) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) &&
+      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'true'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles ON
     runs-on: ubuntu-latest
@@ -367,8 +367,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_HEAD)
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_13_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_13_HEAD)
             }}
 
       - name: Set upgraded Rancher chart version
@@ -553,8 +553,8 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'head')) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) &&
+      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'toggledOn'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles toggled ON
     runs-on: ubuntu-latest
@@ -618,8 +618,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_HEAD)
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_13_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_13_HEAD)
             }}
 
       - name: Set upgraded Rancher chart version
@@ -804,8 +804,8 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'head')) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head')) &&
+      (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'toggledOff'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles toggled OFF
     runs-on: ubuntu-latest
@@ -869,8 +869,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-              (github.event_name == 'schedule' && vars.RANCHER_VERSION_HEAD) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_HEAD)
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_13_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_13_HEAD)
             }}
 
       - name: Set upgraded Rancher chart version
