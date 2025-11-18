@@ -167,8 +167,8 @@ jobs:
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
-              awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
-              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              awsSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
@@ -419,8 +419,8 @@ jobs:
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
-              awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
-              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              awsSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
@@ -672,8 +672,8 @@ jobs:
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
-              awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
-              rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
+              awsSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}

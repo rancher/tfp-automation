@@ -1,18 +1,87 @@
 #!/usr/bin/bash
 
 REGISTRY_NAME=$1
-DOCKERHUB_USER=$2
-DOCKERHUB_PASSWORD=$3
-HOST=$4
-RANCHER_VERSION=$5
-ASSET_DIR=$6
-USER=$7
-RANCHER_IMAGE=$8
-RANCHER_AGENT_IMAGE=${9}
+CERT_MANAGER_VERSION=$2
+DOCKERHUB_USER=$3
+DOCKERHUB_PASSWORD=$4
+HOST=$5
+RANCHER_VERSION=$6
+ASSET_DIR=$7
+USER=$8
+RANCHER_IMAGE=$9
+RANCHER_AGENT_IMAGE=${10}
 
 set -e
 
-manageImages() {
+docker_login() {
+    echo "Logging into Docker Hub..."
+    sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
+}
+
+create_registry() {
+    echo "Checking if the private registry already exists..."
+    if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
+        echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
+    else
+        echo "Creating a self-signed certificate..."
+        sudo mkdir -p /home/${USER}/certs
+        sudo openssl req -newkey rsa:4096 -nodes -sha256 \
+            -keyout /home/${USER}/certs/domain.key \
+            -addext "subjectAltName = DNS:${HOST}" \
+            -x509 -days 365 -out /home/${USER}/certs/domain.crt \
+            -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
+
+        echo "Copying the certificate to the /etc/docker/certs.d/${HOST} directory..."
+        sudo mkdir -p /etc/docker/certs.d/${HOST}
+        sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
+
+        echo "Creating a private registry..."
+        sudo docker run -d --restart=always --name "${REGISTRY_NAME}" \
+            -v /home/${USER}/certs:/certs \
+            -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+            -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+            -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+            -p 443:443 registry:2
+    fi
+}
+
+fetch_images() {
+    echo "Fetching Rancher image lists..."
+    if [ -f /home/${USER}/rancher-images.txt ]; then
+        sudo rm -f /home/${USER}/rancher-*
+    fi
+
+    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
+    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt -O /home/${USER}/rancher-windows-images.txt
+    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-save-images.sh -O /home/${USER}/rancher-save-images.sh
+    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-load-images.sh -O /home/${USER}/rancher-load-images.sh
+        
+    sudo chmod +x /home/${USER}/rancher-save-images.sh /home/${USER}/rancher-load-images.sh
+    sudo sed -i "s/docker save/# docker save /g" /home/${USER}/rancher-save-images.sh
+    sudo sed -i "s/docker load/# docker load /g" /home/${USER}/rancher-load-images.sh
+    sudo sed -i '/mirrored-prometheus-windows-exporter/d' /home/${USER}/rancher-images.txt
+
+    if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
+        sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
+        sudo sed -i "s|rancher/rancher-agent:|${RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
+    fi
+}
+
+cert_manager_images() {
+    echo "Adding cert-manager images to the list..."
+    CERT_MANAGER_IMAGES=(
+        "quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}"
+        "quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION}"
+        "quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION}"
+        "quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}"
+    )
+
+    for IMAGE in "${CERT_MANAGER_IMAGES[@]}"; do
+        echo "${IMAGE}" | sudo tee -a /home/${USER}/rancher-images.txt > /dev/null
+    done
+}
+
+manage_images() {
     ACTION=$1
     mapfile -t IMAGES < /home/${USER}/rancher-images.txt
     PARALLEL_ACTIONS=10
@@ -41,7 +110,7 @@ action() {
     fi
 }
 
-verifyImages() {
+verify_images() {
     echo "Verifying images in registry..."
 
     mapfile -t IMAGES < /home/${USER}/rancher-images.txt
@@ -72,7 +141,7 @@ verifyImages() {
     echo "Image verification complete."
 }
 
-copyImagesWithCrane() {
+copy_images_with_crane() {
     ARCH=$(uname -m)
     if [[ $ARCH == "x86_64" ]]; then
         ARCH="x86_64"
@@ -115,7 +184,7 @@ copyImagesWithCrane() {
     done
 }
 
-verifyWindowsImages() {
+verify_windows_images() {
     echo "Verifying Windows images in registry..."
 
     mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
@@ -144,65 +213,22 @@ verifyWindowsImages() {
     echo "Windows image verification complete."
 }
 
-echo "Logging into Docker Hub..."
-sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
-
-echo "Checking if the private registry already exists..."
-if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
-    echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
-else
-    echo "Creating a self-signed certificate..."
-    sudo mkdir -p /home/${USER}/certs
-    sudo openssl req -newkey rsa:4096 -nodes -sha256 \
-        -keyout /home/${USER}/certs/domain.key \
-        -addext "subjectAltName = DNS:${HOST}" \
-        -x509 -days 365 -out /home/${USER}/certs/domain.crt \
-        -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
-
-    echo "Copying the certificate to the /etc/docker/certs.d/${HOST} directory..."
-    sudo mkdir -p /etc/docker/certs.d/${HOST}
-    sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
-
-    echo "Creating a private registry..."
-    sudo docker run -d --restart=always --name "${REGISTRY_NAME}" \
-        -v /home/${USER}/certs:/certs \
-        -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
-        -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
-        -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
-        -p 443:443 registry:2
-fi
-
-echo "Fetching Rancher image lists..."
-if [ -f /home/${USER}/rancher-images.txt ]; then
-    sudo rm -f /home/${USER}/rancher-*
-fi
-
-sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
-sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt -O /home/${USER}/rancher-windows-images.txt
-sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-save-images.sh -O /home/${USER}/rancher-save-images.sh
-sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-load-images.sh -O /home/${USER}/rancher-load-images.sh
-    
-sudo chmod +x /home/${USER}/rancher-save-images.sh /home/${USER}/rancher-load-images.sh
-sudo sed -i "s/docker save/# docker save /g" /home/${USER}/rancher-save-images.sh
-sudo sed -i "s/docker load/# docker load /g" /home/${USER}/rancher-load-images.sh
-sudo sed -i '/mirrored-prometheus-windows-exporter/d' /home/${USER}/rancher-images.txt
-
-if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
-    sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
-    sudo sed -i "s|rancher/rancher-agent:|${RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
-fi
+docker_login
+create_registry
+fetch_images
+cert_manager_images
     
 echo "Pulling the images..."
-manageImages "pull"
+manage_images "pull"
 
 echo "Pushing the newly tagged images..."
-manageImages "push"
+manage_images "push"
 
 echo "Verifying all images exist in registry..."
-verifyImages
+verify_images
 
 echo "Copying needed Windows images with Crane..."
-copyImagesWithCrane
+copy_images_with_crane
 
 echo "Verifying Windows images exist in registry..."
-verifyWindowsImages
+verify_windows_images

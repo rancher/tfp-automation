@@ -72,7 +72,13 @@ install_cert_manager() {
   kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
   helm repo add jetstack https://charts.jetstack.io
   helm repo update
-  helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
+
+  helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION} \
+                                                            --set image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-controller \
+                                                            --set webhook.image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-webhook \
+                                                            --set cainjector.image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-cainjector \
+                                                            --set startupapicheck.image.repository=${REGISTRY}/quay.io/jetstack/cert-manager-startupapicheck
+  
   kubectl get pods --namespace cert-manager
 
   echo "Waiting 1 minute for Rancher"
@@ -87,7 +93,6 @@ install_self_signed_rancher() {
                                                                                   --version ${CHART_VERSION} \
                                                                                   ${RANCHER_TAG} \
                                                                                   ${IMAGE} \
-                                                                                  --set systemDefaultRegistry=${REGISTRY} \
                                                                                   --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                   --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                   --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
@@ -96,6 +101,7 @@ install_self_signed_rancher() {
                                                                                   --set 'extraEnv[2].value=suse' \
                                                                                   --set agentTLSMode=system-store \
                                                                                   --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                  --set useBundledSystemChart=true \
                                                                                   --devel
 
   else
@@ -104,9 +110,9 @@ install_self_signed_rancher() {
                                                                                   --version ${CHART_VERSION} \
                                                                                   ${RANCHER_TAG} \
                                                                                   ${IMAGE} \
-                                                                                  --set systemDefaultRegistry=${REGISTRY} \
                                                                                   --set agentTLSMode=system-store \
                                                                                   --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                  --set useBundledSystemChart=true \
                                                                                   --devel
   fi
 }
@@ -119,7 +125,6 @@ install_lets_encrypt_rancher() {
                                                                                      --version ${CHART_VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
-                                                                                     --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
@@ -131,6 +136,7 @@ install_lets_encrypt_rancher() {
                                                                                      --set 'extraEnv[2].value=suse' \
                                                                                      --set agentTLSMode=system-store \
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                     --set useBundledSystemChart=true \
                                                                                      --devel
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -138,12 +144,12 @@ install_lets_encrypt_rancher() {
                                                                                      --version ${CHART_VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
-                                                                                     --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                      --set agentTLSMode=system-store \
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                     --set useBundledSystemChart=true \
                                                                                      --devel
     fi
 }

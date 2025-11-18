@@ -43,18 +43,28 @@ EOF
 setupRegistry() {
   sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
-  docker.io:
+  "docker.io/library":
     endpoint:
-      - "https://registry-1.docker.io"
-  "${REGISTRY}":
-    endpoint:
-      - "https://${REGISTRY}"
-
-configs:
+      - "http://${REGISTRY}"
   "docker.io":
-    auth:
-      username: "${REGISTRY_USERNAME}"
-      password: "${REGISTRY_PASSWORD}"
+    endpoint:
+      - "http://${REGISTRY}"
+  "quay.io":
+    endpoint:
+      - "http://${REGISTRY}"
+    rewrite:
+      "^(.*)$": "quay.io/\$1"
+  "gcr.io":
+    endpoint:
+      - "http://${REGISTRY}"
+    rewrite:
+      "^(.*)$": "gcr.io/\$1"
+  "ghcr.io":
+    endpoint:
+      - "http://${REGISTRY}"
+    rewrite:
+      "^(.*)$": "ghcr.io/\$1"
+configs:
   "${REGISTRY}":
     tls:
       insecure_skip_verify: true

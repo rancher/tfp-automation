@@ -37,7 +37,6 @@ upgrade_self_signed_rancher() {
                                                                                     --set hostname=${HOSTNAME} \
                                                                                     ${RANCHER_TAG} \
                                                                                     ${IMAGE} \
-                                                                                    --set systemDefaultRegistry=${REGISTRY} \
                                                                                     --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                     --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                     --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
@@ -45,6 +44,7 @@ upgrade_self_signed_rancher() {
                                                                                     --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
                                                                                     --set 'extraEnv[2].value=suse' \
                                                                                     --set agentTLSMode=system-store \
+                                                                                    --set useBundledSystemChart=true \
                                                                                     --devel
 
   else
@@ -53,8 +53,8 @@ upgrade_self_signed_rancher() {
                                                                                     --set hostname=${HOSTNAME} \
                                                                                     ${RANCHER_TAG} \
                                                                                     ${IMAGE} \
-                                                                                    --set systemDefaultRegistry=${REGISTRY} \
                                                                                     --set agentTLSMode=system-store \
+                                                                                    --set useBundledSystemChart=true \
                                                                                     --devel
   fi
 }
@@ -67,7 +67,6 @@ upgrade_lets_encrypt_rancher() {
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
-                                                                                     --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                      --set letsEncrypt.ingress.class=nginx \
@@ -78,6 +77,7 @@ upgrade_lets_encrypt_rancher() {
                                                                                      --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
                                                                                      --set 'extraEnv[2].value=suse' \
                                                                                      --set agentTLSMode=system-store \
+                                                                                     --set useBundledSystemChart=true \
                                                                                      --devel
   else
       helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -85,11 +85,11 @@ upgrade_lets_encrypt_rancher() {
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
-                                                                                     --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set agentTLSMode=system-store \
+                                                                                     --set useBundledSystemChart=true \
                                                                                      --devel
   fi
 }

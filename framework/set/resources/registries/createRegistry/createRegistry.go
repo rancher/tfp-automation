@@ -77,17 +77,19 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 	var command string
 
 	if terraformConfig.Standalone.UpgradeAirgapRancher {
-		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.RegistryUsername + " " +
-			terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.UpgradedRancherTagVersion + " " +
-			terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage
+		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " +
+			terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " +
+			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage
 
 		if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 		}
 	} else {
-		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.RegistryUsername + " " +
-			terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RancherImage
+		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " +
+			terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
+			terraformConfig.Standalone.RancherImage
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage
