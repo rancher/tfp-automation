@@ -93,6 +93,7 @@ install_self_signed_rancher() {
                                                                                   --version ${CHART_VERSION} \
                                                                                   ${RANCHER_TAG} \
                                                                                   ${IMAGE} \
+                                                                                  --set systemDefaultRegistry=${REGISTRY} \
                                                                                   --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                   --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                   --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
@@ -110,6 +111,7 @@ install_self_signed_rancher() {
                                                                                   --version ${CHART_VERSION} \
                                                                                   ${RANCHER_TAG} \
                                                                                   ${IMAGE} \
+                                                                                  --set systemDefaultRegistry=${REGISTRY} \
                                                                                   --set agentTLSMode=system-store \
                                                                                   --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                   --set useBundledSystemChart=true \
@@ -125,6 +127,7 @@ install_lets_encrypt_rancher() {
                                                                                      --version ${CHART_VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
+                                                                                     --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
@@ -144,6 +147,7 @@ install_lets_encrypt_rancher() {
                                                                                      --version ${CHART_VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
+                                                                                     --set systemDefaultRegistry=${REGISTRY} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
