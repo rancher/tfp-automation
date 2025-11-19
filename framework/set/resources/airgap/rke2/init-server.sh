@@ -11,7 +11,6 @@ RANCHER_IMAGE=$8
 RANCHER_TAG_VERSION=$9
 RANCHER_AGENT_IMAGE=${10}
 PEM_FILE=/home/$USER/airgap.pem
-HOST="registry-1.docker.io"
 
 set -e
 
@@ -33,6 +32,7 @@ setupConfig() {
     sudo mkdir -p /etc/rancher/rke2
     sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
 token: ${RKE2_TOKEN}
+system-default-registry: ${REGISTRY}
 tls-san:
   - ${RKE2_SERVER_ONE_IP}
 EOF
@@ -41,27 +41,11 @@ EOF
 setupRegistry() {
   sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
-  "docker.io/library":
-    endpoint:
-      - "http://${REGISTRY}"
   "docker.io":
     endpoint:
-      - "http://${REGISTRY}"
-  "quay.io":
-    endpoint:
-      - "http://${REGISTRY}"
+      - "https://${REGISTRY}"
     rewrite:
-      "^(.*)$": "quay.io/\$1"
-  "gcr.io":
-    endpoint:
-      - "http://${REGISTRY}"
-    rewrite:
-      "^(.*)$": "gcr.io/\$1"
-  "ghcr.io":
-    endpoint:
-      - "http://${REGISTRY}"
-    rewrite:
-      "^(.*)$": "ghcr.io/\$1"
+      "^rancher/(.*)": "${REGISTRY}/rancher/\$1"
 configs:
   "${REGISTRY}":
     tls:

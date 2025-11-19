@@ -9,6 +9,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/features"
+	reg "github.com/rancher/tests/actions/registries"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
@@ -22,6 +23,10 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	local = "local"
 )
 
 // SetupAirgapRancher sets up an airgapped Rancher server and returns the client, configuration, and Terraform options.
@@ -41,6 +46,13 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	usesRegistryPrefix, err := reg.CheckAllClusterPodsForRegistryPrefix(client, local, registry)
+	require.NoError(t, err)
+
+	if !usesRegistryPrefix {
+		t.Fatalf("ERROR: not all of the local cluster pods are using the private registry")
+	}
 
 	return client, registry, bastion, standaloneTerraformOptions, terraformOptions, cattleConfig
 }
