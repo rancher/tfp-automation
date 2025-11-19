@@ -17,7 +17,12 @@ if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
 else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
-    IMAGE_REPOSITORY="${RANCHER_IMAGE#*/}"
+
+    if [[ -n "$RANCHER_AGENT_IMAGE" ]]; then
+        IMAGE_REPOSITORY="rancher"
+    else
+        IMAGE_REPOSITORY="${RANCHER_IMAGE#*/}"
+    fi
     
     RANCHER_TAG="--set image.tag=${RANCHER_TAG_VERSION}"
     IMAGE="--set image.repository=${IMAGE_REPOSITORY} --set image.registry=${IMAGE_REGISTRY}"
