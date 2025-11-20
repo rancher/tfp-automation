@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
 set -euo pipefail
 
 PREFIX="${PREFIX}"
@@ -25,8 +26,9 @@ KEYPAIRS=$(aws ec2 describe-key-pairs \
   --output text)
 
 if [ -n "$KEYPAIRS" ]; then
+  echo "Deleting EC2 key pairs..."
+
   for kp in $KEYPAIRS; do
-    echo "Deleting EC2 key pairs..."
     aws ec2 delete-key-pair --key-name "$kp" > /dev/null 2>&1
   done
 else
@@ -51,8 +53,9 @@ TGS=$(aws elbv2 describe-target-groups \
   --output text || true)
 
 if [ -n "$TGS" ]; then
+  echo "Deleting target groups..."
+
   for tg in $TGS; do
-    echo "Deleting target groups..."
     aws elbv2 delete-target-group --target-group-arn "$tg" > /dev/null 2>&1
   done
 else

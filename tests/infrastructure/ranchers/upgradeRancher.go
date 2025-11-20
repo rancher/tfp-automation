@@ -7,6 +7,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/features"
+	reg "github.com/rancher/tests/actions/registries"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
@@ -48,6 +49,13 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	usesRegistryPrefix, err := reg.CheckAllClusterPodsForRegistryPrefix(client, local, registry)
+	require.NoError(t, err)
+
+	if !usesRegistryPrefix {
+		t.Fatalf("ERROR: not all of the local cluster pods are using the private registry")
+	}
 
 	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
