@@ -56,6 +56,7 @@ jobs:
           - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
+      HOSTNAME_PREFIX: "tfp-rec-213"
 
     steps:
       - name: Checkout repository
@@ -382,6 +383,7 @@ jobs:
           - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
+      HOSTNAME_PREFIX: "tfp-rec-212"
 
     steps:
       - name: Checkout repository
@@ -717,6 +719,7 @@ jobs:
           - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
+      HOSTNAME_PREFIX: "tfp-rec-211"
 
     steps:
       - name: Checkout repository

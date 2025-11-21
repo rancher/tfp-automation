@@ -49,7 +49,7 @@ jobs:
     environment: latest
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX_2_13: "tfp-pxy-213"
+      HOSTNAME_PREFIX: "tfp-pxy-213"
 
     steps:
       - name: Checkout repository
@@ -141,7 +141,7 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX_2_13 }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -151,7 +151,7 @@ jobs:
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
-            resourcePrefix: "${{ env.HOSTNAME_PREFIX_2_13 }}"
+            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
             proxy:
               proxyBastion: ""
@@ -201,7 +201,7 @@ jobs:
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX_2_13 }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -264,14 +264,14 @@ jobs:
         if: always()
         uses: ./.github/actions/aws-cleanup
         with:
-          prefix: "${{ env.HOSTNAME_PREFIX_2_13 }}"
+          prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
       - name: AWS Custodian Downstream Cleanup
         if: always()
         uses: ./.github/actions/aws-cleanup
         with:
-          prefix: "auto-${{ env.HOSTNAME_PREFIX_2_13 }}"
+          prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Revoke Runner IP
@@ -312,7 +312,7 @@ jobs:
     environment: staging-latest
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
-      HOSTNAME_PREFIX_2_12: "tfp-pxy-212"
+      HOSTNAME_PREFIX: "tfp-pxy-212"
 
     steps:
       - name: Checkout repository
@@ -412,7 +412,7 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX_2_12 }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -422,7 +422,7 @@ jobs:
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
-            resourcePrefix: "${{ env.HOSTNAME_PREFIX_2_12 }}"
+            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
             proxy:
               proxyBastion: ""
@@ -473,7 +473,7 @@ jobs:
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX_2_12 }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -536,14 +536,14 @@ jobs:
         if: always()
         uses: ./.github/actions/aws-cleanup
         with:
-          prefix: "${{ env.HOSTNAME_PREFIX_2_12 }}"
+          prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
       - name: AWS Custodian Downstream Cleanup
         if: always()
         uses: ./.github/actions/aws-cleanup
         with:
-          prefix: "auto-${{ env.HOSTNAME_PREFIX_2_12 }}"
+          prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Revoke Runner IP
@@ -584,7 +584,7 @@ jobs:
     environment: staging-latest
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_11 }}"
-      HOSTNAME_PREFIX_2_11: "tfp-pxy-211"
+      HOSTNAME_PREFIX: "tfp-pxy-211"
 
     steps:
       - name: Checkout repository
@@ -684,7 +684,7 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX_2_11 }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -694,7 +694,7 @@ jobs:
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
-            resourcePrefix: "${{ env.HOSTNAME_PREFIX_2_11 }}"
+            resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
             proxy:
               proxyBastion: ""
@@ -745,7 +745,7 @@ jobs:
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX_2_11 }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -808,14 +808,14 @@ jobs:
         if: always()
         uses: ./.github/actions/aws-cleanup
         with:
-          prefix: "${{ env.HOSTNAME_PREFIX_2_11 }}"
+          prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
       - name: AWS Custodian Downstream Cleanup
         if: always()
         uses: ./.github/actions/aws-cleanup
         with:
-          prefix: "auto-${{ env.HOSTNAME_PREFIX_2_11 }}"
+          prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Revoke Runner IP
