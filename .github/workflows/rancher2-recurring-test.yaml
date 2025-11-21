@@ -828,10 +828,6 @@ jobs:
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
-            dataDirectories:
-              systemAgentPath: "/custom/agent"
-              provisioningPath: "/custom/provisioning"
-              k8sDistroPath: "/custom/rke2"
             privateRegistries:
               url: "${{ secrets.PRIVATE_REGISTRY_URL }}"
               username: "${{ env.DOCKERHUB_USERNAME }}"

@@ -4,6 +4,7 @@ package provisioning
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -62,6 +63,10 @@ func (p *CustomDataDirectoryTestSuite) SetupSuite() {
 }
 
 func (p *CustomDataDirectoryTestSuite) TestTfpCustomDataDirectory() {
+	if p.terraformConfig.Standalone != nil && strings.Contains(p.terraformConfig.Standalone.RancherTagVersion, "2.11") {
+		p.T().Skip("Skipping due to custom data directory not being supported in Rancher 2.11")
+	}
+
 	var err error
 	var testUser, testPassword string
 
