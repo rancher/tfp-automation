@@ -122,7 +122,6 @@ type PrivateRegistries struct {
 }
 
 type Standalone struct {
-	AirgapInternalFQDN             string        `json:"airgapInternalFQDN,omitempty" yaml:"airgapInternalFQDN,omitempty"`
 	BootstrapPassword              string        `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
 	CertManagerVersion             string        `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
 	CertType                       string        `json:"certType,omitempty" yaml:"certType,omitempty"`

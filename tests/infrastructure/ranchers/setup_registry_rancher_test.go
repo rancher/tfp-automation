@@ -39,7 +39,7 @@ func (i *RegistryRancherTestSuite) TestCreateRegistryRancher() {
 	_, _, _, err := registries.CreateMainTF(i.T(), i.terraformOptions, keyPath, i.rancherConfig, i.terraformConfig, i.terratestConfig)
 	require.NoError(i.T(), err)
 
-	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(i.T(), err)
 }
 

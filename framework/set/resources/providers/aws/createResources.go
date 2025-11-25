@@ -91,35 +91,20 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 	if terraformConfig.Standalone.CertManagerVersion != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
-			CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
-			rootBody.AppendNewline()
-
 			CreateInternalTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)
 			rootBody.AppendNewline()
 		}
-
-		CreateLoadBalancer(rootBody, terraformConfig)
-		rootBody.AppendNewline()
 
 		CreateInternalLoadBalancer(rootBody, terraformConfig)
 		rootBody.AppendNewline()
 
 		for _, port := range ports {
-			CreateTargetGroups(rootBody, terraformConfig, port)
-			rootBody.AppendNewline()
-
 			CreateInternalTargetGroups(rootBody, terraformConfig, port)
-			rootBody.AppendNewline()
-
-			CreateLoadBalancerListeners(rootBody, port)
 			rootBody.AppendNewline()
 
 			CreateInternalLoadBalancerListeners(rootBody, port)
 			rootBody.AppendNewline()
 		}
-
-		CreateRoute53Record(rootBody, terraformConfig)
-		rootBody.AppendNewline()
 
 		CreateRoute53InternalRecord(rootBody, terraformConfig)
 		rootBody.AppendNewline()

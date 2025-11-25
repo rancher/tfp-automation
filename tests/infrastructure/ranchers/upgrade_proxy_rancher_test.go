@@ -43,7 +43,7 @@ func (i *UpgradeProxyRancherTestSuite) TestUpgradeProxyRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(i.T(), err)
 
 	i.terraformConfig.Standalone.UpgradeProxyRancher = true
@@ -55,7 +55,7 @@ func (i *UpgradeProxyRancherTestSuite) TestUpgradeProxyRancher() {
 	require.NoError(i.T(), err)
 
 	standaloneTerraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keypath.ProxyKeyPath)
-	_, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, true)
+	_, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(i.T(), err)
 }
 

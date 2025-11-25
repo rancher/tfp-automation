@@ -82,7 +82,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AIRGAP_AWS_MANAGED_PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -132,11 +132,15 @@ jobs:
           qase_release_id: ${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}
           qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}
 
+      - name: Update /etc/hosts to add Rancher FQDN
+        run: |
+          sudo sed -i 's/^127\.0\.0\.1.*/127.0.0.1 localhost ${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}/' /etc/hosts
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}:8443"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -165,11 +169,12 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
-              awsSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
-              rancherSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
-              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
+              awsSecurityGroups: [${{ secrets.AIRGAP_AWS_SECURITY_GROUPS }}]
+              awsSecurityGroupNames: [${{ secrets.AIRGAP_AWS_SECURITY_GROUP_NAMES }}]
+              awsSubnetID: "${{ secrets.AIRGAP_AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AIRGAP_AWS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.AIRGAP_AWS_VPC_ID }}"
+              awsVpcIP: "${{ secrets.AIRGAP_AWS_VPC_IP }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
               registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY }}
@@ -188,7 +193,6 @@ jobs:
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
             standalone:
-              airgapInternalFQDN: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}"
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
@@ -196,7 +200,7 @@ jobs:
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -272,7 +276,7 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AIRGAP_AWS_MANAGED_PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set job status output
@@ -341,7 +345,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
+          prefix-list-id: ${{ secrets.AIRGAP_AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -399,11 +403,15 @@ jobs:
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
 
+      - name: Update /etc/hosts to add Rancher FQDN
+        run: |
+          sudo sed -i 's/^127\.0\.0\.1.*/127.0.0.1 localhost ${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}/' /etc/hosts
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}:8443"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -432,11 +440,12 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
-              awsSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
-              rancherSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
-              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
+              awsSecurityGroups: [${{ secrets.AIRGAP_AWS_SECURITY_GROUPS_PRIME }}]
+              awsSecurityGroupNames: [${{ secrets.AIRGAP_AWS_SECURITY_GROUP_NAMES_PRIME }}]
+              awsSubnetID: "${{ secrets.AIRGAP_AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AIRGAP_AWS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.AIRGAP_AWS_VPC_ID }}"
+              awsVpcIP: "${{ secrets.AIRGAP_AWS_VPC_IP }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
               registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY }}
@@ -455,7 +464,6 @@ jobs:
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
             standalone:
-              airgapInternalFQDN: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}"
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
@@ -464,7 +472,7 @@ jobs:
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -540,7 +548,7 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
+          prefix-list-id: ${{ secrets.AIRGAP_AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set job status output
@@ -609,7 +617,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
+          prefix-list-id: ${{ secrets.AIRGAP_AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -667,11 +675,15 @@ jobs:
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
 
+      - name: Update /etc/hosts to add Rancher FQDN
+        run: |
+          sudo sed -i 's/^127\.0\.0\.1.*/127.0.0.1 localhost ${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}/' /etc/hosts
+
       - name: Create config.yaml
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}:8443"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -700,11 +712,12 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
-              awsSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
-              rancherSubnetID: "${{ secrets.AWS_AIRGAP_SUBNET_ID }}"
-              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
+              awsSecurityGroups: [${{ secrets.AIRGAP_AWS_SECURITY_GROUPS_PRIME }}]
+              awsSecurityGroupNames: [${{ secrets.AIRGAP_AWS_SECURITY_GROUP_NAMES_PRIME }}]
+              awsSubnetID: "${{ secrets.AIRGAP_AWS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.AIRGAP_AWS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.AIRGAP_AWS_VPC_ID }}"
+              awsVpcIP: "${{ secrets.AIRGAP_AWS_VPC_IP }}"
               awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
               awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
               registryRootSize: ${{ vars.AWS_ROOT_SIZE_REGISTRY }}
@@ -723,7 +736,6 @@ jobs:
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
             standalone:
-              airgapInternalFQDN: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}"
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
@@ -732,7 +744,7 @@ jobs:
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}-internal.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -808,7 +820,7 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
+          prefix-list-id: ${{ secrets.AIRGAP_AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set job status output

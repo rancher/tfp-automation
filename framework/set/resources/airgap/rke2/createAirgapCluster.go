@@ -86,8 +86,9 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
 	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-		rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " + terraformConfig.Standalone.RegistryUsername + " " +
-		terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion
+		terraformConfig.AWSConfig.AWSVpcIP + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " +
+		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherImage + " " +
+		terraformConfig.Standalone.RancherTagVersion
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
@@ -120,8 +121,9 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
 		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " + terraformConfig.Standalone.RegistryUsername + " " +
-			terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion
+			terraformConfig.AWSConfig.AWSVpcIP + " " + rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherImage + " " +
+			terraformConfig.Standalone.RancherTagVersion
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage

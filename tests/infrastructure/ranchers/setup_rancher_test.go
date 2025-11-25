@@ -50,7 +50,7 @@ func (i *RancherTestSuite) TestCreateRancher() {
 		var err error
 
 		if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.MCM == "" {
-			client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+			client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false)
 			require.NoError(i.T(), err)
 		}
 
