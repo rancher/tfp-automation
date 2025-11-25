@@ -53,7 +53,7 @@ jobs:
       (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'false'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles OFF
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> v213 - turtles OFF
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -128,8 +128,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
             }}
 
       - name: Set upgraded Rancher repo
@@ -205,17 +205,17 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
+              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_12 }}"
+              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_13 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
@@ -319,7 +319,7 @@ jobs:
       (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'true'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles ON
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> v213 - turtles ON
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -394,8 +394,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
             }}
 
       - name: Set upgraded Rancher repo
@@ -471,17 +471,17 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
+              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX_ON }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_12 }}"
+              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_13 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
@@ -585,7 +585,7 @@ jobs:
       (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'toggledOn'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles toggled ON
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> v213 - turtles toggled ON
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -660,8 +660,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
             }}
 
       - name: Set upgraded Rancher repo
@@ -737,17 +737,17 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
+              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_12 }}"
+              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_13 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
@@ -851,7 +851,7 @@ jobs:
       (github.event.inputs.run_all_variations == 'true' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.upgraded_turtles, 'toggledOff'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> v213 - turtles toggled OFF
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> v213 - turtles toggled OFF
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -926,8 +926,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
             }}
 
       - name: Set upgraded Rancher repo
@@ -1003,17 +1003,17 @@ jobs:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
-              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
+              chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
-              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_12 }}"
+              rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_13 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_12 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
