@@ -18,7 +18,7 @@ import (
 
 // PostRancherSetup is a helper function that creates a Rancher client and accepts the EULA, if needed
 func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancherConfig *rancher.Config, session *session.Session, host,
-	keyPath string, isAirgap, isUpgrade bool) (*rancher.Client, error) {
+	keyPath string, isUpgrade bool) (*rancher.Client, error) {
 	adminToken, err := CreateAdminToken(t, terraformOptions, rancherConfig, keyPath)
 	if err != nil && *rancherConfig.Cleanup {
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -47,11 +47,6 @@ func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancher
 	if !isUpgrade {
 		err = pipeline.PostRancherInstall(client, client.RancherConfig.AdminPassword)
 		require.NoError(t, err)
-	}
-
-	// The FQDN needs to be set back to the Rancher host URL and not the internal FQDN
-	if isAirgap {
-		client.RancherConfig.Host = rancherConfig.Host
 	}
 
 	return client, nil

@@ -15,6 +15,7 @@ type Config struct {
 	AWSSubnetID           string      `json:"awsSubnetID,omitempty" yaml:"awsSubnetID,omitempty"`
 	AWSSubnets            []string    `json:"awsSubnets,omitempty" yaml:"awsSubnets,omitempty"`
 	AWSVpcID              string      `json:"awsVpcID,omitempty" yaml:"awsVpcID,omitempty"`
+	AWSVpcIP              string      `json:"awsVpcIP,omitempty" yaml:"awsVpcIP,omitempty"`
 	AWSRoute53Zone        string      `json:"awsRoute53Zone,omitempty" yaml:"awsRoute53Zone,omitempty"`
 	AWSZoneLetter         string      `json:"awsZoneLetter,omitempty" yaml:"awsZoneLetter,omitempty"`
 	ClusterCIDR           string      `json:"clusterCIDR,omitempty" yaml:"clusterCIDR,omitempty"`

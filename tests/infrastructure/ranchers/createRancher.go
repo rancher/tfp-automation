@@ -22,6 +22,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/registries"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/extensions/ssh"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +34,7 @@ const (
 func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, string, *terraform.Options,
 	*terraform.Options, map[string]any) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
+	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
@@ -41,7 +42,13 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 	registry, bastion, err := airgap.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.AirgapInternalFQDN, keyPath, true, false)
+	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
+	require.NoError(t, err)
+
+	err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
+	require.NoError(t, err)
+
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
@@ -69,7 +76,7 @@ func SetupDualStackRancher(t *testing.T, session *session.Session, moduleKeyPath
 	serverNodeOne, err := dualstack.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {
@@ -94,7 +101,7 @@ func SetupIPv6Rancher(t *testing.T, session *session.Session, moduleKeyPath stri
 	bastionNode, err := ipv6.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {
@@ -119,7 +126,7 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 	proxyBastion, proxyPrivateIP, err := proxy.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {
@@ -144,7 +151,7 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	serverNodeOne, err := sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {
@@ -177,7 +184,7 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	authRegistry, nonAuthRegistry, globalRegistry, err := registries.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
-	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != "head" {

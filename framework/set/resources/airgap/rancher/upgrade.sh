@@ -4,12 +4,11 @@ RANCHER_CHART_REPO=$1
 REPO=$2
 CERT_TYPE=$3
 HOSTNAME=$4
-INTERNAL_FQDN=$5
-RANCHER_TAG_VERSION=$6
-CHART_VERSION=$7
-RANCHER_IMAGE=$8
-REGISTRY=$9
-RANCHER_AGENT_IMAGE=${10}
+RANCHER_TAG_VERSION=$5
+CHART_VERSION=$6
+RANCHER_IMAGE=$7
+REGISTRY=$8
+RANCHER_AGENT_IMAGE=${9}
 
 if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
@@ -109,13 +108,13 @@ wait_for_rollout() {
   kubectl -n cattle-system get deploy rancher
 }
 
-patch_rancher_internal_fqdn() {
-  echo "Patching Rancher Ingress and Setting for internal FQDN: ${INTERNAL_FQDN}"
+patch_rancher_fqdn() {
+  echo "Patching Rancher FQDN: ${HOSTNAME}"
   kubectl patch ingress rancher -n cattle-system --type=json -p="[{
     \"op\": \"add\", 
     \"path\": \"/spec/rules/-\", 
     \"value\": {
-      \"host\": \"${INTERNAL_FQDN}\", 
+      \"host\": \"${HOSTNAME}\", 
       \"http\": {
         \"paths\": [{
           \"backend\": {
@@ -135,13 +134,13 @@ patch_rancher_internal_fqdn() {
   kubectl patch ingress rancher -n cattle-system --type=json -p="[{
     \"op\": \"add\", 
     \"path\": \"/spec/tls/0/hosts/-\", 
-    \"value\": \"${INTERNAL_FQDN}\"
+    \"value\": \"${HOSTNAME}\"
   }]"
 
   kubectl patch setting server-url --type=json -p="[{
     \"op\": \"add\", 
     \"path\": \"/value\", 
-    \"value\": \"https://${INTERNAL_FQDN}\"
+    \"value\": \"https://${HOSTNAME}\"
   }]"
 
   echo "Restarting Rancher"
@@ -171,5 +170,5 @@ case "$CERT_TYPE" in
 esac
 
 wait_for_rollout
-patch_rancher_internal_fqdn
+patch_rancher_fqdn
 wait_for_rancher

@@ -47,7 +47,7 @@ func (i *UpgradeRancherTestSuite) TestUpgradeRancher() {
 	var client *rancher.Client
 
 	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.MCM == "" {
-		client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, false)
+		client, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false)
 		require.NoError(i.T(), err)
 	}
 
@@ -66,7 +66,7 @@ func (i *UpgradeRancherTestSuite) TestUpgradeRancher() {
 	standaloneTerraformOptions := framework.Setup(i.T(), i.terraformConfig, i.terratestConfig, keypath.SanityKeyPath)
 
 	if i.standaloneConfig.FeatureFlags != nil && i.standaloneConfig.FeatureFlags.UpgradedMCM == "" {
-		client, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false, true)
+		client, err = PostRancherSetup(i.T(), standaloneTerraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, true)
 		require.NoError(i.T(), err)
 	}
 

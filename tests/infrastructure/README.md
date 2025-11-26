@@ -298,7 +298,6 @@ terraform:
     loadBalancerType: "ipv4"
     targetType: "instance"
   standalone:
-    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
     certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
@@ -340,6 +339,14 @@ See the below examples on how to run the test:
 
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=7h -v -run "TestAirgapRancherTestSuite$"` \
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=7h -v -run "TestUpgradeAirgapRancherTestSuite$"`
+
+As we are operating within an airgapped environment, you will not be able to connect in your browser without first connecting via a jump host. The easiest way to do this is with the following command: `ssh -i <PEM file> -f -N -L 8443:<Rancher FQDN:443 <username>@<Bastion public IP>`.
+
+The above command will connect your client node to the same network that your airgapped environment, thus allowing you to access in your browser Additionally, in your client node's `/etc/hosts` file, temporarily update to have the following entry:
+
+`127.0.0.1 <Rancher FQDN>`
+
+Both the ssh command and the temporary `/etc/hosts` entry is needed in order to connect to the airgapped environment.
 
 ## Setup Proxy Rancher
 

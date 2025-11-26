@@ -42,7 +42,7 @@ func (i *AirgapRancherTestSuite) TestCreateAirgapRancher() {
 	testSession := session.NewSession()
 	i.session = testSession
 
-	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.AirgapInternalFQDN, keyPath, true, false)
+	_, err = PostRancherSetup(i.T(), i.terraformOptions, i.rancherConfig, i.session, i.terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(i.T(), err)
 }
 

@@ -51,6 +51,14 @@ func CreateRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 
 // CreateRoute53InternalRecord is a function that will set the AWS Route 53 record configuration in the main.tf file.
 func CreateRoute53InternalRecord(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
+	zoneBlock := rootBody.AppendNewBlock(defaults.Data, []string{defaults.Route53Zone, selected})
+	zoneBlockBody := zoneBlock.Body()
+
+	zoneBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.AWSConfig.AWSRoute53Zone))
+	zoneBlockBody.SetAttributeValue(privateZone, cty.BoolVal(true))
+
+	rootBody.AppendNewline()
+
 	routeRecordBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Route53Record, defaults.Route53InternalRecord})
 	routeRecordBlockBody := routeRecordBlock.Body()
 

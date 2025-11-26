@@ -34,7 +34,7 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.AirgapKeyPath)
-	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.AirgapInternalFQDN, keyPath, true, true)
+	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
@@ -76,7 +76,7 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.ProxyKeyPath)
-	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, true)
+	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
@@ -111,7 +111,7 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.SanityKeyPath)
-	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false, true)
+	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
