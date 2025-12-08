@@ -6,12 +6,19 @@ Please see below for more details for your config. Please note that the config c
 
 ## Table of Contents
 1. [Setup Rancher](#Setup-Rancher)
-2. [Setup Airgap Rancher](#Setup-Airgap-Rancher)
-3. [Setup Proxy Rancher](#Setup-Proxy-Rancher)
-4. [Setup RKE1 Cluster](#Setup-RKE1-Cluster)
-5. [Setup RKE2 Cluster](#Setup-RKE2-Cluster)
-6. [Setup Airgap RKE2 Cluster](#Setup-Airgap-RKE2-Cluster)
-6. [Setup K3S Cluster](#Setup-K3S-Cluster)
+2. [Setup Dualstack Rancher](#Setup-Dualstack-Rancher)
+3. [Setup IPv6 Rancher](#Setup-IPv6-Rancher)
+4. [Setup Airgap Rancher](#Setup-Airgap-Rancher)
+5. [Setup Proxy Rancher](#Setup-Proxy-Rancher)
+6. [Setup Registry Rancher](#Setup-Registry-Rancher)
+7. [Setup RKE1 Cluster](#Setup-RKE1-Cluster)
+8. [Setup RKE2 Cluster](#Setup-RKE2-Cluster)
+9. [Setup K3S Cluster](#Setup-K3S-Cluster)
+10. [Setup Airgap RKE2 Cluster](#Setup-Airgap-RKE2-Cluster)
+11. [Setup Dualstack RKE2 Cluster](#Setup-Dualstack-RKE2-Cluster)
+12. [Setup Dualstack K3S Cluster](#Setup-Dualstack-K3S-Cluster)
+13. [Setup IPv6 RKE2 Cluster](#Setup-IPv6-RKE2-Cluster)
+14. [Setup IPv6 K3S Cluster](#Setup-IPv6-K3S-Cluster)
 
 ## Setup Rancher
 
@@ -106,18 +113,17 @@ Note: Depending on what `provider` is set to, only fill out the appropriate sect
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
 export KUBERNETES_VERSION=""
 export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
 ```
 
-See the below examples on how to run the test:
+See the below examples on how to run in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestRancherTestSuite$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestUpgradeRancherTestSuite$"`
+`go run main.go --normal fresh` \
+`go run main.go --normal upgrade`
 
-If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
 ## Setup Dualstack Rancher
 
@@ -188,11 +194,13 @@ terraform:
       turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
 ```
 
-See the below examples on how to run the test:
+See the below examples on how to run in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestDualStackRancherTestSuite$"`
+`go run main.go --dual fresh`
 
-## Setup Rancher IPv6
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
+
+## Setup IPv6 Rancher
 
 See below an example config on setting up an IPv6 Rancher server powered by an IPv6 RKE2 HA cluster:
 
@@ -263,9 +271,11 @@ terraform:
       turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
 ```
 
-See the below examples on how to run the test:
+See the below examples on how to run in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestRancherIPv6TestSuite$"`
+`go run main.go --ipv6 fresh`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
 ## Setup Airgap Rancher
 
@@ -330,15 +340,16 @@ Before running, be sure to run the following commands:
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
 export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
 ```
 
-See the below examples on how to run the test:
+See the below examples on how to run in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=7h -v -run "TestAirgapRancherTestSuite$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=7h -v -run "TestUpgradeAirgapRancherTestSuite$"`
+`go run main.go --airgap fresh` \
+`go run main.go --airgap upgrade`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
 As we are operating within an airgapped environment, you will not be able to connect in your browser without first connecting via a jump host. The easiest way to do this is with the following command: `ssh -i <PEM file> -f -N -L 8443:<Rancher FQDN:443 <username>@<Bastion public IP>`.
 
@@ -412,15 +423,16 @@ Before running, be sure to run the following commands:
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
 export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
 ```
 
-See the below examples on how to run the tests:
+See the below examples on how to run in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestProxyRancherTestSuite$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestUpgradeProxyRancherTestSuite$"`
+`go run main.go --proxy fresh` \
+`go run main.go --proxy upgrade`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
 ## Setup Registry Rancher
 
@@ -487,14 +499,15 @@ Before running, be sure to run the following commands:
 ```yaml
 export RANCHER2_PROVIDER_VERSION=""
 export CATTLE_TEST_CONFIG=<path/to/yaml>
-export LOCALS_PROVIDER_VERSION=""
 export CLOUD_PROVIDER_VERSION=""
 export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a valid email address
 ```
 
-See the below examples on how to run the tests:
+See the below examples on how to run the tests in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=3h -v -run "TestRegistryRancherTestSuite$"`
+`go run main.go --registry fresh`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
 ## Setup RKE1 Cluster
 
@@ -533,9 +546,9 @@ export CATTLE_TEST_CONFIG=<path/to/yaml>
 export CLOUD_PROVIDER_VERSION=""
 ```
 
-See the below examples on how to run the tests:
+See the below examples on how to run:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestRKEProviderTestSuite$"`
+`go run CreateRKE1Cluster.go`
 
 ## Setup RKE2 Cluster
 
@@ -600,283 +613,13 @@ Before running, be sure to run the following commands:
 ```yaml
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export CLOUD_PROVIDER_VERSION=""
-export LOCALS_PROVIDER_VERSION=""
 ```
 
-See the below examples on how to run the tests:
+See the below examples on how to run in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestCreateRKE2ClusterTestSuite$"`
+`go run main.go --normal-rke2`
 
-## Setup Airgap RKE2 Cluster
-
-See below an example config on setting up a standalone airgapped RKE2 cluster:
-
-```yaml
-terraform:
-  privateKeyPath: ""
-  resourcePrefix: ""
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    ami: ""
-    awsKeyName: ""
-    awsInstanceType: ""
-    region: ""
-    awsSecurityGroups: [""]
-    awsSubnetID: ""
-    awsVpcID: ""
-    awsZoneLetter: ""
-    awsRootSize: 100
-    awsRoute53Zone: ""
-    awsUser: ""
-    registryRootSize: 500
-    sshConnectionType: "ssh"
-    timeout: ""
-  standalone:
-    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
-    osGroup: ""                                   # REQUIRED - fill with group of the instance created
-    osUser: ""                                    # REQUIRED - fill with username of the instance created
-    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
-    rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
-    rancherHostname: ""                           # REQUIRED - fill with desired value
-    rancherImage: ""                              # REQUIRED - fill with desired value
-    rancherTagVersion: ""                         # REQUIRED - fill with desired value
-    repo: ""                                      # REQUIRED - fill with desired value
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
-  standaloneRegistry:
-    assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
-    registryName: ""                              # REQUIRED - fill with desired value
-```
-
-Before running, be sure to run the following commands:
-
-```yaml
-export CATTLE_TEST_CONFIG=<path/to/yaml>
-export CLOUD_PROVIDER_VERSION=""
-export LOCALS_PROVIDER_VERSION=""
-```
-
-See the below examples on how to run the tests:
-
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateAirgappedRKE2ClusterTestSuite$"`
-
-## Setup Dualstack RKE2 cluster
-
-See below an example config on setting up a standalone dual-stack RKE2 cluster:
-
-```yaml
-terraform:
-  privateKeyPath: ""
-  resourcePrefix: ""
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    ami: ""
-    awsKeyName: ""
-    awsInstanceType: ""
-    awsSecurityGroups: [""]
-    awsSubnetID: ""
-    awsVpcID: ""
-    awsZoneLetter: ""
-    awsRootSize: 100
-    region: ""
-    prefix: ""
-    awsUser: ""
-    clusterCIDR: "10.42.0.0/16,2001:cafe:42::/56"
-    serviceCIDR: "10.43.0.0/16,2001:cafe:43::/112"
-    sshConnectionType: "ssh"
-    timeout: "5m"
-  standalone:
-    osGroup: ""                                   # REQUIRED - fill with group of the instance created
-    osUser: ""                                    # REQUIRED - fill with username of the instance created
-    rancherHostname: ""                           # REQUIRED - fill with desired value
-    rancherImage: ""                              # REQUIRED - fill with desired value
-    rancherTagVersion: ""                         # REQUIRED - fill with desired value
-    registryPassword: ""                          # REQUIRED
-    registryUsername: ""                          # REQUIRED
-    repo: ""                                      # REQUIRED - fill with desired value
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7)
-```
-
-Before running, be sure to run the following commands:
-
-```yaml
-export CATTLE_TEST_CONFIG=<path/to/yaml>
-export CLOUD_PROVIDER_VERSION=""
-export LOCALS_PROVIDER_VERSION=""
-```
-
-See the below examples on how to run the test:
-
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestCreateDualStackRKE2ClusterTestSuite$"`
-
-## Setup Dualstack K3S cluster
-
-See below an example config on setting up a standalone dual-stack K3S cluster:
-
-```yaml
-terraform:
-  privateKeyPath: ""
-  resourcePrefix: ""
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    ami: ""
-    awsKeyName: ""
-    awsInstanceType: ""
-    awsSecurityGroups: [""]
-    awsSubnetID: ""
-    awsVpcID: ""
-    awsZoneLetter: ""
-    awsRootSize: 100
-    awsRoute53Zone: ""
-    region: ""
-    prefix: ""
-    awsUser: ""
-    clusterCIDR: "10.42.0.0/16,2001:cafe:42::/56"
-    serviceCIDR: "10.43.0.0/16,2001:cafe:43::/112"
-    sshConnectionType: "ssh"
-    timeout: "5m"
-  standalone:
-    osGroup: ""                                   # REQUIRED - fill with group of the instance created
-    osUser: ""                                    # REQUIRED - fill with username of the instance created
-    rancherHostname: ""                           # REQUIRED - fill with desired value
-    rancherImage: ""                              # REQUIRED - fill with desired value
-    rancherTagVersion: ""                         # REQUIRED - fill with desired value
-    registryPassword: ""                          # REQUIRED
-    registryUsername: ""                          # REQUIRED
-    repo: ""                                      # REQUIRED - fill with desired value
-    k3sVersion: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7+k3s1)
-```
-
-Before running, be sure to run the following commands:
-
-```yaml
-export CATTLE_TEST_CONFIG=<path/to/yaml>
-export CLOUD_PROVIDER_VERSION=""
-export LOCALS_PROVIDER_VERSION=""
-```
-
-See the below examples on how to run the test:
-
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestCreateDualStackK3SClusterTestSuite$"`
-
-## Setup IPv6 RKE2 Cluster
-
-See below an example config on setting up a standalone IPv6 RKE2 cluster:
-
-```yaml
-terraform:
-  privateKeyPath: ""
-  resourcePrefix: ""
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    ami: ""
-    awsKeyName: ""
-    awsInstanceType: ""
-    awsSecurityGroups: [""]
-    awsSubnetID: ""
-    awsVpcID: ""
-    awsZoneLetter: ""
-    awsRootSize: 100
-    awsRoute53Zone: ""
-    enablePrimaryIPv6: true
-    httpProtocolIPv6: "enabled"
-    ipAddressType: "ipv6"
-    loadBalancerType: "dualstack"
-    targetType: "ip"
-    region: ""
-    prefix: ""
-    awsUser: ""
-    clusterCIDR: "2001:cafe:42::/56"
-    serviceCIDR: "2001:cafe:43::/112"
-    sshConnectionType: "ssh"
-    timeout: "5m"
-  standalone:
-    osGroup: ""                                   # REQUIRED - fill with group of the instance created
-    osUser: ""                                    # REQUIRED - fill with username of the instance created
-    rancherHostname: ""                           # REQUIRED - fill with desired value
-    rancherImage: ""                              # REQUIRED - fill with desired value
-    rancherTagVersion: ""                         # REQUIRED - fill with desired value
-    registryPassword: ""                          # REQUIRED
-    registryUsername: ""                          # REQUIRED
-    repo: ""                                      # REQUIRED - fill with desired value
-    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7)
-```
-
-## Setup IPv6 K3S Cluster
-
-See below an example config on setting up a standalone IPv6 K3S cluster:
-
-```yaml
-terraform:
-  privateKeyPath: ""
-  resourcePrefix: ""
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    ami: ""
-    awsKeyName: ""
-    awsInstanceType: ""
-    awsSecurityGroups: [""]
-    awsSubnetID: ""
-    awsVpcID: ""
-    awsZoneLetter: ""
-    awsRootSize: 100
-    awsRoute53Zone: ""
-    enablePrimaryIPv6: true
-    httpProtocolIPv6: "enabled"
-    ipAddressType: "ipv6"
-    loadBalancerType: "dualstack"
-    targetType: "ip"
-    region: ""
-    prefix: ""
-    awsUser: ""
-    clusterCIDR: "2001:cafe:42::/56"
-    serviceCIDR: "2001:cafe:43::/112"
-    sshConnectionType: "ssh"
-    timeout: "5m"
-  standalone:
-    osGroup: ""                                   # REQUIRED - fill with group of the instance created
-    osUser: ""                                    # REQUIRED - fill with username of the instance created
-    rancherHostname: ""                           # REQUIRED - fill with desired value
-    rancherImage: ""                              # REQUIRED - fill with desired value
-    rancherTagVersion: ""                         # REQUIRED - fill with desired value
-    registryPassword: ""                          # REQUIRED
-    registryUsername: ""                          # REQUIRED
-    repo: ""                                      # REQUIRED - fill with desired value
-    k3sVersion: ""                                # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7)
-```
-
-Before running, be sure to run the following commands:
-
-```yaml
-export CATTLE_TEST_CONFIG=<path/to/yaml>
-export CLOUD_PROVIDER_VERSION=""
-export LOCALS_PROVIDER_VERSION=""
-```
-
-See the below examples on how to run the tests:
-
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateIPv6K3SClusterTestSuite$"`
-
-Before running, be sure to run the following commands:
-
-```yaml
-export CATTLE_TEST_CONFIG=<path/to/yaml>
-export CLOUD_PROVIDER_VERSION=""
-export LOCALS_PROVIDER_VERSION=""
-```
-
-See the below examples on how to run the tests:
-
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=5h -v -run "TestCreateIPv6RKE2ClusterTestSuite$"`
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
 ## Setup K3S Cluster
 
@@ -933,9 +676,286 @@ Before running, be sure to run the following commands:
 ```yaml
 export CATTLE_TEST_CONFIG=<path/to/yaml>
 export CLOUD_PROVIDER_VERSION=""
-export LOCALS_PROVIDER_VERSION=""
 ```
 
-See the below examples on how to run the tests:
+See the below examples on how to run in the CLI:
 
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/infrastructure/ranchers --junitfile results.xml --jsonfile results.json -- -timeout=60m -v -run "TestCreateK3SClusterTestSuite$"`
+`go run main.go --normal-k3s`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
+
+## Setup Airgap RKE2 Cluster
+
+See below an example config on setting up a standalone airgapped RKE2 cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    region: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    awsUser: ""
+    registryRootSize: 500
+    sshConnectionType: "ssh"
+    timeout: ""
+  standalone:
+    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
+    rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    repo: ""                                      # REQUIRED - fill with desired value
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
+  standaloneRegistry:
+    assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
+    registryName: ""                              # REQUIRED - fill with desired value
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CLOUD_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run in the CLI:
+
+`go run main.go --airgap-rke2`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
+
+## Setup Dualstack RKE2 cluster
+
+See below an example config on setting up a standalone dual-stack RKE2 cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    region: ""
+    prefix: ""
+    awsUser: ""
+    clusterCIDR: "10.42.0.0/16,2001:cafe:42::/56"
+    serviceCIDR: "10.43.0.0/16,2001:cafe:43::/112"
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  standalone:
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    registryPassword: ""                          # REQUIRED
+    registryUsername: ""                          # REQUIRED
+    repo: ""                                      # REQUIRED - fill with desired value
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7)
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CLOUD_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run in the CLI:
+
+`go run main.go --dual-rke2`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
+
+## Setup Dualstack K3S cluster
+
+See below an example config on setting up a standalone dual-stack K3S cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    region: ""
+    prefix: ""
+    awsUser: ""
+    clusterCIDR: "10.42.0.0/16,2001:cafe:42::/56"
+    serviceCIDR: "10.43.0.0/16,2001:cafe:43::/112"
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  standalone:
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    registryPassword: ""                          # REQUIRED
+    registryUsername: ""                          # REQUIRED
+    repo: ""                                      # REQUIRED - fill with desired value
+    k3sVersion: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7+k3s1)
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CLOUD_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run in the CLI:
+
+`go run main.go --dual-k3s`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
+
+## Setup IPv6 RKE2 Cluster
+
+See below an example config on setting up a standalone IPv6 RKE2 cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    enablePrimaryIPv6: true
+    httpProtocolIPv6: "enabled"
+    ipAddressType: "ipv6"
+    loadBalancerType: "dualstack"
+    targetType: "ip"
+    region: ""
+    prefix: ""
+    awsUser: ""
+    clusterCIDR: "2001:cafe:42::/56"
+    serviceCIDR: "2001:cafe:43::/112"
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  standalone:
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    registryPassword: ""                          # REQUIRED
+    registryUsername: ""                          # REQUIRED
+    repo: ""                                      # REQUIRED - fill with desired value
+    rke2Version: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7)
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CLOUD_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run in the CLI:
+
+`go run main.go --ipv6-rke2`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
+
+## Setup IPv6 K3S Cluster
+
+See below an example config on setting up a standalone IPv6 K3S cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    enablePrimaryIPv6: true
+    httpProtocolIPv6: "enabled"
+    ipAddressType: "ipv6"
+    loadBalancerType: "dualstack"
+    targetType: "ip"
+    region: ""
+    prefix: ""
+    awsUser: ""
+    clusterCIDR: "2001:cafe:42::/56"
+    serviceCIDR: "2001:cafe:43::/112"
+    sshConnectionType: "ssh"
+    timeout: "5m"
+  standalone:
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    registryPassword: ""                          # REQUIRED
+    registryUsername: ""                          # REQUIRED
+    repo: ""                                      # REQUIRED - fill with desired value
+    k3sVersion: ""                                # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7)
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CLOUD_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run in the CLI:
+
+`go run main.go --ipv6-k3s`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.

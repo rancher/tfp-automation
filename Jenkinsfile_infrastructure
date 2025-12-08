@@ -1,0 +1,77 @@
+#!groovy
+node {
+  def homePath = pwd() + "/"
+  def rootPath = "/root/go/src/github.com/rancher/tfp-automation/"
+  def job_name = "${JOB_NAME}"
+  if (job_name.contains('/')) { 
+    job_names = job_name.split('/')
+    job_name = job_names[job_names.size() - 1] 
+  }
+  def testContainer = "${job_name}${env.BUILD_NUMBER}_test"
+  def imageName = "tfp-automation-validation-${job_name}${env.BUILD_NUMBER}"
+  def envFile = ".env"
+  def config = env.CONFIG
+  def testPackage = env.TEST_PACKAGE?.trim()
+  def branch = "${env.BRANCH}"
+  if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
+        branch = "${env.BRANCH}"
+  }
+  def repo = scm.userRemoteConfigs
+  if ("${env.REPO}" != "null" && "${env.REPO}" != "") {
+    repo = [[url: "${env.REPO}"]]
+  }
+  def timeout = "${env.TIMEOUT}"
+  if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
+        timeout = "${env.TIMEOUT}" 
+  }
+
+  withCredentials([ string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+                    string(credentialsId: 'RANCHER_LINODE_ACCESSKEY', variable: 'RANCHER_LINODE_ACCESSKEY'),
+                    string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
+                    string(credentialsId: 'AWS_SSH_RSA_KEY', variable: 'AWS_SSH_RSA_KEY'),
+                    string(credentialsId: 'AWS_SSH_KEY_NAME', variable: 'AWS_SSH_KEY_NAME'),
+                    string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
+  stage('Checkout') {
+          deleteDir()
+          checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${branch}"]],
+                    extensions: scm.extensions + [[$class: 'CleanCheckout']],
+                    userRemoteConfigs: repo
+                  ])
+        }
+    stage('Configure and Build') {
+      config = config.replace('${AWS_SECRET_ACCESS_KEY}', env.AWS_SECRET_ACCESS_KEY)
+      config = config.replace('${AWS_ACCESS_KEY_ID}', env.AWS_ACCESS_KEY_ID)
+      config = config.replace('${RANCHER_LINODE_ACCESSKEY}', env.RANCHER_LINODE_ACCESSKEY)
+
+      writeFile file: 'config.yml', text: config
+
+      dir(".ssh") {
+        def decoded = new String(env.AWS_SSH_PEM_KEY.decodeBase64())
+        writeFile file: AWS_SSH_KEY_NAME, text: decoded
+
+        def decodedRsa = new String(AWS_SSH_RSA_KEY.decodeBase64())
+        writeFile file: JENKINS_RKE_VALIDATION, text: decodedRsa
+      }
+      
+      env.CATTLE_TEST_CONFIG=rootPath+'config.yml'
+
+      sh "./configure.sh"
+      sh "./build.sh"
+    }
+    stage('Run Module Test') {
+      try {
+        sh """
+          docker run --name ${testContainer} -t --env-file ${envFile} ${imageName} sh -c "
+          go run ${rootPath}tests/infrastructure/main.go ${params.TEST_CASE};
+          ${rootPath}pipeline/scripts/build_qase_reporter.sh;
+          if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"
+        """
+      } catch(err) {
+          echo 'Test run had failures. Collecting results...'
+      }
+    }
+  }
+}

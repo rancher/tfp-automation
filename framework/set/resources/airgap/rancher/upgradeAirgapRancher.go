@@ -41,7 +41,7 @@ func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 	}
 
-	command += " || true'"
+	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/upgrade.sh"),

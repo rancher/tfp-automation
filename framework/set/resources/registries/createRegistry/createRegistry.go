@@ -43,7 +43,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	command += " || true'"
+	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/auth-registry.sh"),
@@ -96,7 +96,7 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 		}
 	}
 
-	command += " || true'"
+	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/non-auth-registry.sh"),
@@ -136,7 +136,7 @@ func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	command += " || true'"
+	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/ecr-registry.sh"),

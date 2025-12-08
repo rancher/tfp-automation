@@ -1,0 +1,64 @@
+{{define "providerversion"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Provider Versions</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+        <link rel="preload" href="/static/favicon.ico" as="image" />
+    </head>
+    <body>
+        <!-- Logo -->
+        <header>
+            <a href="https://www.rancher.com/" target="_blank">
+                <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+            </a>
+        </header>
+
+        <main>
+            <div class="container">
+                <h2>Enter Provider Versions</h2>
+
+                <!-- Terraform Links -->
+                <div style="margin-bottom:1.5rem; font-size:1rem; color:#2575fc;">
+                    <strong>Note:</strong> Navigate to these links to pick the desired versions:<br /><br />
+                    <a href="https://registry.terraform.io/providers/hashicorp/aws/latest" target="_blank">AWS Provider Versions</a><br />
+                    <a href="https://registry.terraform.io/providers/linode/linode/latest" target="_blank">Linode Provider Versions</a><br />
+                    <a href="https://registry.terraform.io/providers/vmware/vsphere/latest" target="_blank">vSphere Provider Versions</a><br />
+                </div>
+
+                <!-- Provider Versions Form -->
+                <form action="/confirm" method="post">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    {{if .ClusterType}}
+                        <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                    {{else}}
+                        <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                        <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{end}}
+                    <input type="hidden" name="provider" value="{{.Provider}}" />
+                    <label class="form-label" for="providerversion">Cloud Provider Version:</label>
+                    <div style="margin-bottom:0.5rem; font-size:0.98rem; color:#2575fc;">
+                        <em>Note: The cloud version is only for one of AWS, Linode, or vSphere.</em>
+                    </div>
+                    <input id="providerversion" name="providerversion" required class="form-input" />
+
+                    <button type="submit" class="form-button">Next &#8594;</button>
+                </form>
+                <form action="/provider" method="post" style="margin-top:1rem;">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    {{if eq .Selection "cluster"}}
+                        <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                   {{else if eq .Selection "rancher"}}
+                        <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                        <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{end}}
+                    <input type="hidden" name="provider" value="{{.Provider}}" />
+                    <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
+                </form>
+            </div>
+        </main>
+    </body>
+</html>
+{{end}}

@@ -1,0 +1,55 @@
+{{define "selection"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Rancher Types</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+        <link rel="preload" href="/static/favicon.ico" as="image" />
+    </head>
+    <body>
+        <!-- Logo -->
+        <header>
+            <a href="https://www.rancher.com/" target="_blank">
+                <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+            </a>
+        </header>
+
+        <main>
+            <div class="container">
+                <h2>Select Cluster or Rancher</h2>
+
+                <!-- Cluster or Rancher Form -->
+                <form id="selectionForm" action="/installtype" method="post">
+                    <input type="hidden" name="selection" id="selectionInput" value="" />
+                    <label class="form-label-radio">
+                        <input type="radio" class="form-radio" name="selectionRadio" value="cluster" required /> Cluster
+                    </label>
+                    <label class="form-label-radio">
+                        <input type="radio" class="form-radio" name="selectionRadio" value="rancher" required /> Rancher
+                    </label>
+
+                    <button type="submit" class="form-button">Next &#8594;</button>
+                </form>
+                <script>
+                document.getElementById('selectionForm').addEventListener('submit', function(e) {
+                    var selected = document.querySelector('input[name="selectionRadio"]:checked');
+                    if (!selected)
+                        return;
+
+                    document.getElementById('selectionInput').value = selected.value;
+
+                    if (selected.value === 'cluster') {
+                        this.action = '/clustertype';
+                    } else if (selected.value === 'rancher') {
+                        this.action = '/ranchertype';
+                    }
+
+                });
+                </script>
+            </div>
+        </main>
+    </body>
+</html>
+{{end}}

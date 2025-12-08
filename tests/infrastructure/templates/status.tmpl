@@ -1,0 +1,91 @@
+{{define "status"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Status</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+    <link rel="preload" href="/static/favicon.ico" as="image" />
+
+    <script>
+      function fetchStatus() {
+        fetch('/status', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(response => response.text())
+          .then(html => {
+            var temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            var newStage = temp.querySelector('#stage-msg');
+            var newError = temp.querySelector('#error-msg');
+            var header = document.getElementById('status-header');
+
+            if (newStage) {
+              const msg = newStage.innerText.trim();
+
+              if (msg.startsWith("https://")) {
+                document.getElementById('stage-msg').innerHTML =
+                  `Access your Rancher server here:<br /><br />
+                  <a href="${msg}" target="_blank">${msg}</a>`;
+
+                header.innerText = "SUCCESS!";
+
+              } else if (msg.startsWith("Cluster"))  {
+                document.getElementById('stage-msg').innerHTML =
+                  msg.replace(/\n/g, "<br />");
+
+                header.innerText = "SUCCESS!";
+              } else {
+                  document.getElementById('stage-msg').innerHTML = newStage.innerHTML;
+
+                  if (!newError || newError.innerText.trim() === "") {
+                    header.innerText = "Creating Rancher/Cluster";
+                  }
+                }
+            }
+
+            if (newError) {
+              const errorText = newError.innerText.trim();
+              document.getElementById('error-msg').innerHTML = newError.innerHTML;
+
+              if (errorText !== "") {
+                header.innerText = "ERROR!";
+              }
+            }
+          });
+      }
+
+      setInterval(fetchStatus, 2000);
+    </script>
+
+  </head>
+
+  <body>
+    <!-- Logo -->
+    <header>
+      <a href="https://www.rancher.com/" target="_blank">
+        <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+      </a>
+    </header>
+
+    <main>
+      <div class="container">
+        <h2 id="status-header">Creating Rancher/Cluster</h2>
+
+        <!-- Stage message -->
+        <div id="stage-msg" class="rancher-link-center">
+          {{.StageMsg}}
+        </div>
+
+        <!-- Error message -->
+        <div id="error-msg">
+          {{if .Error}}
+            <div class="error">Error: {{.Error}}</div>
+          {{end}}
+        </div>
+
+      </div>
+    </main>
+  </body>
+</html>
+{{end}}
