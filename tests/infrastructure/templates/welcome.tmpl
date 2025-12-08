@@ -1,0 +1,36 @@
+{{define "welcome"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>TFP GUI</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+        <link rel="preload" href="/static/favicon.ico" as="image" />
+    </head>
+    <body>
+        <!-- Logo -->
+        <header>
+            <a href="https://www.rancher.com/" target="_blank">
+                <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+            </a>
+        </header>
+
+        <main>
+            <div class="container">
+                <h2>Welcome to the TFP GUI!</h2>
+                <p>This application will allow you to do the following:</p>
+                <ul>
+                    <li>Deploy a Rancher Server</li>
+                    <li>Deploy a standalone RKE2 / K3S Cluster</li>
+                </ul>
+                <p>Click the button below to get started.</p>
+
+                <form action="/selection" method="post">
+                    <button type="submit" class="form-button">Next &#8594;</button>
+                </form>
+            </div>
+        </main>
+    </body>
+</html>
+{{end}}

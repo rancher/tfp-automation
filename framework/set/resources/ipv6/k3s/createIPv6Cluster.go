@@ -90,9 +90,7 @@ func createIPv6K3SServer(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 		k3sServerOnePublicIP + " " + k3sServerOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 		k3sToken + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
-
-	command += " || true'"
+		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -123,9 +121,7 @@ func addIPv6K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terr
 			k3sServerOnePublicIP + " " + privateInstance + " " + terraformConfig.Standalone.RancherHostname + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 			k3sToken + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
-
-		command += " || true'"
+			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

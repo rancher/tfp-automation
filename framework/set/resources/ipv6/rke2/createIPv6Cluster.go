@@ -90,9 +90,7 @@ func createIPv6RKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terra
 		rke2ServerOnePublicIP + " " + rke2ServerOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 		rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
-
-	command += " || true'"
+		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -125,9 +123,7 @@ func addIPv6RKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Ter
 			rke2ServerOnePublicIP + " " + publicIPInstance + " " + privateInstance + " " + terraformConfig.Standalone.RancherHostname + " " +
 			terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 			rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
-
-		command += " || true'"
+			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

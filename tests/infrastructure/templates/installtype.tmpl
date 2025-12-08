@@ -1,0 +1,53 @@
+{{define "installtype"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Installation Types</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+        <link rel="preload" href="/static/favicon.ico" as="image" />
+    </head>
+    <body>
+        <!-- Logo -->
+        <header>
+            <a href="https://www.rancher.com/" target="_blank">
+                <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+            </a>
+        </header>
+
+        <main>
+            <div class="container">
+                <h2>Select Installation Type</h2>
+
+                <!-- Installation Type Form -->
+                <form action="/provider" method="post">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    <input type="hidden" name="ranchertype" value="{{.RancherType}}" />
+                    <div style="margin-bottom:1.5rem;">
+                        {{if or (eq .RancherType "dual") (eq .RancherType "ipv6") (eq .RancherType "registry")}}
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="installtype" value="fresh" checked required /> Fresh
+                        </label>
+
+                        {{else}}
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="installtype" value="fresh" required /> Fresh
+                        </label>
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="installtype" value="upgrade" required /> Upgrade
+                        </label>
+                        {{end}}
+                    </div>
+                    <button type="submit" class="form-button">Next &#8594;</button>
+                </form>
+                <form action="/ranchertype" method="post" style="margin-top:1rem;">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    <input type="hidden" name="ranchertype" value="{{.RancherType}}" />
+                    <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
+                </form>
+            </div>
+        </main>
+    </body>
+</html>
+{{end}}

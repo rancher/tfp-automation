@@ -94,7 +94,7 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	command += " || true'"
+	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -129,7 +129,7 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 			command += " " + terraformConfig.Standalone.RancherAgentImage
 		}
 
-		command += " || true'"
+		command += "'"
 
 		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

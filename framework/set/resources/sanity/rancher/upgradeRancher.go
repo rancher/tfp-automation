@@ -55,7 +55,7 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		command += " \"\""
 	}
 
-	command += " || true'"
+	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/upgrade.sh"),

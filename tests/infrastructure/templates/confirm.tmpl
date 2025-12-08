@@ -1,0 +1,129 @@
+{{define "confirm"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Confirm Configuration</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+        <link rel="preload" href="/static/favicon.ico" as="image" />
+    </head>
+    <body>
+        <!-- Logo -->
+        <header>
+        <a href="https://www.rancher.com/" target="_blank">
+            <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+        </a>
+        </header>
+
+        <main>
+            <div class="container">
+                <h2>Review Configuration</h2>
+
+                {{if .EditMode}}
+                <!-- Dynamic Edit Form: All Configs -->
+                <form method="post">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    {{if eq .Selection "cluster"}}
+                        <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                    {{else if eq .Selection "rancher"}}
+                        <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                        <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{else}}
+                        {{if .ClusterType}}
+                            <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                        {{else if .RancherType}}
+                            <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                            <input type="hidden" name="installtype" value="{{.InstallType}}">
+                        {{end}}
+                    {{end}}
+                    <input type="hidden" name="provider" value="{{.Provider}}" />
+                    <input type="hidden" name="providerversion" value="{{.ProviderVersion}}" />
+                    <h3>Rancher Config</h3>
+                    {{range $key, $val := .RancherMap}}
+                        <div class="config-section">
+                            <label class="form-label" for="rancher_{{$key}}">{{$key}}</label>
+                            <input class="form-input" type="text" id="rancher_{{$key}}" name="{{$key}}" value="{{$val}}" />
+                        </div>
+                    {{end}}
+                    <h3>Terraform Config</h3>
+                    {{range $key, $val := .TerraformMap}}
+                        <div class="config-section">
+                            <label class="form-label" for="terraform_{{$key}}">{{$key}}</label>
+                            <input class="form-input" type="text" id="terraform_{{$key}}" name="{{$key}}" value="{{$val}}" />
+                        </div>
+                    {{end}}
+                    <h3>Terratest Config</h3>
+                    {{range $key, $val := .TerratestMap}}
+                        <div class="config-section">
+                            <label class="form-label" for="terratest_{{$key}}">{{$key}}</label>
+                            <input class="form-input" type="text" id="terratest_{{$key}}" name="{{$key}}" value="{{$val}}" />
+                        </div>
+                    {{end}}
+                    <h3>Standalone Config</h3>
+                    {{range $key, $val := .StandaloneMap}}
+                        <div class="config-section">
+                            <label class="form-label" for="standalone_{{$key}}">{{$key}}</label>
+                            <input class="form-input" type="text" id="standalone_{{$key}}" name="{{$key}}" value="{{$val}}" />
+                        </div>
+                    {{end}}
+                    <div class="button-row">
+                        <button type="submit" name="action" value="save" class="form-button">Save</button>
+                        <button type="submit" name="action" value="confirm" class="form-button form-button-secondary">Cancel</button>
+                    </div>
+                </form>
+                {{else}}
+                <!-- Confirmation Form -->
+                <form method="post">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    {{if eq .Selection "cluster"}}
+                        <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                    {{else if eq .Selection "rancher"}}
+                        <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                        <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{else}}
+                        {{if .ClusterType}}
+                            <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                        {{else if .RancherType}}
+                            <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                            <input type="hidden" name="installtype" value="{{.InstallType}}">
+                        {{end}}
+                    {{end}}
+                    <input type="hidden" name="provider" value="{{.Provider}}" />
+                    <input type="hidden" name="providerversion" value="{{.ProviderVersion}}" />
+                    <input type="hidden" name="confirm" value="true" />
+                    <div class="config-section">
+                        <h3>Rancher Config</h3>
+                        <pre class="config-pre">
+{{range $key, $val := .MaskedRancherMap}}{{$key}}: {{$val}}
+{{end}}</pre>
+                    </div>
+                    <div class="config-section">
+                        <h3>Terraform Config</h3>
+                        <pre class="config-pre">
+{{range $key, $val := .MaskedTerraformMap}}{{$key}}: {{$val}}
+{{end}}</pre>
+                    </div>
+                    <div class="config-section">
+                        <h3>Terratest Config</h3>
+                        <pre class="config-pre">
+{{range $key, $val := .MaskedTerratestMap}}{{$key}}: {{$val}}
+{{end}}</pre>
+                    </div>
+                    <div class="config-section">
+                        <h3>Standalone Config</h3>
+                        <pre class="config-pre">
+{{range $key, $val := .MaskedStandaloneMap}}{{$key}}: {{$val}}
+{{end}}</pre>
+                    </div>
+                    <div class="button-row">
+                        <button type="submit" name="action" value="confirm" class="form-button">Confirm</button>
+                        <button type="submit" name="action" value="edit" class="form-button form-button-secondary">Edit</button>
+                    </div>
+                </form>
+                {{end}}
+            </div>
+        </main>
+    </body>
+</html>
+{{end}}

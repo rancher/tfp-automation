@@ -42,8 +42,6 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
 
-	command += " || true"
-
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("cat <<'EOF' > /tmp/setup.sh\n" + string(scriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/setup.sh"),

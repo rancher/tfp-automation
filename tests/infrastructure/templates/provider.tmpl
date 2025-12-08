@@ -1,0 +1,96 @@
+{{define "provider"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Cloud Infrastructure</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+        <link rel="preload" href="/static/favicon.ico" as="image" />
+        <script>
+            function selectProvider(provider) {
+                document.getElementById('provider-input').value = provider;
+                document.querySelectorAll('.provider-img-label').forEach(function(label) {
+                    label.classList.remove('selected');
+                });
+                document.getElementById('label-' + provider).classList.add('selected');
+                setTimeout(function() {
+                    document.getElementById('provider-form').submit();
+                }, 200);
+            }
+        </script>
+    </head>
+    <body>
+        <!-- Logo -->
+        <header>
+            <a href="https://www.rancher.com/" target="_blank">
+                <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+            </a>
+        </header>
+
+        <main>
+            <div class="container">
+                <h2>Select Cloud Infrastructure</h2>
+
+                <!-- Provider Selection Form -->
+                <form id="provider-form" action="/providerversion" method="post">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    {{if .ClusterType}}
+                        <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                    {{else}}
+                        <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                        <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{end}}
+                    <input type="hidden" id="provider-input" name="provider" required />
+                    <div class="provider-select-grid">
+                        {{if or (eq .RancherType "airgap") (eq .RancherType "dual") (eq .RancherType "ipv6") (eq .RancherType "registry") 
+                            (eq .ClusterType "airgap-rke2") (eq .ClusterType "dual-rke2") (eq .ClusterType "dual-k3s") (eq .ClusterType "ipv6-rke2") 
+                            (eq .ClusterType "ipv6-k3s")}}
+                            <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
+                                <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
+                                <div>AWS</div>
+                            </label>
+                        {{else if eq .RancherType "proxy"}}
+                            <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
+                                <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
+                                <div>AWS</div>
+                            </label>
+                            <label id="label-linode" class="provider-img-label" onclick="selectProvider('linode')">
+                                <img src="/static/images/linode.png" alt="Linode" class="provider-img" />
+                                <div>Linode</div>
+                            </label>
+                        {{else}}
+                            <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
+                                <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
+                                <div>AWS</div>
+                            </label>
+                            <label id="label-linode" class="provider-img-label" onclick="selectProvider('linode')">
+                                <img src="/static/images/linode.png" alt="Linode" class="provider-img" />
+                                <div>Linode</div>
+                            </label>
+                            <label id="label-vsphere" class="provider-img-label" onclick="selectProvider('vsphere')">
+                                <img src="/static/images/vsphere.png" alt="vSphere" class="provider-img" />
+                                <div>vSphere</div>
+                            </label>
+                        {{end}}
+                    </div>
+                </form>
+                {{if eq .Selection "cluster"}}
+                <form action="/clustertype" method="post" style="margin-top:1rem;">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    <input type="hidden" name="clustertype" value="{{.ClusterType}}">
+                    <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
+                </form>
+                {{else if eq .Selection "rancher"}}
+                <form action="/installtype" method="post" style="margin-top:1rem;">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    <input type="hidden" name="ranchertype" value="{{.RancherType}}">
+                    <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
+                </form>
+                {{end}}
+            </div>
+        </main>
+    </body>
+</html>
+{{end}}

@@ -1,0 +1,56 @@
+{{define "ranchertype"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Rancher Types</title>
+        <link rel="stylesheet" href="/static/styles.css" />
+        <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+        <link rel="preload" href="/static/favicon.ico" as="image" />
+    </head>
+    <body>
+        <!-- Logo -->
+        <header>
+            <a href="https://www.rancher.com/" target="_blank">
+                <img src="/static/images/rancher.png" class="logo" alt="Rancher by SUSE Logo" />
+            </a>
+        </header>
+
+        <main>
+            <div class="container">
+                <h2>Select Rancher Type</h2>
+
+                <!-- Rancher Type Form -->
+                <form action="/installtype" method="post">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    <div style="margin-bottom:1.5rem;">
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="ranchertype" value="airgap" required /> Airgap
+                        </label>
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="ranchertype" value="dual" required /> Dualstack
+                        </label>
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="ranchertype" value="ipv6" required /> IPv6
+                        </label>
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="ranchertype" value="normal" required /> Normal
+                        </label>
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="ranchertype" value="proxy" required /> Proxy
+                        </label>
+                        <label class="form-label-radio">
+                            <input type="radio" class="form-radio" name="ranchertype" value="registry" required /> Registry
+                        </label>
+                    </div>
+                    <button type="submit" class="form-button">Next &#8594;</button>
+                </form>
+                <form action="/selection" method="post" style="margin-top:1rem;">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
+                </form>
+            </div>
+        </main>
+    </body>
+</html>
+{{end}}

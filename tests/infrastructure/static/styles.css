@@ -1,0 +1,211 @@
+/* Various form elements styling */
+.form-radio {
+    accent-color: #3fd35b;
+    margin-right: 0.5em;
+    width: 1.15em;
+    height: 1.15em;
+    vertical-align: middle;
+    transition: box-shadow 0.2s;
+}
+
+.form-label-radio {
+    font-weight: 500;
+    color: #0c322c;
+    margin-bottom: 0.75rem;
+    display: block;
+    letter-spacing: 0.5px;
+    font-size: 1.08rem;
+    cursor: pointer;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #0c322c;
+    margin-bottom: 0.25rem;
+    display: block;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1.5px solid #3fd35b;
+    background: #f3f7fa;
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(63,211,91,0.08);
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    border-color: #2575fc;
+    outline: none;
+    box-shadow: 0 0 0 2px #3fd35b33;
+}
+
+.form-button {
+    width: 100%;
+    padding: 0.85rem 0;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(90deg, #3fd35b 0%, #2575fc 100%);
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(63,211,91,0.12);
+    transition: background 0.2s, transform 0.2s;
+}
+
+.form-button:hover {
+    transform: translateY(-2px) scale(1.03);
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0c322c;
+    background: linear-gradient(135deg, #0c322c 0%, #3fd35b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Rancher by SUSE logo */
+.logo {
+    position: absolute;
+    top: 24px;
+    left: 32px;
+    width: 350px;
+    height: auto;
+    z-index: 10;
+}
+
+.container {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 2.5rem 2rem;
+    max-width: 420px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2575fc;
+    letter-spacing: 1px;
+}
+
+/* Stage message */
+.stage {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: #f3f7fa;
+    transition: background 0.3s;
+}
+
+/* Error message */
+.error {
+    color: #d8000c;
+    background: #ffd2d2;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+/* Cloud infrastructure providers */
+.provider-select-grid {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.provider-img-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+.provider-img-label.selected {
+  box-shadow: 0 0 0 4px #2575fc44;
+  transform: scale(1.05);
+}
+
+.provider-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(63,211,91,0.10);
+    margin-bottom: 0.5rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.provider-img-label:hover .provider-img {
+  box-shadow: 0 0 0 4px #2575fc44;
+  transform: scale(1.04);
+}
+
+.provider-img-label div {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #2575fc;
+  margin-top: 0.5rem;
+  letter-spacing: 1px;
+}
+
+/* Centering the Rancher URL link */
+.rancher-link-center {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* Config review sections for confirm page */
+.config-section {
+    margin-bottom: 1.5rem;
+}
+
+.config-pre {
+    background: #f3f7fa;
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.98rem;
+    color: #222;
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+    margin-top: 0.5rem;
+}
+
+.button-row {
+    display: flex;
+    gap: 2.5rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.form-button-secondary {
+    background: #fff;
+    color: #2575fc;
+    border: 2px solid #2575fc;
+    box-shadow: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.form-button-secondary:hover {
+    background: #eaf3ff;
+    color: #0c322c;
+}

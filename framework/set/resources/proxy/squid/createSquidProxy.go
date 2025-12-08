@@ -46,7 +46,7 @@ func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2ServerTwoPrivateIP + " " +
-		rke2ServerThreePrivateIP + " || true'"
+		rke2ServerThreePrivateIP + "'"
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/setup.sh"),
