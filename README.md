@@ -14,7 +14,7 @@
 ## Feature Flags
 | MCM | Turtles |
 |:---:|:-------:|
-| [![MCM](https://github.com/rancher/tfp-automation/actions/workflows/mcm-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/mcm-test.yaml) | [![Turtles](https://github.com/rancher/tfp-automation/actions/workflows/turtles-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-test.yaml) <br> [![Turtles Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/turtles-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-upgrade-test.yaml)
+| [![MCM](https://github.com/rancher/tfp-automation/actions/workflows/mcm-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/mcm-test.yaml) | [![Turtles](https://github.com/rancher/tfp-automation/actions/workflows/turtles-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-test.yaml) <br> [![Turtles Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/turtles-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-upgrade-test.yaml) <br> [![Turtles Airgap](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-test.yaml) <br> [![Turtles Airgap Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-upgrade-test.yaml)
 
 ## KDM
 | KDM |

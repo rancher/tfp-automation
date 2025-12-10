@@ -9,9 +9,11 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
+	"github.com/rancher/tfp-automation/tests/extensions/ssh"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +23,7 @@ func UpgradingAirgapRancher(t *testing.T, provider string) error {
 
 	configPath := os.Getenv("CATTLE_TEST_CONFIG")
 	cattleConfig := shepherdConfig.LoadConfigFromFile(configPath)
-	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
+	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	if provider != "" {
 		terraformConfig.Provider = provider
@@ -33,10 +35,20 @@ func UpgradingAirgapRancher(t *testing.T, provider string) error {
 	registry, bastion, err := resources.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
+	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
+	require.NoError(t, err)
+
+	err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
+	require.NoError(t, err)
+
 	testSession := session.NewSession()
 
-	_, err = PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
+	client, err := PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
+
+	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
+		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
+	}
 
 	terraformConfig.Standalone.UpgradeAirgapRancher = true
 
@@ -47,8 +59,12 @@ func UpgradingAirgapRancher(t *testing.T, provider string) error {
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.AirgapKeyPath)
-	_, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, true)
+	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
+
+	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
+		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.UpgradedTurtles)
+	}
 
 	return nil
 }

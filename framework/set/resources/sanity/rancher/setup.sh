@@ -255,7 +255,7 @@ install_default_rancher() {
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         --version ${CHART_VERSION} \
                                                                                         ${RANCHER_TAG} \
-                                                                                            ${IMAGE} \
+                                                                                        ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                         --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \

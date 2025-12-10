@@ -39,6 +39,14 @@ func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 
 	if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
+	} else {
+		command += " \"\""
+	}
+
+	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.UpgradedTurtles != "" {
+		command += " " + terraformConfig.Standalone.FeatureFlags.UpgradedTurtles
+	} else {
+		command += " \"\""
 	}
 
 	command += "'"
