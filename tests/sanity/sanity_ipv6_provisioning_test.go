@@ -76,6 +76,7 @@ func (s *TfpSanityIPv6ProvisioningTestSuite) TestTfpProvisioningSanityIPv6() {
 		module    string
 	}{
 		{"Sanity_IPv6_RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"Sanity_IPv6_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	for _, tt := range tests {

@@ -1,9 +1,12 @@
 package rke2k3s
 
 import (
+	"strings"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 )
 
@@ -21,9 +24,19 @@ func setRKEConfig(clusterBlockBody *hclwrite.Body, terraformConfig *config.Terra
 	}
 
 	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
-		cidrValues := hclwrite.TokensForTraversal(hcl.Traversal{
-			hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " + terraformConfig.AWSConfig.ServiceCIDR + "\nEOF"},
-		})
+		var cidrValues hclwrite.Tokens
+
+		if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
+			cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{
+				hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " +
+					terraformConfig.AWSConfig.ServiceCIDR + "\nflannel-ipv6-masq: true\nEOF"},
+			})
+		} else {
+			cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{
+				hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " +
+					terraformConfig.AWSConfig.ServiceCIDR + "\nEOF"},
+			})
+		}
 
 		rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, cidrValues)
 
