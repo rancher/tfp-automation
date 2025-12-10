@@ -20,15 +20,15 @@ var setupClusterFuncs = map[string]func(*testing.T, string) error{
 }
 
 var setupRancherFuncs = map[string]func(*testing.T, string) error{
-	"--airgap:fresh":    ranchers.CreateAirgapRancher,
-	"--airgap:upgrade":  ranchers.UpgradingAirgapRancher,
-	"--dualstack:fresh": ranchers.CreateDualStackRancher,
-	"--ipv6:fresh":      ranchers.CreateIPv6Rancher,
-	"--normal:fresh":    ranchers.CreateRancher,
-	"--normal:upgrade":  ranchers.UpgradingRancher,
-	"--proxy:fresh":     ranchers.CreateProxyRancher,
-	"--proxy:upgrade":   ranchers.UpgradingProxyRancher,
-	"--registry:fresh":  ranchers.CreateRegistryRancher,
+	"--airgap:fresh":   ranchers.CreateAirgapRancher,
+	"--airgap:upgrade": ranchers.UpgradingAirgapRancher,
+	"--dual:fresh":     ranchers.CreateDualStackRancher,
+	"--ipv6:fresh":     ranchers.CreateIPv6Rancher,
+	"--normal:fresh":   ranchers.CreateRancher,
+	"--normal:upgrade": ranchers.UpgradingRancher,
+	"--proxy:fresh":    ranchers.CreateProxyRancher,
+	"--proxy:upgrade":  ranchers.UpgradingProxyRancher,
+	"--registry:fresh": ranchers.CreateRegistryRancher,
 }
 
 // RunCLI is a function that runs the CLI setup based on command-line arguments

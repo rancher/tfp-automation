@@ -76,6 +76,7 @@ func (s *TfpSanityDualStackProvisioningTestSuite) TestTfpProvisioningSanityDualS
 		module    string
 	}{
 		{"Sanity_DualStack_RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{"Sanity_DualStack_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	for _, tt := range tests {
