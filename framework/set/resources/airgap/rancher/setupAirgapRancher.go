@@ -40,6 +40,14 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
+	} else {
+		command += " \"\""
+	}
+
+	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.Turtles != "" {
+		command += " " + terraformConfig.Standalone.FeatureFlags.Turtles
+	} else {
+		command += " \"\""
 	}
 
 	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
