@@ -311,7 +311,7 @@ jobs:
     environment: alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tofag-213"
+      HOSTNAME_PREFIX: "toff-213"
 
     steps:
       - name: Checkout repository
@@ -841,7 +841,7 @@ jobs:
     environment: alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tag-213"
+      HOSTNAME_PREFIX: "taoff-213"
 
     steps:
       - name: Checkout repository

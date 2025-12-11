@@ -316,7 +316,7 @@ jobs:
     environment: latest
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tuofagu-213"
+      HOSTNAME_PREFIX: "tuoff-213"
 
     steps:
       - name: Checkout repository
@@ -588,7 +588,7 @@ jobs:
     environment: latest
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tuagu-213"
+      HOSTNAME_PREFIX: "tuon-213"
 
     steps:
       - name: Checkout repository
