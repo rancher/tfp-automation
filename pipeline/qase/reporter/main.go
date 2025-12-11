@@ -46,7 +46,7 @@ func main() {
 		runID, err := strconv.ParseInt(runIDEnvVar, 10, 64)
 
 		if testRunName != "" {
-			resp, err := client.CreateTestRun(testRunName, projectIDEnvVar)
+			resp, err := client.CreateTestRun(testRunName, projectIDEnvVar, "")
 			if err != nil {
 				logrus.Error("error creating test run: ", err)
 			} else {

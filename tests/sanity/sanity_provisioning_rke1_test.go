@@ -109,7 +109,8 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) TestTfpRKE1ProvisioningSanity() {
 			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(s.T(), err)
 
-			pods.VerifyClusterPods(s.T(), s.client, cluster)
+			err = pods.VerifyClusterPods(s.client, cluster)
+			require.NoError(s.T(), err)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])

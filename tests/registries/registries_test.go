@@ -128,7 +128,9 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(r.T(), err)
 
-			pods.VerifyClusterPods(r.T(), r.client, cluster)
+			err = pods.VerifyClusterPods(r.client, cluster)
+			require.NoError(r.T(), err)
+
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 
@@ -208,7 +210,9 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(r.T(), err)
 
-			pods.VerifyClusterPods(r.T(), r.client, cluster)
+			err = pods.VerifyClusterPods(r.client, cluster)
+			require.NoError(r.T(), err)
+
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 
@@ -294,7 +298,9 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(r.T(), err)
 
-			pods.VerifyClusterPods(r.T(), r.client, cluster)
+			err = pods.VerifyClusterPods(r.client, cluster)
+			require.NoError(r.T(), err)
+
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 
@@ -381,7 +387,9 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(r.T(), err)
 
-			pods.VerifyClusterPods(r.T(), r.client, cluster)
+			err = pods.VerifyClusterPods(r.client, cluster)
+			require.NoError(r.T(), err)
+
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 		})
 
