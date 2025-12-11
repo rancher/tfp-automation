@@ -36,7 +36,7 @@ jobs:
         run: ./.github/scripts/build-packages.sh
 
       - name: Golangci Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.64.3
+          version: v2.7.2
           skip-cache: true

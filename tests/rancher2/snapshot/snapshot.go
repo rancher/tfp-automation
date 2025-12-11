@@ -220,7 +220,7 @@ func createWorkloads(t *testing.T, client *rancher.Client, clusterID string, pod
 		return false, nil
 	})
 
-	err = deploy.VerifyDeployment(steveclient, deploymentResp)
+	err = deploy.VerifyDeployment(client, clusterID, defaultNamespace, deploymentResp.Name)
 	require.NoError(t, err)
 	require.Equal(t, workloadName, deploymentResp.ObjectMeta.Name)
 

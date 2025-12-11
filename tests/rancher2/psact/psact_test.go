@@ -122,7 +122,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(p.T(), err)
 
-			pods.VerifyClusterPods(p.T(), adminClient, cluster)
+			err = pods.VerifyClusterPods(p.client, cluster)
+			require.NoError(p.T(), err)
+
 			provisioning.VerifyClusterPSACT(p.T(), adminClient, clusterIDs)
 		})
 

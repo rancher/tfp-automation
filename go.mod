@@ -1,6 +1,6 @@
 module github.com/rancher/tfp-automation
 
-go 1.24.2
+go 1.25.0
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.27 // for compatibilty with docker 20.10.x
@@ -50,9 +50,9 @@ require (
 require (
 	github.com/gruntwork-io/terratest v0.49.0
 	github.com/imdario/mergo v0.3.16
-	github.com/rancher/norman v0.7.1
+	github.com/rancher/norman v0.8.0
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20251106204618-0f330e53bbc0
+	github.com/rancher/shepherd v0.0.0-20251203195144-c9f6483abe67
 	github.com/rancher/tests v0.0.0-20251110212725-072c07d47741
 	github.com/rancher/tests/actions v0.0.0-20251110212725-072c07d47741
 	github.com/sirupsen/logrus v1.9.3
@@ -74,7 +74,7 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/containerd/cgroups/v3 v3.0.2 // indirect
-	github.com/containerd/containerd v1.7.27 // indirect
+	github.com/containerd/containerd v1.7.28 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
@@ -87,7 +87,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 // indirect
 	github.com/hashicorp/go-getter/v2 v2.2.3 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
@@ -103,8 +103,8 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runc v1.2.1 // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
-	github.com/rancher/ali-operator v0.0.5 // indirect
-	github.com/rancher/rancher v0.0.0-20250806201723-9a7af3779b9d // indirect
+	github.com/rancher/ali-operator v1.13.0-rc.2 // indirect
+	github.com/rancher/rancher v0.0.0-20251203234820-b95b2fb0d738 // indirect
 	github.com/rancher/wrangler/v3 v3.3.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
@@ -114,26 +114,26 @@ require (
 	go.etcd.io/etcd/client/v2 v2.305.21 // indirect
 	go.etcd.io/etcd/client/v3 v3.6.4 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/otel v1.37.0 // indirect
-	go.opentelemetry.io/otel/trace v1.37.0 // indirect
+	go.opentelemetry.io/otel v1.38.0 // indirect
+	go.opentelemetry.io/otel/trace v1.38.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/tools v0.37.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250825161204-c5933d9347a5 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251002232023-7c0ddcbb5797 // indirect
 	google.golang.org/grpc v1.75.1 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	k8s.io/component-helpers v0.34.1 // indirect
-	k8s.io/pod-security-admission v0.33.2 // indirect
+	k8s.io/pod-security-admission v0.34.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 )
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/aws/aws-sdk-go v1.55.6 // indirect
+	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -203,22 +203,22 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.72.0 // indirect
-	github.com/prometheus/client_golang v1.22.0 // indirect
-	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.62.0 // indirect
-	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/rancher/aks-operator v1.13.0-rc.1 // indirect
-	github.com/rancher/apiserver v0.7.0 // indirect
-	github.com/rancher/eks-operator v1.13.0-rc.1 // indirect
+	github.com/prometheus/client_golang v1.23.2 // indirect
+	github.com/prometheus/client_model v0.6.2 // indirect
+	github.com/prometheus/common v0.66.1 // indirect
+	github.com/prometheus/procfs v0.17.0 // indirect
+	github.com/rancher/aks-operator v1.13.0-rc.4 // indirect
+	github.com/rancher/apiserver v0.8.0 // indirect
+	github.com/rancher/eks-operator v1.13.0-rc.4 // indirect
 	github.com/rancher/fleet/pkg/apis v0.14.0-rc.1 // indirect
-	github.com/rancher/gke-operator v1.13.0-rc.1 // indirect
+	github.com/rancher/gke-operator v1.13.0-rc.3 // indirect
 	github.com/rancher/lasso v0.2.5 // indirect
-	github.com/rancher/rke v1.8.0-rc.4 // indirect
-	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250710162344-185ff9f785cd // indirect
+	github.com/rancher/rke v1.8.0 // indirect
+	github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250930163923-f2c9e60b1078 // indirect
 	github.com/rancher/wrangler v1.1.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/spf13/cobra v1.9.1 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/spf13/cobra v1.10.1 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/term v0.36.0 // indirect
@@ -234,11 +234,13 @@ require (
 	k8s.io/kube-openapi v0.31.5 // indirect
 	k8s.io/kubectl v0.34.1 // indirect
 	k8s.io/kubernetes v1.34.1 // indirect
-	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
+	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
 	sigs.k8s.io/cli-utils v0.37.2 // indirect
 	sigs.k8s.io/cluster-api v1.10.6 // indirect
-	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
+	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.20.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.20.1 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/rancher/tests/actions => github.com/susesgartner/tests/actions v0.0.0-20251211221755-62c6930b248c
