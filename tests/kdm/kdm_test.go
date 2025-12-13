@@ -137,7 +137,8 @@ func (k *KDMTestSuite) TestKDM() {
 			cluster, err := k.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(k.T(), err)
 
-			pods.VerifyClusterPods(k.T(), k.client, cluster)
+			err = pods.VerifyClusterPods(k.client, cluster)
+			require.NoError(k.T(), err)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])

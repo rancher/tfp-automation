@@ -114,13 +114,15 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(s.T(), err)
 
-			pods.VerifyClusterPods(s.T(), s.client, cluster)
+			err = pods.VerifyClusterPods(s.client, cluster)
+			require.NoError(s.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
-				pods.VerifyClusterPods(s.T(), s.client, cluster)
+				err = pods.VerifyClusterPods(s.client, cluster)
+				require.NoError(s.T(), err)
 			}
 		})
 
