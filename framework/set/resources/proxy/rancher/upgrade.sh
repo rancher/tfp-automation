@@ -19,7 +19,7 @@ else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
 
     if [[ -n "$RANCHER_AGENT_IMAGE" ]]; then
-        IMAGE_REPOSITORY="rancher/rancher"
+        IMAGE_REPOSITORY="rancher"
     else
         IMAGE_REPOSITORY="${RANCHER_IMAGE#*/}"
     fi
