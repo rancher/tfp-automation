@@ -65,6 +65,7 @@ EOF
 
 setup_networking() {
   sudo systemctl disable systemd-resolved; sudo systemctl stop systemd-resolved
+  sleep 5
   sudo sed -i.bak "s/^nameserver .*/nameserver ${VPC_IP}/" /etc/resolv.conf
   sudo sed -i.bak "/^options /d" /etc/resolv.conf
   echo "options edns0" | sudo tee -a /etc/resolv.conf

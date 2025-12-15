@@ -25,6 +25,7 @@ run_ssh() {
    export GROUP=${GROUP}; \
    export VPC_IP=${VPC_IP}; \
    export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
+   export RKE2_NEW_SERVER_IP=${RKE2_NEW_SERVER_IP}; \
    export RKE2_TOKEN=${RKE2_TOKEN}; \
    export REGISTRY=${REGISTRY}; \
    export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
@@ -67,6 +68,7 @@ EOF
 
 setup_networking() {
   sudo systemctl disable systemd-resolved; sudo systemctl stop systemd-resolved
+  sleep 5
   sudo sed -i.bak "s/^nameserver .*/nameserver ${VPC_IP}/" /etc/resolv.conf
   sudo sed -i.bak "/^options /d" /etc/resolv.conf
   echo "options edns0" | sudo tee -a /etc/resolv.conf
@@ -88,8 +90,8 @@ run_ssh "${RKE2_NEW_SERVER_IP}" "sudo systemctl enable rke2-server"
 run_ssh "${RKE2_NEW_SERVER_IP}" "sudo systemctl start rke2-server"
 
 setupDaemonFunction=$(declare -f setup_docker_daemon)
-run_ssh "${RKE2_SERVER_ONE_IP}" "${setupDaemonFunction}; setup_docker_daemon"
-run_ssh "${RKE2_SERVER_ONE_IP}" "sudo systemctl restart docker && sudo systemctl daemon-reload"
+run_ssh "${RKE2_NEW_SERVER_IP}" "${setupDaemonFunction}; setup_docker_daemon"
+run_ssh "${RKE2_NEW_SERVER_IP}" "sudo systemctl restart docker && sudo systemctl daemon-reload"
 
 setupNetworkingFunction=$(declare -f setup_networking)
 run_ssh "${RKE2_NEW_SERVER_IP}" "${setupNetworkingFunction}; setup_networking"
