@@ -8,12 +8,17 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+type BastionSSHTunnel struct {
+	listener net.Listener
+	client   *ssh.Client
+}
+
 // StartBastionSSHTunnel establishes an SSH tunnel through a bastion host. This function specifically is for airgap setups,
 // but can be adapted for other use cases as well.
-func StartBastionSSHTunnel(bastionAddr, sshUser string, sshKey []byte, localPort, remoteHost, remotePort string) error {
+func StartBastionSSHTunnel(bastionAddr, sshUser string, sshKey []byte, localPort, remoteHost, remotePort string) (*BastionSSHTunnel, error) {
 	signer, err := ssh.ParsePrivateKey(sshKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	auths := []ssh.AuthMethod{ssh.PublicKeys(signer)}
@@ -26,13 +31,18 @@ func StartBastionSSHTunnel(bastionAddr, sshUser string, sshKey []byte, localPort
 	cfg.SetDefaults()
 	client, err := ssh.Dial("tcp", bastionAddr+":22", cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	listener, err := net.Listen("tcp", "127.0.0.1:"+localPort)
 	if err != nil {
 		client.Close()
-		return err
+		return nil, err
+	}
+
+	tunnel := &BastionSSHTunnel{
+		client:   client,
+		listener: listener,
 	}
 
 	go func() {
@@ -54,5 +64,16 @@ func StartBastionSSHTunnel(bastionAddr, sshUser string, sshKey []byte, localPort
 		}
 	}()
 
-	return nil
+	return tunnel, nil
+}
+
+// StopBastionSSHTunnel stops the SSH tunnel by closing the listener and client connections.
+func (t *BastionSSHTunnel) StopBastionSSHTunnel() {
+	if t.listener != nil {
+		_ = t.listener.Close()
+	}
+
+	if t.client != nil {
+		_ = t.client.Close()
+	}
 }

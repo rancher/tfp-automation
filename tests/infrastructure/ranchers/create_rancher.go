@@ -32,7 +32,7 @@ const (
 
 // SetupAirgapRancher sets up an airgapped Rancher server and returns the client, configuration, and Terraform options.
 func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, string, *terraform.Options,
-	*terraform.Options, map[string]any) {
+	*terraform.Options, map[string]any, *ssh.BastionSSHTunnel) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
@@ -45,7 +45,7 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
 	require.NoError(t, err)
 
-	err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
+	tunnel, err := ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
 	require.NoError(t, err)
 
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
@@ -61,7 +61,7 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 		t.Fatalf("ERROR: not all of the local cluster pods are using the private registry")
 	}
 
-	return client, registry, bastion, standaloneTerraformOptions, terraformOptions, cattleConfig
+	return client, registry, bastion, standaloneTerraformOptions, terraformOptions, cattleConfig, tunnel
 }
 
 // SetupDualStackRancher sets up an dual-stack Rancher server and returns the client, configuration, and Terraform options.

@@ -40,7 +40,7 @@ func CreateAirgapRancher(t *testing.T, provider string) error {
 	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
 	require.NoError(t, err)
 
-	err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
+	_, err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
 	require.NoError(t, err)
 
 	testSession := session.NewSession()
