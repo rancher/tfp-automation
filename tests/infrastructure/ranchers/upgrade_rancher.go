@@ -1,6 +1,7 @@
 package ranchers
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -15,12 +16,13 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/extensions/ssh"
 	"github.com/stretchr/testify/require"
 )
 
 // UpgradeAirgapRancher upgrades an existing airgapped Rancher server and returns the client, configuration, and Terraform options.
-func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registry string, session *session.Session, cattleConfig map[string]any) (*rancher.Client,
-	map[string]any, *terraform.Options, *terraform.Options) {
+func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registry string, session *session.Session, cattleConfig map[string]any,
+	tunnel *ssh.BastionSSHTunnel) (*rancher.Client, map[string]any, *terraform.Options, *terraform.Options) {
 	var err error
 
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
@@ -31,6 +33,14 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	upgradeTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig, "", "", bastion, registry)
+	require.NoError(t, err)
+
+	tunnel.StopBastionSSHTunnel()
+
+	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
+	require.NoError(t, err)
+
+	tunnel, err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.AirgapKeyPath)

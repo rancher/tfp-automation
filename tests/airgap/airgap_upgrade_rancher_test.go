@@ -23,6 +23,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/extensions/ssh"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -44,6 +45,7 @@ type TfpAirgapUpgradeRancherTestSuite struct {
 	terraformOptions           *terraform.Options
 	registry                   string
 	bastion                    string
+	tunnel                     *ssh.BastionSSHTunnel
 }
 
 func (a *TfpAirgapUpgradeRancherTestSuite) TearDownSuite() {
@@ -58,7 +60,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	a.session = testSession
 
-	a.client, a.registry, a.bastion, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig = ranchers.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
+	a.client, a.registry, a.bastion, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig, a.tunnel = ranchers.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
 }
 
@@ -68,9 +70,10 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
 	a.provisionAndVerifyCluster("Airgap_Pre_Rancher_Upgrade_", clusterIDs)
 
-	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = ranchers.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig)
+	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = ranchers.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig, a.tunnel)
 
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
+	a.rancherConfig.Host = a.rancherConfig.Host + ":8443"
 	a.provisionAndVerifyCluster("Airgap_Post_Rancher_Upgrade_", clusterIDs)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")

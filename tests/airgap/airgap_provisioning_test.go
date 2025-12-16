@@ -53,7 +53,7 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	a.session = testSession
 
-	a.client, a.registry, _, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig = ranchers.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
+	a.client, a.registry, _, a.standaloneTerraformOptions, a.terraformOptions, a.cattleConfig, _ = ranchers.SetupAirgapRancher(a.T(), a.session, keypath.AirgapKeyPath)
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
 }
 
