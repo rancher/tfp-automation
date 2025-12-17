@@ -1,32 +1,5 @@
 # <p align="center">RANCHER :small_blue_diamond: TFP-AUTOMATION</p>
 
-
-## Rancher Infrastructure Tests
-| Airgap | Post Release | Proxy | Registry | Sanity |
-|:------:|:------------:|:-----:|:--------:|:------:|
-| [![Airgap](https://github.com/rancher/tfp-automation/actions/workflows/airgap-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/airgap-test.yaml) <br> [![Airgap Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/airgap-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/airgap-upgrade-test.yaml) | [![Post Release Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity.yaml) <br> [![Post Release Upgrade Sanity](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/post-release-sanity-upgrade.yaml) | [![Proxy](https://github.com/rancher/tfp-automation/actions/workflows/proxy-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-test.yaml) <br> [![Proxy Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/proxy-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/proxy-upgrade-test.yaml) | [![Registry](https://github.com/rancher/tfp-automation/actions/workflows/registry-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/registry-test.yaml) | [![Sanity](https://github.com/rancher/tfp-automation/actions/workflows/sanity-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-test.yaml) <br> [![Sanity Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-test.yaml) <br> [![Sanity ARM64](https://github.com/rancher/tfp-automation/actions/workflows/sanity-arm64-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-arm64-test.yaml) <br> [![Sanity Upgrade ARM64](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-arm64-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-upgrade-arm64-test.yaml) <br> [![Sanity IPv6](https://github.com/rancher/tfp-automation/actions/workflows/sanity-ipv6-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-ipv6-test.yaml) <br> [![Sanity Dual-Stack](https://github.com/rancher/tfp-automation/actions/workflows/sanity-dualstack-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/sanity-dualstack-test.yaml)
-
-## Rancher2 Recuring Tests
-| Recurring |
-|:---------:|
-| [![Rancher2 Recurring](https://github.com/rancher/tfp-automation/actions/workflows/rancher2-recurring-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/rancher2-recurring-test.yaml)
-
-## Feature Flags
-| MCM | Turtles |
-|:---:|:-------:|
-| [![MCM](https://github.com/rancher/tfp-automation/actions/workflows/mcm-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/mcm-test.yaml) | [![Turtles](https://github.com/rancher/tfp-automation/actions/workflows/turtles-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-test.yaml) <br> [![Turtles Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/turtles-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-upgrade-test.yaml) <br> [![Turtles Airgap](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-test.yaml) <br> [![Turtles Airgap Upgrade](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-upgrade-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/turtles-airgap-upgrade-test.yaml)
-
-## KDM
-| KDM |
-|:---:|
-| [![KDM Testing](https://github.com/rancher/tfp-automation/actions/workflows/kdm-test.yaml/badge.svg?branch=main)](https://github.com/rancher/tfp-automation/actions/workflows/kdm-test.yaml)
-
-`tfp-automation` is a Github Actions based testing framework designed to handle the following tasks:
-
-The above points are done with an emphasis on testing the Rancher2 Terraform provider. This framework utilizes Terratest alongside Go to accomplish these goals.
-
----
-
 <a name="top"></a>
 
 # <p align="center"> :scroll: Table of contents </p>
