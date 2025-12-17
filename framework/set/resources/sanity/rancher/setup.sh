@@ -105,17 +105,14 @@ install_turtles_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
                 helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
-                                                                                            --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                            --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                            --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                            --set 'extraEnv[1].value=prime' \
-                                                                                            --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                            --set 'extraEnv[2].value=suse' \
-                                                                                            --set 'extraEnv[3].name=CATTLE_FEATURES' \
-                                                                                            --set 'extraEnv[3].value=turtles=false\,embedded-cluster-api=true' \
+                                                                                            --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                                            --set 'extraEnv[0].value=prime' \
+                                                                                            --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                                            --set 'extraEnv[1].value=suse' \
+                                                                                            --set 'extraEnv[2].name=CATTLE_FEATURES' \
+                                                                                            --set 'extraEnv[2].value=turtles=false\,embedded-cluster-api=true' \
                                                                                             --set agentTLSMode=system-store \
                                                                                             --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                             --devel
@@ -135,20 +132,17 @@ install_turtles_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
                                                                                             --set ingress.tls.source=letsEncrypt \
                                                                                             --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                             --set letsEncrypt.ingress.class=nginx \
-                                                                                            --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                            --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                            --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                            --set 'extraEnv[1].value=prime' \
-                                                                                            --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                            --set 'extraEnv[2].value=suse' \
-                                                                                            --set 'extraEnv[3].name=CATTLE_FEATURES' \
-                                                                                            --set 'extraEnv[3].value=turtles=false\,embedded-cluster-api=true' \
+                                                                                            --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                                            --set 'extraEnv[0].value=prime' \
+                                                                                            --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                                            --set 'extraEnv[1].value=suse' \
+                                                                                            --set 'extraEnv[2].name=CATTLE_FEATURES' \
+                                                                                            --set 'extraEnv[2].value=turtles=false\,embedded-cluster-api=true' \
                                                                                             --set agentTLSMode=system-store \
                                                                                             --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                             --devel
@@ -179,17 +173,14 @@ install_mcm_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
                 helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
-                                                                                            --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                            --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                            --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                            --set 'extraEnv[1].value=prime' \
-                                                                                            --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                            --set 'extraEnv[2].value=suse' \
-                                                                                            --set 'extraEnv[3].name=CATTLE_FEATURES' \
-                                                                                            --set 'extraEnv[3].value=multi-cluster-management=false' \
+                                                                                            --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                                            --set 'extraEnv[0].value=prime' \
+                                                                                            --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                                            --set 'extraEnv[1].value=suse' \
+                                                                                            --set 'extraEnv[2].name=CATTLE_FEATURES' \
+                                                                                            --set 'extraEnv[2].value=multi-cluster-management=false' \
                                                                                             --set agentTLSMode=system-store \
                                                                                             --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                             --devel
@@ -209,20 +200,17 @@ install_mcm_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
                                                                                             --set ingress.tls.source=letsEncrypt \
                                                                                             --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                             --set letsEncrypt.ingress.class=nginx \
-                                                                                            --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                            --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                            --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                            --set 'extraEnv[1].value=prime' \
-                                                                                            --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                            --set 'extraEnv[2].value=suse' \
-                                                                                            --set 'extraEnv[3].name=CATTLE_FEATURES' \
-                                                                                            --set 'extraEnv[3].value=multi-cluster-management=false' \
+                                                                                            --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                                            --set 'extraEnv[0].value=prime' \
+                                                                                            --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                                            --set 'extraEnv[1].value=suse' \
+                                                                                            --set 'extraEnv[2].name=CATTLE_FEATURES' \
+                                                                                            --set 'extraEnv[2].value=multi-cluster-management=false' \
                                                                                             --set agentTLSMode=system-store \
                                                                                             --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                             --devel
@@ -253,15 +241,12 @@ install_default_rancher() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                        --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                        --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                        --set 'extraEnv[1].value=prime' \
-                                                                                        --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                        --set 'extraEnv[2].value=suse' \
+                                                                                        --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                                        --set 'extraEnv[0].value=prime' \
+                                                                                        --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                                        --set 'extraEnv[1].value=suse' \
                                                                                         --set agentTLSMode=system-store \
                                                                                         --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                         --devel
@@ -279,7 +264,6 @@ install_default_rancher() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
