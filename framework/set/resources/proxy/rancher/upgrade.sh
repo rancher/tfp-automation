@@ -39,16 +39,13 @@ upgrade_self_signed_rancher() {
     echo "Upgrading self-signed Rancher"
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                        --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                        --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                        --set 'extraEnv[1].value=prime' \
-                                                                                        --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                        --set 'extraEnv[2].value=suse' \
+                                                                                        --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                                        --set 'extraEnv[0].value=prime' \
+                                                                                        --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                                        --set 'extraEnv[1].value=suse' \
                                                                                         --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                         --set noProxy="${NO_PROXY}" \
                                                                                         --set agentTLSMode=system-store \
@@ -71,19 +68,16 @@ upgrade_lets_encrypt_rancher() {
     echo "Upgrading Lets Encrypt Rancher"
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                         --version ${CHART_VERSION} \
                                                                                          --set hostname=${HOSTNAME} \
                                                                                          ${RANCHER_TAG} \
                                                                                          ${IMAGE} \
                                                                                          --set ingress.tls.source=letsEncrypt \
                                                                                          --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                          --set letsEncrypt.ingress.class=nginx \
-                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                         --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                         --set 'extraEnv[1].value=prime' \
-                                                                                         --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                         --set 'extraEnv[2].value=suse' \
+                                                                                         --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                                         --set 'extraEnv[0].value=prime' \
+                                                                                         --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                                         --set 'extraEnv[1].value=suse' \
                                                                                          --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                          --set noProxy="${NO_PROXY}" \
                                                                                          --set agentTLSMode=system-store \

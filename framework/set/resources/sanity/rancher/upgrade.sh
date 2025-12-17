@@ -39,7 +39,6 @@ upgrade_turtles_off() {
     if [ "$CERT_TYPE" == "self-signed" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
@@ -68,7 +67,6 @@ upgrade_turtles_off() {
     elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
@@ -111,7 +109,6 @@ upgrade_mcm_off() {
     if [ "$CERT_TYPE" == "self-signed" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
@@ -140,7 +137,6 @@ upgrade_mcm_off() {
     elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
@@ -159,7 +155,6 @@ upgrade_mcm_off() {
                                                                                         --devel
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
@@ -183,7 +178,6 @@ upgrade_default_rancher() {
     if [ "$CERT_TYPE" == "self-signed" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
@@ -208,7 +202,6 @@ upgrade_default_rancher() {
     elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
