@@ -112,7 +112,8 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(r.T(), err)
 
-			pods.VerifyClusterPods(r.T(), adminClient, cluster)
+			err = pods.VerifyClusterPods(r.client, cluster)
+			require.NoError(r.T(), err)
 
 			rb.RBAC(r.T(), adminClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
 		})

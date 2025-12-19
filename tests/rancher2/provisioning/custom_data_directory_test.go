@@ -115,7 +115,9 @@ func (p *CustomDataDirectoryTestSuite) TestTfpCustomDataDirectory() {
 			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(p.T(), err)
 
-			pods.VerifyClusterPods(p.T(), adminClient, cluster)
+			err = pods.VerifyClusterPods(p.client, cluster)
+			require.NoError(p.T(), err)
+
 			verify.VerifyDataDirectories(p.T(), adminClient, cluster)
 		})
 

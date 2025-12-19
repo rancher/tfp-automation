@@ -141,13 +141,16 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 			cluster, err := a.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(a.T(), err)
 
-			pods.VerifyClusterPods(a.T(), a.client, cluster)
+			err = pods.VerifyClusterPods(a.client, cluster)
+			require.NoError(a.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
-				pods.VerifyClusterPods(a.T(), a.client, cluster)
+
+				err = pods.VerifyClusterPods(a.client, cluster)
+				require.NoError(a.T(), err)
 			}
 		})
 

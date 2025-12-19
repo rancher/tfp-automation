@@ -1,33 +1,53 @@
-linters:
-  disable-all: true
-  enable:
-    - goimports
-    - govet
-    - misspell
-    - revive
-    - goconst
-    - forbidigo
-    - predeclared
-linters-settings:
-  revive:
-    rules:
-      - name: confusing-naming
-        disabled: true
-      - name: exported
-        disabled: false
-  goconst:
-    min-len: 2
-    min-occurrences: 10
-    match-constant: true
-    ignore-strings: "metadata.+"
-  forbidigo:
-    forbid:
-      - p: ^fmt\.Print.*$
-        msg: "No format prints, please testing or logrus packages"
+version: "2"
 run:
   tests: false
-  timeout: 10m
-issues:
-  exclude-files:
-    - ^*\.yaml$
-    - ^*\.yml$
+linters:
+  default: none
+  enable:
+    - forbidigo
+    - goconst
+    - govet
+    - misspell
+    - predeclared
+    - revive
+  settings:
+    forbidigo:
+      forbid:
+        - pattern: ^fmt\.Print.*$
+          msg: No format prints, please testing or logrus packages
+    goconst:
+      match-constant: true
+      min-len: 2
+      min-occurrences: 10
+      ignore-string-values:
+        - metadata.+
+    revive:
+      rules:
+        - name: confusing-naming
+          disabled: true
+        - name: exported
+          disabled: false
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - ^*\.yaml$
+      - ^*\.yml$
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - ^*\.yaml$
+      - ^*\.yml$
+      - third_party$
+      - builtin$
+      - examples$

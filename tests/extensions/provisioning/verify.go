@@ -10,10 +10,6 @@ import (
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	"github.com/rancher/tests/actions/psact"
 	"github.com/rancher/tests/actions/registries"
-	"github.com/rancher/tests/actions/workloads/cronjob"
-	"github.com/rancher/tests/actions/workloads/daemonset"
-	"github.com/rancher/tests/actions/workloads/deployment"
-	"github.com/rancher/tests/actions/workloads/statefulset"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/tests/extensions/postProvisioning"
@@ -42,45 +38,6 @@ func VerifyV3ClustersPods(t *testing.T, client *rancher.Client, clusterIDs []str
 	for _, clusterID := range clusterIDs {
 		podErrors := pods.StatusPods(client, clusterID)
 		require.Empty(t, podErrors)
-	}
-}
-
-// VerifyWorkloads validates that different workload operations and workload types are able to provision successfully
-func VerifyWorkloads(t *testing.T, client *rancher.Client, clusterIDs []string) {
-	workloadValidations := []struct {
-		name           string
-		validationFunc func(client *rancher.Client, clusterID string) error
-	}{
-		{"WorkloadDeployment", deployment.VerifyCreateDeployment},
-		{"WorkloadSideKick", deployment.VerifyCreateDeploymentSideKick},
-		{"WorkloadDaemonSet", daemonset.VerifyCreateDaemonSet},
-		{"WorkloadCronjob", cronjob.VerifyCreateCronjob},
-		{"WorkloadStatefulset", statefulset.VerifyCreateStatefulset},
-		{"WorkloadUpgrade", deployment.VerifyDeploymentUpgradeRollback},
-		{"WorkloadPodScaleUp", deployment.VerifyDeploymentPodScaleUp},
-		{"WorkloadPodScaleDown", deployment.VerifyDeploymentPodScaleDown},
-		{"WorkloadPauseOrchestration", deployment.VerifyDeploymentPauseOrchestration},
-	}
-
-	for _, clusterID := range clusterIDs {
-		clusterName, err := clusterExtensions.GetClusterNameByID(client, clusterID)
-		require.NoError(t, err)
-
-		logrus.Infof("Validating workloads (%s)", clusterName)
-		for _, workloadValidation := range workloadValidations {
-			retries := 3
-			for i := 0; i+1 < retries; i++ {
-				err = workloadValidation.validationFunc(client, clusterID)
-				if err != nil {
-					logrus.Info(err)
-					logrus.Infof("Retry %v / %v", i+1, retries)
-					continue
-				}
-
-				break
-			}
-			require.NoError(t, err)
-		}
 	}
 }
 

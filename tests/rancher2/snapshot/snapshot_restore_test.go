@@ -125,13 +125,15 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(s.T(), err)
 
-			pods.VerifyClusterPods(s.T(), adminClient, cluster)
+			err = pods.VerifyClusterPods(s.client, cluster)
+			require.NoError(s.T(), err)
 
 			RestoreSnapshot(s.T(), adminClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), adminClient, clusterIDs)
-			pods.VerifyClusterPods(s.T(), adminClient, cluster)
+			err = pods.VerifyClusterPods(s.client, cluster)
+			require.NoError(s.T(), err)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])

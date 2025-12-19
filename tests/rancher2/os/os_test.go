@@ -8,20 +8,18 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/cloudcredentials"
-	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
+	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/config/operations/permutations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/nodes/ec2"
 	"github.com/rancher/tests/actions/qase"
-	"github.com/rancher/tests/actions/workloads/cronjob"
-	"github.com/rancher/tests/actions/workloads/daemonset"
-	"github.com/rancher/tests/actions/workloads/deployment"
-	"github.com/rancher/tests/actions/workloads/statefulset"
+	"github.com/rancher/tests/actions/workloads"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -140,48 +138,27 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 			provisioning.VerifyServiceAccountTokenSecret(o.T(), o.client, clusterIDs)
 		})
 
-		workloadTests := []struct {
-			name           string
-			validationFunc func(client *rancher.Client, clusterID string) error
-		}{
-			{"WorkloadDeployment", deployment.VerifyCreateDeployment},
-			{"WorkloadSideKick", deployment.VerifyCreateDeploymentSideKick},
-			{"WorkloadDaemonSet", daemonset.VerifyCreateDaemonSet},
-			{"WorkloadCronjob", cronjob.VerifyCreateCronjob},
-			{"WorkloadStatefulset", statefulset.VerifyCreateStatefulset},
-			{"WorkloadUpgrade", deployment.VerifyDeploymentUpgradeRollback},
-			{"WorkloadPodScaleUp", deployment.VerifyDeploymentPodScaleUp},
-			{"WorkloadPodScaleDown", deployment.VerifyDeploymentPodScaleDown},
-			{"WorkloadPauseOrchestration", deployment.VerifyDeploymentPauseOrchestration},
+		for _, clusterID := range clusterIDs {
+			cluster, err := o.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterID)
+			require.NoError(o.T(), err)
+
+			workloadConfigs := new(workloads.Workloads)
+			operations.LoadObjectFromMap(workloads.WorkloadsConfigurationFileKey, o.cattleConfig, workloadConfigs)
+
+			logrus.Infof("Creating workloads on cluster: %s", cluster.Name)
+			createdWorkloads, err := workloads.CreateWorkloads(o.client, cluster.Name, *workloadConfigs)
+			require.NoError(o.T(), err)
+
+			logrus.Infof("Verifying workloads on cluster: %s", cluster.Name)
+			_, err = workloads.VerifyWorkloads(o.client, cluster.Name, *createdWorkloads)
+			require.NoError(o.T(), err)
 		}
 
-		for _, workloadTest := range workloadTests {
-			o.Run(workloadTest.name, func() {
-				for _, clusterID := range clusterIDs {
-					clusterName, err := clusterExtensions.GetClusterNameByID(o.client, clusterID)
-					require.NoError(o.T(), err)
-
-					logrus.Infof("Running %s on cluster %s", workloadTest.name, clusterName)
-					retries := 3
-					for i := 0; i+1 < retries; i++ {
-						err := workloadTest.validationFunc(o.client, clusterID)
-						if err != nil {
-							logrus.Info(err)
-							logrus.Infof("Retry %v / %v", i+1, retries)
-							continue
-						}
-
-						break
-					}
-				}
-			})
-
-			for _, cattleConfig := range batch {
-				params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
-				err = qase.UpdateSchemaParameters(testName, params)
-				if err != nil {
-					logrus.Warningf("Failed to upload schema parameters %s", err)
-				}
+		for _, cattleConfig := range batch {
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+			err = qase.UpdateSchemaParameters(testName, params)
+			if err != nil {
+				logrus.Warningf("Failed to upload schema parameters %s", err)
 			}
 		}
 	}
