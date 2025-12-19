@@ -15,6 +15,11 @@ on:
         required: false
         default: false
         type: boolean
+      reporting:
+        description: "Enable reporting to Qase and Slack"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -39,6 +44,11 @@ jobs:
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
       HOSTNAME_PREFIX: "tfp-arm-up-213"
+      REPORTING_ENABLED: >-
+        ${{
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+        }}
 
     steps:
       - name: Checkout repository
@@ -120,6 +130,7 @@ jobs:
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
+        if: env.REPORTING_ENABLED == 'true'
         id: get-qase-id
         uses: ./.github/actions/get-qase-id
         with:
@@ -275,14 +286,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: always()
+        if: env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: always()
+        if: env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -300,6 +311,11 @@ jobs:
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
       HOSTNAME_PREFIX: "tfp-arm-up-212"
+      REPORTING_ENABLED: >-
+        ${{
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+        }}
 
     steps:
       - name: Checkout repository
@@ -383,6 +399,7 @@ jobs:
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
+        if: env.REPORTING_ENABLED == 'true'
         id: get-qase-id
         uses: ./.github/actions/get-qase-id
         with:
@@ -547,14 +564,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: always()
+        if: env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: always()
+        if: env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
