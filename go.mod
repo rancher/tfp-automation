@@ -53,8 +53,8 @@ require (
 	github.com/rancher/norman v0.8.0
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/shepherd v0.0.0-20251203195144-c9f6483abe67
-	github.com/rancher/tests v0.0.0-20251110212725-072c07d47741
-	github.com/rancher/tests/actions v0.0.0-20251110212725-072c07d47741
+	github.com/rancher/tests v0.0.0-20251219213136-f97bd0b50c7d
+	github.com/rancher/tests/actions v0.0.0-20251219213136-f97bd0b50c7d
 	github.com/sirupsen/logrus v1.9.3
 	go.qase.io/qase-api-client v0.0.0-00010101000000-000000000000
 )
@@ -242,5 +242,3 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.20.1 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-replace github.com/rancher/tests/actions => github.com/susesgartner/tests/actions v0.0.0-20251211221755-62c6930b248c
