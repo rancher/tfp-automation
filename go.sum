@@ -303,8 +303,10 @@ github.com/rancher/shepherd v0.0.0-20251203195144-c9f6483abe67 h1:1BUWLjjtHbbPtQ
 github.com/rancher/shepherd v0.0.0-20251203195144-c9f6483abe67/go.mod h1:SJtW8Jqv0rphZzsGnvB965YdyR2FqFtB+TbbzVLt8F4=
 github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250930163923-f2c9e60b1078 h1:1MJSgYkgXhr/Zc5idJkKa10SiBQd0HVtbxVOBoghlzY=
 github.com/rancher/system-upgrade-controller/pkg/apis v0.0.0-20250930163923-f2c9e60b1078/go.mod h1:CV2Soy/Skw8/SA9dDJVgpeHxoEdtjYkNpNy6xvvC5kA=
-github.com/rancher/tests v0.0.0-20251110212725-072c07d47741 h1:yJ4QYGi+vaEBdOAByYAgAz78VOXQhT/pGeYpIBGnPrg=
-github.com/rancher/tests v0.0.0-20251110212725-072c07d47741/go.mod h1:bAXG7u/ioVOvifRaJ3ZydPwc5HyDQner81H2RagiJ8E=
+github.com/rancher/tests v0.0.0-20251219213136-f97bd0b50c7d h1:JzMjFKa/pxBSD4KTE/JXzKkPOkzB8eKjvMRewHEKWEE=
+github.com/rancher/tests v0.0.0-20251219213136-f97bd0b50c7d/go.mod h1:BMXhYo93NHVg0bCEjnsai4fafYVnlhfToBg6mO9D/VI=
+github.com/rancher/tests/actions v0.0.0-20251219213136-f97bd0b50c7d h1:pPSEdGH8ulz16YWpGpmyKx5Sgyd5hfVEqoSNuyoqz/c=
+github.com/rancher/tests/actions v0.0.0-20251219213136-f97bd0b50c7d/go.mod h1:FDHgI1Zz0LfSAMKPankSSw9mlQQs05Z4W4a48xxCwEc=
 github.com/rancher/wrangler v1.1.2 h1:oXbXo9k7y/H4drUpb4RM1c++vT9O3rpoNEfyusGykiU=
 github.com/rancher/wrangler v1.1.2/go.mod h1:2k9MyhlBdjcutcBGoOJSUAz0HgDAXnMjv81d3n/AaQc=
 github.com/rancher/wrangler/v3 v3.3.1 h1:YFqRfhxjuLNudUrvWrn+64wUPZ8pnn2KWbTsha75JLg=
@@ -338,8 +340,6 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/susesgartner/tests/actions v0.0.0-20251211221755-62c6930b248c h1:+s9af3sHDzzlbCI5/PDl+X9ttXYU7JW4KlRrcagdf08=
-github.com/susesgartner/tests/actions v0.0.0-20251211221755-62c6930b248c/go.mod h1:C/g2J7TK1qUulZP7/hoQEwvfkBEClCZoNWCa/LDN1G8=
 github.com/tmccombs/hcl2json v0.6.4 h1:/FWnzS9JCuyZ4MNwrG4vMrFrzRgsWEOVi+1AyYUVLGw=
 github.com/tmccombs/hcl2json v0.6.4/go.mod h1:+ppKlIW3H5nsAsZddXPy2iMyvld3SHxyjswOZhavRDk=
 github.com/ulikunitz/xz v0.5.10 h1:t92gobL9l3HE202wg3rlk19F6X+JOxl9BBrCCMYEYd8=
