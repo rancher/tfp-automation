@@ -4,6 +4,7 @@ package provisioning
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -79,6 +80,10 @@ func (p *ProvisionHostedTestSuite) TestTfpProvisionHosted() {
 	}
 
 	for _, tt := range tests {
+		if strings.Contains(tt.name, "GKE") {
+			p.T().Skip("Skipping GKE test due to known GH issue: https://github.com/rancher/terraform-provider-rancher2/issues/1750")
+		}
+
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
 		defer file.Close()
 

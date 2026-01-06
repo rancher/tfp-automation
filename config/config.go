@@ -210,25 +210,21 @@ type Snapshots struct {
 }
 
 type TerratestConfig struct {
-	AKSKubernetesVersion         string     `json:"aksKubernetesVersion,omitempty" yaml:"aksKubernetesVersion,omitempty"`
-	EKSKubernetesVersion         string     `json:"eksKubernetesVersion,omitempty" yaml:"eksKubernetesVersion,omitempty"`
-	GKEKubernetesVersion         string     `json:"gkeKubernetesVersion,omitempty" yaml:"gkeKubernetesVersion,omitempty"`
-	KubernetesVersion            string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
-	LocalQaseReporting           bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
-	EtcdCount                    int64      `json:"etcdCount,omitempty" yaml:"etcdCount,omitempty"`
-	ControlPlaneCount            int64      `json:"controlPlaneCount,omitempty" yaml:"controlPlaneCount,omitempty"`
-	WorkerCount                  int64      `json:"workerCount,omitempty" yaml:"workerCount,omitempty"`
-	Nodepools                    []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
-	PathToRepo                   string     `json:"pathToRepo,omitempty" yaml:"pathToRepo,omitempty"`
-	PSACT                        string     `json:"psact,omitempty" yaml:"psact,omitempty"`
-	SnapshotInput                Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
-	StandaloneLogging            bool       `json:"standaloneLogging,omitempty" yaml:"standaloneLogging,omitempty"`
-	TFLogging                    bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
-	UpgradedAKSKubernetesVersion string     `json:"upgradedAKSKubernetesVersion,omitempty" yaml:"upgradedAKSKubernetesVersion,omitempty"`
-	UpgradedEKSKubernetesVersion string     `json:"upgradedEKSKubernetesVersion,omitempty" yaml:"upgradedEKSKubernetesVersion,omitempty"`
-	UpgradedGKEKubernetesVersion string     `json:"upgradedGKEKubernetesVersion,omitempty" yaml:"upgradedGKEKubernetesVersion,omitempty"`
-	UpgradedKubernetesVersion    string     `json:"upgradedKubernetesVersion,omitempty" yaml:"upgradedKubernetesVersion,omitempty"`
-	WindowsNodeCount             int64      `json:"windowsNodeCount,omitempty" yaml:"windowsNodeCount,omitempty"`
+	AKSKubernetesVersion string     `json:"aksKubernetesVersion,omitempty" yaml:"aksKubernetesVersion,omitempty"`
+	EKSKubernetesVersion string     `json:"eksKubernetesVersion,omitempty" yaml:"eksKubernetesVersion,omitempty"`
+	GKEKubernetesVersion string     `json:"gkeKubernetesVersion,omitempty" yaml:"gkeKubernetesVersion,omitempty"`
+	KubernetesVersion    string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
+	LocalQaseReporting   bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
+	EtcdCount            int64      `json:"etcdCount,omitempty" yaml:"etcdCount,omitempty"`
+	ControlPlaneCount    int64      `json:"controlPlaneCount,omitempty" yaml:"controlPlaneCount,omitempty"`
+	WorkerCount          int64      `json:"workerCount,omitempty" yaml:"workerCount,omitempty"`
+	Nodepools            []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
+	PathToRepo           string     `json:"pathToRepo,omitempty" yaml:"pathToRepo,omitempty"`
+	PSACT                string     `json:"psact,omitempty" yaml:"psact,omitempty"`
+	SnapshotInput        Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
+	StandaloneLogging    bool       `json:"standaloneLogging,omitempty" yaml:"standaloneLogging,omitempty"`
+	TFLogging            bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
+	WindowsNodeCount     int64      `json:"windowsNodeCount,omitempty" yaml:"windowsNodeCount,omitempty"`
 }
 
 // LoadTFPConfigs loads the TFP configurations from the provided map

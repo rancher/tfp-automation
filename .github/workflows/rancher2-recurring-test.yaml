@@ -288,9 +288,6 @@ jobs:
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_14 }}"
             eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_14 }}"
             gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_14 }}"
-            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_14 }}"
-            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_14 }}"
-            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_14 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -615,9 +612,6 @@ jobs:
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_13 }}"
             eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_13 }}"
             gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_13 }}"
-            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_13 }}"
-            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_13 }}"
-            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_13 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -952,9 +946,6 @@ jobs:
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_12 }}"
             eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_12 }}"
             gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_12 }}"
-            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_12 }}"
-            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_12 }}"
-            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_12 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -1285,9 +1276,6 @@ jobs:
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_11 }}"
             eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_11 }}"
             gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_11 }}"
-            upgradedAKSKubernetesVersion: "${{ vars.UPGRADED_AKS_KUBERNETES_VERSION_2_11 }}"
-            upgradedEKSKubernetesVersion: "${{ vars.UPGRADED_EKS_KUBERNETES_VERSION_2_11 }}"
-            upgradedGKEKubernetesVersion: "${{ vars.UPGRADED_GKE_KUBERNETES_VERSION_2_11 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG

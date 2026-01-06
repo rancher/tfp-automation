@@ -28,7 +28,6 @@
             -   [GKE Nodepools](#configurations-terratest-nodepools-gke)
             -   [RKE1, RKE2, K3S Nodepools](#configurations-terratest-nodepools-rke1_rke2_k3s)
         -  [Provision](#configurations-terratest-provision)
-        -  [Kubernetes Upgrade](#configurations-terratest-kubernetes_upgrade)
         -  [Snapshots](#configurations-terratest-snapshots)
         -  [Build Module](#configurations-terratest-build_module)
         -  [Cleanup](#configurations-terratest-cleanup)
@@ -793,41 +792,6 @@ terratest:
   # e.g. v1.28.7+k3s1
 ```
 
-Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
-
----
-
-<a name="configurations-terratest-kubernetes_upgrade"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-##### Kubernetes Upgrade
-
-```yaml
-terratest:
-  pathToRepo: # REQUIRED - path to repo from user's go directory i.e. ../go/<path/to/repo/tfp-automation>
-  nodepools:
-    - quantity: 1
-      etcd: true
-      controlplane: false
-      worker: false
-    - quantity: 1
-      etcd: false
-      controlplane: true
-      worker: false
-    - quantity: 1
-      etcd: false
-      controlplane: false
-      worker: true
-  nodeCount: 3
-  aksKubernetesVersion: ""
-  eksKubernetesVersion: ""
-  gkeKubernetesVersion: ""
-  kubernetesVersion: ""
-  upgradedAKSKubernetesVersion: ""
-  upgradedEKSKubernetesVersion: ""
-  upgradedGKEKubernetesVersion: ""
-  upgradedKubernetesVersion: ""
-```
 Note: In this test suite, Terraform explicitly cleans up resources after each test case is performed. This is because Terraform will experience caching issues, causing tests to fail.
 
 ---
