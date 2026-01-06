@@ -18,7 +18,6 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -103,7 +102,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotRestore"}, tt.etcdSnapshot.SnapshotInput.SnapshotRestore, configMap[0])
 		require.NoError(s.T(), err)
 
-		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 

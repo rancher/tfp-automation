@@ -55,14 +55,6 @@ runs:
             cp results_snapshot.json results.json
             ./pipeline/scripts/build_qase_reporter.sh;
             ./reporter;
-
-            gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/upgrading \
-            --junitfile results.xml --jsonfile results_upgrade.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
-            upgrading_code=$?;
-            echo "upgrading_code=$upgrading_code" >> $GITHUB_ENV;
-            cp results_upgrade.json results.json
-            ./pipeline/scripts/build_qase_reporter.sh;
-            ./reporter;
             ;;
         esac
       shell: bash
@@ -75,7 +67,6 @@ runs:
            [psact_code]="PSACT:results_psact.json"
            [rbac_code]="RBAC:results_rbac.json"
            [snapshot_code]="Snapshot:results_snapshot.json"
-           [upgrading_code]="Upgrading:results_upgrade.json"
          )
 
          failed=0

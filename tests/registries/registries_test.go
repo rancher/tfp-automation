@@ -12,7 +12,6 @@ import (
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -113,7 +112,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, false, configMap[0])
 		require.NoError(r.T(), err)
 
-		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
@@ -195,7 +194,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, configMap[0])
 		require.NoError(r.T(), err)
 
-		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
@@ -283,7 +282,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, false, configMap[0])
 		require.NoError(r.T(), err)
 
-		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
@@ -372,7 +371,7 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "authConfigSecretName"}, r.terraformConfig.PrivateRegistries.AuthConfigSecretName+"-ecr", configMap[0])
 		require.NoError(r.T(), err)
 
-		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(r.T(), r.standardUserClient, r.terratestConfig, r.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 

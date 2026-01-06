@@ -11,9 +11,6 @@ const (
 	TestUser     = "testuser"
 	TestPassword = "testpassword"
 
-	DefaultK8sVersion    = "default"
-	SecondHighestVersion = "second"
-
 	MainTF          = "/main.tf"
 	RKEDebugLog     = "/rke_debug.log"
 	TerraformFolder = "/.terraform"

@@ -16,7 +16,6 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -122,7 +121,7 @@ func (k *KDMTestSuite) TestKDM() {
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(k.T(), err)
 
-		provisioning.GetK8sVersion(k.T(), k.standardUserClient, k.terratestConfig, k.terraformConfig, configs.DefaultK8sVersion, configMap)
+		provisioning.GetK8sVersion(k.T(), k.standardUserClient, k.terratestConfig, k.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 

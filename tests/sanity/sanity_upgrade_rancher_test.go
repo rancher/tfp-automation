@@ -14,7 +14,6 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -123,7 +122,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(s.T(), err)
 
-		provisioning.GetK8sVersion(s.T(), s.standardUserClient, s.terratestConfig, s.terraformConfig, configs.SecondHighestVersion, configMap)
+		provisioning.GetK8sVersion(s.T(), s.standardUserClient, s.terratestConfig, s.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
