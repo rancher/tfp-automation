@@ -30,7 +30,16 @@ runs:
         TAGS=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name')
 
         for RELEASE_LINE in $RELEASE_LINES; do
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name' | grep -E "^$RELEASE_LINE" | head -n 1)
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name' | grep -E "^$RELEASE_LINE" | head -n 1 || true)
+
+          SUFFIX=$(echo "$RELEASE_LINE" | tr -d '.')
+
+          if [[ -z "$LATEST_VERSION" ]]; then
+            echo "No tag found for $RELEASE_LINE, skipping..."
+            eval "LATEST_TAG_${SUFFIX}=''"
+            echo "LATEST_TAG_${SUFFIX}=" >> $GITHUB_ENV
+            continue
+          fi
 
           echo "Latest tag for $RELEASE_LINE: $LATEST_VERSION"
 
@@ -41,7 +50,7 @@ runs:
             echo "Asset count for $LATEST_VERSION: $ASSET_COUNT"
 
             if [ "$ASSET_COUNT" -lt 17 ]; then
-              echo "Asset count: $ASSET_COUNT. Skipping $RELEASE_LINE tests due to not all assets being available."
+              echo "Asset count: $ASSET_COUNT. Expected at least 17 assets..."
               LATEST_VERSION=""
             fi
           else
@@ -53,14 +62,14 @@ runs:
             fi
           fi
 
-          SUFFIX=$(echo "$RELEASE_LINE" | tr -d '.')
           eval "LATEST_TAG_${SUFFIX}=$LATEST_VERSION"
           echo "LATEST_TAG_${SUFFIX}=$LATEST_VERSION" >> $GITHUB_ENV
         done
       shell: bash
     - id: set-outputs
       run: |
-        echo "latest_tag_v213=$LATEST_TAG_v213" >> $GITHUB_OUTPUT
-        echo "latest_tag_v212=$LATEST_TAG_v212" >> $GITHUB_OUTPUT
-        echo "latest_tag_v211=$LATEST_TAG_v211" >> $GITHUB_OUTPUT
+        echo "latest_tag_v214=${LATEST_TAG_v214}" >> $GITHUB_OUTPUT
+        echo "latest_tag_v213=${LATEST_TAG_v213}" >> $GITHUB_OUTPUT
+        echo "latest_tag_v212=${LATEST_TAG_v212}" >> $GITHUB_OUTPUT
+        echo "latest_tag_v211=${LATEST_TAG_v211}" >> $GITHUB_OUTPUT
       shell: bash
