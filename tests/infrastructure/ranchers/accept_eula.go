@@ -19,7 +19,7 @@ import (
 // PostRancherSetup is a helper function that creates a Rancher client and accepts the EULA, if needed
 func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancherConfig *rancher.Config, session *session.Session, host,
 	keyPath string, isUpgrade bool) (*rancher.Client, error) {
-	adminToken, err := CreateAdminToken(t, terraformOptions, rancherConfig, keyPath)
+	adminToken, err := CreateAdminToken(t, terraformOptions, rancherConfig)
 	if err != nil && *rancherConfig.Cleanup {
 		cleanup.Cleanup(t, terraformOptions, keyPath)
 	}
@@ -27,7 +27,7 @@ func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancher
 	rancherConfig.AdminToken = adminToken.Token
 
 	var client *rancher.Client
-	err = kwait.PollUntilContextTimeout(context.TODO(), 5*time.Second, defaults.FiveMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
+	err = kwait.PollUntilContextTimeout(context.TODO(), 5*time.Second, defaults.TenMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
 		client, err = rancher.NewClient(rancherConfig.AdminToken, session)
 		if err != nil {
 			logrus.Warnf("Failed to create Rancher client: %v. Retrying...", err)

@@ -56,6 +56,7 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) SetupSuite() {
 func (s *TfpSanityRKE1ProvisioningTestSuite) TestTfpRKE1ProvisioningSanity() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	customClusterNames := []string{}
 
@@ -101,7 +102,7 @@ func (s *TfpSanityRKE1ProvisioningTestSuite) TestTfpRKE1ProvisioningSanity() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 

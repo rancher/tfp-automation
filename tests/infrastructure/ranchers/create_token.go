@@ -15,7 +15,7 @@ import (
 )
 
 // CreateAdminToken creates a new admin token for the Rancher client.
-func CreateAdminToken(t *testing.T, terraformOptions *terraform.Options, rancherConfig *rancher.Config, keyPath string) (*management.Token, error) {
+func CreateAdminToken(t *testing.T, terraformOptions *terraform.Options, rancherConfig *rancher.Config) (*management.Token, error) {
 	adminUser := &management.User{
 		Username: "admin",
 		Password: rancherConfig.AdminPassword,

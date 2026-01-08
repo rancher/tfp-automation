@@ -17,10 +17,9 @@ import (
 func Provision(t *testing.T, client, standardUserClient *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options,
 	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters,
-	containsCustomModule bool, customClusterNames []string) ([]string, []string) {
+	containsCustomModule bool, clusterIDs, customClusterNames []string) ([]string, []string) {
 	var err error
 	var clusterNames []string
-	var clusterIDs []string
 
 	isSupported := SupportedModules(terraformOptions, configMap)
 	require.True(t, isSupported)

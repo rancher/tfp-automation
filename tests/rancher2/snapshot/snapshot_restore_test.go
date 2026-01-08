@@ -64,6 +64,7 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
 	require.NoError(s.T(), err)
@@ -117,7 +118,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
 			require.NoError(s.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil)
 			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), adminClient, clusterIDs)
 

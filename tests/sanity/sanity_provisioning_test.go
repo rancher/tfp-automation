@@ -58,6 +58,7 @@ func (s *TfpSanityProvisioningTestSuite) SetupSuite() {
 func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	customClusterNames := []string{}
 
@@ -106,7 +107,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
-			clusterIDs, customClusterNames := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, customClusterNames := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 
@@ -117,7 +118,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			require.NoError(s.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 				err = pods.VerifyClusterPods(s.client, cluster)

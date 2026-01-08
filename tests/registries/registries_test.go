@@ -60,6 +60,7 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
@@ -120,7 +121,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
@@ -148,6 +149,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
@@ -202,7 +204,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
@@ -230,6 +232,7 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
@@ -290,7 +293,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
@@ -318,6 +321,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
@@ -379,7 +383,7 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
