@@ -61,6 +61,7 @@ func (p *DynamicUpgradeImportedClusterTestSuite) SetupSuite() {
 func (p *DynamicUpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicInput() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
@@ -89,14 +90,14 @@ func (p *DynamicUpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDy
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, nil)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
 
 			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(p.T(), err)
 
-			pods.VerifyClusterPods(p.T(), adminClient, cluster)
+			pods.VerifyClusterPods(p.client, cluster)
 
 			err = imported.SetUpgradeImportedCluster(adminClient, terraform)
 			require.NoError(p.T(), err)

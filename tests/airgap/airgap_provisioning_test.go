@@ -59,6 +59,7 @@ func (a *TfpAirgapProvisioningTestSuite) SetupSuite() {
 func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	customClusterNames := []string{}
 
@@ -107,7 +108,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, customClusterNames := provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
 
@@ -118,7 +119,7 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 			require.NoError(a.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, _ = provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
 

@@ -62,6 +62,7 @@ func (p *DynamicProvisionCustomTestSuite) SetupSuite() {
 func (p *DynamicProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	customClusterNames := []string{}
 
@@ -92,20 +93,20 @@ func (p *DynamicProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
 
 			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(p.T(), err)
 
-			pods.VerifyClusterPods(p.T(), adminClient, cluster)
+			pods.VerifyClusterPods(p.client, cluster)
 
 			if strings.Contains(p.terraformConfig.Module, clustertypes.WINDOWS) {
-				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
-				pods.VerifyClusterPods(p.T(), adminClient, cluster)
+				pods.VerifyClusterPods(p.client, cluster)
 			}
 		})
 

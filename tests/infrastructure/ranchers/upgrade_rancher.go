@@ -37,6 +37,8 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 
 	tunnel.StopBastionSSHTunnel()
 
+	session = session.NewSession()
+
 	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
 	require.NoError(t, err)
 
@@ -85,6 +87,8 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig, proxyPrivateIP, proxyBastion, "", "")
 	require.NoError(t, err)
 
+	session = session.NewSession()
+
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.ProxyKeyPath)
 	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
@@ -119,6 +123,8 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 
 	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig, serverNodeOne, "", "", "")
 	require.NoError(t, err)
+
+	session = session.NewSession()
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.SanityKeyPath)
 	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)

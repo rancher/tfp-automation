@@ -132,7 +132,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
-			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			time.Sleep(2 * time.Minute)
 			provisioning.VerifyClustersState(o.T(), o.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(o.T(), o.client, clusterIDs)

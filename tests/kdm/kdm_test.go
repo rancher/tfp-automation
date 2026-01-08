@@ -60,6 +60,7 @@ func (k *KDMTestSuite) SetupSuite() {
 func (k *KDMTestSuite) TestKDM() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	customClusterNames := []string{}
 
@@ -129,7 +130,7 @@ func (k *KDMTestSuite) TestKDM() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(k.T(), k.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(k.T(), k.client, clusterIDs)
 
