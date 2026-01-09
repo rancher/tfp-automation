@@ -64,6 +64,7 @@ func (p *ProvisionCustomTestSuite) SetupSuite() {
 func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	customClusterNames := []string{}
 
@@ -101,7 +102,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
 			require.NoError(p.T(), err)
 
-			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, customClusterNames)
+			clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
 
@@ -112,7 +113,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 			require.NoError(p.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, _ = provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
 				provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
 				err = pods.VerifyClusterPods(p.client, cluster)

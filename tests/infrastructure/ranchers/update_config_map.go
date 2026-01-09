@@ -3,7 +3,7 @@ package ranchers
 import "github.com/rancher/shepherd/clients/rancher"
 
 // UpdateRancherConfigMap updates the rancher map in the cattleConfig with the latest Rancher client config values.
-func UpdateRancherConfigMap(cattleConfig map[string]any, client *rancher.Client) (map[string]any, error) {
+func UpdateRancherConfigMap(cattleConfig map[string]any, client *rancher.Client) (map[string]any, string, error) {
 	if rancherMap, ok := cattleConfig["rancher"].(map[string]any); ok {
 		rancherMap["host"] = client.RancherConfig.Host
 		rancherMap["adminToken"] = client.RancherConfig.AdminToken
@@ -11,5 +11,5 @@ func UpdateRancherConfigMap(cattleConfig map[string]any, client *rancher.Client)
 		cattleConfig["rancher"] = rancherMap
 	}
 
-	return cattleConfig, nil
+	return cattleConfig, client.RancherConfig.AdminToken, nil
 }
