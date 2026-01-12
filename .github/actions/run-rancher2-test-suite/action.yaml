@@ -1,6 +1,7 @@
 ---
 name: Run Rancher2 Test Suite
 description: "Runs rancher2 test suite"
+
 inputs:
   suite:
     description: "The specific Rancher2 suite to run on the specific Rancher server"
@@ -14,6 +15,11 @@ inputs:
   timeout:
     description: "Timeout"
     required: true
+  reporting:
+    description: "Enable reporting"
+    required: false
+    default: "false"
+    
 runs:
   using: composite
   steps:
@@ -28,16 +34,22 @@ runs:
             provision_code=$?;
             echo "provision_code=$provision_code" >> $GITHUB_ENV;
             cp results_provision.json results.json
-            ./pipeline/scripts/build_qase_reporter.sh;
-            ./reporter;
+
+            if [[ "${{ inputs.reporting }}" == "true" ]]; then
+              ./validation/pipeline/scripts/build_qase_reporter_v2.sh;
+              ./validation/reporter;
+            fi
 
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/psact \
             --junitfile results.xml --jsonfile results_psact.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
             psact_code=$?;
             echo "psact_code=$psact_code" >> $GITHUB_ENV;
             cp results_psact.json results.json
-            ./pipeline/scripts/build_qase_reporter.sh;
-            ./reporter;
+
+            if [[ "${{ inputs.reporting }}" == "true" ]]; then
+              ./validation/pipeline/scripts/build_qase_reporter_v2.sh;
+              ./validation/reporter;
+            fi
             ;;
           rancher-server-two)
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/rbac \
@@ -45,16 +57,22 @@ runs:
             rbac_code=$?;
             echo "rbac_code=$rbac_code" >> $GITHUB_ENV;
             cp results_rbac.json results.json
-            ./pipeline/scripts/build_qase_reporter.sh;
-            ./reporter;
+
+            if [[ "${{ inputs.reporting }}" == "true" ]]; then
+              ./validation/pipeline/scripts/build_qase_reporter_v2.sh;
+              ./validation/reporter;
+            fi
               
             gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }}/snapshot \
             --junitfile results.xml --jsonfile results_snapshot.json -- -timeout=${{ inputs.timeout }} -tags=recurring -v;
             snapshot_code=$?;
             echo "snapshot_code=$snapshot_code" >> $GITHUB_ENV;
             cp results_snapshot.json results.json
-            ./pipeline/scripts/build_qase_reporter.sh;
-            ./reporter;
+
+            if [[ "${{ inputs.reporting }}" == "true" ]]; then
+              ./validation/pipeline/scripts/build_qase_reporter_v2.sh;
+              ./validation/reporter;
+            fi
             ;;
         esac
       shell: bash
