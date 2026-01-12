@@ -68,7 +68,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -310,14 +310,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -340,7 +340,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -582,14 +582,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -612,7 +612,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -854,14 +854,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -884,7 +884,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -1126,14 +1126,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -1156,7 +1156,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -1398,14 +1398,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -1428,7 +1428,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -1670,14 +1670,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -1700,7 +1700,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -1942,14 +1942,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
@@ -1972,7 +1972,7 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting)
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
         }}
 
     steps:
@@ -2214,14 +2214,14 @@ jobs:
         id: set-job-status
 
       - name: Reporting Results to Qase
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
-        if: env.REPORTING_ENABLED == 'true'
+        if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-slack
         with:
           job-status: ${{ steps.set-job-status.outputs.job_status }}

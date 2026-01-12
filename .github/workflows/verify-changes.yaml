@@ -20,7 +20,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: './go.mod'
+          go-version-file: "./go.mod"
 
       - name: Go Version
         run: go version
@@ -28,7 +28,7 @@ jobs:
       - name: Generate Golang
         run: |
           export PATH=$PATH:/home/runner/go/bin/
-      
+
       - name: Verify Go Mod
         run: ./.github/scripts/check-go-mod.sh
 
