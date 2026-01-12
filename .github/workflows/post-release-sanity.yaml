@@ -53,7 +53,8 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
+          github.event_name == 'workflow_call' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
         }}
 
     steps:
@@ -313,7 +314,8 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
+          github.event_name == 'workflow_call' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
         }}
 
     steps:
@@ -574,7 +576,8 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
+          github.event_name == 'workflow_call' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
         }}
 
     steps:
@@ -835,7 +838,8 @@ jobs:
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true')
+          github.event_name == 'workflow_call' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
         }}
 
     steps:
