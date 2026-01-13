@@ -1,17 +1,18 @@
 package airgap
 
 import (
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
-	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -32,7 +33,6 @@ import (
 type TfpAirgapUpgradeRancherTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
-	standardUserClient         *rancher.Client
 	session                    *session.Session
 	cattleConfig               map[string]any
 	rancherConfig              *rancher.Config
@@ -66,14 +66,20 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	var clusterIDs []string
 
+	standardUserClient, newFile, rootBody, file, standardToken, testUser, testPassword := ranchers.SetupResources(a.T(), a.client, a.rancherConfig, a.terratestConfig, a.terraformOptions)
+
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
-	a.provisionAndVerifyCluster("Airgap_Pre_Rancher_Upgrade_", clusterIDs)
+	allClusterIDs := a.provisionAndVerifyCluster("Airgap_Pre_Rancher_Upgrade_", clusterIDs, newFile, rootBody, file, standardUserClient, standardToken, testUser, testPassword)
 
 	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = ranchers.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig, a.tunnel)
+	provisioning.VerifyClustersState(a.T(), a.client, allClusterIDs)
+
+	ranchers.CleanupPreUpgradeClusters(a.T(), a.client, allClusterIDs, a.terraformConfig)
+
+	standardUserClient, newFile, rootBody, file, standardToken, testUser, testPassword = ranchers.SetupResources(a.T(), a.client, a.rancherConfig, a.terratestConfig, a.terraformOptions)
 
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
-	a.rancherConfig.Host = a.rancherConfig.Host + ":8443"
-	a.provisionAndVerifyCluster("Airgap_Post_Rancher_Upgrade_", clusterIDs)
+	a.provisionAndVerifyCluster("Airgap_Post_Rancher_Upgrade_", nil, newFile, rootBody, file, standardUserClient, standardToken, testUser, testPassword)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 	cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
@@ -83,22 +89,9 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
 	}
 }
 
-func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string) []string {
-	var err error
-	var testUser, testPassword string
-
-	newFile, rootBody, file := rancher2.InitializeMainTF(a.terratestConfig)
-	defer file.Close()
-
+func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File, standardUserClient *rancher.Client, standardToken, testUser, testPassword string) []string {
 	customClusterNames := []string{}
-
-	a.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(a.client)
-	require.NoError(a.T(), err)
-
-	standardUserToken, err := ranchers.CreateStandardUserToken(a.T(), a.terraformOptions, a.rancherConfig, testUser, testPassword)
-	require.NoError(a.T(), err)
-
-	standardToken := standardUserToken.Token
 
 	tests := []struct {
 		name   string
@@ -126,14 +119,14 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
 		require.NoError(a.T(), err)
 
-		provisioning.GetK8sVersion(a.T(), a.standardUserClient, a.terratestConfig, a.terraformConfig, configMap)
+		provisioning.GetK8sVersion(a.T(), standardUserClient, a.terratestConfig, a.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name
 
 		a.Run((tt.name), func() {
-			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
+			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
 
@@ -144,7 +137,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 			require.NoError(a.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
 				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
 
@@ -160,7 +153,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		}
 	}
 
-	return clusterIDs
+	return ranchers.UniqueStrings(clusterIDs)
 }
 
 func TestTfpAirgapUpgradeRancherTestSuite(t *testing.T) {

@@ -63,6 +63,7 @@ func (r *RBACTestSuite) SetupSuite() {
 func (r *RBACTestSuite) TestTfpRBAC() {
 	var err error
 	var testUser, testPassword string
+	var clusterIDs []string
 
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
@@ -104,7 +105,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
 			require.NoError(r.T(), err)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil)
 			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), adminClient, clusterIDs)
 

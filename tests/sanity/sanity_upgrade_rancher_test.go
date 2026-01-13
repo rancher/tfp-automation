@@ -1,17 +1,18 @@
 package sanity
 
 import (
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
-	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
@@ -31,7 +32,6 @@ import (
 type TfpSanityUpgradeRancherTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
-	standardUserClient         *rancher.Client
 	session                    *session.Session
 	cattleConfig               map[string]any
 	rancherConfig              *rancher.Config
@@ -63,13 +63,20 @@ func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
 func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 	var clusterIDs []string
 
+	standardUserClient, newFile, rootBody, file, standardToken, testUser, testPassword := ranchers.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
+
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
-	s.provisionAndVerifyCluster("Sanity_Pre_Rancher_Upgrade_", clusterIDs)
+	allClusterIDs := s.provisionAndVerifyCluster("Sanity_Pre_Rancher_Upgrade_", clusterIDs, newFile, rootBody, file, standardUserClient, standardToken, testUser, testPassword)
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = ranchers.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
+	provisioning.VerifyClustersState(s.T(), s.client, allClusterIDs)
+
+	ranchers.CleanupPreUpgradeClusters(s.T(), s.client, allClusterIDs, s.terraformConfig)
+
+	standardUserClient, newFile, rootBody, file, standardToken, testUser, testPassword = ranchers.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
-	s.provisionAndVerifyCluster("Sanity_Post_Rancher_Upgrade_", clusterIDs)
+	s.provisionAndVerifyCluster("Sanity_Post_Rancher_Upgrade_", nil, newFile, rootBody, file, standardUserClient, standardToken, testUser, testPassword)
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 	cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
@@ -79,23 +86,9 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 	}
 }
 
-func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string) []string {
-	var err error
-	var testUser, testPassword string
-
-	newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)
-	defer file.Close()
-
+func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File, standardUserClient *rancher.Client, standardToken, testUser, testPassword string) []string {
 	customClusterNames := []string{}
-
-	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
-	require.NoError(s.T(), err)
-
-	standardUserToken, err := ranchers.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
-	require.NoError(s.T(), err)
-
-	standardToken := standardUserToken.Token
-
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 
 	tests := []struct {
@@ -122,14 +115,14 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(s.T(), err)
 
-		provisioning.GetK8sVersion(s.T(), s.standardUserClient, s.terratestConfig, s.terraformConfig, configMap)
+		provisioning.GetK8sVersion(s.T(), standardUserClient, s.terratestConfig, s.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
 		tt.name = name + tt.name
 
 		s.Run((tt.name), func() {
-			clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, true, true, customClusterNames)
+			clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 
@@ -140,9 +133,10 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 			require.NoError(s.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, customClusterNames)
+				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
+
 				err = pods.VerifyClusterPods(s.client, cluster)
 				require.NoError(s.T(), err)
 			}
@@ -155,7 +149,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		}
 	}
 
-	return clusterIDs
+	return ranchers.UniqueStrings(clusterIDs)
 }
 
 func TestTfpSanityUpgradeRancherTestSuite(t *testing.T) {
