@@ -91,7 +91,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, nodeBalancerHostname)
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP)
 	if err != nil {
 		return "", err
 	}

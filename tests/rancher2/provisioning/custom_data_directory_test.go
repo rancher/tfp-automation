@@ -19,7 +19,6 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
@@ -74,14 +73,15 @@ func (p *CustomDataDirectoryTestSuite) TestTfpCustomDataDirectory() {
 	require.NoError(p.T(), err)
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
 
 	tests := []struct {
 		name      string
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"RKE2_Custom_Data_Directory", modules.EC2RKE2, nodeRolesDedicated},
-		{"K3S_Custom_Data_Directory", modules.EC2K3s, nodeRolesDedicated},
+		{"RKE2_Custom_Data_Directory", rke2Module, nodeRolesDedicated},
+		{"K3S_Custom_Data_Directory", k3sModule, nodeRolesDedicated},
 	}
 
 	for _, tt := range tests {

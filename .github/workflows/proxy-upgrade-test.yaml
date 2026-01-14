@@ -160,6 +160,7 @@ jobs:
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -436,6 +437,7 @@ jobs:
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -722,6 +724,7 @@ jobs:
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -1009,6 +1012,7 @@ jobs:
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"

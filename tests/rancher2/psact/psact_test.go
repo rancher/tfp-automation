@@ -18,7 +18,6 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
@@ -73,6 +72,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 	require.NoError(p.T(), err)
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
 
 	tests := []struct {
 		name      string
@@ -80,12 +80,12 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		nodeRoles []config.Nodepool
 		psact     config.PSACT
 	}{
-		{"RKE2_Rancher_Privileged", modules.EC2RKE2, nodeRolesDedicated, "rancher-privileged"},
-		{"RKE2_Rancher_Restricted", modules.EC2RKE2, nodeRolesDedicated, "rancher-restricted"},
-		{"RKE2_Rancher_Baseline", modules.EC2RKE2, nodeRolesDedicated, "rancher-baseline"},
-		{"K3S_Rancher_Privileged", modules.EC2K3s, nodeRolesDedicated, "rancher-privileged"},
-		{"K3S_Rancher_Restricted", modules.EC2K3s, nodeRolesDedicated, "rancher-restricted"},
-		{"K3S_Rancher_Baseline", modules.EC2K3s, nodeRolesDedicated, "rancher-baseline"},
+		{"RKE2_Rancher_Privileged", rke2Module, nodeRolesDedicated, "rancher-privileged"},
+		{"RKE2_Rancher_Restricted", rke2Module, nodeRolesDedicated, "rancher-restricted"},
+		{"RKE2_Rancher_Baseline", rke2Module, nodeRolesDedicated, "rancher-baseline"},
+		{"K3S_Rancher_Privileged", k3sModule, nodeRolesDedicated, "rancher-privileged"},
+		{"K3S_Rancher_Restricted", k3sModule, nodeRolesDedicated, "rancher-restricted"},
+		{"K3S_Rancher_Baseline", k3sModule, nodeRolesDedicated, "rancher-baseline"},
 	}
 
 	for _, tt := range tests {

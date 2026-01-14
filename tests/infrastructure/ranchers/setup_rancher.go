@@ -6,8 +6,10 @@ import (
 
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/features"
+	infraConfig "github.com/rancher/tests/validation/recurring/infrastructure/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/providers"
@@ -15,6 +17,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/stretchr/testify/require"
 )
 
 // CreateRancher is a function that creates a Rancher setup, either via CLI or web application
@@ -37,27 +40,32 @@ func CreateRancher(t *testing.T, provider string) error {
 		return err
 	}
 
-	if terraformConfig.Provider == providers.AWS {
-		var client *rancher.Client
-		var err error
+	// For providers that do not have built-in DNS records, this will update the Rancher server URL.
+	if terraformConfig.Provider != providers.AWS {
+		_, err = operations.ReplaceValue([]string{"rancher", "host"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
+		require.NoError(t, err)
 
-		testSession := session.NewSession()
+		rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
+		infraConfig.WriteConfigToFile(os.Getenv(configEnvironmentKey), cattleConfig)
+	}
 
-		if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.MCM == "" {
-			client, err = PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
-			if err != nil {
-				return err
-			}
-		} else if standaloneConfig.FeatureFlags == nil {
-			client, err = PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
-			if err != nil {
-				return err
-			}
+	var client *rancher.Client
+	testSession := session.NewSession()
+
+	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.MCM == "" {
+		client, err = PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
+		if err != nil {
+			return err
 		}
-
-		if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
-			toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
+	} else if standaloneConfig.FeatureFlags == nil {
+		client, err = PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
+		if err != nil {
+			return err
 		}
+	}
+
+	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
+		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
 	}
 
 	return nil

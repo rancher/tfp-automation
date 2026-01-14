@@ -7,7 +7,52 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 )
+
+// DownstreamClusterModules is a function that will return the correct module names based on the provider.
+func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, string, string, string) {
+	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
+	switch terraformConfig.DownstreamClusterProvider {
+	case defaults.Aws:
+		rke2Module = modules.EC2RKE2
+		rke2Windows2019 = modules.CustomEC2RKE2Windows2019
+		rke2Windows2022 = modules.CustomEC2RKE2Windows2022
+		k3sModule = modules.EC2K3s
+	case defaults.Azure:
+		rke2Module = modules.AzureRKE2
+		k3sModule = modules.AzureK3s
+	case defaults.Linode:
+		rke2Module = modules.LinodeRKE2
+		k3sModule = modules.LinodeK3s
+	case defaults.Vsphere:
+		rke2Module = modules.VsphereRKE2
+		k3sModule = modules.VsphereK3s
+	default:
+		panic("Unsupported provider: " + terraformConfig.DownstreamClusterProvider)
+	}
+
+	return rke2Module, rke2Windows2019, rke2Windows2022, k3sModule
+}
+
+// ImportedClusterModules is a function that will return the correct module names based on the provider.
+func ImportedClusterModules(terraformConfig *config.TerraformConfig) (string, string, string, string) {
+	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
+	switch terraformConfig.DownstreamClusterProvider {
+	case defaults.Aws:
+		rke2Module = modules.ImportEC2RKE2
+		rke2Windows2019 = modules.ImportEC2RKE2Windows2019
+		rke2Windows2022 = modules.ImportEC2RKE2Windows2022
+		k3sModule = modules.ImportEC2K3s
+	case defaults.Vsphere:
+		rke2Module = modules.ImportVsphereRKE2
+		k3sModule = modules.ImportVsphereK3s
+	default:
+		panic("Unsupported provider: " + terraformConfig.DownstreamClusterProvider)
+	}
+
+	return rke2Module, rke2Windows2019, rke2Windows2022, k3sModule
+}
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
 func SupportedModules(terraformOptions *terraform.Options, configMap []map[string]any) bool {

@@ -38,10 +38,10 @@ The psact tests are static test cases, so the config to be provided will exactly
 terraform:
   cloudCredentialName: "tfp-creds"
   defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: ""       # REQUIRED - can be aws, azure, linode, vsphere
   enableNetworkPolicy: false
   hostnamePrefix: "tfp-automation"
   machineConfigName: "tfp-automation"
-  module: "linode_k3s"
   linodeConfig:
     linodeToken: ""
     linodeImage: "linode/ubuntu22.04"

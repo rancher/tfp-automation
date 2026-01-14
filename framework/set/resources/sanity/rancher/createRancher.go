@@ -20,7 +20,7 @@ const (
 
 // CreateRancher is a function that will set the Rancher configurations in the main.tf file.
 func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, rke2ServerOnePublicIP, nodeBalancerHostname string) (*os.File, error) {
+	terratestConfig *config.TerratestConfig, rke2ServerOnePublicIP string) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/sanity/rancher/setup.sh")
@@ -31,10 +31,6 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 	}
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, installRancher)
-
-	if nodeBalancerHostname != "" {
-		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
-	}
 
 	command := "/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +

@@ -25,8 +25,8 @@ rancher:
 terraform:
     resourcePrefix: ""
     defaultClusterRoleForProjectMembers: "true"
+    downstreamClusterProvider: ""       # REQUIRED - can be aws, azure, linode, vsphere
     enableNetworkPolicy: false
-    module: "linode_k3s"
     cni: "canal"
     linodeCredentials:
         linodeToken: ""
