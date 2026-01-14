@@ -35,6 +35,7 @@ rancher:
 terraform:
   cni: ""                                         # REQUIRED - fill with desired value
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
+  downstreamClusterProvider: "aws"
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
   provider: "aws"
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances

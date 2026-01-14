@@ -16,9 +16,9 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
@@ -90,19 +90,24 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	file *os.File, standardUserClient *rancher.Client, standardToken, testUser, testPassword string) []string {
 	customClusterNames := []string{}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
 
 	tests := []struct {
 		name      string
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"RKE2", nodeRolesDedicated, rke2Module},
+		{"RKE2_Windows_2019", nil, rke2Windows2019},
+		{"RKE2_Windows_2022", nil, rke2Windows2022},
+		{"K3S", nodeRolesDedicated, k3sModule},
 	}
 
 	for _, tt := range tests {
+		if strings.Contains(tt.name, "Windows") && (s.terraformConfig.Provider != defaults.Aws) {
+			s.T().Skip("Skipping Windows test on non-AWS provider")
+		}
+
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
 		require.NoError(s.T(), err)
 

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
@@ -49,7 +48,6 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlockBody := tfBlock.Body()
 
 	var err error
-	var linodeNodeBalancerHostname string
 
 	instances := []string{bastion}
 
@@ -64,10 +62,6 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		logrus.Infof("Error while creating resources. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
 		return "", "", err
-	}
-
-	if terraformConfig.Provider == providers.Linode {
-		linodeNodeBalancerHostname = terraform.Output(t, terraformOptions, nodeBalancerHostname)
 	}
 
 	bastionPublicDNS := terraform.Output(t, terraformOptions, bastionPublicDNS)
@@ -106,7 +100,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, linodeNodeBalancerHostname)
+	file, err = rancher.CreateProxiedRancher(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP)
 	if err != nil {
 		return "", "", err
 	}

@@ -19,7 +19,6 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
@@ -70,6 +69,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 	require.NoError(s.T(), err)
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
 
 	snapshotRestoreNone := config.TerratestConfig{
 		SnapshotInput: config.Snapshots{
@@ -83,8 +83,8 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		nodeRoles    []config.Nodepool
 		etcdSnapshot config.TerratestConfig
 	}{
-		{"RKE2_Snapshot_Restore", modules.EC2RKE2, nodeRolesDedicated, snapshotRestoreNone},
-		{"K3S_Snapshot_Restore", modules.EC2K3s, nodeRolesDedicated, snapshotRestoreNone},
+		{"RKE2_Snapshot_Restore", rke2Module, nodeRolesDedicated, snapshotRestoreNone},
+		{"K3S_Snapshot_Restore", k3sModule, nodeRolesDedicated, snapshotRestoreNone},
 	}
 
 	for _, tt := range tests {

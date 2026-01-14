@@ -4,6 +4,7 @@ package provisioning
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -15,9 +16,9 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
@@ -65,17 +66,23 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
+	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.ImportedClusterModules(p.terraformConfig)
+
 	tests := []struct {
 		name   string
 		module string
 	}{
-		{"Upgrade_Imported_RKE2", modules.ImportEC2RKE2},
-		{"Upgrade_Imported_RKE2_Windows_2019", modules.ImportEC2RKE2Windows2019},
-		{"Upgrade_Imported_RKE2_Windows_2022", modules.ImportEC2RKE2Windows2022},
-		{"Upgrade_Imported_K3S", modules.ImportEC2K3s},
+		{"Upgrade_Imported_RKE2", rke2Module},
+		{"Upgrade_Imported_RKE2_Windows_2019", rke2Windows2019},
+		{"Upgrade_Imported_RKE2_Windows_2022", rke2Windows2022},
+		{"Upgrade_Imported_K3S", k3sModule},
 	}
 
 	for _, tt := range tests {
+		if strings.Contains(tt.name, "Windows") && (p.terraformConfig.Provider != defaults.Aws) {
+			p.T().Skip("Skipping Windows test on non-AWS provider")
+		}
+
 		newFile, rootBody, file := rancher2.InitializeMainTF(p.terratestConfig)
 		defer file.Close()
 

@@ -17,7 +17,6 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
@@ -69,16 +68,17 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	require.NoError(r.T(), err)
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(r.terraformConfig)
 
 	tests := []struct {
 		name     string
 		module   string
 		rbacRole config.Role
 	}{
-		{"RKE2_Cluster_Owner", modules.EC2RKE2, config.ClusterOwner},
-		{"RKE2_Project_Owner", modules.EC2RKE2, config.ProjectOwner},
-		{"K3S_Cluster_Owner", modules.EC2K3s, config.ClusterOwner},
-		{"K3S_Project_Owner", modules.EC2K3s, config.ProjectOwner},
+		{"RKE2_Cluster_Owner", rke2Module, config.ClusterOwner},
+		{"RKE2_Project_Owner", rke2Module, config.ProjectOwner},
+		{"K3S_Cluster_Owner", k3sModule, config.ClusterOwner},
+		{"K3S_Project_Owner", k3sModule, config.ProjectOwner},
 	}
 
 	for _, tt := range tests {

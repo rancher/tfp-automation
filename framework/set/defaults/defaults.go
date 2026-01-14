@@ -224,6 +224,7 @@ const (
 	Max              = "max"
 
 	Aws     = "aws"
+	Azure   = "azure"
 	Linode  = "linode"
 	Vsphere = "vsphere"
 

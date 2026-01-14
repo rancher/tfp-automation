@@ -42,7 +42,6 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlockBody := tfBlock.Body()
 
 	var err error
-	var nodeBalancerHostname string
 
 	instances := []string{serverOne, serverTwo, serverThree}
 
@@ -80,7 +79,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
-	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, nodeBalancerHostname)
+	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP)
 	if err != nil {
 		return "", err
 	}

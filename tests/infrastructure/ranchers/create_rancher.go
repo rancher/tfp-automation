@@ -7,11 +7,14 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/features"
 	reg "github.com/rancher/tests/actions/registries"
+	infraConfig "github.com/rancher/tests/validation/recurring/infrastructure/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
@@ -27,7 +30,8 @@ import (
 )
 
 const (
-	local = "local"
+	configEnvironmentKey = "CATTLE_TEST_CONFIG"
+	local                = "local"
 )
 
 // SetupAirgapRancher sets up an airgapped Rancher server and returns the client, configuration, and Terraform options.
@@ -126,6 +130,15 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 	proxyBastion, proxyPrivateIP, err := proxy.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
+	// For providers that do not have built-in DNS records, this will update the Rancher server URL.
+	if terraformConfig.Provider != providers.AWS {
+		_, err = operations.ReplaceValue([]string{"rancher", "host"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
+		require.NoError(t, err)
+
+		rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
+		infraConfig.WriteConfigToFile(os.Getenv(configEnvironmentKey), cattleConfig)
+	}
+
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
@@ -150,6 +163,15 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 
 	serverNodeOne, err := sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
+
+	// For providers that do not have built-in DNS records, this will update the Rancher server URL.
+	if terraformConfig.Provider != providers.AWS {
+		_, err = operations.ReplaceValue([]string{"rancher", "host"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
+		require.NoError(t, err)
+
+		rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
+		infraConfig.WriteConfigToFile(os.Getenv(configEnvironmentKey), cattleConfig)
+	}
 
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)

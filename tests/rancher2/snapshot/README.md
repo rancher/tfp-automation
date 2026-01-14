@@ -27,6 +27,7 @@ rancher:
   insecure: true
   cleanup: true
 terraform:
+  downstreamClusterProvider: ""       # REQUIRED - can be aws, azure, linode, vsphere
   etcd:
     disableSnapshot: false
     snapshotCron: "0 */5 * * *"

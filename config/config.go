@@ -187,6 +187,7 @@ type TerraformConfig struct {
 	DataDirectories                     *DataDirectories             `json:"dataDirectories,omitempty" yaml:"dataDirectories,omitempty"`
 	DisableKubeProxy                    string                       `json:"disable-kube-proxy,omitempty" yaml:"disable-kube-proxy,omitempty"`
 	DefaultClusterRoleForProjectMembers string                       `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
+	DownstreamClusterProvider           string                       `json:"downstreamClusterProvider,omitempty" yaml:"downstreamClusterProvider,omitempty"`
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`

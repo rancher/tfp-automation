@@ -41,6 +41,7 @@ terraform:
   cni: ""
   enableNetworkPolicy: false
   defaultClusterRoleForProjectMembers: "user"
+  downstreamClusterProvider: ""       # ec2_rke1_custom, ec2_rke2_custom, ec2_k3s_custom, vsphere_rke1_custom, vsphere_rke2_custom, vsphere_k3s_custom
   module:                       # ec2_rke1_custom, ec2_rke2_custom, ec2_k3s_custom, vsphere_rke1_custom, vsphere_rke2_custom, vsphere_k3s_custom
   privateKeyPath: ""
   provider: ""                  # aws or vsphere
@@ -113,8 +114,8 @@ rancher:
 terraform:
   cni: ""
   defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: ""           # ec2_rke1_import, ec2_rke2_import, ec2_k3s_import, vsphere_rke1_import, vsphere_rke2_import, vsphere_k3s_import
   enableNetworkPolicy: false
-  module:                          # ec2_rke1_import, ec2_rke2_import, ec2_k3s_import, vsphere_rke1_import, vsphere_rke2_import, vsphere_k3s_import
   privateKeyPath: ""
   provider: ""                     # aws or vsphere
   windowsPrivateKeyPath: ""
