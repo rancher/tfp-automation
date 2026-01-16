@@ -6,7 +6,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -20,21 +22,21 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 		return err
 	}
 
-	nodePoolBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherNodePool, terraformConfig.ResourcePrefix + defaults.NodePool + poolNum})
+	nodePoolBlock := rootBody.AppendNewBlock(general.Resource, []string{rancherNodePool, terraformConfig.ResourcePrefix + clusters.NodePool + poolNum})
 	nodePoolBlockBody := nodePoolBlock.Body()
 
 	dependsOnCluster := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + defaults.Cluster + "." + terraformConfig.ResourcePrefix + "]")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("[" + rancher2.Cluster + "." + terraformConfig.ResourcePrefix + "]")},
 	}
 
-	nodePoolBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnCluster)
+	nodePoolBlockBody.SetAttributeRaw(general.DependsOn, dependsOnCluster)
 
 	clusterID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
 	}
 
-	nodePoolBlockBody.SetAttributeRaw(defaults.RancherClusterID, clusterID)
-	nodePoolBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+poolNum))
+	nodePoolBlockBody.SetAttributeRaw(clusters.RancherClusterID, clusterID)
+	nodePoolBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+poolNum))
 	nodePoolBlockBody.SetAttributeValue(hostnamePrefix, cty.StringVal(terraformConfig.ResourcePrefix+"-pool"+poolNum))
 
 	nodeTempID := hclwrite.Tokens{
@@ -42,9 +44,9 @@ func setNodePool(nodePools []config.Nodepool, count int, pool config.Nodepool, r
 	}
 
 	nodePoolBlockBody.SetAttributeRaw(nodeTemplateID, nodeTempID)
-	nodePoolBlockBody.SetAttributeValue(defaults.Quantity, cty.NumberIntVal(pool.Quantity))
+	nodePoolBlockBody.SetAttributeValue(clusters.Quantity, cty.NumberIntVal(pool.Quantity))
 	nodePoolBlockBody.SetAttributeValue(controlPlane, cty.BoolVal(pool.Controlplane))
-	nodePoolBlockBody.SetAttributeValue(defaults.Etcd, cty.BoolVal(pool.Etcd))
+	nodePoolBlockBody.SetAttributeValue(clusters.Etcd, cty.BoolVal(pool.Etcd))
 	nodePoolBlockBody.SetAttributeValue(worker, cty.BoolVal(pool.Worker))
 
 	rootBody.AppendNewline()

@@ -7,7 +7,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	linodeDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -27,15 +28,15 @@ func CreateLinodeTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
-	reqProvsBlockBody.SetAttributeValue(defaults.Linode, cty.ObjectVal(map[string]cty.Value{
-		defaults.Source:  cty.StringVal(defaults.LinodeSource),
-		defaults.Version: cty.StringVal(cloudProviderVersion),
+	reqProvsBlockBody.SetAttributeValue(linodeDefaults.Linode, cty.ObjectVal(map[string]cty.Value{
+		general.Source:  cty.StringVal(linodeDefaults.LinodeSource),
+		general.Version: cty.StringVal(cloudProviderVersion),
 	}))
 }
 
 // CreateLinodeProviderBlock will set up the linode provider block.
 func CreateLinodeProviderBlock(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	linodeProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Linode})
+	linodeProvBlock := rootBody.AppendNewBlock(general.Provider, []string{linodeDefaults.Linode})
 	linodeProvBlockBody := linodeProvBlock.Body()
 
 	linodeProvBlockBody.SetAttributeValue(linode.Token, cty.StringVal(terraformConfig.LinodeCredentials.LinodeToken))
@@ -47,9 +48,9 @@ func CreateLinodeLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	localBlockBody := localBlock.Body()
 
 	instanceIds := map[string]any{
-		serverOne:   defaults.LinodeInstance + "." + serverOne + ".id",
-		serverTwo:   defaults.LinodeInstance + "." + serverTwo + ".id",
-		serverThree: defaults.LinodeInstance + "." + serverThree + ".id",
+		serverOne:   linodeDefaults.LinodeInstance + "." + serverOne + ".id",
+		serverTwo:   linodeDefaults.LinodeInstance + "." + serverTwo + ".id",
+		serverThree: linodeDefaults.LinodeInstance + "." + serverThree + ".id",
 	}
 
 	instanceIdsBlock := localBlockBody.AppendNewBlock(instanceIDs+" =", nil)

@@ -7,7 +7,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	linodeDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -28,16 +29,16 @@ const (
 
 // CreateNodeBalancerConfig is a function that will set the node balancer configurations in the main.tf file.
 func CreateNodeBalancerConfig(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
-	nodeBalancerConfigBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LinodeNodeBalancerConfig, defaults.LinodeNodeBalancerConfig + "_" + strconv.FormatInt(port, 10)})
+	nodeBalancerConfigBlock := rootBody.AppendNewBlock(general.Resource, []string{linodeDefaults.LinodeNodeBalancerConfig, linodeDefaults.LinodeNodeBalancerConfig + "_" + strconv.FormatInt(port, 10)})
 	nodeBalancerConfigBlockBody := nodeBalancerConfigBlock.Body()
 
-	expression := defaults.LinodeNodeBalancer + `.` + defaults.LinodeNodeBalancer + `.id`
+	expression := linodeDefaults.LinodeNodeBalancer + `.` + linodeDefaults.LinodeNodeBalancer + `.id`
 	nodeBalancerID := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 	}
 
 	nodeBalancerConfigBlockBody.SetAttributeRaw(linode.NodeBalancerID, nodeBalancerID)
-	nodeBalancerConfigBlockBody.SetAttributeValue(defaults.Port, cty.NumberIntVal(port))
+	nodeBalancerConfigBlockBody.SetAttributeValue(general.Port, cty.NumberIntVal(port))
 	nodeBalancerConfigBlockBody.SetAttributeValue(protocol, cty.StringVal(tcp))
 	nodeBalancerConfigBlockBody.SetAttributeValue(check, cty.StringVal(connection))
 	nodeBalancerConfigBlockBody.SetAttributeValue(checkAttempts, cty.NumberIntVal(3))

@@ -9,7 +9,10 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/amazon"
 	format "github.com/rancher/tfp-automation/framework/format"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -17,34 +20,34 @@ import (
 // SetEKS is a function that will set the EKS configurations in the main.tf file.
 func SetEKS(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File) (*hclwrite.File, *os.File, error) {
-	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
+	cloudCredBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.CloudCredential, rancher2.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
+	cloudCredBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	ec2CredConfigBlock := cloudCredBlockBody.AppendNewBlock(amazon.EC2CredentialConfig, nil)
 	ec2CredConfigBlockBody := ec2CredConfigBlock.Body()
 
-	ec2CredConfigBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
-	ec2CredConfigBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+	ec2CredConfigBlockBody.SetAttributeValue(aws.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+	ec2CredConfigBlockBody.SetAttributeValue(aws.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, defaults.Cluster})
+	clusterBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.Cluster, rancher2.Cluster})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
+	clusterBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	eksConfigBlock := clusterBlockBody.AppendNewBlock(amazon.EKSConfig, nil)
 	eksConfigBlockBody := eksConfigBlock.Body()
 
 	cloudCredID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + defaults.CloudCredential + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.CloudCredential + "." + rancher2.CloudCredential + ".id")},
 	}
 
-	eksConfigBlockBody.SetAttributeRaw(defaults.CloudCredentialID, cloudCredID)
-	eksConfigBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
-	eksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
+	eksConfigBlockBody.SetAttributeRaw(clusters.CloudCredentialID, cloudCredID)
+	eksConfigBlockBody.SetAttributeValue(aws.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
+	eksConfigBlockBody.SetAttributeValue(clusters.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 	awsSubnetsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSubnets)
 	eksConfigBlockBody.SetAttributeRaw(amazon.Subnets, awsSubnetsList)
 	awsSecGroupsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroups)
@@ -63,7 +66,7 @@ func SetEKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 		nodePoolsBlock := eksConfigBlockBody.AppendNewBlock(amazon.NodeGroups, nil)
 		nodePoolsBlockBody := nodePoolsBlock.Body()
 
-		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
+		nodePoolsBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
 		nodePoolsBlockBody.SetAttributeValue(amazon.DiskSize, cty.NumberIntVal(pool.DiskSize))
 		nodePoolsBlockBody.SetAttributeValue(amazon.InstanceType, cty.StringVal(pool.InstanceType))
 		nodePoolsBlockBody.SetAttributeValue(amazon.DesiredSize, cty.NumberIntVal(pool.DesiredSize))

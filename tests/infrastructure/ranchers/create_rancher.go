@@ -16,7 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/dualstack"
 	"github.com/rancher/tfp-automation/framework/set/resources/ipv6"
@@ -182,10 +182,10 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
 		switch standaloneConfig.FeatureFlags.Turtles {
-		case defaults.ToggledOff:
-			features.UpdateFeatureFlag(client, defaults.Turtles, false)
-		case defaults.ToggledOn:
-			features.UpdateFeatureFlag(client, defaults.Turtles, true)
+		case featureDefaults.ToggledOff:
+			features.UpdateFeatureFlag(client, featureDefaults.Turtles, false)
+		case featureDefaults.ToggledOn:
+			features.UpdateFeatureFlag(client, featureDefaults.Turtles, true)
 		}
 	}
 

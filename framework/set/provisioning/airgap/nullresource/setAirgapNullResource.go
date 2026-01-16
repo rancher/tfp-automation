@@ -5,7 +5,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -21,7 +22,7 @@ const (
 // to register the nodes to the cluster
 func SetAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, description string,
 	dependsOn []string) (*hclwrite.Body, error) {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, description})
+	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, description})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
 	if len(dependsOn) > 0 {
@@ -32,42 +33,42 @@ func SetAirgapNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terr
 			}
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, dependsOnValue)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, dependsOnValue)
 	}
 
-	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlock := nullResourceBlockBody.AppendNewBlock(general.Provisioner, []string{general.RemoteExec})
 	provisionerBlockBody := provisionerBlock.Body()
 
-	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlock := provisionerBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
 	var bastionHostExpression string
 
 	switch terraformConfig.Module {
 	case modules.ImportEC2K3s:
-		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + k3sServerOne + `_` + terraformConfig.ResourcePrefix + `.` + defaults.PublicIp + `}"`
+		bastionHostExpression = `"${` + aws.AwsInstance + `.` + k3sServerOne + `_` + terraformConfig.ResourcePrefix + `.` + general.PublicIp + `}"`
 	case modules.ImportEC2RKE2:
-		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + rke2ServerOne + `_` + terraformConfig.ResourcePrefix + `.` + defaults.PublicIp + `}"`
+		bastionHostExpression = `"${` + aws.AwsInstance + `.` + rke2ServerOne + `_` + terraformConfig.ResourcePrefix + `.` + general.PublicIp + `}"`
 	default:
-		bastionHostExpression = `"${` + defaults.AwsInstance + `.` + bastion + `_` + terraformConfig.ResourcePrefix + `.` + defaults.PublicIp + `}"`
+		bastionHostExpression = `"${` + aws.AwsInstance + `.` + bastion + `_` + terraformConfig.ResourcePrefix + `.` + general.PublicIp + `}"`
 	}
 
 	bastionHost := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(bastionHostExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.Host, bastionHost)
+	connectionBlockBody.SetAttributeRaw(general.Host, bastionHost)
 
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.Ssh))
+	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
-	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+	keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 	keyPath := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
+	connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
+	connectionBlockBody.SetAttributeValue(aws.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
 
 	return provisionerBlockBody, nil
 }

@@ -10,7 +10,7 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -59,7 +59,7 @@ func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, k3sBastion)
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
 		cty.StringVal("bash -c '/tmp/bastion.sh " + terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " +
@@ -92,18 +92,18 @@ func createIPv6K3SServer(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 		k3sToken + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
 		cty.StringVal(command),
 	}))
 
-	dependsOnServer := `[` + defaults.NullResource + `.` + k3sBastion + `]`
+	dependsOnServer := `[` + general.NullResource + `.` + k3sBastion + `]`
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 }
 
 // addIPv6K3SServerNodes is a helper function that will add additional K3S server nodes to the initial K3S IPv6 server.
@@ -123,17 +123,17 @@ func addIPv6K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terr
 			k3sToken + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
-		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
 			cty.StringVal(command),
 		}))
 
-		dependsOnServer := `[` + defaults.NullResource + `.` + k3sServerOne + `]`
+		dependsOnServer := `[` + general.NullResource + `.` + k3sServerOne + `]`
 		server := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 	}
 }

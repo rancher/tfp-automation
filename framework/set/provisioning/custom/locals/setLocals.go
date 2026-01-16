@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -20,23 +22,23 @@ const (
 // SetLocals is a function that will set the locals configurations in the main.tf file.
 func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	configMap []map[string]any, newFile *hclwrite.File, file *os.File, customClusterNames []string) (*os.File, error) {
-	localsBlock := rootBody.AppendNewBlock(defaults.Locals, nil)
+	localsBlock := rootBody.AppendNewBlock(general.Locals, nil)
 	localsBlockBody := localsBlock.Body()
 
 	var roleFlags []cty.Value
 	for range terratestConfig.EtcdCount {
-		roleFlags = append(roleFlags, cty.StringVal(defaults.EtcdRoleFlag))
+		roleFlags = append(roleFlags, cty.StringVal(clusters.EtcdRoleFlag))
 	}
 
 	for range terratestConfig.ControlPlaneCount {
-		roleFlags = append(roleFlags, cty.StringVal(defaults.ControlPlaneRoleFlag))
+		roleFlags = append(roleFlags, cty.StringVal(clusters.ControlPlaneRoleFlag))
 	}
 
 	for range terratestConfig.WorkerCount {
-		roleFlags = append(roleFlags, cty.StringVal(defaults.WorkerRoleFlag))
+		roleFlags = append(roleFlags, cty.StringVal(clusters.WorkerRoleFlag))
 	}
 
-	localsBlockBody.SetAttributeValue(defaults.RoleFlags, cty.ListVal(roleFlags))
+	localsBlockBody.SetAttributeValue(clusters.RoleFlags, cty.ListVal(roleFlags))
 
 	totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
 	resourcePrefixExpression := fmt.Sprintf(`[for i in range(%d) : "%s-${i}"]`, totalNodeCount, terraformConfig.ResourcePrefix)
@@ -44,7 +46,7 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(resourcePrefixExpression)},
 	}
 
-	localsBlockBody.SetAttributeRaw(defaults.ResourcePrefix, resourcePrefixValue)
+	localsBlockBody.SetAttributeRaw(clusters.ResourcePrefix, resourcePrefixValue)
 
 	if !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 		setV2ClusterLocalBlock(localsBlockBody, terraformConfig, customClusterNames)
@@ -59,40 +61,40 @@ func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *con
 	}
 
 	//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
-	if strings.Contains(terraformConfig.Module, defaults.Custom) || strings.Contains(terraformConfig.Module, defaults.Airgap) {
+	if strings.Contains(terraformConfig.Module, general.Custom) || strings.Contains(terraformConfig.Module, general.Airgap) {
 		setCustomClusterLocalBlock(localsBlockBody, terraformConfig.ResourcePrefix, terraformConfig)
 
 	}
 }
 
 func setCustomClusterLocalBlock(localsBlockBody *hclwrite.Body, name string, terraformConfig *config.TerraformConfig) {
-	originalNodeCommandExpression := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.NodeCommand
+	originalNodeCommandExpression := rancher2.ClusterV2 + "." + name + "." + clusters.ClusterRegistrationToken + "[0]." + clusters.NodeCommand
 	originalNodeCommand := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpression)},
 	}
 
-	localsBlockBody.SetAttributeRaw(name+"_"+defaults.OriginalNodeCommand, originalNodeCommand)
+	localsBlockBody.SetAttributeRaw(name+"_"+clusters.OriginalNodeCommand, originalNodeCommand)
 
-	windowsOriginalNodeCommandExpression := defaults.ClusterV2 + "." + name + "." + defaults.ClusterRegistrationToken + "[0]." + defaults.WindowsNodeCommand
+	windowsOriginalNodeCommandExpression := rancher2.ClusterV2 + "." + name + "." + clusters.ClusterRegistrationToken + "[0]." + clusters.WindowsNodeCommand
 	windowsOriginalNodeCommand := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsOriginalNodeCommandExpression)},
 	}
 
-	localsBlockBody.SetAttributeRaw(name+"_"+defaults.WindowsOriginalNodeCommand, windowsOriginalNodeCommand)
+	localsBlockBody.SetAttributeRaw(name+"_"+clusters.WindowsOriginalNodeCommand, windowsOriginalNodeCommand)
 
 	insecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_original_node_command, "curl", "curl --insecure")}"`, name)
 	insecureNodeCommand := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(insecureNodeCommandExpression)},
 	}
 
-	localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureNodeCommand, insecureNodeCommand)
+	localsBlockBody.SetAttributeRaw(name+"_"+clusters.InsecureNodeCommand, insecureNodeCommand)
 
 	windowsInsecureNodeCommandExpression := fmt.Sprintf(`"${replace(local.%s_windows_original_node_command, "curl.exe", "curl.exe --insecure")}"`, name)
 	windowsInsecureNodeCommand := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsInsecureNodeCommandExpression)},
 	}
 
-	localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
+	localsBlockBody.SetAttributeRaw(name+"_"+clusters.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
 
 	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && (terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "") {
 		setWindowsProxyLocalBlock(localsBlockBody, name)
@@ -108,7 +110,7 @@ func setWindowsProxyLocalBlock(localsBlockBody *hclwrite.Body, name string) erro
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(curlReplace)},
 	}
 
-	localsBlockBody.SetAttributeRaw(name+"_"+defaults.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
+	localsBlockBody.SetAttributeRaw(name+"_"+clusters.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
 
 	return nil
 }

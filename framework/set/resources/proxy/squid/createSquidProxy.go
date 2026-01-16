@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -48,7 +48,7 @@ func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2ServerTwoPrivateIP + " " +
 		rke2ServerThreePrivateIP + "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/setup.sh"),
 		cty.StringVal("echo '" + string(squidConfContent) + "' > /tmp/squid.conf"),
 		cty.StringVal("echo '" + string(privateKey) + "' > /tmp/keyfile.pem"),

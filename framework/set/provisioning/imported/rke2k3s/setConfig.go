@@ -9,7 +9,8 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	awsDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/sleep"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/imported"
@@ -42,7 +43,7 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 
 	nodeOnePublicIP, nodeOnePrivateIP, nodeTwoPublicIP, nodeThreePublicIP := getProviderIPAddresses(terraformConfig, terratestConfig, rootBody, serverOneName)
 
-	token := namegen.AppendRandomString(defaults.Import)
+	token := namegen.AppendRandomString(general.Import)
 
 	resources.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, nodeOnePublicIP, nodeOnePrivateIP, nodeTwoPublicIP, nodeThreePublicIP, token)
 	rootBody.AppendNewline()
@@ -51,12 +52,12 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 		aws.CreateWindowsAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
 		rootBody.AppendNewline()
 
-		windowsNodePublicDNS := fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, windowsNodeName)
+		windowsNodePublicDNS := fmt.Sprintf("${%s.%s.public_dns}", awsDefaults.AwsInstance, windowsNodeName)
 		resources.AddWindowsNodeToImportedCluster(rootBody, terraformConfig, terratestConfig, nodeOnePrivateIP, windowsNodePublicDNS, token)
 
 		// Add the sleep command to wait for the Windows node to be ready
 		rootBody.AppendNewline()
-		dependsOnValue := fmt.Sprintf("[" + defaults.NullResource + ".add_windows_node" + "]")
+		dependsOnValue := fmt.Sprintf("[" + general.NullResource + ".add_windows_node" + "]")
 
 		sleep.SetTimeSleep(rootBody, terraformConfig, "10s", dependsOnValue, "import_wins")
 		rootBody.AppendNewline()

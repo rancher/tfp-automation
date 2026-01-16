@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	awsDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
@@ -19,10 +21,10 @@ import (
 func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	switch terraformConfig.Provider {
-	case defaults.Aws:
+	case awsDefaults.Aws:
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
-	case defaults.Vsphere:
-		dataCenterExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereDatacenter + `.` + defaults.VsphereDatacenter + `.id`)
+	case vsphereDefaults.Vsphere:
+		dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphereDefaults.VsphereDatacenter + `.` + vsphereDefaults.VsphereDatacenter + `.id`)
 		dataCenterValue := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dataCenterExpression)},
 		}

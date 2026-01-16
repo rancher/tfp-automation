@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -33,7 +33,7 @@ func CheckClusterStatus(file *os.File, newFile *hclwrite.File, rootBody *hclwrit
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rkeServerOnePublicIP, rkeServerOne)
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/cluster.sh"),
 		cty.StringVal("chmod +x /tmp/cluster.sh"),
 		cty.StringVal(command),

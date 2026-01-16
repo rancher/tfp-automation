@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke1"
@@ -55,9 +55,9 @@ func SetAirgapRKE1(terraformConfig *config.TerraformConfig, terratestConfig *con
 		var dependsOn []string
 
 		// Depending on the airgapped node, add the specific dependsOn expression.
-		bastionScriptExpression := "[" + defaults.NullResource + `.copy_script_to_bastion_` + terraformConfig.ResourcePrefix + "]"
-		nodeOneExpression := "[" + defaults.NullResource + `.register_` + airgapNodeOne + "_" + terraformConfig.ResourcePrefix + "]"
-		nodeTwoExpression := "[" + defaults.NullResource + `.register_` + airgapNodeTwo + "_" + terraformConfig.ResourcePrefix + "]"
+		bastionScriptExpression := "[" + general.NullResource + `.copy_script_to_bastion_` + terraformConfig.ResourcePrefix + "]"
+		nodeOneExpression := "[" + general.NullResource + `.register_` + airgapNodeOne + "_" + terraformConfig.ResourcePrefix + "]"
+		nodeTwoExpression := "[" + general.NullResource + `.register_` + airgapNodeTwo + "_" + terraformConfig.ResourcePrefix + "]"
 
 		switch instance {
 		case airgapNodeOne:

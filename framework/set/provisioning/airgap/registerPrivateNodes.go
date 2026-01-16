@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 )
 
 // RegisterPrivateNodes is a function that will register the private nodes to the cluster
@@ -22,7 +22,7 @@ func RegisterPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformConfig *
 
 	newCommand := `\"` + registrationCommand + `\"`
 
-	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
+	provisionerBlockBody.SetAttributeRaw(general.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 		{Type: hclsyntax.TokenStringLit, Bytes: []byte("/tmp/register-nodes.sh " + encodedPEMFile + " " +
 			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
@@ -45,7 +45,7 @@ func RegisterWindowsPrivateNodes(provisionerBlockBody *hclwrite.Body, terraformC
 
 	newCommand := `\"` + registrationCommand + `\"`
 
-	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
+	provisionerBlockBody.SetAttributeRaw(general.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 		{Type: hclsyntax.TokenStringLit, Bytes: []byte("/tmp/register-windows-nodes.sh " + encodedWindowsPEMFile + " " +
 			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " + terraformConfig.AWSConfig.WindowsAWSUser + " " +

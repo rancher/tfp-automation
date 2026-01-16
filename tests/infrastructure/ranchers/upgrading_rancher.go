@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
@@ -48,7 +48,7 @@ func UpgradingRancher(t *testing.T, provider string) error {
 	}
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
-		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
+		toggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
 	}
 
 	terraformConfig.Standalone.UpgradeRancher = true
@@ -69,7 +69,7 @@ func UpgradingRancher(t *testing.T, provider string) error {
 	}
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
-		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.UpgradedTurtles)
+		toggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.UpgradedTurtles)
 	}
 
 	return nil

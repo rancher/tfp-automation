@@ -7,12 +7,12 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 )
 
 // setRKEConfig is a function that will set the RKE configurations in the main.tf file.
 func setRKEConfig(clusterBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) (*hclwrite.Body, error) {
-	rkeConfigBlock := clusterBlockBody.AppendNewBlock(defaults.RkeConfig, nil)
+	rkeConfigBlock := clusterBlockBody.AppendNewBlock(clusters.RkeConfig, nil)
 	rkeConfigBlockBody := rkeConfigBlock.Body()
 
 	if terraformConfig.ChartValues != "" {
@@ -20,7 +20,7 @@ func setRKEConfig(clusterBlockBody *hclwrite.Body, terraformConfig *config.Terra
 			hcl.TraverseRoot{Name: "<<EOF\n" + terraformConfig.ChartValues + "\nEOF"},
 		})
 
-		rkeConfigBlockBody.SetAttributeRaw(defaults.ChartValues, chartValues)
+		rkeConfigBlockBody.SetAttributeRaw(clusters.ChartValues, chartValues)
 	}
 
 	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
@@ -38,7 +38,7 @@ func setRKEConfig(clusterBlockBody *hclwrite.Body, terraformConfig *config.Terra
 			})
 		}
 
-		rkeConfigBlockBody.SetAttributeRaw(defaults.MachineGlobalConfig, cidrValues)
+		rkeConfigBlockBody.SetAttributeRaw(clusters.MachineGlobalConfig, cidrValues)
 
 	}
 

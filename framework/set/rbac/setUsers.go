@@ -6,7 +6,8 @@ import (
 	password "github.com/rancher/shepherd/extensions/users/passwordgenerator"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -17,7 +18,7 @@ const (
 	insecure          = "insecure"
 	name              = "name"
 	provider          = "provider"
-	rancher2          = "rancher2"
+	rancher2Const     = "rancher2"
 	rancherSource     = "source"
 	rancherUser       = "rancher2_user"
 	rc                = "-rc"
@@ -36,17 +37,17 @@ func setUsers(newFile *hclwrite.File, rootBody *hclwrite.Body, rbacRole config.R
 	var testuser = namegen.AppendRandomString("testuser")
 	var testpassword = password.GenerateUserPassword("testpass")
 
-	userBlock := rootBody.AppendNewBlock(defaults.Resource, []string{rancherUser, testuser})
+	userBlock := rootBody.AppendNewBlock(general.Resource, []string{rancherUser, testuser})
 	userBlockBody := userBlock.Body()
 
 	userBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
 	userBlockBody.SetAttributeValue(username, cty.StringVal(testuser))
 	userBlockBody.SetAttributeValue(testPassword, cty.StringVal(testpassword))
-	userBlockBody.SetAttributeValue(defaults.Enabled, cty.BoolVal(true))
+	userBlockBody.SetAttributeValue(clusters.Enabled, cty.BoolVal(true))
 
 	rootBody.AppendNewline()
 
-	globalRoleBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{globalRoleBinding, testuser})
+	globalRoleBindingBlock := rootBody.AppendNewBlock(general.Resource, []string{globalRoleBinding, testuser})
 	globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
 
 	globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))

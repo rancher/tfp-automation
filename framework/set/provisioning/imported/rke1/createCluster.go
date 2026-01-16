@@ -6,7 +6,10 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	awsDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rke"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
 	"github.com/zclconf/go-cty/cty"
@@ -19,8 +22,8 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 	serverThreeName := terraformConfig.ResourcePrefix + `_` + serverThree
 	instances := []string{serverOneName, serverTwoName, serverThreeName}
 
-	if terraformConfig.Provider == defaults.Vsphere {
-		dataCenterExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereDatacenter + `.` + defaults.VsphereDatacenter + `.id`)
+	if terraformConfig.Provider == vsphereDefaults.Vsphere {
+		dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphereDefaults.VsphereDatacenter + `.` + vsphereDefaults.VsphereDatacenter + `.id`)
 		dataCenterValue := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dataCenterExpression)},
 		}
@@ -43,28 +46,28 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 
 	for _, instance := range instances {
 		switch terraformConfig.Provider {
-		case defaults.Aws:
+		case awsDefaults.Aws:
 			aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
-		case defaults.Vsphere:
+		case vsphereDefaults.Vsphere:
 			vsphere.CreateVsphereVirtualMachine(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
 		}
 	}
 
-	rkeBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.RKECluster, terraformConfig.ResourcePrefix})
+	rkeBlock := rootBody.AppendNewBlock(general.Resource, []string{rke.RKECluster, terraformConfig.ResourcePrefix})
 	rkeBlockBody := rkeBlock.Body()
 
 	for _, instance := range instances {
-		nodesBlock := rkeBlockBody.AppendNewBlock(defaults.Nodes, nil)
+		nodesBlock := rkeBlockBody.AppendNewBlock(awsDefaults.Nodes, nil)
 		nodesBlockBody := nodesBlock.Body()
 
 		var addressExpression string
 		switch terraformConfig.Provider {
-		case defaults.Aws:
-			addressExpression = `"${` + defaults.AwsInstance + "." + instance + ".public_ip" + `}"`
-		case defaults.Vsphere:
-			addressExpression = `"${` + defaults.VsphereVirtualMachine + "." + instance + ".default_ip_address" + `}"`
+		case awsDefaults.Aws:
+			addressExpression = `"${` + awsDefaults.AwsInstance + "." + instance + ".public_ip" + `}"`
+		case vsphereDefaults.Vsphere:
+			addressExpression = `"${` + vsphereDefaults.VsphereVirtualMachine + "." + instance + ".default_ip_address" + `}"`
 		}
 
 		values := hclwrite.Tokens{
@@ -81,7 +84,7 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 
 		nodesBlockBody.SetAttributeRaw(role, values)
 
-		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 		}
@@ -93,17 +96,17 @@ func createRKE1Cluster(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 
 	var dependsOnServer string
 	switch terraformConfig.Provider {
-	case defaults.Aws:
-		dependsOnServer = `[` + defaults.AwsInstance + `.` + serverOneName + `, ` + defaults.AwsInstance + `.` + serverTwoName + `, ` + defaults.AwsInstance + `.` + serverThreeName + `]`
-	case defaults.Vsphere:
-		dependsOnServer = `[` + defaults.VsphereVirtualMachine + `.` + serverOneName + `, ` + defaults.VsphereVirtualMachine + `.` + serverTwoName + `, ` + defaults.VsphereVirtualMachine + `.` + serverThreeName + `]`
+	case awsDefaults.Aws:
+		dependsOnServer = `[` + awsDefaults.AwsInstance + `.` + serverOneName + `, ` + awsDefaults.AwsInstance + `.` + serverTwoName + `, ` + awsDefaults.AwsInstance + `.` + serverThreeName + `]`
+	case vsphereDefaults.Vsphere:
+		dependsOnServer = `[` + vsphereDefaults.VsphereVirtualMachine + `.` + serverOneName + `, ` + vsphereDefaults.VsphereVirtualMachine + `.` + serverTwoName + `, ` + vsphereDefaults.VsphereVirtualMachine + `.` + serverThreeName + `]`
 	}
 
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	rkeBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	rkeBlockBody.SetAttributeRaw(general.DependsOn, server)
 
 	rootBody.AppendNewline()
 }
