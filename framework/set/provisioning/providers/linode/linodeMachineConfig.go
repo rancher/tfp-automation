@@ -4,7 +4,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -15,6 +14,6 @@ func SetLinodeRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraf
 	linodeConfigBlockBody := linodeConfigBlock.Body()
 
 	linodeConfigBlockBody.SetAttributeValue(linode.Image, cty.StringVal(terraformConfig.LinodeConfig.LinodeImage))
-	linodeConfigBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.LinodeConfig.Region))
+	linodeConfigBlockBody.SetAttributeValue(linode.Region, cty.StringVal(terraformConfig.LinodeConfig.Region))
 	linodeConfigBlockBody.SetAttributeValue(linode.RootPass, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
 }

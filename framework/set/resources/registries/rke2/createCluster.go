@@ -9,7 +9,7 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -72,7 +72,7 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 
 	command += "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
 		cty.StringVal(command),
@@ -100,17 +100,17 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 		command += "'"
 
-		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
 			cty.StringVal(command),
 		}))
 
-		dependsOnServer := `[` + defaults.NullResource + `.` + rke2ServerOne + `]`
+		dependsOnServer := `[` + general.NullResource + `.` + rke2ServerOne + `]`
 		server := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 	}
 }

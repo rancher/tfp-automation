@@ -7,57 +7,58 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // CustomWindowsNullResource is a function that will set the Windows null_resource configurations in the main.tf file,
 // to register the nodes to the cluster
 func CustomWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, clusterName string) error {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, defaults.RegisterNodes + "-" + clusterName + "-windows"})
+	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, general.RegisterNodes + "-" + clusterName + "-windows"})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
-	countExpression := defaults.Length + `(` + defaults.AwsInstance + `.` + clusterName + `-windows)`
-	nullResourceBlockBody.SetAttributeRaw(defaults.Count, hclwrite.TokensForIdentifier(countExpression))
+	countExpression := general.Length + `(` + aws.AwsInstance + `.` + clusterName + `-windows)`
+	nullResourceBlockBody.SetAttributeRaw(general.Count, hclwrite.TokensForIdentifier(countExpression))
 
-	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlock := nullResourceBlockBody.AppendNewBlock(general.Provisioner, []string{general.RemoteExec})
 	provisionerBlockBody := provisionerBlock.Body()
 
-	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlock := provisionerBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.WinRM))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
+	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.WinRM))
+	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
 	if strings.Contains(terraformConfig.Module, modules.CustomEC2RKE2Windows2019) {
-		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
+		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
 	} else if strings.Contains(terraformConfig.Module, modules.CustomEC2RKE2Windows2022) {
-		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
+		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
 	}
 
-	connectionBlockBody.SetAttributeValue(defaults.Insecure, cty.BoolVal(true))
-	connectionBlockBody.SetAttributeValue(defaults.UseNTLM, cty.BoolVal(true))
+	connectionBlockBody.SetAttributeValue(general.Insecure, cty.BoolVal(true))
+	connectionBlockBody.SetAttributeValue(general.UseNTLM, cty.BoolVal(true))
 
-	hostExpression := defaults.AwsInstance + `.` + clusterName + `-windows[` + defaults.Count + `.` + defaults.Index + `].` + defaults.PublicIp
+	hostExpression := aws.AwsInstance + `.` + clusterName + `-windows[` + general.Count + `.` + general.Index + `].` + general.PublicIp
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
+	connectionBlockBody.SetAttributeRaw(general.Host, host)
 
 	var regCommand hclwrite.Tokens
 
 	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
 		regCommand = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + defaults.Local + `.` + clusterName + "_" + defaults.InsecureWindowsProxyNodeCommand + `}"]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + general.Local + `.` + clusterName + "_" + clusters.InsecureWindowsProxyNodeCommand + `}"]`)},
 		}
 	} else {
 		regCommand = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + defaults.Local + `.` + clusterName + "_" + defaults.InsecureWindowsNodeCommand + `}"]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + general.Local + `.` + clusterName + "_" + clusters.InsecureWindowsNodeCommand + `}"]`)},
 		}
 	}
 
-	provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
-
+	provisionerBlockBody.SetAttributeRaw(general.Inline, regCommand)
 	return nil
 }

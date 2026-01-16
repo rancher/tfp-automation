@@ -5,7 +5,9 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -52,13 +54,13 @@ func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body, clusterNa
 		"tigera-operator",
 	}
 
-	psactBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.PodSecurityAdmission, clusterName})
+	psactBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.PodSecurityAdmission, clusterName})
 	psactBlockBody := psactBlock.Body()
 
-	psactBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(defaults.RancherBaseline))
+	psactBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(clusters.RancherBaseline))
 	psactBlockBody.SetAttributeValue(description, cty.StringVal(baselineDescription))
 
-	defaultsBlock := psactBlockBody.AppendNewBlock(defaults.Defaults, nil)
+	defaultsBlock := psactBlockBody.AppendNewBlock(general.Defaults, nil)
 	defaultsBlockBody := defaultsBlock.Body()
 
 	defaultsBlockBody.SetAttributeValue(audit, cty.StringVal(baseline))

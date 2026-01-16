@@ -12,7 +12,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rke"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
@@ -54,7 +55,7 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	command := "bash -c '/tmp/import-nodes.sh " + encodedPEMFile + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.OSGroup + " " + nodeOnePublicDNS + " " + importCommand
 
-	if strings.Contains(terraformConfig.Module, clustertypes.RKE1) && strings.Contains(terraformConfig.Module, defaults.Import) {
+	if strings.Contains(terraformConfig.Module, clustertypes.RKE1) && strings.Contains(terraformConfig.Module, general.Import) {
 		command += " " + kubeConfig
 	}
 
@@ -64,7 +65,7 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	copyScriptName := terraformConfig.ResourcePrefix + `_` + copyScript
 	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, copyScriptName)
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/import-nodes.sh"),
 		cty.StringVal("chmod +x /tmp/import-nodes.sh"),
 	}))
@@ -75,37 +76,37 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	case modules.ImportEC2RKE2, modules.ImportEC2K3s, modules.ImportVsphereRKE2, modules.ImportVsphereK3s:
 		addServerTwoName := addServer + terraformConfig.ResourcePrefix + `_` + serverTwo
 		addServerThreeName := addServer + terraformConfig.ResourcePrefix + `_` + serverThree
-		dependsOnServer = `[` + defaults.NullResource + `.` + addServerTwoName + `, ` + defaults.NullResource + `.` + addServerThreeName + `]`
+		dependsOnServer = `[` + general.NullResource + `.` + addServerTwoName + `, ` + general.NullResource + `.` + addServerThreeName + `]`
 	case modules.ImportEC2RKE2Windows2019, modules.ImportEC2RKE2Windows2022:
-		dependsOnServer = `[` + defaults.TimeSleep + `.` + defaults.TimeSleep + `-` + terraformConfig.ResourcePrefix + `-import_wins` + `]`
+		dependsOnServer = `[` + general.TimeSleep + `.` + general.TimeSleep + `-` + terraformConfig.ResourcePrefix + `-import_wins` + `]`
 	case modules.ImportEC2RKE1, modules.ImportVsphereRKE1:
-		dependsOnServer = `[` + defaults.RKECluster + `.` + terraformConfig.ResourcePrefix + `]`
+		dependsOnServer = `[` + rke.RKECluster + `.` + terraformConfig.ResourcePrefix + `]`
 	}
 
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 
 	// A second null resource block is needed to properly run the script on the node. This is because the cluster registration
 	// token and RKE1 kube config will be not passed correctly as Bash parameters.
 	importClusterName := terraformConfig.ResourcePrefix + `_` + importCluster
 	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName)
 
-	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
+	provisionerBlockBody.SetAttributeRaw(general.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 		{Type: hclsyntax.TokenStringLit, Bytes: []byte(command)},
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
 
-	dependsOnServer = `[` + defaults.NullResource + `.` + copyScriptName + `]`
+	dependsOnServer = `[` + general.NullResource + `.` + copyScriptName + `]`
 
 	server = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 
 	return nil
 }

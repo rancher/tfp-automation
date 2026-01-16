@@ -17,7 +17,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
@@ -85,7 +85,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 	}
 
 	for _, tt := range tests {
-		if strings.Contains(tt.name, "Windows") && (s.terraformConfig.Provider != defaults.Aws) {
+		if strings.Contains(tt.name, "Windows") && (s.terraformConfig.Provider != aws.Aws) {
 			s.T().Skip("Skipping Windows test on non-AWS provider")
 		}
 

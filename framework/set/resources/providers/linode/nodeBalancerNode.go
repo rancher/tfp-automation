@@ -7,19 +7,20 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	linodeDefalts "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // CreateNodeBalancerNode is a function that will set the node balancer configurations in the main.tf file.
 func CreateNodeBalancerNode(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
-	nodeBalancerNodeBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LinodeNodeBalancerNode, defaults.LinodeNodeBalancerNode + "_" + strconv.FormatInt(port, 10)})
+	nodeBalancerNodeBlock := rootBody.AppendNewBlock(general.Resource, []string{linodeDefalts.LinodeNodeBalancerNode, linodeDefalts.LinodeNodeBalancerNode + "_" + strconv.FormatInt(port, 10)})
 	nodeBalancerNodeBlockBody := nodeBalancerNodeBlock.Body()
 
 	expression := `{
-        for instance in [` + defaults.LinodeInstance + `.` + serverOne + `, ` +
-		defaults.LinodeInstance + `.` + serverTwo + `, ` +
-		defaults.LinodeInstance + `.` + serverThree + `] : instance.label => instance
+        for instance in [` + linodeDefalts.LinodeInstance + `.` + serverOne + `, ` +
+		linodeDefalts.LinodeInstance + `.` + serverTwo + `, ` +
+		linodeDefalts.LinodeInstance + `.` + serverThree + `] : instance.label => instance
 	}`
 
 	values := hclwrite.Tokens{
@@ -28,14 +29,14 @@ func CreateNodeBalancerNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 
 	nodeBalancerNodeBlockBody.SetAttributeRaw(forEach, values)
 
-	expression = defaults.LinodeNodeBalancer + `.` + defaults.LinodeNodeBalancer + `.id`
+	expression = linodeDefalts.LinodeNodeBalancer + `.` + linodeDefalts.LinodeNodeBalancer + `.id`
 	values = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 	}
 
 	nodeBalancerNodeBlockBody.SetAttributeRaw(linode.NodeBalancerID, values)
 
-	expression = defaults.LinodeNodeBalancerConfig + `.` + defaults.LinodeNodeBalancerConfig + `_` + strconv.FormatInt(port, 10) + `.id`
+	expression = linodeDefalts.LinodeNodeBalancerConfig + `.` + linodeDefalts.LinodeNodeBalancerConfig + `_` + strconv.FormatInt(port, 10) + `.id`
 	values = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 	}

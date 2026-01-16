@@ -8,19 +8,20 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
 	"github.com/rancher/tfp-automation/framework/format"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	linodeDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // CreateLinodeInstances is a function that will set the Linode instances configurations in the main.tf file.
 func CreateLinodeInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	hostnamePrefix string) {
-	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LinodeInstance, hostnamePrefix})
+	configBlock := rootBody.AppendNewBlock(general.Resource, []string{linodeDefaults.LinodeInstance, hostnamePrefix})
 	configBlockBody := configBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+	if strings.Contains(terraformConfig.Module, general.Custom) {
 		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
-		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(totalNodeCount))
+		configBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(totalNodeCount))
 	}
 
 	configBlockBody.SetAttributeValue(linode.Image, cty.StringVal(terraformConfig.LinodeConfig.LinodeImage))
@@ -36,28 +37,28 @@ func CreateLinodeInstances(rootBody *hclwrite.Body, terraformConfig *config.Terr
 
 	configBlockBody.AppendNewline()
 
-	connectionBlock := configBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlock := configBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(linode.RootUser))
-	connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
+	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.Ssh))
+	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(linode.RootUser))
+	connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
 
-	hostExpression := defaults.Self + "." + defaults.IPAddress
+	hostExpression := general.Self + "." + general.IPAddress
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
+	connectionBlockBody.SetAttributeRaw(general.Host, host)
 
-	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal(terraformConfig.LinodeConfig.Timeout))
+	connectionBlockBody.SetAttributeValue(general.Timeout, cty.StringVal(terraformConfig.LinodeConfig.Timeout))
 
 	configBlockBody.AppendNewline()
 
-	provisionerBlock := configBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlock := configBlockBody.AppendNewBlock(general.Provisioner, []string{general.RemoteExec})
 	provisionerBlockBody := provisionerBlock.Body()
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo Connected!!!"),
 	}))
 }

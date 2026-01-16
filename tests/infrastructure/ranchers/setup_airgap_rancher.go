@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/tests/extensions/ssh"
@@ -50,10 +50,10 @@ func CreateAirgapRancher(t *testing.T, provider string) error {
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
 		switch standaloneConfig.FeatureFlags.Turtles {
-		case defaults.ToggledOff:
-			features.UpdateFeatureFlag(client, defaults.Turtles, false)
-		case defaults.ToggledOn:
-			features.UpdateFeatureFlag(client, defaults.Turtles, true)
+		case featureDefaults.ToggledOff:
+			features.UpdateFeatureFlag(client, featureDefaults.Turtles, false)
+		case featureDefaults.ToggledOn:
+			features.UpdateFeatureFlag(client, featureDefaults.Turtles, true)
 		}
 	}
 

@@ -11,7 +11,11 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
+	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rke"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -28,7 +32,7 @@ const (
 	name                    = "name"
 	password                = "password"
 	provider                = "provider"
-	rancher2                = "rancher2"
+	rancher2Const           = "rancher2"
 	rancher2CustomUserToken = "rancher2_custom_user_token"
 	rancherRKE              = "rancher/rke"
 	rancherSource           = "source"
@@ -74,44 +78,44 @@ func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any
 	source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion := getRequiredProviderVersions(configMap)
 
 	if rancherProviderVersion != "" {
-		reqProvsBlockBody.SetAttributeValue(rancher2, cty.ObjectVal(map[string]cty.Value{
+		reqProvsBlockBody.SetAttributeValue(rancher2Const, cty.ObjectVal(map[string]cty.Value{
 			rancherSource: cty.StringVal(source),
 			version:       cty.StringVal(rancherProviderVersion),
 		}))
 	}
 
-	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Aws && customModule {
-		reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
-			defaults.Source:  cty.StringVal(defaults.AwsSource),
-			defaults.Version: cty.StringVal(cloudProviderVersion),
+	if cloudProviderVersion != "" && terraformConfig.Provider == aws.Aws && customModule {
+		reqProvsBlockBody.SetAttributeValue(aws.Aws, cty.ObjectVal(map[string]cty.Value{
+			general.Source:  cty.StringVal(aws.AwsSource),
+			general.Version: cty.StringVal(cloudProviderVersion),
 		}))
 	}
 
-	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Linode && customModule {
-		reqProvsBlockBody.SetAttributeValue(defaults.Linode, cty.ObjectVal(map[string]cty.Value{
-			defaults.Source:  cty.StringVal(defaults.LinodeSource),
-			defaults.Version: cty.StringVal(cloudProviderVersion),
+	if cloudProviderVersion != "" && terraformConfig.Provider == linode.Linode && customModule {
+		reqProvsBlockBody.SetAttributeValue(linode.Linode, cty.ObjectVal(map[string]cty.Value{
+			general.Source:  cty.StringVal(linode.LinodeSource),
+			general.Version: cty.StringVal(cloudProviderVersion),
 		}))
 	}
 
-	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Vsphere && customModule {
-		reqProvsBlockBody.SetAttributeValue(defaults.Vsphere, cty.ObjectVal(map[string]cty.Value{
-			defaults.Source:  cty.StringVal(defaults.VsphereSource),
-			defaults.Version: cty.StringVal(cloudProviderVersion),
+	if cloudProviderVersion != "" && terraformConfig.Provider == vsphereDefaults.Vsphere && customModule {
+		reqProvsBlockBody.SetAttributeValue(vsphereDefaults.Vsphere, cty.ObjectVal(map[string]cty.Value{
+			general.Source:  cty.StringVal(vsphereDefaults.VsphereSource),
+			general.Version: cty.StringVal(cloudProviderVersion),
 		}))
 	}
 
 	if localProviderVersion != "" {
-		reqProvsBlockBody.SetAttributeValue(defaults.Local, cty.ObjectVal(map[string]cty.Value{
-			defaults.Source:  cty.StringVal(defaults.LocalSource),
-			defaults.Version: cty.StringVal(localProviderVersion),
+		reqProvsBlockBody.SetAttributeValue(general.Local, cty.ObjectVal(map[string]cty.Value{
+			general.Source:  cty.StringVal(general.LocalSource),
+			general.Version: cty.StringVal(localProviderVersion),
 		}))
 	}
 
 	if rkeProviderVersion != "" {
-		reqProvsBlockBody.SetAttributeValue(defaults.RKE, cty.ObjectVal(map[string]cty.Value{
-			defaults.Source:  cty.StringVal(rancherRKE),
-			defaults.Version: cty.StringVal(rkeProviderVersion),
+		reqProvsBlockBody.SetAttributeValue(rke.RKE, cty.ObjectVal(map[string]cty.Value{
+			general.Source:  cty.StringVal(rancherRKE),
+			general.Version: cty.StringVal(rkeProviderVersion),
 		}))
 	}
 
@@ -125,45 +129,45 @@ func createProvider(rancherConfig *rancher.Config, rootBody *hclwrite.Body, conf
 	terraformConfig := new(config.TerraformConfig)
 	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraformConfig)
 
-	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Aws && customModule {
-		awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
+	if cloudProviderVersion != "" && terraformConfig.Provider == aws.Aws && customModule {
+		awsProvBlock := rootBody.AppendNewBlock(general.Provider, []string{aws.Aws})
 		awsProvBlockBody := awsProvBlock.Body()
 
-		awsProvBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
-		awsProvBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
-		awsProvBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+		awsProvBlockBody.SetAttributeValue(aws.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
+		awsProvBlockBody.SetAttributeValue(aws.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+		awsProvBlockBody.SetAttributeValue(aws.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 
 		rootBody.AppendNewline()
-		rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Local})
+		rootBody.AppendNewBlock(general.Provider, []string{general.Local})
 		rootBody.AppendNewline()
 	}
 
-	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Linode && customModule {
-		linodeProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Linode})
+	if cloudProviderVersion != "" && terraformConfig.Provider == linode.Linode && customModule {
+		linodeProvBlock := rootBody.AppendNewBlock(general.Provider, []string{linode.Linode})
 		linodeProvBlockBody := linodeProvBlock.Body()
 
-		linodeProvBlockBody.SetAttributeValue(defaults.Token, cty.StringVal(terraformConfig.LinodeCredentials.LinodeToken))
+		linodeProvBlockBody.SetAttributeValue(general.Token, cty.StringVal(terraformConfig.LinodeCredentials.LinodeToken))
 
 		rootBody.AppendNewline()
-		rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Local})
+		rootBody.AppendNewBlock(general.Provider, []string{general.Local})
 		rootBody.AppendNewline()
 	}
 
-	if cloudProviderVersion != "" && terraformConfig.Provider == defaults.Vsphere && customModule {
-		vsphereProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Vsphere})
+	if cloudProviderVersion != "" && terraformConfig.Provider == vsphereDefaults.Vsphere && customModule {
+		vsphereProvBlock := rootBody.AppendNewBlock(general.Provider, []string{vsphereDefaults.Vsphere})
 		vsphereProvBlockBody := vsphereProvBlock.Body()
 
-		vsphereProvBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereCredentials.Username))
-		vsphereProvBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.VsphereCredentials.Password))
-		vsphereProvBlockBody.SetAttributeValue(defaults.VsphereServer, cty.StringVal(terraformConfig.VsphereCredentials.Vcenter))
+		vsphereProvBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.VsphereCredentials.Username))
+		vsphereProvBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.VsphereCredentials.Password))
+		vsphereProvBlockBody.SetAttributeValue(vsphereDefaults.VsphereServer, cty.StringVal(terraformConfig.VsphereCredentials.Vcenter))
 		vsphereProvBlockBody.SetAttributeValue(allowUnverifiedSSL, cty.BoolVal(true))
 
 		rootBody.AppendNewline()
-		rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Local})
+		rootBody.AppendNewBlock(general.Provider, []string{general.Local})
 		rootBody.AppendNewline()
 	}
 
-	rancher2ProvBlock := rootBody.AppendNewBlock(provider, []string{rancher2})
+	rancher2ProvBlock := rootBody.AppendNewBlock(provider, []string{rancher2Const})
 	rancher2ProvBlockBody := rancher2ProvBlock.Body()
 
 	rancher2ProvBlockBody.SetAttributeValue(apiURL, cty.StringVal("https://"+rancherConfig.Host))
@@ -175,10 +179,10 @@ func createProvider(rancherConfig *rancher.Config, rootBody *hclwrite.Body, conf
 
 // createProviderAlias creates a provider alias block for the standard user.
 func createProviderAlias(rancherConfig *rancher.Config, rootBody *hclwrite.Body) {
-	providerBlock := rootBody.AppendNewBlock(defaults.Provider, []string{rancher2})
+	providerBlock := rootBody.AppendNewBlock(general.Provider, []string{rancher2Const})
 	providerBlockBody := providerBlock.Body()
 
-	providerBlockBody.SetAttributeValue(alias, cty.StringVal(defaults.AdminUser))
+	providerBlockBody.SetAttributeValue(alias, cty.StringVal(general.AdminUser))
 	providerBlockBody.SetAttributeValue(apiURL, cty.StringVal("https://"+rancherConfig.Host))
 
 	adminUser := &management.User{
@@ -215,14 +219,14 @@ func getRequiredProviderVersions(configMap []map[string]any) (source, rancherPro
 			source = "terraform.local/local/rancher2"
 		}
 
-		if strings.Contains(module, defaults.Import) && strings.Contains(module, clustertypes.RKE1) {
+		if strings.Contains(module, general.Import) && strings.Contains(module, clustertypes.RKE1) {
 			rkeProviderVersion = os.Getenv(rkeEnvVar)
 			if rkeProviderVersion == "" {
 				logrus.Fatalf("Expected env var not set %s", rkeEnvVar)
 			}
 		}
 
-		if strings.Contains(module, defaults.Custom) || strings.Contains(module, defaults.Import) || strings.Contains(module, defaults.Airgap) ||
+		if strings.Contains(module, general.Custom) || strings.Contains(module, general.Import) || strings.Contains(module, general.Airgap) ||
 			strings.Contains(module, ec2) {
 			cloudProviderVersion = os.Getenv(cloudProviderEnvVar)
 			if cloudProviderVersion == "" {

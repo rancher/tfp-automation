@@ -6,7 +6,9 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	awsDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rke"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 )
 
@@ -40,13 +42,13 @@ func SetImportedRKE1(terraformConfig *config.TerraformConfig, terratestConfig *c
 
 	var nodeOnePublicDNS string
 	switch terraformConfig.Provider {
-	case defaults.Aws:
-		nodeOnePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", defaults.AwsInstance, serverOneName)
-	case defaults.Vsphere:
-		nodeOnePublicDNS = fmt.Sprintf("${%s.%s.default_ip_address}", defaults.VsphereVirtualMachine, serverOneName)
+	case awsDefaults.Aws:
+		nodeOnePublicDNS = fmt.Sprintf("${%s.%s.public_dns}", awsDefaults.AwsInstance, serverOneName)
+	case vsphereDefaults.Vsphere:
+		nodeOnePublicDNS = fmt.Sprintf("${%s.%s.default_ip_address}", vsphereDefaults.VsphereVirtualMachine, serverOneName)
 	}
 
-	kubeConfig := fmt.Sprintf("${%s.%s.kube_config_yaml}", defaults.RKECluster, terraformConfig.ResourcePrefix)
+	kubeConfig := fmt.Sprintf("${%s.%s.kube_config_yaml}", rke.RKECluster, terraformConfig.ResourcePrefix)
 
 	err := imported.ImportNodes(rootBody, terraformConfig, terratestConfig, nodeOnePublicDNS, kubeConfig, importCommand[serverOneName])
 	if err != nil {

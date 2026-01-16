@@ -6,7 +6,8 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -20,12 +21,12 @@ func addClusterRole(client *rancher.Client, newFile *hclwrite.File, rootBody *hc
 
 	rootBody.AppendNewline()
 
-	clusterRoleTemplateBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{clusterRoleTemplateBinding, terraformConfig.ResourcePrefix})
+	clusterRoleTemplateBindingBlock := rootBody.AppendNewBlock(general.Resource, []string{clusterRoleTemplateBinding, terraformConfig.ResourcePrefix})
 	clusterRoleTemplateBindingBlockBody := clusterRoleTemplateBindingBlock.Body()
 
 	if isRKE1 {
 		clusterBlockID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
 		}
 
 		clusterRoleTemplateBindingBlockBody.SetAttributeRaw(clusterID, clusterBlockID)
@@ -38,7 +39,7 @@ func addClusterRole(client *rancher.Client, newFile *hclwrite.File, rootBody *hc
 		clusterRoleTemplateBindingBlockBody.SetAttributeValue(clusterID, cty.StringVal(clusterBlockID))
 	}
 
-	clusterRoleTemplateBindingBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(clusterRoleTemplateBindingName))
+	clusterRoleTemplateBindingBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(clusterRoleTemplateBindingName))
 	clusterRoleTemplateBindingBlockBody.SetAttributeValue(roleTemplateID, cty.StringVal(string(rbacRole)))
 
 	newUser := hclwrite.Tokens{
@@ -49,16 +50,16 @@ func addClusterRole(client *rancher.Client, newFile *hclwrite.File, rootBody *hc
 
 	var dependsOn string
 	if isRKE1 {
-		dependsOn = `[` + defaults.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
+		dependsOn = `[` + rancher2.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
 	} else {
-		dependsOn = `[` + defaults.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
+		dependsOn = `[` + rancher2.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
 	}
 
 	value := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOn)},
 	}
 
-	clusterRoleTemplateBindingBlockBody.SetAttributeRaw(defaults.DependsOn, value)
+	clusterRoleTemplateBindingBlockBody.SetAttributeRaw(general.DependsOn, value)
 
 	return newFile, rootBody, nil
 }

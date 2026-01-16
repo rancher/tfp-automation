@@ -7,49 +7,49 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // CreateImportedWindowsNullResource is a helper function that will create the null_resource for the Windows node.
 func CreateImportedWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	publicDNS, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, resourceName})
+	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, resourceName})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
-	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlock := nullResourceBlockBody.AppendNewBlock(general.Provisioner, []string{general.RemoteExec})
 	provisionerBlockBody := provisionerBlock.Body()
 
-	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlock := provisionerBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
 	var hostExpression string
 
 	if terratestConfig.WindowsNodeCount == 1 {
-		hostExpression = `"${` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[0].` + defaults.PublicIp + `}"`
+		hostExpression = `"${` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[0].` + general.PublicIp + `}"`
 	} else if terratestConfig.WindowsNodeCount > 1 {
-		hostExpression = `"${` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[` + defaults.Count + `.` + defaults.Index + `].` + defaults.PublicIp + `}"`
+		hostExpression = `"${` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[` + general.Count + `.` + general.Index + `].` + general.PublicIp + `}"`
 	}
 
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
+	connectionBlockBody.SetAttributeRaw(general.Host, host)
 
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.WinRM))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
+	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.WinRM))
+	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
 	if strings.Contains(terraformConfig.Module, modules.ImportEC2RKE2Windows2019) {
-		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
+		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
 	} else if strings.Contains(terraformConfig.Module, modules.ImportEC2RKE2Windows2022) {
-		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
+		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
 	}
 
-	connectionBlockBody.SetAttributeValue(defaults.Insecure, cty.BoolVal(true))
-	connectionBlockBody.SetAttributeValue(defaults.UseNTLM, cty.BoolVal(true))
-
-	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
+	connectionBlockBody.SetAttributeValue(general.Insecure, cty.BoolVal(true))
+	connectionBlockBody.SetAttributeValue(general.UseNTLM, cty.BoolVal(true))
+	connectionBlockBody.SetAttributeValue(aws.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
 
 	return nullResourceBlockBody, provisionerBlockBody
 }

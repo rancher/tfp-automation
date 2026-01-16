@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
@@ -35,10 +35,10 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 
 	userDir, _ := rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
+	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, general.Import) {
 		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
 		newServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
-	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
+	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
 		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/init-server.sh")
 		newServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-servers.sh")
 	}
@@ -67,12 +67,12 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 
 	var version, command string
 
-	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
+	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, general.Import) {
 		version = terraformConfig.Standalone.K3SVersion
 
 		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			version + " " + serverOnePrivateIP + " " + token + "'"
-	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
+	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
 		version = terraformConfig.Standalone.RKE2Version
 
 		command = "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
@@ -82,7 +82,7 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 	command += " || true"
 
 	// For imported clusters, need to first put the script on the machine before running it.
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
 	}))
@@ -90,19 +90,19 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 	createClusterName := terraformConfig.ResourcePrefix + `_` + createCluster
 	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicIP, createClusterName)
 
-	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
+	provisionerBlockBody.SetAttributeRaw(general.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 		{Type: hclsyntax.TokenStringLit, Bytes: []byte(command)},
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
 
-	dependsOnServer := `[` + defaults.NullResource + `.` + copyScriptName + `]`
+	dependsOnServer := `[` + general.NullResource + `.` + copyScriptName + `]`
 
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 }
 
 // addImportedServerNodes is a helper function that will add additional server nodes to the initial server.
@@ -118,12 +118,12 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 
 		var version, command string
 
-		if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, defaults.Import) {
+		if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, general.Import) {
 			version = terraformConfig.Standalone.K3SVersion
 
 			command = "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 				version + " " + serverOnePrivateIP + " " + instance + " " + token + "'"
-		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, defaults.Import) {
+		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
 			version = terraformConfig.Standalone.RKE2Version
 
 			command = "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + version + " " + serverOnePrivateIP + " " +
@@ -132,33 +132,33 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 
 		command += " || true"
 
-		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("echo '" + string(script) + "' > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
 		}))
 
-		dependsOnServer := `[` + defaults.NullResource + `.` + createClusterName + `]`
+		dependsOnServer := `[` + general.NullResource + `.` + createClusterName + `]`
 		server := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 
 		nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedNullResource(rootBody, terraformConfig, instance, addServer+"_"+resourceName)
 
-		provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
+		provisionerBlockBody.SetAttributeRaw(general.Inline, hclwrite.Tokens{
 			{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 			{Type: hclsyntax.TokenStringLit, Bytes: []byte(command)},
 			{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 		})
 
 		importClusterName := terraformConfig.ResourcePrefix + `_` + resourceNames[i]
-		dependsOnServer = `[` + defaults.NullResource + `.` + importClusterName + `]`
+		dependsOnServer = `[` + general.NullResource + `.` + importClusterName + `]`
 
 		server = hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 	}
 }

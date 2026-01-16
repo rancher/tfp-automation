@@ -7,25 +7,28 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/azure"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 )
 
 // DownstreamClusterModules is a function that will return the correct module names based on the provider.
 func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, string, string, string) {
 	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
 	switch terraformConfig.DownstreamClusterProvider {
-	case defaults.Aws:
+	case aws.Aws:
 		rke2Module = modules.EC2RKE2
 		rke2Windows2019 = modules.CustomEC2RKE2Windows2019
 		rke2Windows2022 = modules.CustomEC2RKE2Windows2022
 		k3sModule = modules.EC2K3s
-	case defaults.Azure:
+	case azure.Azure:
 		rke2Module = modules.AzureRKE2
 		k3sModule = modules.AzureK3s
-	case defaults.Linode:
+	case linode.Linode:
 		rke2Module = modules.LinodeRKE2
 		k3sModule = modules.LinodeK3s
-	case defaults.Vsphere:
+	case vsphere.Vsphere:
 		rke2Module = modules.VsphereRKE2
 		k3sModule = modules.VsphereK3s
 	default:
@@ -39,12 +42,12 @@ func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, 
 func ImportedClusterModules(terraformConfig *config.TerraformConfig) (string, string, string, string) {
 	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
 	switch terraformConfig.DownstreamClusterProvider {
-	case defaults.Aws:
+	case aws.Aws:
 		rke2Module = modules.ImportEC2RKE2
 		rke2Windows2019 = modules.ImportEC2RKE2Windows2019
 		rke2Windows2022 = modules.ImportEC2RKE2Windows2022
 		k3sModule = modules.ImportEC2K3s
-	case defaults.Vsphere:
+	case vsphere.Vsphere:
 		rke2Module = modules.ImportVsphereRKE2
 		k3sModule = modules.ImportVsphereK3s
 	default:

@@ -5,7 +5,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
 	"github.com/rancher/tfp-automation/framework/format"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	linodeDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -17,7 +18,7 @@ const (
 
 // CreateNodeBalancer is a function that will set the node balancer configurations in the main.tf file.
 func CreateNodeBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	nodeBalancerBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.LinodeNodeBalancer, defaults.LinodeNodeBalancer})
+	nodeBalancerBlock := rootBody.AppendNewBlock(general.Resource, []string{linodeDefaults.LinodeNodeBalancer, linodeDefaults.LinodeNodeBalancer})
 	nodeBalancerBlockBody := nodeBalancerBlock.Body()
 
 	nodeBalancerBlockBody.SetAttributeValue(linode.Label, cty.StringVal(terraformConfig.ResourcePrefix))

@@ -6,7 +6,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/harvester"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -15,9 +17,9 @@ func SetHarvesterRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformCon
 	nodeTemplateBlockBody.SetAttributeValue("engine_install_url", cty.StringVal("https://releases.rancher.com/install-docker/26.1.sh"))
 
 	cloudCredID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + terraformConfig.ResourcePrefix + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.CloudCredential + "." + terraformConfig.ResourcePrefix + ".id")},
 	}
-	nodeTemplateBlockBody.SetAttributeRaw(defaults.CloudCredentialID, cloudCredID)
+	nodeTemplateBlockBody.SetAttributeRaw(clusters.CloudCredentialID, cloudCredID)
 
 	harvesterConfigBlock := nodeTemplateBlockBody.AppendNewBlock(harvester.HarvesterConfig, nil)
 	harvesterConfigBlockBody := harvesterConfigBlock.Body()
@@ -38,10 +40,10 @@ func SetHarvesterRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformCon
 
 // SetHarvesterCredentialProvider is a helper function that will set the Harvester cloud provider in main.tf
 func SetHarvesterCredentialProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, terraformConfig.ResourcePrefix})
+	cloudCredBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.CloudCredential, terraformConfig.ResourcePrefix})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
+	cloudCredBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	harvesterCredBlock := cloudCredBlockBody.AppendNewBlock(harvester.HarvesterCredentialConfig, nil)
 	harvesterCredBlockBody := harvesterCredBlock.Body()

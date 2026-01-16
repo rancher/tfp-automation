@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -29,7 +29,7 @@ func CopyScript(provisionerBlockBody *hclwrite.Body, terraformConfig *config.Ter
 		return nil
 	}
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(nodesScriptContent) + "' > /tmp/register-nodes.sh"),
 		cty.StringVal("chmod +x /tmp/register-nodes.sh"),
 		cty.StringVal("echo '" + string(windowsScriptContent) + "' > /tmp/register-windows-nodes.sh"),

@@ -14,7 +14,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/stretchr/testify/require"
@@ -65,7 +65,7 @@ func CreateRancher(t *testing.T, provider string) error {
 	}
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
-		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
+		toggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
 	}
 
 	return nil
@@ -73,9 +73,9 @@ func CreateRancher(t *testing.T, provider string) error {
 
 func toggleFeatureFlag(client *rancher.Client, feature string, toggledState string) {
 	switch toggledState {
-	case defaults.ToggledOff, "true":
+	case featureDefaults.ToggledOff, "true":
 		features.UpdateFeatureFlag(client, feature, false)
-	case defaults.ToggledOn, "false":
+	case featureDefaults.ToggledOn, "false":
 		features.UpdateFeatureFlag(client, feature, true)
 	}
 }

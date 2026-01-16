@@ -8,7 +8,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/harvester"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -32,19 +33,19 @@ func CreateTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
 	reqProvsBlockBody := reqProvsBlock.Body()
 
 	reqProvsBlockBody.SetAttributeValue("harvester", cty.ObjectVal(map[string]cty.Value{
-		defaults.Source:  cty.StringVal(defaults.HarvesterSource),
-		defaults.Version: cty.StringVal(cloudProviderVersion),
+		general.Source:  cty.StringVal(harvester.HarvesterSource),
+		general.Version: cty.StringVal(cloudProviderVersion),
 	}))
 
 	reqProvsBlockBody.SetAttributeValue("kubernetes", cty.ObjectVal(map[string]cty.Value{
-		defaults.Source:  cty.StringVal(defaults.KubernetesSource),
-		defaults.Version: cty.StringVal(kubernetesProviderVersion),
+		general.Source:  cty.StringVal(general.KubernetesSource),
+		general.Version: cty.StringVal(kubernetesProviderVersion),
 	}))
 }
 
 // CreateHarvesterProviderBlock will set up the harvester provider block.
 func CreateHarvesterProviderBlock(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	harvesterProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{terraformConfig.Provider})
+	harvesterProvBlock := rootBody.AppendNewBlock(general.Provider, []string{terraformConfig.Provider})
 	harvesterProvBlockBody := harvesterProvBlock.Body()
 
 	pathModuleVar := fmt.Sprint(`"${local.codebase_root_path}/local.yaml"`)
@@ -54,7 +55,7 @@ func CreateHarvesterProviderBlock(rootBody *hclwrite.Body, terraformConfig *conf
 
 	harvesterProvBlockBody.SetAttributeRaw("kubeconfig", hclPathModule)
 
-	kubernetesProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Kubernetes})
+	kubernetesProvBlock := rootBody.AppendNewBlock(general.Provider, []string{general.Kubernetes})
 	kubernetesProvBlockBody := kubernetesProvBlock.Body()
 	kubernetesProvBlockBody.SetAttributeRaw("config_path", hclPathModule)
 
@@ -69,22 +70,22 @@ func CreateLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 	hclPathModule := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(pathModuleVar)},
 	}
-	localBlockBody.SetAttributeRaw(defaults.CodebaseRootPath, hclPathModule)
+	localBlockBody.SetAttributeRaw(harvester.CodebaseRootPath, hclPathModule)
 
 	pathModule := fmt.Sprint(`abspath(path.module)`)
 	hclPath2Module := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(pathModule)},
 	}
-	localBlockBody.SetAttributeRaw(defaults.ModulePath, hclPath2Module)
+	localBlockBody.SetAttributeRaw(harvester.ModulePath, hclPath2Module)
 
 	relPath := fmt.Sprint(`substr(local.module_path, length(local.codebase_root_path)+1, length(local.module_path))`)
 	relPathModule := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(relPath)},
 	}
-	localBlockBody.SetAttributeRaw(defaults.ModuleRelPath, relPathModule)
+	localBlockBody.SetAttributeRaw(harvester.ModuleRelPath, relPathModule)
 
 	publicKey := getPublicSSHKey(terraformConfig.PrivateKeyPath)
-	localBlockBody.SetAttributeRaw(defaults.CloudInit, hclwrite.TokensForTraversal(hcl.Traversal{
+	localBlockBody.SetAttributeRaw(harvester.CloudInit, hclwrite.TokensForTraversal(hcl.Traversal{
 		hcl.TraverseRoot{
 			Name: fmt.Sprintf("<<-EOT\n#cloud-config\npackage_update: true\npackages:\n  - qemu-guest-agent\nruncmd:\n  - - systemctl\n    - enable\n    - --now\n    - qemu-guest-agent.service\nssh_authorized_keys:\n  - %s\nEOT", publicKey),
 		},

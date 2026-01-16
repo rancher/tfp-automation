@@ -9,7 +9,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
@@ -47,7 +47,7 @@ func UpgradingAirgapRancher(t *testing.T, provider string) error {
 	require.NoError(t, err)
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
-		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
+		toggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
 	}
 
 	terraformConfig.Standalone.UpgradeAirgapRancher = true
@@ -63,7 +63,7 @@ func UpgradingAirgapRancher(t *testing.T, provider string) error {
 	require.NoError(t, err)
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
-		toggleFeatureFlag(client, defaults.Turtles, standaloneConfig.FeatureFlags.UpgradedTurtles)
+		toggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.UpgradedTurtles)
 	}
 
 	return nil

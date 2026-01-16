@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rke"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -26,15 +28,15 @@ const (
 
 // CreateRKECluster is a helper function that will create the RKE2 cluster.
 func CreateRKECluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) (*os.File, error) {
-	rkeBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.RKECluster, cluster})
+	rkeBlock := rootBody.AppendNewBlock(general.Resource, []string{rke.RKECluster, cluster})
 	rkeBlockBody := rkeBlock.Body()
 
 	instances := []string{rkeServerOne, rkeServerTwo, rkeServerThree}
 	for _, instance := range instances {
-		nodesBlock := rkeBlockBody.AppendNewBlock(defaults.Nodes, nil)
+		nodesBlock := rkeBlockBody.AppendNewBlock(aws.Nodes, nil)
 		nodesBlockBody := nodesBlock.Body()
 
-		addressExpression := defaults.AwsInstance + "." + instance + ".public_ip"
+		addressExpression := aws.AwsInstance + "." + instance + ".public_ip"
 		values := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(addressExpression)},
 		}
@@ -49,7 +51,7 @@ func CreateRKECluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 
 		nodesBlockBody.SetAttributeRaw(role, values)
 
-		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 		}

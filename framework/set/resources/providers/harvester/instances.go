@@ -10,7 +10,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/harvester"
 	"github.com/zclconf/go-cty/cty"
 	"golang.org/x/crypto/ssh"
 )
@@ -40,16 +41,15 @@ func getPublicSSHKey(privateKeyPath string) string {
 func CreateHarvesterInstances(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	hostnamePrefix string) {
 
-	configBlockSSHKey := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.HarvesterSSHKey, hostnamePrefix + "ssh_key"})
+	configBlockSSHKey := rootBody.AppendNewBlock(general.Resource, []string{harvester.HarvesterSSHKey, hostnamePrefix + "ssh_key"})
 	configBlockSSHKeyBody := configBlockSSHKey.Body()
 
-	configBlockSSHKeyBody.SetAttributeValue(defaults.LowerCaseName, cty.StringVal(namegenerator.AppendRandomString("tfpsshkey")))
-	configBlockSSHKeyBody.SetAttributeValue(defaults.Namespace, cty.StringVal(terraformConfig.HarvesterConfig.VMNamespace))
+	configBlockSSHKeyBody.SetAttributeValue(harvester.LowerCaseName, cty.StringVal(namegenerator.AppendRandomString("tfpsshkey")))
+	configBlockSSHKeyBody.SetAttributeValue(general.Namespace, cty.StringVal(terraformConfig.HarvesterConfig.VMNamespace))
 
 	publicKey := getPublicSSHKey(terraformConfig.PrivateKeyPath)
-	configBlockSSHKeyBody.SetAttributeValue(defaults.PublicKey, cty.StringVal(publicKey))
-
-	configBlockSecret := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.KubernetesSecret, hostnamePrefix + "secret"})
+	configBlockSSHKeyBody.SetAttributeValue(harvester.PublicKey, cty.StringVal(publicKey))
+	configBlockSecret := rootBody.AppendNewBlock(general.Resource, []string{harvester.KubernetesSecret, hostnamePrefix + "secret"})
 	configBlockSecretBody := configBlockSecret.Body()
 
 	secretBlockMeta := configBlockSecretBody.AppendNewBlock("metadata", []string{})
@@ -57,25 +57,25 @@ func CreateHarvesterInstances(rootBody *hclwrite.Body, terraformConfig *config.T
 
 	secretName := namegenerator.AppendRandomString("tfpsecret")
 
-	secretBlockMetaBody.SetAttributeValue(defaults.LowerCaseName, cty.StringVal(secretName))
-	secretBlockMetaBody.SetAttributeValue(defaults.Namespace, cty.StringVal(terraformConfig.HarvesterConfig.VMNamespace))
+	secretBlockMetaBody.SetAttributeValue(harvester.LowerCaseName, cty.StringVal(secretName))
+	secretBlockMetaBody.SetAttributeValue(general.Namespace, cty.StringVal(terraformConfig.HarvesterConfig.VMNamespace))
 
-	secretBlockMetaBody.SetAttributeValue(defaults.Labels, cty.ObjectVal(map[string]cty.Value{
+	secretBlockMetaBody.SetAttributeValue(harvester.Labels, cty.ObjectVal(map[string]cty.Value{
 		"sensitive": cty.StringVal("false"),
 	}))
 
 	hclLocalValue := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte("{\"userdata\" = local." + defaults.CloudInit + "}")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte("{\"userdata\" = local." + harvester.CloudInit + "}")},
 	}
 
 	configBlockSecretBody.SetAttributeRaw("data", hclLocalValue)
 
-	configBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.HarvesterVirtualMachine, hostnamePrefix})
+	configBlock := rootBody.AppendNewBlock(general.Resource, []string{harvester.HarvesterVirtualMachine, hostnamePrefix})
 	configBlockBody := configBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) {
+	if strings.Contains(terraformConfig.Module, general.Custom) {
 		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
-		configBlockBody.SetAttributeValue(defaults.Count, cty.NumberIntVal(totalNodeCount))
+		configBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(totalNodeCount))
 	}
 
 	configBlockBody.AppendNewline()
@@ -84,86 +84,84 @@ func CreateHarvesterInstances(rootBody *hclwrite.Body, terraformConfig *config.T
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(`[` + fmt.Sprintf("kubernetes_secret.%s", hostnamePrefix+"secret") + `]`)},
 	}
 
-	configBlockBody.SetAttributeRaw(defaults.DependsOn, formattedList)
+	configBlockBody.SetAttributeRaw(general.DependsOn, formattedList)
 
 	randName := namegenerator.AppendRandomString("tfp-vm")
-	configBlockBody.SetAttributeValue(defaults.LowerCaseName, cty.StringVal(randName))
-	configBlockBody.SetAttributeValue(defaults.Namespace, cty.StringVal(terraformConfig.HarvesterConfig.VMNamespace))
-	configBlockBody.SetAttributeValue(defaults.RestartAfterUpdate, cty.BoolVal(true))
-	configBlockBody.SetAttributeValue(defaults.Description, cty.StringVal(randName))
+	configBlockBody.SetAttributeValue(harvester.LowerCaseName, cty.StringVal(randName))
+	configBlockBody.SetAttributeValue(general.Namespace, cty.StringVal(terraformConfig.HarvesterConfig.VMNamespace))
+	configBlockBody.SetAttributeValue(harvester.RestartAfterUpdate, cty.BoolVal(true))
+	configBlockBody.SetAttributeValue(general.Description, cty.StringVal(randName))
 
 	tagMap := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(fmt.Sprintf("{%s = \"%s\"}", defaults.SshUser, terraformConfig.HarvesterConfig.SSHUser))},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(fmt.Sprintf("{%s = \"%s\"}", harvester.SshUser, terraformConfig.HarvesterConfig.SSHUser))},
 	}
 
-	configBlockBody.SetAttributeRaw(defaults.Tags, tagMap)
+	configBlockBody.SetAttributeRaw(general.Tags, tagMap)
 
-	configBlockBody.SetAttributeValue(defaults.CPU, cty.StringVal(terraformConfig.HarvesterConfig.CPUCount))
+	configBlockBody.SetAttributeValue(harvester.CPU, cty.StringVal(terraformConfig.HarvesterConfig.CPUCount))
 
-	configBlockBody.SetAttributeValue(defaults.Memory, cty.StringVal(terraformConfig.HarvesterConfig.MemorySize+defaults.Gi))
+	configBlockBody.SetAttributeValue(harvester.Memory, cty.StringVal(terraformConfig.HarvesterConfig.MemorySize+harvester.Gi))
 
-	configBlockBody.SetAttributeValue(defaults.EFI, cty.BoolVal(true))
-	configBlockBody.SetAttributeValue(defaults.SecureBoot, cty.BoolVal(false))
+	configBlockBody.SetAttributeValue(harvester.EFI, cty.BoolVal(true))
+	configBlockBody.SetAttributeValue(harvester.SecureBoot, cty.BoolVal(false))
 
-	configBlockBody.SetAttributeValue(defaults.RunStrategy, cty.StringVal(defaults.RerunOnFailure))
-	configBlockBody.SetAttributeValue(defaults.Hostname, cty.StringVal(randName))
-	configBlockBody.SetAttributeValue(defaults.MachineType, cty.StringVal(defaults.Q35))
-
-	networkBlock := configBlockBody.AppendNewBlock(defaults.NetworkInterface, nil)
+	configBlockBody.SetAttributeValue(harvester.RunStrategy, cty.StringVal(harvester.RerunOnFailure))
+	configBlockBody.SetAttributeValue(harvester.Hostname, cty.StringVal(randName))
+	configBlockBody.SetAttributeValue(harvester.MachineType, cty.StringVal(harvester.Q35))
+	networkBlock := configBlockBody.AppendNewBlock(harvester.NetworkInterface, nil)
 	networkBlockBody := networkBlock.Body()
 
-	networkBlockBody.SetAttributeValue(defaults.LowerCaseName, cty.StringVal(defaults.NIC1))
-	networkBlockBody.SetAttributeValue(defaults.WaitForLease, cty.BoolVal(true))
-	networkBlockBody.SetAttributeValue(defaults.Model, cty.StringVal(defaults.Virtio))
-	networkBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Bridge))
-	networkBlockBody.SetAttributeValue(defaults.NetworkName, cty.StringVal(terraformConfig.HarvesterConfig.NetworkNames[0]))
+	networkBlockBody.SetAttributeValue(harvester.LowerCaseName, cty.StringVal(harvester.NIC1))
+	networkBlockBody.SetAttributeValue(harvester.WaitForLease, cty.BoolVal(true))
+	networkBlockBody.SetAttributeValue(harvester.Model, cty.StringVal(harvester.Virtio))
+	networkBlockBody.SetAttributeValue(general.Type, cty.StringVal(harvester.Bridge))
+	networkBlockBody.SetAttributeValue(harvester.NetworkName, cty.StringVal(terraformConfig.HarvesterConfig.NetworkNames[0]))
 
-	diskBlock := configBlockBody.AppendNewBlock(defaults.Disk, nil)
+	diskBlock := configBlockBody.AppendNewBlock(harvester.Disk, nil)
 	diskBlockBody := diskBlock.Body()
 
-	diskBlockBody.SetAttributeValue(defaults.LowerCaseName, cty.StringVal(defaults.RootDisk))
-	diskBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Disk))
-	diskBlockBody.SetAttributeValue(defaults.Size, cty.StringVal(terraformConfig.HarvesterConfig.DiskSize+defaults.Gi))
-	diskBlockBody.SetAttributeValue(defaults.Bus, cty.StringVal(defaults.Virtio))
-	diskBlockBody.SetAttributeValue(defaults.BootOrder, cty.NumberIntVal(1))
-	diskBlockBody.SetAttributeValue(defaults.Image, cty.StringVal(terraformConfig.HarvesterConfig.ImageName))
-	diskBlockBody.SetAttributeValue(defaults.AutoDelete, cty.BoolVal(true))
+	diskBlockBody.SetAttributeValue(harvester.LowerCaseName, cty.StringVal(harvester.RootDisk))
+	diskBlockBody.SetAttributeValue(general.Type, cty.StringVal(harvester.Disk))
+	diskBlockBody.SetAttributeValue(harvester.Size, cty.StringVal(terraformConfig.HarvesterConfig.DiskSize+harvester.Gi))
+	diskBlockBody.SetAttributeValue(harvester.Bus, cty.StringVal(harvester.Virtio))
+	diskBlockBody.SetAttributeValue(harvester.BootOrder, cty.NumberIntVal(1))
+	diskBlockBody.SetAttributeValue(harvester.Image, cty.StringVal(terraformConfig.HarvesterConfig.ImageName))
+	diskBlockBody.SetAttributeValue(harvester.AutoDelete, cty.BoolVal(true))
 
-	cloudInitBlock := configBlockBody.AppendNewBlock(defaults.CloudInit, nil)
+	cloudInitBlock := configBlockBody.AppendNewBlock(harvester.CloudInit, nil)
 	cloudInitBlockBody := cloudInitBlock.Body()
 
-	cloudInitBlockBody.SetAttributeValue(defaults.UserDataSecretName, cty.StringVal(secretName))
-	cloudInitBlockBody.SetAttributeValue(defaults.NetworkData, cty.StringVal(""))
-
+	cloudInitBlockBody.SetAttributeValue(harvester.UserDataSecretName, cty.StringVal(secretName))
+	cloudInitBlockBody.SetAttributeValue(harvester.NetworkData, cty.StringVal(""))
 	configBlockBody.AppendNewline()
 
-	connectionBlock := configBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlock := configBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-	connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.HarvesterConfig.SSHUser))
+	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.Ssh))
+	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.HarvesterConfig.SSHUser))
 
-	hostExpression := defaults.Self + "." + "network_interface[0].ip_address"
+	hostExpression := general.Self + "." + "network_interface[0].ip_address"
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
+	connectionBlockBody.SetAttributeRaw(general.Host, host)
 
-	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+	keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 	keyPath := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-	connectionBlockBody.SetAttributeValue(defaults.Timeout, cty.StringVal("120"))
+	connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
+	connectionBlockBody.SetAttributeValue(harvester.Timeout, cty.StringVal("120"))
 
 	configBlockBody.AppendNewline()
 
-	provisionerBlock := configBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlock := configBlockBody.AppendNewBlock(general.Provisioner, []string{general.RemoteExec})
 	provisionerBlockBody := provisionerBlock.Body()
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo Connected!!!"),
 	}))
 }

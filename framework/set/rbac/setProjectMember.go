@@ -6,7 +6,8 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -20,14 +21,14 @@ func addProjectMember(client *rancher.Client, newFile *hclwrite.File, rootBody *
 
 	rootBody.AppendNewline()
 
-	projectBlock := rootBody.AppendNewBlock(defaults.Resource, []string{project, terraformConfig.ResourcePrefix})
+	projectBlock := rootBody.AppendNewBlock(general.Resource, []string{project, terraformConfig.ResourcePrefix})
 	projectBlockBody := projectBlock.Body()
 
-	projectBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(projectName))
+	projectBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(projectName))
 
 	if isRKE1 {
 		clusterBlockID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
 		}
 
 		projectBlockBody.SetAttributeRaw(clusterID, clusterBlockID)
@@ -44,21 +45,21 @@ func addProjectMember(client *rancher.Client, newFile *hclwrite.File, rootBody *
 
 	var dependsOn string
 	if isRKE1 {
-		dependsOn = `[` + defaults.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
+		dependsOn = `[` + rancher2.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
 	} else {
-		dependsOn = `[` + defaults.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
+		dependsOn = `[` + rancher2.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
 	}
 
 	value := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOn)},
 	}
 
-	projectBlockBody.SetAttributeRaw(defaults.DependsOn, value)
+	projectBlockBody.SetAttributeRaw(general.DependsOn, value)
 
-	projectRoleTemplateBindingBlock := rootBody.AppendNewBlock(defaults.Resource, []string{projectRoleTemplateBinding, terraformConfig.ResourcePrefix})
+	projectRoleTemplateBindingBlock := rootBody.AppendNewBlock(general.Resource, []string{projectRoleTemplateBinding, terraformConfig.ResourcePrefix})
 	projectRoleTemplateBindingBody := projectRoleTemplateBindingBlock.Body()
 
-	projectRoleTemplateBindingBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(projectRoleTemplateBindingName))
+	projectRoleTemplateBindingBody.SetAttributeValue(general.ResourceName, cty.StringVal(projectRoleTemplateBindingName))
 
 	projectBlockID := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(project + "." + terraformConfig.ResourcePrefix + ".id")},
@@ -83,7 +84,7 @@ func addProjectMember(client *rancher.Client, newFile *hclwrite.File, rootBody *
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOn)},
 	}
 
-	projectRoleTemplateBindingBody.SetAttributeRaw(defaults.DependsOn, value)
+	projectRoleTemplateBindingBody.SetAttributeRaw(general.DependsOn, value)
 
 	return newFile, rootBody, nil
 }

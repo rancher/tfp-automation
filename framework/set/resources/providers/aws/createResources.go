@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,7 +37,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	if terraformConfig.Standalone.CertManagerVersion != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
-			CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
 			rootBody.AppendNewline()
 		}
 
@@ -91,7 +91,7 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 	if terraformConfig.Standalone.CertManagerVersion != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
-			CreateInternalTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)
+			CreateInternalTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)
 			rootBody.AppendNewline()
 		}
 
@@ -145,7 +145,7 @@ func CreateIPv6AWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 	if terraformConfig.Standalone.CertManagerVersion != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
-			CreateTargetGroupAttachments(rootBody, terraformConfig, defaults.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
+			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
 			rootBody.AppendNewline()
 		}
 
@@ -178,24 +178,24 @@ func getTargetGroupAttachment(port int64, internal bool) string {
 	switch port {
 	case 80:
 		if internal {
-			return defaults.InternalTargetGroup80Attachment
+			return aws.InternalTargetGroup80Attachment
 		}
-		return defaults.TargetGroup80Attachment
+		return aws.TargetGroup80Attachment
 	case 443:
 		if internal {
-			return defaults.InternalTargetGroup443Attachment
+			return aws.InternalTargetGroup443Attachment
 		}
-		return defaults.TargetGroup443Attachment
+		return aws.TargetGroup443Attachment
 	case 6443:
 		if internal {
-			return defaults.InternalTargetGroup6443Attachment
+			return aws.InternalTargetGroup6443Attachment
 		}
-		return defaults.TargetGroup6443Attachment
+		return aws.TargetGroup6443Attachment
 	case 9345:
 		if internal {
-			return defaults.InternalTargetGroup9345Attachment
+			return aws.InternalTargetGroup9345Attachment
 		}
-		return defaults.TargetGroup9345Attachment
+		return aws.TargetGroup9345Attachment
 	default:
 		return ""
 	}

@@ -6,7 +6,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -26,20 +27,20 @@ func CreateVsphereTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
-	reqProvsBlockBody.SetAttributeValue(defaults.Vsphere, cty.ObjectVal(map[string]cty.Value{
-		defaults.Source:  cty.StringVal(defaults.VsphereSource),
-		defaults.Version: cty.StringVal(cloudProviderVersion),
+	reqProvsBlockBody.SetAttributeValue(vsphere.Vsphere, cty.ObjectVal(map[string]cty.Value{
+		general.Source:  cty.StringVal(vsphere.VsphereSource),
+		general.Version: cty.StringVal(cloudProviderVersion),
 	}))
 }
 
 // CreateVsphereProviderBlock will set up the vsphere provider block.
 func CreateVsphereProviderBlock(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	vsphereProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Vsphere})
+	vsphereProvBlock := rootBody.AppendNewBlock(general.Provider, []string{vsphere.Vsphere})
 	vsphereProvBlockBody := vsphereProvBlock.Body()
 
-	vsphereProvBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereCredentials.Username))
-	vsphereProvBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.VsphereCredentials.Password))
-	vsphereProvBlockBody.SetAttributeValue(defaults.VsphereServer, cty.StringVal(terraformConfig.VsphereCredentials.Vcenter))
+	vsphereProvBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.VsphereCredentials.Username))
+	vsphereProvBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.VsphereCredentials.Password))
+	vsphereProvBlockBody.SetAttributeValue(vsphere.VsphereServer, cty.StringVal(terraformConfig.VsphereCredentials.Vcenter))
 	vsphereProvBlockBody.SetAttributeValue(allowUnverifiedSSL, cty.BoolVal(true))
 }
 
@@ -49,9 +50,9 @@ func CreateVsphereLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Te
 	localBlockBody := localBlock.Body()
 
 	instanceIds := map[string]any{
-		serverOne:   defaults.VsphereVirtualMachine + "." + serverOne + ".id",
-		serverTwo:   defaults.VsphereVirtualMachine + "." + serverTwo + ".id",
-		serverThree: defaults.VsphereVirtualMachine + "." + serverThree + ".id",
+		serverOne:   vsphere.VsphereVirtualMachine + "." + serverOne + ".id",
+		serverTwo:   vsphere.VsphereVirtualMachine + "." + serverTwo + ".id",
+		serverThree: vsphere.VsphereVirtualMachine + "." + serverThree + ".id",
 	}
 
 	instanceIdsBlock := localBlockBody.AppendNewBlock(instanceIDs+" =", nil)

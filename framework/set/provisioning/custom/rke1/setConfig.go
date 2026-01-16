@@ -9,7 +9,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
@@ -21,7 +22,7 @@ func SetCustomRKE1(terraformConfig *config.TerraformConfig, terratestConfig *con
 	if strings.Contains(terraformConfig.Module, modules.CustomEC2RKE1) {
 		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
 	} else if strings.Contains(terraformConfig.Module, modules.CustomVsphereRKE1) {
-		dataCenterExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereDatacenter + `.` + defaults.VsphereDatacenter + `.id`)
+		dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphereDefaults.VsphereDatacenter + `.` + vsphereDefaults.VsphereDatacenter + `.id`)
 		dataCenterValue := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dataCenterExpression)},
 		}

@@ -8,106 +8,110 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // CustomNullResource is a function that will set the null_resource configurations in the main.tf file,
 // to register the nodes to the cluster
 func CustomNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) error {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, defaults.RegisterNodes + "-" + terraformConfig.ResourcePrefix})
+	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, general.RegisterNodes + "-" + terraformConfig.ResourcePrefix})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
 	var countExpression string
-	if strings.Contains(terraformConfig.Provider, defaults.Aws) {
-		countExpression = defaults.Length + `(` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `)`
-	} else if strings.Contains(terraformConfig.Provider, defaults.Vsphere) {
-		countExpression = defaults.Length + `(` + defaults.VsphereVirtualMachine + `.` + terraformConfig.ResourcePrefix + `)`
+	if strings.Contains(terraformConfig.Provider, aws.Aws) {
+		countExpression = general.Length + `(` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `)`
+	} else if strings.Contains(terraformConfig.Provider, vsphere.Vsphere) {
+		countExpression = general.Length + `(` + vsphere.VsphereVirtualMachine + `.` + terraformConfig.ResourcePrefix + `)`
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.Count, hclwrite.TokensForIdentifier(countExpression))
+	nullResourceBlockBody.SetAttributeRaw(general.Count, hclwrite.TokensForIdentifier(countExpression))
 
-	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlock := nullResourceBlockBody.AppendNewBlock(general.Provisioner, []string{general.RemoteExec})
 	provisionerBlockBody := provisionerBlock.Body()
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) && strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+	if strings.Contains(terraformConfig.Module, general.Custom) && strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 		regCommand := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Cluster + `.` + terraformConfig.ResourcePrefix + `.` +
-				defaults.ClusterRegistrationToken + `[0].` + defaults.NodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags +
-				`[` + defaults.Count + `.` + defaults.Index + `]} ` + defaults.NodeNameFlag + ` ${` + defaults.Local + `.` +
-				defaults.ResourcePrefix + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + rancher2.Cluster + `.` + terraformConfig.ResourcePrefix + `.` +
+				clusters.ClusterRegistrationToken + `[0].` + clusters.NodeCommand + `} ${` + general.Local + `.` + clusters.RoleFlags +
+				`[` + general.Count + `.` + general.Index + `]} ` + clusters.NodeNameFlag + ` ${` + general.Local + `.` +
+				clusters.ResourcePrefix + `[` + general.Count + `.` + general.Index + `]}"]`)},
 		}
 
-		provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
+		provisionerBlockBody.SetAttributeRaw(general.Inline, regCommand)
 	}
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+	if strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 		regCommand := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Local + `.` + terraformConfig.ResourcePrefix + "_" +
-				defaults.InsecureNodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` +
-				defaults.Index + `]} ` + defaults.NodeNameFlag + ` ${` + defaults.Local + `.` +
-				defaults.ResourcePrefix + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + general.Local + `.` + terraformConfig.ResourcePrefix + "_" +
+				clusters.InsecureNodeCommand + `} ${` + general.Local + `.` + clusters.RoleFlags + `[` + general.Count + `.` +
+				general.Index + `]} ` + clusters.NodeNameFlag + ` ${` + general.Local + `.` +
+				clusters.ResourcePrefix + `[` + general.Count + `.` + general.Index + `]}"]`)},
 		}
 
-		provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
+		provisionerBlockBody.SetAttributeRaw(general.Inline, regCommand)
 	}
 
-	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlock := provisionerBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
+	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.Ssh))
 
 	var hostExpression string
 
 	switch terraformConfig.Provider {
-	case defaults.Aws:
-		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
-		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, defaults.AwsInstance, terraformConfig.ResourcePrefix, defaults.Count, defaults.Index, defaults.PublicIp)
-	case defaults.Vsphere:
-		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
-		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, defaults.VsphereVirtualMachine, terraformConfig.ResourcePrefix, defaults.Count, defaults.Index, defaults.DefaultIPAddress)
+	case aws.Aws:
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, aws.AwsInstance, terraformConfig.ResourcePrefix, general.Count, general.Index, general.PublicIp)
+	case vsphere.Vsphere:
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
+		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, vsphere.VsphereVirtualMachine, terraformConfig.ResourcePrefix, general.Count, general.Index, general.DefaultIPAddress)
 	}
 
 	host := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.Host, host)
+	connectionBlockBody.SetAttributeRaw(general.Host, host)
 
-	keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+	keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 	keyPath := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 	}
 
-	connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
+	connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+	if strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 		regCommand := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + defaults.Local + `.` + terraformConfig.ResourcePrefix + "_" +
-				defaults.InsecureNodeCommand + `} ${` + defaults.Local + `.` + defaults.RoleFlags + `[` + defaults.Count + `.` +
-				defaults.Index + `]} ` + defaults.NodeNameFlag + ` ${` + defaults.Local + `.` +
-				defaults.ResourcePrefix + `[` + defaults.Count + `.` + defaults.Index + `]}"]`)},
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["${` + general.Local + `.` + terraformConfig.ResourcePrefix + "_" +
+				clusters.InsecureNodeCommand + `} ${` + general.Local + `.` + clusters.RoleFlags + `[` + general.Count + `.` +
+				general.Index + `]} ` + clusters.NodeNameFlag + ` ${` + general.Local + `.` +
+				clusters.ResourcePrefix + `[` + general.Count + `.` + general.Index + `]}"]`)},
 		}
 
-		provisionerBlockBody.SetAttributeRaw(defaults.Inline, regCommand)
+		provisionerBlockBody.SetAttributeRaw(general.Inline, regCommand)
 	}
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) && strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
-		clusterExpression := `[` + defaults.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
+	if strings.Contains(terraformConfig.Module, general.Custom) && strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+		clusterExpression := `[` + rancher2.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
 		cluster := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(clusterExpression)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, cluster)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, cluster)
 	}
 
-	if strings.Contains(terraformConfig.Module, defaults.Custom) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
-		clusterV2Expression := `[` + defaults.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
+	if strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+		clusterV2Expression := `[` + rancher2.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
 		clusterV2 := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(clusterV2Expression)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, clusterV2)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, clusterV2)
 	}
 
 	return nil
