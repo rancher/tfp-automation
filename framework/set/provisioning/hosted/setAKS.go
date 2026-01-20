@@ -9,7 +9,9 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/azure"
 	format "github.com/rancher/tfp-automation/framework/format"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -17,10 +19,10 @@ import (
 // SetAKS is a function that will set the AKS configurations in the main.tf file.
 func SetAKS(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File) (*hclwrite.File, *os.File, error) {
-	cloudCredBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.CloudCredential, defaults.CloudCredential})
+	cloudCredBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.CloudCredential, rancher2.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
-	cloudCredBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
+	cloudCredBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	azCredConfigBlock := cloudCredBlockBody.AppendNewBlock(azure.AzureCredentialConfig, nil)
 	azCredConfigBlockBody := azCredConfigBlock.Body()
@@ -32,24 +34,24 @@ func SetAKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.Cluster, defaults.Cluster})
+	clusterBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.Cluster, rancher2.Cluster})
 	clusterBlockBody := clusterBlock.Body()
 
-	clusterBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
+	clusterBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	aksConfigBlock := clusterBlockBody.AppendNewBlock(azure.AKSConfig, nil)
 	aksConfigBlockBody := aksConfigBlock.Body()
 
 	cloudCredID := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(defaults.CloudCredential + "." + defaults.CloudCredential + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.CloudCredential + "." + rancher2.CloudCredential + ".id")},
 	}
 
-	aksConfigBlockBody.SetAttributeRaw(defaults.CloudCredentialID, cloudCredID)
+	aksConfigBlockBody.SetAttributeRaw(clusters.CloudCredentialID, cloudCredID)
 	aksConfigBlockBody.SetAttributeValue(azure.OutboundType, cty.StringVal(terraformConfig.AzureConfig.OutboundType))
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceGroup, cty.StringVal(terraformConfig.AzureConfig.ResourceGroup))
 	aksConfigBlockBody.SetAttributeValue(azure.ResourceLocation, cty.StringVal(terraformConfig.AzureConfig.ResourceLocation))
 	aksConfigBlockBody.SetAttributeValue(azure.DNSPrefix, cty.StringVal(terraformConfig.ResourcePrefix))
-	aksConfigBlockBody.SetAttributeValue(defaults.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
+	aksConfigBlockBody.SetAttributeValue(clusters.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkPlugin, cty.StringVal(terraformConfig.AzureConfig.NetworkPlugin))
 	aksConfigBlockBody.SetAttributeValue(azure.VirtualNetwork, cty.StringVal(terraformConfig.AzureConfig.Vnet))
 	aksConfigBlockBody.SetAttributeValue(azure.Subnet, cty.StringVal(terraformConfig.AzureConfig.Subnet))
@@ -72,7 +74,7 @@ func SetAKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 
 		nodePoolsBlockBody.SetAttributeRaw(azure.AvailabilityZones, availabilityZones)
 		nodePoolsBlockBody.SetAttributeValue(azure.NodePoolMode, cty.StringVal(terraformConfig.AzureConfig.Mode))
-		nodePoolsBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.AzureConfig.Name))
+		nodePoolsBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.AzureConfig.Name))
 		nodePoolsBlockBody.SetAttributeValue(azure.Count, cty.NumberIntVal(pool.Quantity))
 		nodePoolsBlockBody.SetAttributeValue(azure.OrchestratorVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 		nodePoolsBlockBody.SetAttributeValue(azure.OSDiskSizeGB, cty.NumberIntVal(terraformConfig.AzureConfig.OSDiskSizeGB))

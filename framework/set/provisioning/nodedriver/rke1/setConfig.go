@@ -7,7 +7,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/nodedriver/rke2k3s"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
@@ -47,13 +48,13 @@ const (
 // SetRKE1 is a function that will set the RKE1 configurations in the main.tf file.
 func SetRKE1(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
-	nodeTemplateBlock := rootBody.AppendNewBlock(defaults.Resource, []string{nodeTemplate, terraformConfig.ResourcePrefix})
+	nodeTemplateBlock := rootBody.AppendNewBlock(general.Resource, []string{nodeTemplate, terraformConfig.ResourcePrefix})
 	nodeTemplateBlockBody := nodeTemplateBlock.Body()
 
-	nodeTemplateBlockBody.SetAttributeValue(defaults.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
+	nodeTemplateBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	if terraformConfig.PrivateRegistries != nil {
-		nodeTemplateBlockBody.SetAttributeValue(defaults.EngineInsecureRegistry, cty.ListVal([]cty.Value{
+		nodeTemplateBlockBody.SetAttributeValue(clusters.EngineInsecureRegistry, cty.ListVal([]cty.Value{
 			cty.StringVal(terraformConfig.PrivateRegistries.URL),
 		}))
 	}
@@ -74,7 +75,7 @@ func SetRKE1(terraformConfig *config.TerraformConfig, terratestConfig *config.Te
 
 	rootBody.AppendNewline()
 
-	if strings.Contains(terratestConfig.PSACT, defaults.RancherBaseline) {
+	if strings.Contains(terratestConfig.PSACT, clusters.RancherBaseline) {
 		rootBody, err := resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
 		if err != nil {
 			return nil, nil, err

@@ -6,7 +6,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -25,20 +26,20 @@ func CreateAWSTerraformProviderBlock(tfBlockBody *hclwrite.Body) {
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
-	reqProvsBlockBody.SetAttributeValue(defaults.Aws, cty.ObjectVal(map[string]cty.Value{
-		defaults.Source:  cty.StringVal(defaults.AwsSource),
-		defaults.Version: cty.StringVal(cloudProviderVersion),
+	reqProvsBlockBody.SetAttributeValue(aws.Aws, cty.ObjectVal(map[string]cty.Value{
+		general.Source:  cty.StringVal(aws.AwsSource),
+		general.Version: cty.StringVal(cloudProviderVersion),
 	}))
 }
 
 // CreateAWSProviderBlock will set up the aws provider block.
 func CreateAWSProviderBlock(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	awsProvBlock := rootBody.AppendNewBlock(defaults.Provider, []string{defaults.Aws})
+	awsProvBlock := rootBody.AppendNewBlock(general.Provider, []string{aws.Aws})
 	awsProvBlockBody := awsProvBlock.Body()
 
-	awsProvBlockBody.SetAttributeValue(defaults.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
-	awsProvBlockBody.SetAttributeValue(defaults.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
-	awsProvBlockBody.SetAttributeValue(defaults.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+	awsProvBlockBody.SetAttributeValue(aws.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
+	awsProvBlockBody.SetAttributeValue(aws.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
+	awsProvBlockBody.SetAttributeValue(aws.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
 }
 
 // CreateAWSLocalBlock will set up the local block. Returns the local block.
@@ -47,17 +48,17 @@ func CreateAWSLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	localBlockBody := localBlock.Body()
 
 	var instanceIds map[string]any
-	if terraformConfig.AWSConfig.IPAddressType != defaults.IPv6 {
+	if terraformConfig.AWSConfig.IPAddressType != aws.IPv6 {
 		instanceIds = map[string]any{
-			serverOne:   defaults.AwsInstance + "." + serverOne + ".id",
-			serverTwo:   defaults.AwsInstance + "." + serverTwo + ".id",
-			serverThree: defaults.AwsInstance + "." + serverThree + ".id",
+			serverOne:   aws.AwsInstance + "." + serverOne + ".id",
+			serverTwo:   aws.AwsInstance + "." + serverTwo + ".id",
+			serverThree: aws.AwsInstance + "." + serverThree + ".id",
 		}
-	} else if terraformConfig.AWSConfig.IPAddressType == defaults.IPv6 {
+	} else if terraformConfig.AWSConfig.IPAddressType == aws.IPv6 {
 		instanceIds = map[string]any{
-			serverOne:   defaults.AwsInstance + "." + serverOne + ".ipv6_addresses[0]",
-			serverTwo:   defaults.AwsInstance + "." + serverTwo + ".ipv6_addresses[0]",
-			serverThree: defaults.AwsInstance + "." + serverThree + ".ipv6_addresses[0]",
+			serverOne:   aws.AwsInstance + "." + serverOne + ".ipv6_addresses[0]",
+			serverTwo:   aws.AwsInstance + "." + serverTwo + ".ipv6_addresses[0]",
+			serverThree: aws.AwsInstance + "." + serverThree + ".ipv6_addresses[0]",
 		}
 	}
 

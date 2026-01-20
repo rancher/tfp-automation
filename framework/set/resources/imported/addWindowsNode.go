@@ -9,7 +9,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
@@ -41,13 +42,13 @@ func addImportedWindowsNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedWindowsNullResource(rootBody, terraformConfig, terratestConfig, windowsNodePublicDNS, copyScriptName)
 	rootBody.AppendNewline()
 
-	dependsOnServer := `[` + defaults.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows` + `]`
+	dependsOnServer := `[` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows` + `]`
 
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 
 	// Due to nuances in Powershell with copying the script over, we need to split the script into lines and echo each line to the file.
 	// This is a workaround for the issue where the script is not being copied correctly as the Bash scripts typically are copied over.
@@ -70,7 +71,7 @@ func addImportedWindowsNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 		inlineCommands = append(inlineCommands, cty.StringVal(command))
 	}
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal(inlineCommands))
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal(inlineCommands))
 	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedWindowsNullResource(rootBody, terraformConfig, terratestConfig, windowsNodePublicDNS, addWindowsNode)
 
 	version := terraformConfig.Standalone.RKE2Version
@@ -79,17 +80,17 @@ func addImportedWindowsNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	command := "powershell.exe -File C:\\\\Windows\\\\Temp\\\\init-server.ps1 -ArgumentList -K8S_VERSION " + version + " -RKE2_SERVER_IP " + serverOnePrivateIP +
 		" -RKE2_TOKEN " + token
 
-	provisionerBlockBody.SetAttributeRaw(defaults.Inline, hclwrite.Tokens{
+	provisionerBlockBody.SetAttributeRaw(general.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},
 		{Type: hclsyntax.TokenStringLit, Bytes: []byte(command)},
 		{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"]`), SpacesBefore: 1},
 	})
 
-	dependsOnServer = `[` + defaults.NullResource + `.` + copyScriptName + `]`
+	dependsOnServer = `[` + general.NullResource + `.` + copyScriptName + `]`
 
 	server = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 }

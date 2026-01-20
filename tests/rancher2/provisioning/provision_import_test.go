@@ -18,7 +18,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
@@ -79,7 +79,7 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 	}
 
 	for _, tt := range tests {
-		if strings.Contains(tt.name, "Windows") && (p.terraformConfig.Provider != defaults.Aws) {
+		if strings.Contains(tt.name, "Windows") && (p.terraformConfig.Provider != aws.Aws) {
 			p.T().Skip("Skipping Windows test on non-AWS provider")
 		}
 

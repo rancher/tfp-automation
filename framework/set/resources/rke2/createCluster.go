@@ -10,7 +10,11 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/harvester"
+	linodeDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -57,49 +61,48 @@ func CreateRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 // SSHNullResource is a helper function that will create the null_resource to SSH into the instance.
 func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, instance, host string) (*hclwrite.Body, *hclwrite.Body) {
-	nullResourceBlock := rootBody.AppendNewBlock(defaults.Resource, []string{defaults.NullResource, host})
+	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, host})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
-	provisionerBlock := nullResourceBlockBody.AppendNewBlock(defaults.Provisioner, []string{defaults.RemoteExec})
+	provisionerBlock := nullResourceBlockBody.AppendNewBlock(general.Provisioner, []string{general.RemoteExec})
 	provisionerBlockBody := provisionerBlock.Body()
 
-	connectionBlock := provisionerBlockBody.AppendNewBlock(defaults.Connection, nil)
+	connectionBlock := provisionerBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	connectionBlockBody.SetAttributeValue(defaults.Host, cty.StringVal(instance))
-	connectionBlockBody.SetAttributeValue(defaults.Type, cty.StringVal(defaults.Ssh))
-
+	connectionBlockBody.SetAttributeValue(general.Host, cty.StringVal(instance))
+	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.Ssh))
 	switch terraformConfig.Provider {
-	case defaults.Aws:
-		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+	case aws.Aws:
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
-		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 		}
 
-		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-	case defaults.Linode:
-		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(linode.RootUser))
-		connectionBlockBody.SetAttributeValue(defaults.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
-	case defaults.Harvester:
-		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.HarvesterConfig.SSHUser))
+		connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
+	case linodeDefaults.Linode:
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(linode.RootUser))
+		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
+	case harvester.Harvester:
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.HarvesterConfig.SSHUser))
 
-		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 		}
 
-		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
-	case defaults.Vsphere:
-		connectionBlockBody.SetAttributeValue(defaults.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
+		connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
+	case vsphere.Vsphere:
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
 
-		keyPathExpression := defaults.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
 		}
 
-		connectionBlockBody.SetAttributeRaw(defaults.PrivateKey, keyPath)
+		connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
 	}
 
 	rootBody.AppendNewline()
@@ -116,7 +119,7 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " + terraformConfig.CNI + " " +
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
 		cty.StringVal(command),
@@ -137,17 +140,17 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
 			terraformConfig.Standalone.RegistryPassword + "'"
 
-		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
 			cty.StringVal(command),
 		}))
 
-		dependsOnServer := `[` + defaults.NullResource + `.` + rke2ServerOne + `]`
+		dependsOnServer := `[` + general.NullResource + `.` + rke2ServerOne + `]`
 		server := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 	}
 }

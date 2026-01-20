@@ -4,30 +4,30 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // SetMachineSelectorConfig is a function that will set the machine selector configurations in the main.tf file.
 func SetMachineSelectorConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
-	machineSelectorBlock := rkeConfigBlockBody.AppendNewBlock(defaults.MachineSelectorConfig, nil)
+	machineSelectorBlock := rkeConfigBlockBody.AppendNewBlock(clusters.MachineSelectorConfig, nil)
 	machineSelectorBlockBody := machineSelectorBlock.Body()
 
 	registryValue := hclwrite.TokensForTraversal(hcl.Traversal{
 		hcl.TraverseRoot{Name: "<<EOF\n" + systemDefaultRegistry + ": " + terraformConfig.PrivateRegistries.SystemDefaultRegistry + "\nEOF"},
 	})
 
-	machineSelectorBlockBody.SetAttributeRaw(defaults.Config, registryValue)
+	machineSelectorBlockBody.SetAttributeRaw(clusters.Config, registryValue)
 
 	return nil
 }
 
 // SetPrivateRegistryConfig is a function that will set the private registry configurations in the main.tf file.
 func SetPrivateRegistryConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) error {
-	registryBlock := rkeConfigBlockBody.AppendNewBlock(defaults.PrivateRegistries, nil)
+	registryBlock := rkeConfigBlockBody.AppendNewBlock(clusters.PrivateRegistries, nil)
 	registryBlockBody := registryBlock.Body()
 
-	configBlock := registryBlockBody.AppendNewBlock(defaults.Configs, nil)
+	configBlock := registryBlockBody.AppendNewBlock(clusters.Configs, nil)
 	configBlockBody := configBlock.Body()
 
 	configBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.URL))
@@ -41,7 +41,7 @@ func SetPrivateRegistryConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig
 	configBlockBody.SetAttributeValue(caBundleName, cty.StringVal(terraformConfig.PrivateRegistries.CABundle))
 	configBlockBody.SetAttributeValue(insecure, cty.BoolVal(terraformConfig.PrivateRegistries.Insecure))
 
-	mirrorsBlock := registryBlockBody.AppendNewBlock(defaults.Mirrors, nil)
+	mirrorsBlock := registryBlockBody.AppendNewBlock(clusters.Mirrors, nil)
 	mirrorsBlockBody := mirrorsBlock.Body()
 
 	mirrorsBlockBody.SetAttributeValue(hostname, cty.StringVal(terraformConfig.PrivateRegistries.MirrorHostname))

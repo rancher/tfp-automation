@@ -10,7 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
@@ -29,7 +29,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 		newFile.Body().Clear()
 	}
 
-	if !strings.Contains(string(newFile.Bytes()), defaults.RequiredProviders) {
+	if !strings.Contains(string(newFile.Bytes()), general.RequiredProviders) {
 		newFile, rootBody = rancher2.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, false, newFile, rootBody, configMap, customModule)
 	}
 
@@ -38,13 +38,13 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 	for i, cattleConfig := range configMap {
 		_, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
-		if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) || strings.Contains(terraformConfig.Module, defaults.Airgap) {
+		if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) || strings.Contains(terraformConfig.Module, general.Airgap) {
 			containsCustomModule = true
 		}
 
 		clusterNames = append(clusterNames, terraformConfig.ResourcePrefix)
 
-		if (strings.Contains(terraformConfig.Module, defaults.Custom) || strings.Contains(terraformConfig.Module, defaults.Airgap)) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+		if (strings.Contains(terraformConfig.Module, general.Custom) || strings.Contains(terraformConfig.Module, general.Airgap)) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 			customClusterNames = append(customClusterNames, terraformConfig.ResourcePrefix)
 		}
 
@@ -55,28 +55,28 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 			}
 		}
 
-		if !strings.Contains(terraformConfig.Module, defaults.Custom) && !strings.Contains(terraformConfig.Module, defaults.Import) && !strings.Contains(terraformConfig.Module, defaults.Airgap) {
+		if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) && !strings.Contains(terraformConfig.Module, general.Airgap) {
 			newFile, file, err = NodeDriverClusters(client, terraformConfig, terratestConfig, rbacRole, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, nil, err
 			}
 		}
 
-		if strings.Contains(terraformConfig.Module, defaults.Custom) {
+		if strings.Contains(terraformConfig.Module, general.Custom) {
 			newFile, file, err = CustomClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, configMap, isWindows)
 			if err != nil {
 				return clusterNames, nil, err
 			}
 		}
 
-		if strings.Contains(terraformConfig.Module, defaults.Airgap) {
+		if strings.Contains(terraformConfig.Module, general.Airgap) {
 			newFile, file, err = AirgapClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, configMap, isWindows)
 			if err != nil {
 				return clusterNames, nil, err
 			}
 		}
 
-		if strings.Contains(terraformConfig.Module, defaults.Import) {
+		if strings.Contains(terraformConfig.Module, general.Import) {
 			newFile, file, err = ImportedClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, configMap, isWindows)
 			if err != nil {
 				return clusterNames, nil, err
@@ -84,7 +84,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 		}
 
 		if i == len(configMap)-1 && containsCustomModule {
-			localsBlock := newFile.Body().FirstMatchingBlock(defaults.Locals, nil)
+			localsBlock := newFile.Body().FirstMatchingBlock(general.Locals, nil)
 			if localsBlock != nil {
 				newFile.Body().RemoveBlock(localsBlock)
 			}

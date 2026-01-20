@@ -6,7 +6,9 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	awsDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
 )
@@ -21,8 +23,8 @@ func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestCo
 
 	instances := []string{serverOneName, serverTwoName, serverThreeName}
 
-	if terraformConfig.Provider == defaults.Vsphere {
-		dataCenterExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereDatacenter + `.` + defaults.VsphereDatacenter + `.id`)
+	if terraformConfig.Provider == vsphereDefaults.Vsphere {
+		dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphereDefaults.VsphereDatacenter + `.` + vsphereDefaults.VsphereDatacenter + `.id`)
 		dataCenterValue := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dataCenterExpression)},
 		}
@@ -45,22 +47,22 @@ func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestCo
 
 	for _, instance := range instances {
 		switch terraformConfig.Provider {
-		case defaults.Aws:
+		case awsDefaults.Aws:
 			aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
 
-			nodeOnePrivateIP = fmt.Sprintf("${%s.%s.private_ip}", defaults.AwsInstance, serverOneName)
-			nodeOnePublicIP = fmt.Sprintf("${%s.%s.public_ip}", defaults.AwsInstance, serverOneName)
-			nodeTwoPublicIP = fmt.Sprintf("${%s.%s.public_ip}", defaults.AwsInstance, serverTwoName)
-			nodeThreePublicIP = fmt.Sprintf("${%s.%s.public_ip}", defaults.AwsInstance, serverThreeName)
-		case defaults.Vsphere:
+			nodeOnePrivateIP = fmt.Sprintf("${%s.%s.private_ip}", awsDefaults.AwsInstance, serverOneName)
+			nodeOnePublicIP = fmt.Sprintf("${%s.%s.public_ip}", awsDefaults.AwsInstance, serverOneName)
+			nodeTwoPublicIP = fmt.Sprintf("${%s.%s.public_ip}", awsDefaults.AwsInstance, serverTwoName)
+			nodeThreePublicIP = fmt.Sprintf("${%s.%s.public_ip}", awsDefaults.AwsInstance, serverThreeName)
+		case vsphereDefaults.Vsphere:
 			vsphere.CreateVsphereVirtualMachine(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
 
-			nodeOnePrivateIP = fmt.Sprintf("${%s.%s.default_ip_address}", defaults.VsphereVirtualMachine, serverOneName)
-			nodeOnePublicIP = fmt.Sprintf("${%s.%s.default_ip_address}", defaults.VsphereVirtualMachine, serverOneName)
-			nodeTwoPublicIP = fmt.Sprintf("${%s.%s.default_ip_address}", defaults.VsphereVirtualMachine, serverTwoName)
-			nodeThreePublicIP = fmt.Sprintf("${%s.%s.default_ip_address}", defaults.VsphereVirtualMachine, serverThreeName)
+			nodeOnePrivateIP = fmt.Sprintf("${%s.%s.default_ip_address}", vsphereDefaults.VsphereVirtualMachine, serverOneName)
+			nodeOnePublicIP = fmt.Sprintf("${%s.%s.default_ip_address}", vsphereDefaults.VsphereVirtualMachine, serverOneName)
+			nodeTwoPublicIP = fmt.Sprintf("${%s.%s.default_ip_address}", vsphereDefaults.VsphereVirtualMachine, serverTwoName)
+			nodeThreePublicIP = fmt.Sprintf("${%s.%s.default_ip_address}", vsphereDefaults.VsphereVirtualMachine, serverThreeName)
 		}
 	}
 

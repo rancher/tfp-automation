@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -45,7 +45,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 
 	command += "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/auth-registry.sh"),
 		cty.StringVal("chmod +x /tmp/auth-registry.sh"),
 		cty.StringVal(command),
@@ -98,7 +98,7 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 
 	command += "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/non-auth-registry.sh"),
 		cty.StringVal("chmod +x /tmp/non-auth-registry.sh"),
 		cty.StringVal(command),
@@ -138,7 +138,7 @@ func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 	command += "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/ecr-registry.sh"),
 		cty.StringVal("chmod +x /tmp/ecr-registry.sh"),
 		cty.StringVal(command),

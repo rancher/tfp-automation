@@ -3,7 +3,7 @@ package rke2k3s
 import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -46,7 +46,7 @@ func SetRestoreRKE2K3SSnapshot(terraformConfig *config.TerraformConfig, rkeConfi
 		restoreSnapshotBlockBody.SetAttributeValue(Generation, cty.NumberIntVal(generation+1))
 	}
 
-	restoreSnapshotBlockBody.SetAttributeValue((defaults.ResourceName), cty.StringVal(snapshots.SnapshotName))
+	restoreSnapshotBlockBody.SetAttributeValue((general.ResourceName), cty.StringVal(snapshots.SnapshotName))
 	restoreSnapshotBlockBody.SetAttributeValue((RestoreRKEConfig), cty.StringVal(snapshots.SnapshotRestore))
 	return nil
 }

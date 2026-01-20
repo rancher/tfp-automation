@@ -7,7 +7,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,7 +40,7 @@ func CreateVsphereResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 	CreateVsphereProviderBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	dataCenterExpression := fmt.Sprintf(defaults.Data + `.` + defaults.VsphereDatacenter + `.` + defaults.VsphereDatacenter + `.id`)
+	dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphere.VsphereDatacenter + `.` + vsphere.VsphereDatacenter + `.id`)
 	dataCenterValue := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dataCenterExpression)},
 	}

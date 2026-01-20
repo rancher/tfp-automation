@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
 	harvester "github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
@@ -72,7 +72,7 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 
 	rootBody.AppendNewline()
 
-	if strings.Contains(terratestConfig.PSACT, defaults.RancherBaseline) {
+	if strings.Contains(terratestConfig.PSACT, clusters.RancherBaseline) {
 		rootBody, err := resources.SetBaselinePSACT(newFile, rootBody, terraformConfig.ResourcePrefix)
 		if err != nil {
 			return nil, nil, err

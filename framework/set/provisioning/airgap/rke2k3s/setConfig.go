@@ -8,7 +8,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/airgap/nullresource"
 	v2 "github.com/rancher/tfp-automation/framework/set/provisioning/custom/rke2k3s"
@@ -69,9 +69,9 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 		var dependsOn []string
 
 		// Depending on the airgapped node, add the specific dependsOn expression.
-		bastionScriptExpression := "[" + defaults.NullResource + `.copy_script_to_bastion_` + terraformConfig.ResourcePrefix + "]"
-		nodeOneExpression := "[" + defaults.NullResource + `.register_` + airgapNodeOne + "_" + terraformConfig.ResourcePrefix + "]"
-		nodeTwoExpression := "[" + defaults.NullResource + `.register_` + airgapNodeTwo + "_" + terraformConfig.ResourcePrefix + "]"
+		bastionScriptExpression := "[" + general.NullResource + `.copy_script_to_bastion_` + terraformConfig.ResourcePrefix + "]"
+		nodeOneExpression := "[" + general.NullResource + `.register_` + airgapNodeOne + "_" + terraformConfig.ResourcePrefix + "]"
+		nodeTwoExpression := "[" + general.NullResource + `.register_` + airgapNodeTwo + "_" + terraformConfig.ResourcePrefix + "]"
 
 		switch instance {
 		case airgapNodeOne:

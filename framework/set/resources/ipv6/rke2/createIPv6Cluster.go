@@ -10,7 +10,7 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework/set/defaults"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
@@ -59,7 +59,7 @@ func CreateIPv6RKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclw
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicIP, rke2Bastion)
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
 		cty.StringVal("bash -c '/tmp/bastion.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
@@ -92,18 +92,18 @@ func createIPv6RKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terra
 		rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
-	provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
 		cty.StringVal(command),
 	}))
 
-	dependsOnServer := `[` + defaults.NullResource + `.` + rke2Bastion + `]`
+	dependsOnServer := `[` + general.NullResource + `.` + rke2Bastion + `]`
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 	}
 
-	nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 }
 
 // addIPv6RKE2ServerNodes is a helper function that will add additional RKE2 server nodes to the initial RKE2 IPv6 server.
@@ -125,17 +125,17 @@ func addIPv6RKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Ter
 			rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
 
-		provisionerBlockBody.SetAttributeValue(defaults.Inline, cty.ListVal([]cty.Value{
+		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
 			cty.StringVal(command),
 		}))
 
-		dependsOnServer := `[` + defaults.NullResource + `.` + rke2ServerOne + `]`
+		dependsOnServer := `[` + general.NullResource + `.` + rke2ServerOne + `]`
 		server := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},
 		}
 
-		nullResourceBlockBody.SetAttributeRaw(defaults.DependsOn, server)
+		nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 	}
 }

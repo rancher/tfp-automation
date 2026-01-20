@@ -5,6 +5,7 @@ const (
 	AuthEncodedJSON        = "auth_encoded_json"
 	GoogleCredentialSecret = "google_credential_secret"
 	ProjectID              = "project_id"
+	Region                 = "region"
 	Network                = "network"
 	Subnetwork             = "subnetwork"
 
