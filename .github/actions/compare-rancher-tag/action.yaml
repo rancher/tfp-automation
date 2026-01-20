@@ -8,15 +8,11 @@ inputs:
     required: true
   cached-tag-v212:
     required: true
-  cached-tag-v211:
-    required: true
   latest-tag-v214:
     required: true
   latest-tag-v213:
     required: true
   latest-tag-v212:
-    required: true
-  latest-tag-v211:
     required: true
 outputs:
   is_tag_new_v214:
@@ -25,14 +21,12 @@ outputs:
     value: ${{ steps.compare.outputs.is_tag_new_v213 }}
   is_tag_new_v212:
     value: ${{ steps.compare.outputs.is_tag_new_v212 }}
-  is_tag_new_v211:
-    value: ${{ steps.compare.outputs.is_tag_new_v211 }}
 runs:
   using: composite
   steps:
     - id: compare
       run: |
-        for RELEASE_LINE in v214 v213 v212 v211; do
+        for RELEASE_LINE in v214 v213 v212; do
           if [[ "$RELEASE_LINE" = "v214" ]]; then
             TAG_INPUT="${{ inputs.latest-tag-v214 }}"
             CACHED_TAG="${{ inputs.cached-tag-v214 }}"
@@ -42,9 +36,6 @@ runs:
           elif [[ "$RELEASE_LINE" = "v212" ]]; then
             TAG_INPUT="${{ inputs.latest-tag-v212 }}"
             CACHED_TAG="${{ inputs.cached-tag-v212 }}"
-          elif [[ "$RELEASE_LINE" = "v211" ]]; then
-            TAG_INPUT="${{ inputs.latest-tag-v211 }}"
-            CACHED_TAG="${{ inputs.cached-tag-v211 }}"
           fi
 
           echo "Cached Rancher tag for $RELEASE_LINE: $CACHED_TAG"
@@ -62,5 +53,4 @@ runs:
         echo "is_tag_new_v214=$IS_TAG_NEW_v214" >> $GITHUB_OUTPUT
         echo "is_tag_new_v213=$IS_TAG_NEW_v213" >> $GITHUB_OUTPUT
         echo "is_tag_new_v212=$IS_TAG_NEW_v212" >> $GITHUB_OUTPUT
-        echo "is_tag_new_v211=$IS_TAG_NEW_v211" >> $GITHUB_OUTPUT
       shell: bash

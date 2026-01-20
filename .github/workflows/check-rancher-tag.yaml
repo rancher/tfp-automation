@@ -17,17 +17,15 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     env:
-      RANCHER_RELEASE_LINES: "v2.14 v2.13 v2.12 v2.11"
-      SANITIZED_RELEASES: "v214 v213 v212 v211"
+      RANCHER_RELEASE_LINES: "v2.14 v2.13 v2.12"
+      SANITIZED_RELEASES: "v214 v213 v212"
     outputs:
       latest_tag_v214: ${{ steps.get-latest-tag.outputs.latest_tag_v214 }}
       latest_tag_v213: ${{ steps.get-latest-tag.outputs.latest_tag_v213 }}
       latest_tag_v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
-      latest_tag_v211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
       is_tag_new_v214: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v214 }}
       is_tag_new_v213: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v213 }}
       is_tag_new_v212: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v212 }}
-      is_tag_new_v211: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v211 }}
 
     steps:
       - name: Checkout repository
@@ -73,18 +71,15 @@ jobs:
           cached-tag-v214: ${{ env.CACHED_TAG_v214 }}
           cached-tag-v213: ${{ env.CACHED_TAG_v213 }}
           cached-tag-v212: ${{ env.CACHED_TAG_v212 }}
-          cached-tag-v211: ${{ env.CACHED_TAG_v211 }}
           latest-tag-v214: ${{ steps.get-latest-tag.outputs.latest_tag_v214 }}
           latest-tag-v213: ${{ steps.get-latest-tag.outputs.latest_tag_v213 }}
           latest-tag-v212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
-          latest-tag-v211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
 
       - name: Write latest tags to files
         env:
           LATEST_TAG_V214: ${{ steps.get-latest-tag.outputs.latest_tag_v214 }}
           LATEST_TAG_V213: ${{ steps.get-latest-tag.outputs.latest_tag_v213 }}
           LATEST_TAG_V212: ${{ steps.get-latest-tag.outputs.latest_tag_v212 }}
-          LATEST_TAG_V211: ${{ steps.get-latest-tag.outputs.latest_tag_v211 }}
         run: |
           mkdir -p tag
           for release in $SANITIZED_RELEASES; do
@@ -105,7 +100,6 @@ jobs:
       chart_version_v214: ${{ steps.set-latest-chart-version.outputs.chart_version_v214 }}
       chart_version_v213: ${{ steps.set-latest-chart-version.outputs.chart_version_v213 }}
       chart_version_v212: ${{ steps.set-latest-chart-version.outputs.chart_version_v212 }}
-      chart_version_v211: ${{ steps.set-latest-chart-version.outputs.chart_version_v211 }}
 
     steps:
       - name: Chart versions
@@ -114,12 +108,10 @@ jobs:
           CHART_V214="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v214 }}"
           CHART_V213="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v213 }}"
           CHART_V212="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v212 }}"
-          CHART_V211="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v211 }}"
 
           echo "chart_version_v214=${CHART_V214#v}" >> $GITHUB_OUTPUT
           echo "chart_version_v213=${CHART_V213#v}" >> $GITHUB_OUTPUT
           echo "chart_version_v212=${CHART_V212#v}" >> $GITHUB_OUTPUT
-          echo "chart_version_v211=${CHART_V211#v}" >> $GITHUB_OUTPUT
 
   trigger-tests-v214:
     needs: [check-latest-rancher-tag, set-latest-chart-version]
@@ -144,11 +136,3 @@ jobs:
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v212 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v212 }}
-
-  trigger-tests-v211:
-    needs: [check-latest-rancher-tag, set-latest-chart-version]
-    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v211 == 'true' }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
-    with:
-      rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v211 }}
-      rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v211 }}
