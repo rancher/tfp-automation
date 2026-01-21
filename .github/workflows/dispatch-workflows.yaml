@@ -27,6 +27,8 @@ jobs:
           - registry-test.yaml
           - sanity-test.yaml
           - sanity-upgrade-test.yaml
+          - community-prime-upgrade-test.yaml
+          - prime-community-upgrade-test.yaml
 
     steps:
       - name: Trigger test workflow ${{ matrix.workflow }}
