@@ -8,6 +8,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/resources/providers/google"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/harvester"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/linode"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
@@ -32,6 +33,11 @@ func TunnelToProvider(provider string) ProviderResources {
 			CreateAirgap:    aws.CreateAirgappedAWSResources,
 			CreateNonAirgap: aws.CreateAWSResources,
 			CreateIPv6:      aws.CreateIPv6AWSResources,
+		}
+	case providers.Google:
+		logrus.Infof("Creating Google Cloud resources...")
+		return ProviderResources{
+			CreateNonAirgap: google.CreateGoogleCloudResources,
 		}
 	case providers.Linode:
 		logrus.Infof("Creating Linode resources...")

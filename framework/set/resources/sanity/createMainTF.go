@@ -18,16 +18,17 @@ import (
 )
 
 const (
-	serverOne              = "server1"
-	serverTwo              = "server2"
-	serverThree            = "server3"
-	serverOnePublicIP      = "server1_public_ip"
-	serverOnePrivateIP     = "server1_private_ip"
-	linodeBalancerHostname = "linode_node_balancer_hostname"
-	serverTwoPublicIP      = "server2_public_ip"
-	serverThreePublicIP    = "server3_public_ip"
-	terraformConst         = "terraform"
-	sslipioSuffix          = ".sslip.io"
+	serverOne                 = "server1"
+	serverTwo                 = "server2"
+	serverThree               = "server3"
+	serverOnePublicIP         = "server1_public_ip"
+	serverOnePrivateIP        = "server1_private_ip"
+	googleLoadBalancerAddress = "google_load_balancer_ip_address"
+	linodeBalancerHostname    = "linode_node_balancer_hostname"
+	serverTwoPublicIP         = "server2_public_ip"
+	serverThreePublicIP       = "server3_public_ip"
+	terraformConst            = "terraform"
+	sslipioSuffix             = ".sslip.io"
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server.
@@ -44,7 +45,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlockBody := tfBlock.Body()
 
 	var err error
-	var nodeBalancerHostname string
+	var loadBalancerHostname string
 
 	instances := []string{serverOne, serverTwo, serverThree}
 
@@ -63,11 +64,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	switch terraformConfig.Provider {
 	case providers.Linode:
-		nodeBalancerHostname = terraform.Output(t, terraformOptions, linodeBalancerHostname)
-		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
+		loadBalancerHostname = terraform.Output(t, terraformOptions, linodeBalancerHostname)
+		terraformConfig.Standalone.RancherHostname = loadBalancerHostname
+	case providers.Google:
+		loadBalancerHostname = terraform.Output(t, terraformOptions, googleLoadBalancerAddress) + sslipioSuffix
+		terraformConfig.Standalone.RancherHostname = loadBalancerHostname
 	case providers.Harvester, providers.Vsphere:
-		nodeBalancerHostname = terraform.Output(t, terraformOptions, serverOnePublicIP) + sslipioSuffix
-		terraformConfig.Standalone.RancherHostname = nodeBalancerHostname
+		loadBalancerHostname = terraform.Output(t, terraformOptions, serverOnePublicIP) + sslipioSuffix
+		terraformConfig.Standalone.RancherHostname = loadBalancerHostname
 	}
 
 	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)

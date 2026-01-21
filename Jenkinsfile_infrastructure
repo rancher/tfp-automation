@@ -31,6 +31,8 @@ node {
                     string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
                     string(credentialsId: 'AWS_SSH_RSA_KEY', variable: 'AWS_SSH_RSA_KEY'),
                     string(credentialsId: 'AWS_SSH_KEY_NAME', variable: 'AWS_SSH_KEY_NAME'),
+                    string(credentialsId: 'GOOGLE_TFP_EMAIL', variable: 'GOOGLE_TFP_EMAIL'),
+                    string(credentialsId: 'GOOGLE_TFP_SERVICE_ACCOUNT', variable: 'GOOGLE_TFP_SERVICE_ACCOUNT'),
                     string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
   stage('Checkout') {
           deleteDir()
@@ -45,6 +47,8 @@ node {
       config = config.replace('${AWS_SECRET_ACCESS_KEY}', env.AWS_SECRET_ACCESS_KEY)
       config = config.replace('${AWS_ACCESS_KEY_ID}', env.AWS_ACCESS_KEY_ID)
       config = config.replace('${RANCHER_LINODE_ACCESSKEY}', env.RANCHER_LINODE_ACCESSKEY)
+      config = config.replace('${GOOGLE_TFP_EMAIL}', env.GOOGLE_TFP_EMAIL)
+      config = config.replace('${GOOGLE_TFP_SERVICE_ACCOUNT}', env.GOOGLE_TFP_SERVICE_ACCOUNT)
 
       writeFile file: 'config.yml', text: config
 
@@ -65,6 +69,11 @@ node {
       try {
         sh """
           docker run --name ${testContainer} -t --env-file ${envFile} ${imageName} sh -c "
+          set +x
+          echo "${GOOGLE_TFP_SERVICE_ACCOUNT}" | base64 -d > /tmp/gcp-key.json 2>/dev/null
+          set -x
+          gcloud auth activate-service-account ${env.GOOGLE_TFP_EMAIL} --key-file=/tmp/gcp-key.json 2>&1 &&
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json &&
           go run ${rootPath}tests/infrastructure/main.go ${params.TEST_CASE};
           ${rootPath}pipeline/scripts/build_qase_reporter.sh;
           if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"

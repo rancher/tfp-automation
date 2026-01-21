@@ -21,6 +21,8 @@ ARG LOCALS_PROVIDER_VERSION
 ARG CLOUD_PROVIDER_VERSION
 ARG KUBERNETES_PROVIDER_VERSION
 ARG LETS_ENCRYPT_EMAIL
+ARG GOOGLE_TFP_EMAIL
+ARG GOOGLE_TFP_SERVICE_ACCOUNT
 
 ENV QASE_TEST_RUN_ID=${QASE_TEST_RUN_ID}
 ENV TERRAFORM_VERSION=${TERRAFORM_VERSION}
@@ -32,18 +34,26 @@ ENV KUBERNETES_PROVIDER_VERSION=${KUBERNETES_PROVIDER_VERSION}
 ENV LETS_ENCRYPT_EMAIL=${LETS_ENCRYPT_EMAIL}
 
 RUN zypper install -y openssh wget unzip > /dev/null
+RUN (curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz && \
+    tar -xf google-cloud-cli-linux-x86_64.tar.gz && \
+    ./google-cloud-sdk/install.sh --quiet && \
+    rm google-cloud-cli-linux-x86_64.tar.gz) > /dev/null 2>&1
 
-RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -q && zypper --non-interactive update && \
-    unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip > /dev/null && \ 
-    rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip > /dev/null && \
-    chmod a+x terraform > /dev/null && mv terraform /usr/local/bin/terraform > /dev/null
+ENV PATH $PATH:/root/go/src/github.com/rancher/tfp-automation/google-cloud-sdk/bin
+
+RUN (wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    zypper --non-interactive update && \
+    unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    chmod a+x terraform && mv terraform /usr/local/bin/terraform) > /dev/null 2>&1
 
 ARG CONFIG_FILE
 COPY $CONFIG_FILE /config.yml
 
 RUN mkdir /root/.ssh && chmod 600 .ssh/jenkins-*
 RUN for pem_file in .ssh/jenkins-*; do \
-      ssh-keygen -f "$pem_file" -y > "/root/.ssh/$(basename "$pem_file").pub"; \
+        base_name="$(basename "$pem_file" .pem)"; \
+        ssh-keygen -f "$pem_file" -y > ".ssh/${base_name}.pub"; \
     done
 
 RUN if [[ "$RANCHER2_PROVIDER_VERSION" == *"-rc"* ]]; then \
