@@ -2,6 +2,9 @@
 name: "Report to Slack"
 description: "Send build status to Slack"
 inputs:
+  rancher-version:
+    description: "Rancher version"
+    required: true
   job-status:
     description: "The status of the job"
     required: true
@@ -32,9 +35,9 @@ runs:
         webhook: ${{ inputs.slack-webhook-url }}
         webhook-type: incoming-webhook
         payload: |
-          text: "*GitHub Action build result*: ${{ job.status }}\nWorkflow: ${{ github.workflow }}\nJob: ${{ github.job }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+          text: "*GitHub Action build result*: ${{ job.status }}\nWorkflow: ${{ github.workflow }}\nJob: ${{ inputs.rancher-version }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
           blocks:
             - type: "section"
               text:
                 type: "mrkdwn"
-                text: "${{ steps.slack-status.outputs.emoji }} *${{ github.repository }} - ${{ github.workflow }}* — `${{ inputs.job-status }}`\n*Job:* `${{ github.job }}` • <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"
+                text: "${{ steps.slack-status.outputs.emoji }} *${{ github.repository }} - ${{ github.workflow }}* — `${{ inputs.job-status }}`\n*Job:* `${{ inputs.rancher-version }}` • <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"
