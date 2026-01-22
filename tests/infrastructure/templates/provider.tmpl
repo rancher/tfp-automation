@@ -43,26 +43,21 @@
                     {{end}}
                     <input type="hidden" id="provider-input" name="provider" required />
                     <div class="provider-select-grid">
-                        {{if or (eq .RancherType "airgap") (eq .RancherType "dual") (eq .RancherType "ipv6") (eq .RancherType "registry") 
+                        {{if or (eq .RancherType "airgap") (eq .RancherType "dual") (eq .RancherType "ipv6") (eq .RancherType "registry") (eq .RancherType "proxy")
                             (eq .ClusterType "airgap-rke2") (eq .ClusterType "dual-rke2") (eq .ClusterType "dual-k3s") (eq .ClusterType "ipv6-rke2") 
                             (eq .ClusterType "ipv6-k3s")}}
                             <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
                                 <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
                                 <div>AWS</div>
                             </label>
-                        {{else if eq .RancherType "proxy"}}
-                            <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
-                                <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
-                                <div>AWS</div>
-                            </label>
-                            <label id="label-linode" class="provider-img-label" onclick="selectProvider('linode')">
-                                <img src="/static/images/linode.png" alt="Linode" class="provider-img" />
-                                <div>Linode</div>
-                            </label>
                         {{else}}
                             <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
                                 <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
                                 <div>AWS</div>
+                            </label>
+                            <label id="label-google" class="provider-img-label" onclick="selectProvider('google')">
+                                <img src="/static/images/google.png" alt="Google" class="provider-img" />
+                                <div>Google</div>
                             </label>
                             <label id="label-linode" class="provider-img-label" onclick="selectProvider('linode')">
                                 <img src="/static/images/linode.png" alt="Linode" class="provider-img" />
