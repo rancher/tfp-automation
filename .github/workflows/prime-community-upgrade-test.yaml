@@ -2,9 +2,6 @@
 name: Prime => Community Upgrade Testing
 
 on:
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       rancher_version:
@@ -40,10 +37,11 @@ env:
 
 jobs:
   v2-13:
-    # if: |
-    #   (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) ||
-    #   (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.13')) &&
-    #   (github.event_name == 'workflow_call' && contains(inputs.rancher_version, 'alpha'))
+    if: |
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) &&
+      (github.event_name == 'workflow_dispatch' && contains(inputs.rancher_version, 'alpha')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.13')) &&
+      (github.event_name == 'workflow_call' && contains(inputs.rancher_version, 'alpha'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: upgrade-prime-community
@@ -109,15 +107,13 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_VERSION
-          # value: ${{ github.event.inputs.rancher_version }}
-          value: v2.13.2-alpha4
+          value: ${{ github.event.inputs.rancher_version }}
 
       - name: Set upgraded Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: UPGRADED_RANCHER_CHART_VERSION
-          # value: ${{ github.event.inputs.rancher_chart_version }}
-          value: 2.13.2-alpha4
+          value: ${{ github.event.inputs.rancher_chart_version }}
 
       - name: Get Qase ID
         if: env.REPORTING_ENABLED == 'true'
@@ -295,8 +291,8 @@ jobs:
 
   v2-12:
     if: |
-      github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12')) &&
+      (github.event_name == 'workflow_dispatch' && contains(inputs.rancher_version, 'alpha')) ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.12')) &&
       (github.event_name == 'workflow_call' && contains(inputs.rancher_version, 'alpha'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version }}
