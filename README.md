@@ -105,6 +105,18 @@ terraform:
     windowsInstanceType: ""
     windowsKeyName: ""
 
+  # Fill out the Google section if provider is set to google.
+  googleConfig:
+    image: ""
+    keyPath: ""     # MUST be a public key
+    machineType: ""
+    network: ""
+    projectID: ""
+    region: ""
+    size:           # MUST be an int (i.e. 100)
+    sshUser: ""
+    zone: ""
+
   # Fill out the Linode section if provider is set to linode.
   linodeCredentials:
     linodeToken: ""  

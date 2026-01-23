@@ -25,7 +25,7 @@
                     <input type="hidden" name="selection" value="{{.Selection}}" />
                     <input type="hidden" name="ranchertype" value="{{.RancherType}}" />
                     <div style="margin-bottom:1.5rem;">
-                        {{if or (eq .RancherType "dual") (eq .RancherType "ipv6") (eq .RancherType "registry")}}
+                        {{if or (eq .RancherType "registry")}}
                         <label class="form-label-radio">
                             <input type="radio" class="form-radio" name="installtype" value="fresh" checked required /> Fresh
                         </label>

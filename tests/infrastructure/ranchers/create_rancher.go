@@ -31,6 +31,7 @@ import (
 
 const (
 	configEnvironmentKey = "CATTLE_TEST_CONFIG"
+	head                 = "head"
 	local                = "local"
 )
 
@@ -83,7 +84,7 @@ func SetupDualStackRancher(t *testing.T, session *session.Session, moduleKeyPath
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
-	if standaloneConfig.RancherTagVersion != "head" {
+	if standaloneConfig.RancherTagVersion != head {
 		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 
@@ -108,7 +109,7 @@ func SetupIPv6Rancher(t *testing.T, session *session.Session, moduleKeyPath stri
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
-	if standaloneConfig.RancherTagVersion != "head" {
+	if standaloneConfig.RancherTagVersion != head {
 		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 
@@ -142,7 +143,7 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
-	if standaloneConfig.RancherTagVersion != "head" {
+	if standaloneConfig.RancherTagVersion != head {
 		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 
@@ -176,7 +177,7 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
-	if standaloneConfig.RancherTagVersion != "head" {
+	if standaloneConfig.RancherTagVersion != head {
 		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 
@@ -209,7 +210,7 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	client, err := PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
-	if standaloneConfig.RancherTagVersion != "head" {
+	if standaloneConfig.RancherTagVersion != head {
 		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
 	}
 

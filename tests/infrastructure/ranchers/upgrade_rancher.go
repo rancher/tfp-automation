@@ -52,7 +52,7 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
 	require.NoError(t, err)
 
-	if standaloneConfig.UpgradedRancherTagVersion != "head" {
+	if standaloneConfig.UpgradedRancherTagVersion != head {
 		_, airgapKeyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, airgapKeyPath)
 
@@ -72,8 +72,83 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
 
+// UpgradeDualStackRancher upgrades an existing dual-stack Rancher server and returns the client, configuration, and Terraform options.
+func UpgradeDualStackRancher(t *testing.T, client *rancher.Client, serverNodeOne string, session *session.Session,
+	cattleConfig map[string]any) (*rancher.Client, map[string]any, *terraform.Options, *terraform.Options) {
+	var err error
+
+	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
+
+	terraformConfig.Standalone.UpgradeDualStackRancher = true
+
+	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	upgradeTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig, serverNodeOne, "", "", "")
+	require.NoError(t, err)
+
+	session = session.NewSession()
+
+	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.DualStackKeyPath)
+	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
+	require.NoError(t, err)
+
+	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
+	require.NoError(t, err)
+
+	if standaloneConfig.UpgradedRancherTagVersion != head {
+		_, dualStackKeyPath := rancher2.SetKeyPath(keypath.DualStackKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, dualStackKeyPath)
+
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, dualStackKeyPath, terraformOptions)
+	}
+
+	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
+	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
+}
+
+// UpgradeIPv6Rancher upgrades an existing IPv6 Rancher server and returns the client, configuration, and Terraform options.
+func UpgradeIPv6Rancher(t *testing.T, client *rancher.Client, serverNodeOne string, session *session.Session,
+	cattleConfig map[string]any) (*rancher.Client, map[string]any, *terraform.Options, *terraform.Options) {
+	var err error
+
+	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
+
+	terraformConfig.Standalone.UpgradeIPv6Rancher = true
+
+	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	upgradeTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig, serverNodeOne, "", "", "")
+	require.NoError(t, err)
+
+	session = session.NewSession()
+
+	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.IPv6KeyPath)
+	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
+	require.NoError(t, err)
+
+	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
+	require.NoError(t, err)
+
+	if standaloneConfig.UpgradedRancherTagVersion != head {
+		_, ipv6KeyPath := rancher2.SetKeyPath(keypath.IPv6KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, ipv6KeyPath)
+
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, ipv6KeyPath, terraformOptions)
+	}
+
+	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
+	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
+}
+
 // UpgradeProxyRancher upgrades an existing proxy Rancher server and returns the client, configuration, and Terraform options.
-func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, proxyBastion string, session *session.Session, cattleConfig map[string]any) (*rancher.Client,
+func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, proxyBastion string, session *session.Session,
+	cattleConfig map[string]any) (*rancher.Client,
 	map[string]any, *terraform.Options, *terraform.Options) {
 	var err error
 
@@ -96,7 +171,7 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
 	require.NoError(t, err)
 
-	if standaloneConfig.UpgradedRancherTagVersion != "head" {
+	if standaloneConfig.UpgradedRancherTagVersion != head {
 		_, proxyKeyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, proxyKeyPath)
 
@@ -110,8 +185,8 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 }
 
 // UpgradeRancher upgrades an existing Rancher server and returns the client, configuration, and Terraform options.
-func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, session *session.Session, cattleConfig map[string]any) (*rancher.Client,
-	map[string]any, *terraform.Options, *terraform.Options) {
+func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, session *session.Session,
+	cattleConfig map[string]any) (*rancher.Client, map[string]any, *terraform.Options, *terraform.Options) {
 	var err error
 
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
@@ -133,7 +208,7 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 	updatedCattleConfig, err := UpdateRancherConfigMap(cattleConfig, client)
 	require.NoError(t, err)
 
-	if standaloneConfig.UpgradedRancherTagVersion != "head" {
+	if standaloneConfig.UpgradedRancherTagVersion != head {
 		_, sanityKeyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, sanityKeyPath)
 
