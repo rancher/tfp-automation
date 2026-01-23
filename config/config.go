@@ -140,6 +140,8 @@ type Standalone struct {
 	OSGroup                        string        `json:"osGroup,omitempty" yaml:"osGroup,omitempty"`
 	RKE2Version                    string        `json:"rke2Version,omitempty" yaml:"rke2Version,omitempty"`
 	UpgradeAirgapRancher           bool          `json:"upgradeAirgapRancher,omitempty" yaml:"upgradeAirgapRancher,omitempty"`
+	UpgradeDualStackRancher        bool          `json:"upgradeDualStackRancher,omitempty" yaml:"upgradeDualStackRancher,omitempty"`
+	UpgradeIPv6Rancher             bool          `json:"upgradeIPv6Rancher,omitempty" yaml:"upgradeIPv6Rancher,omitempty"`
 	UpgradeProxyRancher            bool          `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
 	UpgradeRancher                 bool          `json:"upgradeRancher,omitempty" yaml:"upgradeRancher,omitempty"`
 	UpgradedRancherChartRepository string        `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`

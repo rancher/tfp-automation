@@ -85,7 +85,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			cleanup.Cleanup(t, terraformOptions, keyPath)
 			return err
 		}
-	case terraformConfig.Standalone.UpgradeRancher:
+	case terraformConfig.Standalone.UpgradeRancher, terraformConfig.Standalone.UpgradeDualStackRancher, terraformConfig.Standalone.UpgradeIPv6Rancher:
 		logrus.Infof("Upgrading Rancher...")
 		_, err := sanityRancher.UpgradeRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverNode)
 		if err != nil {

@@ -3,7 +3,7 @@ name: Sanity IPv6 Testing
 
 on:
   schedule:
-    - cron: "0 7 * * 1-5"
+    - cron: "0 7 * * 1"
   workflow_dispatch:
     inputs:
       rancher_version:
