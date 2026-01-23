@@ -196,6 +196,8 @@ upgrade_default_rancher() {
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
+                                                                                        --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
+                                                                                        --set 'extraEnv[0].value=""' \
                                                                                         --set agentTLSMode=system-store \
                                                                                         --devel
         fi
@@ -222,6 +224,8 @@ upgrade_default_rancher() {
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
+                                                                                        --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
+                                                                                        --set 'extraEnv[0].value=""' \
                                                                                         --set ingress.tls.source=letsEncrypt \
                                                                                         --set letsEncrypt.ingress.class=nginx \
                                                                                         --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
