@@ -61,7 +61,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.turtles, 'false'))
     name: "[v214] turtles OFF"
     runs-on: ubuntu-latest
-    environment: latest
+    environment: head
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "ts-off-214"
@@ -331,7 +331,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.turtles, 'true'))
     name: "[v214] turtles ON"
     runs-on: ubuntu-latest
-    environment: latest
+    environment: head
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "ts-on-214"
@@ -601,7 +601,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.turtles, 'toggledOn'))
     name: "[v214] turtles toggled ON"
     runs-on: ubuntu-latest
-    environment: latest
+    environment: head
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "ts-on-214"
@@ -871,7 +871,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.turtles, 'toggledOff'))
     name: "[v214] turtles toggled OFF"
     runs-on: ubuntu-latest
-    environment: latest
+    environment: head
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "ts-toff-214"

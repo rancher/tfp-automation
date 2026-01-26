@@ -16,6 +16,7 @@ TURTLES=${12}
 if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${REGISTRY}/${RANCHER_IMAGE}"
+    VERSION="--version ${CHART_VERSION}"
 else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
 
@@ -27,6 +28,7 @@ else
     
     RANCHER_TAG="--set image.tag=${RANCHER_TAG_VERSION}"
     IMAGE="--set image.repository=${IMAGE_REPOSITORY} --set image.registry=${REGISTRY}/${IMAGE_REGISTRY}"
+    VERSION="--version ${CHART_VERSION}"
 fi
 
 set -ex
@@ -96,7 +98,7 @@ install_turtles_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
                 helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
+                                                                                            ${VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
                                                                                             --set systemDefaultRegistry=${REGISTRY} \
@@ -115,7 +117,7 @@ install_turtles_off() {
         else
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
+                                                                                            ${VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
                                                                                             --set systemDefaultRegistry=${REGISTRY} \
@@ -130,7 +132,7 @@ install_turtles_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
+                                                                                            ${VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
                                                                                             --set systemDefaultRegistry=${REGISTRY} \
@@ -152,7 +154,7 @@ install_turtles_off() {
         else
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                             --set hostname=${HOSTNAME} \
-                                                                                            --version ${CHART_VERSION} \
+                                                                                            ${VERSION} \
                                                                                             ${RANCHER_TAG} \
                                                                                             ${IMAGE} \
                                                                                             --set systemDefaultRegistry=${REGISTRY} \
@@ -178,7 +180,7 @@ install_default_rancher() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
-                                                                                        --version ${CHART_VERSION} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -196,7 +198,7 @@ install_default_rancher() {
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
                                                                                         --set hostname=${HOSTNAME} \
-                                                                                        --version ${CHART_VERSION} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set agentTLSMode=system-store \
@@ -208,7 +210,7 @@ install_default_rancher() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
-                                                                                        --version ${CHART_VERSION} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -228,7 +230,7 @@ install_default_rancher() {
         else
             helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
-                                                                                        --version ${CHART_VERSION} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -327,6 +329,13 @@ patch_rancher_fqdn() {
 check_cluster_status
 install_helm
 setup_helm_repo
+
+# Needed to get the latest chart version if RANCHER_TAG_VERSION is head
+if [[ $RANCHER_TAG_VERSION == head ]]; then
+    LATEST_CHART_VERSION=$(helm search repo rancher-${REPO} --devel | tail -n +2 | head -n 1 | cut -f2)
+    VERSION="--version ${LATEST_CHART_VERSION}"
+fi
+
 install_cert_manager
 
 if [ -n "$TURTLES" ]; then

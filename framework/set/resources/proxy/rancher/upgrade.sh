@@ -15,6 +15,7 @@ NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,
 if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
+    VERSION="--version ${CHART_VERSION}"
 else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
 
@@ -26,6 +27,7 @@ else
     
     RANCHER_TAG="--set image.tag=${RANCHER_TAG_VERSION}"
     IMAGE="--set image.repository=${IMAGE_REPOSITORY} --set image.registry=${IMAGE_REGISTRY}"
+    VERSION="--version ${CHART_VERSION}"
 fi
 
 set -ex
@@ -53,7 +55,7 @@ upgrade_self_signed_rancher() {
 
     else
         helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --version ${CHART_VERSION} \
+                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
@@ -84,7 +86,7 @@ upgrade_lets_encrypt_rancher() {
                                                                                          --devel
     else
         helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                         --version ${CHART_VERSION} \
+                                                                                         ${VERSION} \
                                                                                          --set hostname=${HOSTNAME} \
                                                                                          ${RANCHER_TAG} \
                                                                                          ${IMAGE} \
@@ -110,6 +112,12 @@ wait_for_rancher() {
 }
 
 setup_helm_repo
+
+# Needed to get the latest chart version if RANCHER_TAG_VERSION is head
+if [[ $RANCHER_TAG_VERSION == head ]]; then
+    LATEST_CHART_VERSION=$(helm search repo upgraded-rancher-${REPO} --devel | tail -n +2 | head -n 1 | cut -f2)
+    VERSION="--version ${LATEST_CHART_VERSION}"
+fi
 
 case "$CERT_TYPE" in
     "self-signed")
