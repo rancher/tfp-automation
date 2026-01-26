@@ -108,6 +108,18 @@ jobs:
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
+      - name: Set upgraded Rancher version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_VERSION
+          value: ${{ github.event.inputs.rancher_version }}
+
+      - name: Set upgraded Rancher chart version
+        uses: ./.github/actions/set-env-var
+        with:
+          key: UPGRADED_RANCHER_CHART_VERSION
+          value: ${{ github.event.inputs.rancher_chart_version }}
+
       - name: Get Qase ID
         if: env.REPORTING_ENABLED == 'true'
         id: get-qase-id
@@ -188,11 +200,11 @@ jobs:
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
-              upgradedRancherChartVersion: "${{ secrets.UPGRADED_RANCHER_CHART_VERSION }}"
+              upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
               upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
-              upgradedRancherTagVersion: "${{ secrets.UPGRADED_RANCHER_VERSION }}"
+              upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
               upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
