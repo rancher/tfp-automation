@@ -15,6 +15,7 @@ RANCHER_AGENT_IMAGE=${11}
 if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
+    VERSION="--version ${CHART_VERSION}"
 else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
 
@@ -26,6 +27,7 @@ else
     
     RANCHER_TAG="--set image.tag=${RANCHER_TAG_VERSION}"
     IMAGE="--set image.repository=${IMAGE_REPOSITORY} --set image.registry=${REGISTRY}/${IMAGE_REGISTRY}"
+    VERSION="--version ${CHART_VERSION}"
 fi
 
 set -ex
@@ -103,7 +105,7 @@ install_self_signed_rancher() {
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                          --set hostname=${HOSTNAME} \
-                                                                                         --version ${CHART_VERSION} \
+                                                                                         ${VERSION} \
                                                                                          ${RANCHER_TAG} \
                                                                                          ${IMAGE} \
                                                                                          --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
@@ -120,7 +122,7 @@ install_self_signed_rancher() {
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                          --set hostname=${HOSTNAME} \
-                                                                                         --version ${CHART_VERSION} \
+                                                                                         ${VERSION} \
                                                                                          ${RANCHER_TAG} \
                                                                                          ${IMAGE} \
                                                                                          --set systemDefaultRegistry=${REGISTRY} \
@@ -135,7 +137,7 @@ install_lets_encrypt_rancher() {
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \
-                                                                                     --version ${CHART_VERSION} \
+                                                                                     ${VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
                                                                                      --set ingress.tls.source=letsEncrypt \
@@ -154,7 +156,7 @@ install_lets_encrypt_rancher() {
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \
-                                                                                     --version ${CHART_VERSION} \
+                                                                                     ${VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
                                                                                      --set ingress.tls.source=letsEncrypt \
@@ -182,6 +184,13 @@ install_kubectl
 check_cluster_status
 install_helm
 setup_helm_repo
+
+# Needed to get the latest chart version if RANCHER_TAG_VERSION is head
+if [[ $RANCHER_TAG_VERSION == head ]]; then
+    LATEST_CHART_VERSION=$(helm search repo rancher-${REPO} --devel | tail -n +2 | head -n 1 | cut -f2)
+    VERSION="--version ${LATEST_CHART_VERSION}"
+fi
+
 install_cert_manager
 
 case "$CERT_TYPE" in
