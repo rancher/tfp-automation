@@ -1,0 +1,2 @@
+standalone:
+  rke2Version: "${{ RKE2_VERSION_2_13 }}"

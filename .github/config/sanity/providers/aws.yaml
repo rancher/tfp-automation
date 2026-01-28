@@ -1,0 +1,32 @@
+terraform:
+  awsCredentials:
+    awsAccessKey: "$AWS_ACCESS_KEY"
+    awsSecretKey: "$AWS_SECRET_KEY"
+
+  awsConfig:
+    ami: "${AWS_AMI}"
+    awsKeyName: "${SSH_PRIVATE_KEY_NAME}"
+    awsInstanceType: "${AWS_INSTANCE_TYPE}"
+    awsVolumeType: "${AWS_VOLUME_TYPE}"
+    region: "${AWS_REGION}"
+    awsSecurityGroups: ["${AWS_SECURITY_GROUPS}"]
+    awsSecurityGroupNames: ["${AWS_SECURITY_GROUP_NAMES}"]
+    awsSubnetID: "${AWS_SUBNET_ID}"
+    rancherSubnetID: "${AWS_SUBNET_ID}"
+    awsVpcID: "${AWS_VPC_ID}"
+    awsZoneLetter: "${AWS_ZONE_LETTER}"
+    awsRootSize: 100
+    awsRoute53Zone: "${AWS_ROUTE_53_ZONE}"
+    awsUser: "${AWS_USER}"
+    sshConnectionType: "${SSH_CONNECTION_TYPE}" 
+    timeout: "${TIMEOUT}"
+    windowsAWSUser: "${AWS_WINDOWS_USER}" 
+    windows2019AMI: "${WINDOWS_2019_AMI}"
+    windows2022AMI: "${WINDOWS_2022_AMI}"
+    windows2019Password: "${AWS_WINDOWS_2019_PASSWORD}"
+    windows2022Password: "${AWS_WINDOWS_2022_PASSWORD}"
+    windowsInstanceType: "${AWS_WINDOWS_INSTANCE_TYPE}"
+    windowsKeyName: "${WINDOWS_SSH_PRIVATE_KEY_NAME}"
+    ipAddressType: "${IP_ADDRESS_TYPE}"
+    loadBalancerType: "${LOAD_BALANCER_TYPE}"
+    targetType: "${TARGET_TYPE}"

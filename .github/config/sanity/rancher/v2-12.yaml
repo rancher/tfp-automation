@@ -1,0 +1,3 @@
+standalone:
+  rancherAgentImage: "${{ RANCHER_AGENT_IMAGE }}"
+  rke2Version: "${{ RKE2_VERSION_2_12 }}"
