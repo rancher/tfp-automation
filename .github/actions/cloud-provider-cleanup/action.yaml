@@ -1,0 +1,36 @@
+---
+name: "Cloud Provider Resource Cleanup"
+description: "Delete cloud provider resources that begin with a given prefix"
+inputs:
+  cloud-provider:
+    description: "Cloud provider to cleanup resources from"
+    default: "aws"
+    required: false
+  prefix:
+    description: "Resource prefix to target and delete"
+    required: true
+  iam-role:
+    description: "IAM Role to assume for AWS"
+    required: true
+  region:
+    description: "AWS region"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - if: ${{ inputs.cloud-provider == 'aws' }}
+      name: Refresh AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.iam-role }}
+        region: ${{ inputs.region }}
+
+    - if: ${{ inputs.cloud-provider == 'aws' }}
+      name: AWS cleanup
+      shell: bash
+      run: |
+        chmod +x "${{ github.action_path }}/aws-cleanup.sh"
+        PREFIX="${{ inputs.prefix }}" \
+        REGION="${{ inputs.region }}" \
+        "${{ github.action_path }}/aws-cleanup.sh"

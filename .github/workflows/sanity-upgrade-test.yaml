@@ -20,6 +20,13 @@ on:
         required: false
         default: false
         type: boolean
+      cloud_provider:
+        description: "Cloud provider to setup Rancher"
+        required: true
+        default: "aws"
+        type: choice
+        options:
+          - aws
   workflow_call:
     inputs:
       rancher_version:
@@ -68,20 +75,16 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Cloud Provider Setup
+        uses: ./.github/actions/cloud-provider-setup
         with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
 
-      - name: Get AWS credentials from Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
-        with:
-          secret-ids: |
-            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: "Fetch and Set DockerHub Credentials"
+      - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -93,7 +96,8 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - name: Whitelist Runner IP
+      - if: ${{ github.event.inputs.cloud_provider == 'aws' }}
+        name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
@@ -266,29 +270,25 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
-      - name: Refresh AWS credentials
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: AWS Custodian Infrastructure Cleanup
-        if: always()
-        uses: ./.github/actions/aws-cleanup
-        with:
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cluster Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: Revoke Runner IP
-        if: always()
+      - if: always() && ${{ github.event.inputs.cloud_provider == 'aws' }}
+        name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
@@ -341,20 +341,16 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Cloud Provider Setup
+        uses: ./.github/actions/cloud-provider-setup
         with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
 
-      - name: Get AWS credentials from Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
-        with:
-          secret-ids: |
-            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: "Fetch and Set DockerHub Credentials"
+      - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -366,7 +362,8 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - name: Whitelist Runner IP
+      - if: ${{ github.event.inputs.cloud_provider == 'aws' }}
+        name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
@@ -539,29 +536,25 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
-      - name: Refresh AWS credentials
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: AWS Custodian Infrastructure Cleanup
-        if: always()
-        uses: ./.github/actions/aws-cleanup
-        with:
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cluster Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: Revoke Runner IP
-        if: always()
+      - if: always() && ${{ github.event.inputs.cloud_provider == 'aws' }}
+        name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
@@ -614,20 +607,16 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Cloud Provider Setup
+        uses: ./.github/actions/cloud-provider-setup
         with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
 
-      - name: Get AWS credentials from Secrets Manager
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
-        with:
-          secret-ids: |
-            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: "Fetch and Set DockerHub Credentials"
+      - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -639,7 +628,8 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - name: Whitelist Runner IP
+      - if: ${{ github.event.inputs.cloud_provider == 'aws' }}
+        name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
@@ -823,29 +813,25 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
-      - name: Refresh AWS credentials
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: AWS Custodian Infrastructure Cleanup
-        if: always()
-        uses: ./.github/actions/aws-cleanup
-        with:
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cluster Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
+          cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: Revoke Runner IP
-        if: always()
+      - if: always() && ${{ github.event.inputs.cloud_provider == 'aws' }}
+        name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
