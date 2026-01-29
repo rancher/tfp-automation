@@ -19,7 +19,7 @@ if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
 else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
 
-    if [[ -n "$RANCHER_AGENT_IMAGE" ]]; then
+    if [[ -n "$RANCHER_AGENT_IMAGE" || "$RANCHER_IMAGE" == registry* ]]; then
         IMAGE_REPOSITORY="rancher"
     else
         IMAGE_REPOSITORY="${RANCHER_IMAGE#*/}"
