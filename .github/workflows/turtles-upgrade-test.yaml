@@ -286,16 +286,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -562,16 +562,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX_ON }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX_ON }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -838,16 +838,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -1114,16 +1114,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -1390,16 +1390,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -1666,16 +1666,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX_ON }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX_ON }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -1942,16 +1942,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -2218,16 +2218,16 @@ jobs:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: AWS Custodian Infrastructure Cleanup
+      - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
 
-      - name: AWS Custodian Downstream Cleanup
+      - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/aws-cleanup
+        uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
