@@ -396,6 +396,7 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
           is-prime: true
+          release-prime-version: "2.13"
 
       - name: Get Qase ID
         if: env.REPORTING_ENABLED == 'true'
@@ -661,6 +662,7 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
           is-prime: true
+          release-prime-version: "2.12"
 
       - name: Get Qase ID
         if: env.REPORTING_ENABLED == 'true'
