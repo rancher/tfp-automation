@@ -26,7 +26,7 @@ runs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ inputs.iam-role }}
-        region: ${{ inputs.region }}
+        aws-region: ${{ inputs.region }}
 
     - if: ${{ inputs.cloud-provider == 'aws' }}
       name: Get AWS credentials from Secrets Manager
