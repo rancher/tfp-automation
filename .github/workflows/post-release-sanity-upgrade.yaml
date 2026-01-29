@@ -154,6 +154,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
@@ -424,6 +425,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX_PRIME }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
@@ -694,6 +696,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
