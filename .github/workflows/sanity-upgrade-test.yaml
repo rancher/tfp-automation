@@ -287,7 +287,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
 
-      - if: always() && ${{ github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
@@ -553,7 +553,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
 
-      - if: always() && ${{ github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
@@ -830,7 +830,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
 
-      - if: always() && ${{ github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
