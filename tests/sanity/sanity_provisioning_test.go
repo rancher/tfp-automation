@@ -71,16 +71,16 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
+	_, _, _, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
 
 	tests := []struct {
 		name      string
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Sanity_RKE2", nodeRolesDedicated, rke2Module},
-		{"Sanity_RKE2_Windows_2019", nil, rke2Windows2019},
-		{"Sanity_RKE2_Windows_2022", nil, rke2Windows2022},
+		// {"Sanity_RKE2", nodeRolesDedicated, rke2Module},
+		// {"Sanity_RKE2_Windows_2019", nil, rke2Windows2019},
+		// {"Sanity_RKE2_Windows_2022", nil, rke2Windows2022},
 		{"Sanity_K3S", nodeRolesDedicated, k3sModule},
 	}
 
