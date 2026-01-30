@@ -4,7 +4,6 @@ description: "Delete cloud provider resources that begin with a given prefix"
 inputs:
   cloud-provider:
     description: "Cloud provider to cleanup resources from"
-    default: "aws"
     required: false
   prefix:
     description: "Resource prefix to target and delete"
