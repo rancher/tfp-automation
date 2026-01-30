@@ -75,10 +75,18 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set cloud provider
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "CLOUD_PROVIDER=aws" >> $GITHUB_ENV
+          else
+            echo "CLOUD_PROVIDER=${{ github.event.inputs.cloud_provider }}" >> $GITHUB_ENV
+          fi
+
       - name: Cloud Provider Setup
         uses: ./.github/actions/cloud-provider-setup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -96,7 +104,7 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - if: ${{ github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
         name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -274,7 +282,7 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
@@ -283,12 +291,12 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
-      - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ always() && env.CLOUD_PROVIDER == 'aws' }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
@@ -342,10 +350,18 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set cloud provider
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "CLOUD_PROVIDER=aws" >> $GITHUB_ENV
+          else
+            echo "CLOUD_PROVIDER=${{ github.event.inputs.cloud_provider }}" >> $GITHUB_ENV
+          fi
+
       - name: Cloud Provider Setup
         uses: ./.github/actions/cloud-provider-setup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -363,7 +379,7 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - if: ${{ github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
         name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -541,7 +557,7 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
@@ -550,12 +566,12 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
-      - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ always() && env.CLOUD_PROVIDER == 'aws' }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
@@ -609,10 +625,18 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set cloud provider
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "CLOUD_PROVIDER=aws" >> $GITHUB_ENV
+          else
+            echo "CLOUD_PROVIDER=${{ github.event.inputs.cloud_provider }}" >> $GITHUB_ENV
+          fi
+
       - name: Cloud Provider Setup
         uses: ./.github/actions/cloud-provider-setup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -630,7 +654,7 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - if: ${{ github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
         name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -819,7 +843,7 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
@@ -828,12 +852,12 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ github.event.inputs.cloud_provider }}
+          cloud-provider: ${{ env.CLOUD_PROVIDER }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
-      - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
+      - if: ${{ always() && env.CLOUD_PROVIDER == 'aws' }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
