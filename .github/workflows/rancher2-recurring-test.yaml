@@ -349,19 +349,13 @@ jobs:
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -369,6 +363,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -697,19 +692,13 @@ jobs:
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -717,6 +706,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -1055,19 +1045,13 @@ jobs:
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -1075,6 +1059,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()

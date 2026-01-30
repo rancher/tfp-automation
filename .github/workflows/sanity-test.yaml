@@ -277,6 +277,7 @@ jobs:
           cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cluster Cleanup
         if: always()
@@ -284,8 +285,8 @@ jobs:
         with:
           cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
         name: Revoke Runner IP
@@ -536,13 +537,6 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
@@ -550,6 +544,7 @@ jobs:
           cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cluster Cleanup
         if: always()
@@ -557,8 +552,8 @@ jobs:
         with:
           cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
         name: Revoke Runner IP
@@ -819,13 +814,6 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
@@ -833,6 +821,7 @@ jobs:
           cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cluster Cleanup
         if: always()
@@ -840,8 +829,8 @@ jobs:
         with:
           cloud-provider: ${{ github.event.inputs.cloud_provider }}
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - if: ${{ always() && github.event.inputs.cloud_provider == 'aws' }}
         name: Revoke Runner IP
