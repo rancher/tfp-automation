@@ -4,6 +4,13 @@ description: "Delete cloud provider resources that begin with a given prefix"
 inputs:
   cloud-provider:
     description: "Cloud provider to cleanup resources from"
+    default: "aws"
+    required: false
+  google-project-id:
+    description: "Google Cloud Project ID"
+    required: false
+  google-zone:
+    description: "Google Cloud Zone"
     required: false
   prefix:
     description: "Resource prefix to target and delete"
@@ -33,3 +40,13 @@ runs:
         PREFIX="${{ inputs.prefix }}" \
         REGION="${{ inputs.region }}" \
         "${{ github.action_path }}/aws-cleanup.sh"
+
+    - if: ${{ inputs.cloud-provider == 'google' }}
+      name: Google Cloud cleanup
+      shell: bash
+      run: |
+        chmod +x "${{ github.action_path }}/google-cleanup.sh"
+        PREFIX="${{ inputs.prefix }}" \
+        PROJECT_ID="${{ inputs.google-project-id }}" \
+        ZONE="${{ inputs.google-zone }}" \
+        "${{ github.action_path }}/google-cleanup.sh"

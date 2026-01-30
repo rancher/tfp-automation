@@ -2,6 +2,12 @@
 name: Setup SSH Keys
 description: "Sets up SSH keys for Linux and Windows"
 inputs:
+  google-ssh-key:
+    description: "Google Cloud SSH Key"
+    required: false
+  google-ssh-key-name:
+    description: "Google Cloud SSH Key Name"
+    required: false
   ssh-private-key:
     description: "SSH Private Key"
     required: true
@@ -19,6 +25,11 @@ runs:
   steps:
     - run: |
         mkdir -p .ssh
+
+        if [ -n "${{ inputs.google-ssh-key }}" ]; then
+          echo "${{ inputs.google-ssh-key }}" > .ssh/${{ inputs.google-ssh-key-name }}.pub
+          chmod 600 .ssh/${{ inputs.google-ssh-key-name }}.pub
+        fi
 
         echo "${{ inputs.ssh-private-key }}" > .ssh/${{ inputs.ssh-private-key-name }}.pem
         chmod 600 .ssh/${{ inputs.ssh-private-key-name }}.pem

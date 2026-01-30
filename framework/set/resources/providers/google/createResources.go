@@ -17,7 +17,7 @@ func CreateGoogleCloudResources(file *os.File, newFile *hclwrite.File, tfBlockBo
 	CreateGoogleCloudProviderBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	CreateGoogleCloudFirewalls(rootBody)
+	CreateGoogleCloudFirewalls(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
 	CreateGoogleCloudLoadBalancer(rootBody, terraformConfig)
