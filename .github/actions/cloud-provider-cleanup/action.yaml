@@ -9,11 +9,11 @@ inputs:
   prefix:
     description: "Resource prefix to target and delete"
     required: true
-  iam-role:
-    description: "IAM Role to assume for AWS"
-    required: true
   region:
     description: "AWS region"
+    required: true
+  iam-role:
+    description: "IAM Role to assume for AWS"
     required: true
 
 runs:

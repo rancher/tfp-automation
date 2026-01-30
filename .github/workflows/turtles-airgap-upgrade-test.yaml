@@ -271,19 +271,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -291,6 +285,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -552,19 +547,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -572,6 +561,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -833,19 +823,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -853,6 +837,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -860,6 +845,7 @@ jobs:
         with:
           prefix-list-id: ${{ secrets.AIRGAP_AWS_MANAGED_PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Set job status output
         if: always()
@@ -1114,19 +1100,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -1134,6 +1114,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -1395,19 +1376,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -1415,6 +1390,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -1676,19 +1652,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -1696,6 +1666,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -1957,19 +1928,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -1977,6 +1942,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
@@ -2238,19 +2204,13 @@ jobs:
           test-suite: ${{ env.TEST_SUITE }}
           timeout: ${{ env.SUITE_TIMEOUT }}
 
-      - name: Refresh AWS credentials
-        if: always()
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
         uses: ./.github/actions/cloud-provider-setup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
@@ -2258,6 +2218,7 @@ jobs:
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Revoke Runner IP
         if: always()
