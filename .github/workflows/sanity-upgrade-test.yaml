@@ -27,6 +27,14 @@ on:
         type: choice
         options:
           - aws
+          - google
+      downstream_cluster_provider:
+        description: "Cloud provider for downstream cluster"
+        required: true
+        default: "aws"
+        type: choice
+        options:
+          - aws
   workflow_call:
     inputs:
       rancher_version:
@@ -82,15 +90,42 @@ jobs:
           else
             echo "CLOUD_PROVIDER=${{ github.event.inputs.cloud_provider }}" >> $GITHUB_ENV
           fi
+      
+      - name: Set downstream cluster provider
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "DOWNSTREAM_CLUSTER_PROVIDER=aws" >> $GITHUB_ENV
+          else
+            echo "DOWNSTREAM_CLUSTER_PROVIDER=${{ github.event.inputs.downstream_cluster_provider }}" >> $GITHUB_ENV
+          fi
+
+      - if: ${{ always() && (env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws') }}
+        name: Set downstream security group names
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
+            echo "DOWNSTREAM_SECURITY_GROUP_NAMES=${{ secrets.AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" != "aws" ]]; then
+            echo "DOWNSTREAM_SECURITY_GROUP_NAMES=${{ secrets.DOWNSTREAM_AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
+          fi
+
+      - name: Set CLOUD_PROVIDER_VERSION
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.AWS_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" == "google" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.GCP_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          fi
 
       - name: Cloud Provider Setup
         uses: ./.github/actions/cloud-provider-setup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: ${{ secrets.AWS_REGION }}
+          gcp-service-account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
@@ -104,7 +139,7 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws' }}
         name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -114,6 +149,8 @@ jobs:
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
+          google-ssh-key: ${{ secrets.GOOGLE_SSH_KEY }}
+          google-ssh-key-name: ${{ secrets.GOOGLE_SSH_KEY_NAME }}
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
@@ -197,7 +234,7 @@ jobs:
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSecurityGroupNames: [${{ env.DOWNSTREAM_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -217,6 +254,16 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+            googleConfig:
+              image: "${{ secrets.GOOGLE_IMAGE }}"
+              keyPath: "${{ secrets.GOOGLE_SSH_KEY_PATH }}"
+              machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
+              network: "${{ vars.GOOGLE_NETWORK }}"
+              projectID: "${{ secrets.GCP_PROJECT_ID }}"
+              region: "${{ secrets.GOOGLE_REGION }}"
+              size: ${{ vars.GOOGLE_DISK_SIZE }}
+              sshUser: "${{ vars.GOOGLE_SSH_USER }}"
+              zone: "${{ secrets.GCP_ZONE }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -283,6 +330,8 @@ jobs:
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
+          google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
@@ -291,12 +340,14 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          cloud-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
+          google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
+          google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
-      - if: ${{ always() && env.CLOUD_PROVIDER == 'aws' }}
+      - if: ${{ always() && (env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws') }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
@@ -357,15 +408,42 @@ jobs:
           else
             echo "CLOUD_PROVIDER=${{ github.event.inputs.cloud_provider }}" >> $GITHUB_ENV
           fi
+      
+      - name: Set downstream cluster provider
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "DOWNSTREAM_CLUSTER_PROVIDER=aws" >> $GITHUB_ENV
+          else
+            echo "DOWNSTREAM_CLUSTER_PROVIDER=${{ github.event.inputs.downstream_cluster_provider }}" >> $GITHUB_ENV
+          fi
+
+      - name: Set CLOUD_PROVIDER_VERSION
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.AWS_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" == "google" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.GCP_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          fi
+
+      - if: ${{ always() && (env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws') }}
+        name: Set downstream security group names
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
+            echo "DOWNSTREAM_SECURITY_GROUP_NAMES=${{ secrets.AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" != "aws" ]]; then
+            echo "DOWNSTREAM_SECURITY_GROUP_NAMES=${{ secrets.DOWNSTREAM_AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
+          fi
 
       - name: Cloud Provider Setup
         uses: ./.github/actions/cloud-provider-setup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: ${{ secrets.AWS_REGION }}
+          gcp-service-account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
@@ -379,7 +457,7 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws' }}
         name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -389,6 +467,8 @@ jobs:
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
+          google-ssh-key: ${{ secrets.GOOGLE_SSH_KEY }}
+          google-ssh-key-name: ${{ secrets.GOOGLE_SSH_KEY_NAME }}
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
@@ -472,7 +552,7 @@ jobs:
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSecurityGroupNames: [${{ env.DOWNSTREAM_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -492,6 +572,16 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+            googleConfig:
+              image: "${{ secrets.GOOGLE_IMAGE }}"
+              keyPath: "${{ secrets.GOOGLE_SSH_KEY_PATH }}"
+              machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
+              network: "${{ vars.GOOGLE_NETWORK }}"
+              projectID: "${{ secrets.GCP_PROJECT_ID }}"
+              region: "${{ secrets.GOOGLE_REGION }}"
+              size: ${{ vars.GOOGLE_DISK_SIZE }}
+              sshUser: "${{ vars.GOOGLE_SSH_USER }}"
+              zone: "${{ secrets.GCP_ZONE }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -558,6 +648,8 @@ jobs:
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
+          google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
@@ -566,12 +658,14 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          cloud-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
+          google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
+          google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
-      - if: ${{ always() && env.CLOUD_PROVIDER == 'aws' }}
+      - if: ${{ always() && (env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws') }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:
@@ -632,15 +726,42 @@ jobs:
           else
             echo "CLOUD_PROVIDER=${{ github.event.inputs.cloud_provider }}" >> $GITHUB_ENV
           fi
+      
+      - name: Set downstream cluster provider
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "DOWNSTREAM_CLUSTER_PROVIDER=aws" >> $GITHUB_ENV
+          else
+            echo "DOWNSTREAM_CLUSTER_PROVIDER=${{ github.event.inputs.downstream_cluster_provider }}" >> $GITHUB_ENV
+          fi
+
+      - if: ${{ always() && (env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws') }}
+        name: Set downstream security group names
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
+            echo "DOWNSTREAM_SECURITY_GROUP_NAMES=${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" != "aws" ]]; then
+            echo "DOWNSTREAM_SECURITY_GROUP_NAMES=${{ secrets.DOWNSTREAM_AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
+          fi
+
+      - name: Set CLOUD_PROVIDER_VERSION
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.AWS_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" == "google" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.GCP_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          fi
 
       - name: Cloud Provider Setup
         uses: ./.github/actions/cloud-provider-setup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: ${{ secrets.AWS_REGION }}
+          gcp-service-account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
@@ -654,7 +775,7 @@ jobs:
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
 
-      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws' }}
         name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
@@ -664,6 +785,8 @@ jobs:
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
+          google-ssh-key: ${{ secrets.GOOGLE_SSH_KEY }}
+          google-ssh-key-name: ${{ secrets.GOOGLE_SSH_KEY_NAME }}
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
@@ -757,7 +880,7 @@ jobs:
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
               awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
+              awsSecurityGroupNames: [${{ env.DOWNSTREAM_SECURITY_GROUP_NAMES }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -777,6 +900,16 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+            googleConfig:
+              image: "${{ secrets.GOOGLE_IMAGE }}"
+              keyPath: "${{ secrets.GOOGLE_SSH_KEY_PATH }}"
+              machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
+              network: "${{ vars.GOOGLE_NETWORK }}"
+              projectID: "${{ secrets.GCP_PROJECT_ID }}"
+              region: "${{ secrets.GOOGLE_REGION }}"
+              size: ${{ vars.GOOGLE_DISK_SIZE }}
+              sshUser: "${{ vars.GOOGLE_SSH_USER }}"
+              zone: "${{ secrets.GCP_ZONE }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -844,6 +977,8 @@ jobs:
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
+          google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
@@ -852,12 +987,14 @@ jobs:
         if: always()
         uses: ./.github/actions/cloud-provider-cleanup
         with:
-          cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          cloud-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
+          google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
+          google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
-      - if: ${{ always() && env.CLOUD_PROVIDER == 'aws' }}
+      - if: ${{ always() && (env.CLOUD_PROVIDER == 'aws' || env.DOWNSTREAM_CLUSTER_PROVIDER == 'aws') }}
         name: Revoke Runner IP
         uses: ./.github/actions/revoke-runner-ip
         with:

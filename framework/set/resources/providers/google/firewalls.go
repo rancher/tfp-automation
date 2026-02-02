@@ -2,6 +2,7 @@ package google
 
 import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	googleDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/google"
 	"github.com/zclconf/go-cty/cty"
@@ -40,11 +41,11 @@ const (
 )
 
 // CreateGoogleCloudFirewalls will set up the Google Cloud firewall rules.
-func CreateGoogleCloudFirewalls(rootBody *hclwrite.Body) {
+func CreateGoogleCloudFirewalls(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
 	firewallInternalBlock := rootBody.AppendNewBlock(general.Resource, []string{googleDefaults.GoogleComputeFirewall, allowInternal})
 	firewallInternalBlockBody := firewallInternalBlock.Body()
 
-	firewallInternalBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(internalAccess))
+	firewallInternalBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+"-"+internalAccess))
 	firewallInternalBlockBody.SetAttributeValue(network, cty.StringVal(defaultNetwork))
 
 	allowInternalBlock := firewallInternalBlockBody.AppendNewBlock(allow, nil)
@@ -61,7 +62,7 @@ func CreateGoogleCloudFirewalls(rootBody *hclwrite.Body) {
 	firewallTCPBlock := rootBody.AppendNewBlock(general.Resource, []string{googleDefaults.GoogleComputeFirewall, allowTCP})
 	firewallTCPBlockBody := firewallTCPBlock.Body()
 
-	firewallTCPBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(allowTCPLoadBalancer))
+	firewallTCPBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+"-"+allowTCPLoadBalancer))
 	firewallTCPBlockBody.SetAttributeValue(network, cty.StringVal(defaultNetwork))
 
 	allowBlock := firewallTCPBlockBody.AppendNewBlock(allow, nil)
@@ -82,7 +83,7 @@ func CreateGoogleCloudFirewalls(rootBody *hclwrite.Body) {
 	firewallSSHBlock := rootBody.AppendNewBlock(general.Resource, []string{googleDefaults.GoogleComputeFirewall, allowSSH})
 	firewallSSHBlockBody := firewallSSHBlock.Body()
 
-	firewallSSHBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(sshAccess))
+	firewallSSHBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+"-"+sshAccess))
 	firewallSSHBlockBody.SetAttributeValue(network, cty.StringVal(defaultNetwork))
 
 	allowSSHBlock := firewallSSHBlockBody.AppendNewBlock(allow, nil)
