@@ -271,7 +271,7 @@ jobs:
 
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/cloud-provider-setup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -279,7 +279,7 @@ jobs:
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/cloud-provider-setup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -545,7 +545,7 @@ jobs:
 
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/cloud-provider-setup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -553,7 +553,7 @@ jobs:
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/cloud-provider-setup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -830,7 +830,7 @@ jobs:
 
       - name: Cloud Provider Infrastructure Cleanup
         if: always()
-        uses: ./.github/actions/cloud-provider-setup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
@@ -838,7 +838,7 @@ jobs:
 
       - name: Cloud Provider Downstream Cleanup
         if: always()
-        uses: ./.github/actions/cloud-provider-setup
+        uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
