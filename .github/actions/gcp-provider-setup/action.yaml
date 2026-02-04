@@ -1,10 +1,7 @@
 ---
-name: "Cloud Provider Setup"
+name: "GCP Provider Setup"
 description: "Sets up the specified cloud provider environment"
 inputs:
-  cloud-provider:
-    description: "Cloud provider to setup Rancher"
-    required: true
   downstream-cluster-provider:
     description: "Cloud provider for downstream cluster"
     required: true
@@ -27,14 +24,14 @@ inputs:
 runs:
   using: composite
   steps:
-    - if: ${{ inputs.cloud-provider == 'aws' || inputs.downstream-cluster-provider == 'aws' }}
+    - if: ${{ inputs.downstream-cluster-provider == 'aws' }}
       name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: ${{ inputs.iam-role }}
         aws-region: ${{ inputs.region }}
 
-    - if: ${{ inputs.cloud-provider == 'aws' || inputs.downstream-cluster-provider == 'aws' }}
+    - if: ${{ inputs.downstream-cluster-provider == 'aws' }}
       name: Get AWS credentials from Secrets Manager
       uses: aws-actions/aws-secretsmanager-get-secrets@v2
       with:
@@ -42,12 +39,10 @@ runs:
           AWS_ACCESS_KEY, ${{ inputs.aws-access-key-id }}
           AWS_SECRET_KEY, ${{ inputs.aws-secret-access-key }}
 
-    - if: ${{ inputs.cloud-provider == 'google' }}
-      name: Authenticate to Google Cloud
+    - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ inputs.gcp-service-account }}
     
-    - if: ${{ inputs.cloud-provider == 'google' }}
-      name: Setup Google Cloud SDK
+    - name: Setup Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v3

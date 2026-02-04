@@ -1,0 +1,54 @@
+---
+name: "Azure Provider Setup"
+description: "Sets up the specified cloud provider environment"
+inputs:
+  downstream-cluster-provider:
+    description: "Cloud provider for downstream cluster"
+    required: true
+  iam-role:
+    description: "IAM Role to assume for AWS"
+    required: true
+  aws-access-key-id:
+    description: "AWS Access Key ID"
+    required: true
+  aws-secret-access-key:
+    description: "AWS Secret Access Key"
+    required: true
+  region:
+    description: "AWS Region"
+    required: true
+  azure-client-id:
+    description: "Azure Client ID"
+    required: true
+  azure-client-secret:
+    description: "Azure Client Secret"
+    required: true
+  azure-subscription-id:
+    description: "Azure Subscription ID"
+    required: true
+  azure-tenant-id:
+    description: "Azure Tenant ID"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - if: ${{ inputs.downstream-cluster-provider == 'aws' }}
+      name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.iam-role }}
+        aws-region: ${{ inputs.region }}
+
+    - if: ${{ inputs.downstream-cluster-provider == 'aws' }}
+      name: Get AWS credentials from Secrets Manager
+      uses: aws-actions/aws-secretsmanager-get-secrets@v2
+      with:
+        secret-ids: |
+          AWS_ACCESS_KEY, ${{ inputs.aws-access-key-id }}
+          AWS_SECRET_KEY, ${{ inputs.aws-secret-access-key }}
+
+    - name: Login to Azure
+      uses: azure/login@v2.3.0
+      with:
+        creds: '{"clientId":"${{ inputs.azure-client-id }}","clientSecret":"${{ inputs.azure-client-secret }}","subscriptionId":"${{ inputs.azure-subscription-id }}","tenantId":"${{ inputs.azure-tenant-id }}"}'

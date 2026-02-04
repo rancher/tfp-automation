@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-PREFIX="${PREFIX}"
-PROJECT_ID="${PROJECT_ID}"
-ZONE="${ZONE}"
+export PREFIX="${PREFIX}"
+export PROJECT_ID="${PROJECT_ID}"
+export ZONE="${ZONE}"
 
 echo "Cleanup in progress..."
 
