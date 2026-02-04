@@ -39,6 +39,10 @@ RUN (curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-c
     ./google-cloud-sdk/install.sh --quiet && \
     rm google-cloud-cli-linux-x86_64.tar.gz) > /dev/null 2>&1
 
+RUN zypper install -y python3 > /dev/null 2>&1
+RUN zypper install -y python3-pip > /dev/null 2>&1
+RUN zypper install -y azure-cli > /dev/null 2>&1
+
 ENV PATH $PATH:/root/go/src/github.com/rancher/tfp-automation/google-cloud-sdk/bin
 
 RUN (wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \

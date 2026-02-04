@@ -27,6 +27,9 @@ node {
 
   withCredentials([ string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+                    string(credentialsId: 'AZURE_TFP_CLIENT_ID', variable: 'AZURE_TFP_CLIENT_ID'),
+                    string(credentialsId: 'AZURE_TFP_CLIENT_SECRET', variable: 'AZURE_TFP_CLIENT_SECRET'),
+                    string(credentialsId: 'AZURE_TFP_TENANT_ID', variable: 'AZURE_TFP_TENANT_ID'),
                     string(credentialsId: 'RANCHER_LINODE_ACCESSKEY', variable: 'RANCHER_LINODE_ACCESSKEY'),
                     string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
                     string(credentialsId: 'AWS_SSH_RSA_KEY', variable: 'AWS_SSH_RSA_KEY'),
@@ -46,6 +49,9 @@ node {
     stage('Configure and Build') {
       config = config.replace('${AWS_SECRET_ACCESS_KEY}', env.AWS_SECRET_ACCESS_KEY)
       config = config.replace('${AWS_ACCESS_KEY_ID}', env.AWS_ACCESS_KEY_ID)
+      config = config.replace('${AZURE_TFP_CLIENT_ID}', env.AZURE_TFP_CLIENT_ID)
+      config = config.replace('${AZURE_TFP_CLIENT_SECRET}', env.AZURE_TFP_CLIENT_SECRET)
+      config = config.replace('${AZURE_TFP_TENANT_ID}', env.AZURE_TFP_TENANT_ID)
       config = config.replace('${RANCHER_LINODE_ACCESSKEY}', env.RANCHER_LINODE_ACCESSKEY)
       config = config.replace('${GOOGLE_TFP_EMAIL}', env.GOOGLE_TFP_EMAIL)
       config = config.replace('${GOOGLE_TFP_SERVICE_ACCOUNT}', env.GOOGLE_TFP_SERVICE_ACCOUNT)
@@ -74,6 +80,7 @@ node {
           set -x
           gcloud auth activate-service-account ${env.GOOGLE_TFP_EMAIL} --key-file=/tmp/gcp-key.json 2>&1 &&
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json &&
+          az login --service-principal -u \"${AZURE_TFP_CLIENT_ID}\" -p \"${AZURE_TFP_CLIENT_SECRET}\" --tenant \"${AZURE_TFP_TENANT_ID}\" > /dev/null 2>&1 &&
           go run ${rootPath}tests/infrastructure/main.go ${params.TEST_CASE};
           ${rootPath}pipeline/scripts/build_qase_reporter.sh;
           if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"

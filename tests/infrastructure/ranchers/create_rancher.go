@@ -166,7 +166,7 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	require.NoError(t, err)
 
 	// For providers that do not have built-in DNS records, this will update the Rancher server URL.
-	if terraformConfig.Provider != providers.AWS {
+	if terraformConfig.Provider != providers.AWS && terraformConfig.Provider != providers.Azure {
 		_, err = operations.ReplaceValue([]string{"rancher", "host"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
 		require.NoError(t, err)
 
