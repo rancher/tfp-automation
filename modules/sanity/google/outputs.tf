@@ -1,5 +1,5 @@
 output "google_load_balancer_ip_address" {
-  value       = google_compute_address.google_compute_address.address
+  value = google_compute_address.google_compute_address.address
 }
 
 output "server1_public_ip" {

@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/azure"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/google"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/harvester"
 	linodeDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
@@ -76,6 +77,15 @@ func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	switch terraformConfig.Provider {
 	case aws.Aws:
 		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
+
+		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
+		keyPath := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
+		}
+
+		connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
+	case azure.Azure:
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AzureConfig.SSHUser))
 
 		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`
 		keyPath := hclwrite.Tokens{

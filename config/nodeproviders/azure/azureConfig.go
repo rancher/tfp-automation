@@ -8,6 +8,9 @@ type Config struct {
 	DNS                     string   `json:"dns,omitempty" yaml:"dns,omitempty"`
 	FaultDomainCount        string   `json:"faultDomainCount,omitempty" yaml:"faultDomainCount,omitempty"`
 	Image                   string   `json:"image,omitempty" yaml:"image,omitempty"`
+	ImageOffer              string   `json:"imageOffer,omitempty" yaml:"imageOffer,omitempty"`
+	ImageVersion            string   `json:"imageVersion,omitempty" yaml:"imageVersion,omitempty"`
+	KeyPath                 string   `json:"keyPath,omitempty" yaml:"keyPath,omitempty"`
 	Location                string   `json:"location,omitempty" yaml:"location,omitempty"`
 	ManagedDisks            bool     `json:"managedDisks,omitempty" yaml:"managedDisks,omitempty"`
 	Mode                    string   `json:"mode,omitempty" yaml:"mode,omitempty"`
@@ -22,8 +25,10 @@ type Config struct {
 	OutboundType            string   `json:"outboundType,omitempty" yaml:"outboundType,omitempty"`
 	OSDiskSizeGB            int64    `json:"osDiskSizeGB,omitempty" yaml:"osDiskSizeGB,omitempty"`
 	PrivateIPAddress        string   `json:"privateIpAddress,omitempty" yaml:"privateIpAddress,omitempty"`
+	Publisher               string   `json:"publisher,omitempty" yaml:"publisher,omitempty"`
 	ResourceGroup           string   `json:"resourceGroup,omitempty" yaml:"resourceGroup,omitempty"`
 	ResourceLocation        string   `json:"resourceLocation,omitempty" yaml:"resourceLocation,omitempty"`
+	SKU                     string   `json:"sku,omitempty" yaml:"sku,omitempty"`
 	Size                    string   `json:"size,omitempty" yaml:"size,omitempty"`
 	SSHUser                 string   `json:"sshUser,omitempty" yaml:"sshUser,omitempty"`
 	StaticPublicIP          bool     `json:"staticPublicIp,omitempty" yaml:"staticPublicIp,omitempty"`
