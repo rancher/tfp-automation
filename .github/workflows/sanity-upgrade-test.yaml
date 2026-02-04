@@ -27,6 +27,7 @@ on:
         type: choice
         options:
           - aws
+          - azure
           - google
       downstream_cluster_provider:
         description: "Cloud provider for downstream cluster"
@@ -112,14 +113,39 @@ jobs:
         run: |
           if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
             echo "CLOUD_PROVIDER_VERSION=${{ vars.AWS_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.AZURE_PROVIDER_VERSION }}" >> $GITHUB_ENV
           elif [[ "${{ env.CLOUD_PROVIDER }}" == "google" ]]; then
             echo "CLOUD_PROVIDER_VERSION=${{ vars.GCP_PROVIDER_VERSION }}" >> $GITHUB_ENV
           fi
 
-      - name: Cloud Provider Setup
-        uses: ./.github/actions/cloud-provider-setup
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
+        name: AWS Provider Setup
+        uses: ./.github/actions/aws-provider-setup
         with:
-          cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+
+      - if: ${{ env.CLOUD_PROVIDER == 'azure' }}
+        name: Azure Provider Setup
+        uses: ./.github/actions/azure-provider-setup
+        with:
+          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+      - if: ${{ env.CLOUD_PROVIDER == 'google' }}
+        name: GCP Provider Setup
+        uses: ./.github/actions/gcp-provider-setup
+        with:
           downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -146,11 +172,23 @@ jobs:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
 
+      - name: Set provider specific config parameters
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
+            echo "OS_USER=azureuser" >> $GITHUB_ENV
+            echo "OS_GROUP=azureuser" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ secrets.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
+          else
+            echo "OS_USER=${{ secrets.OS_USER }}" >> $GITHUB_ENV
+            echo "OS_GROUP=${{ secrets.OS_GROUP }}" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ secrets.AWS_ROUTE_53_ZONE }}" >> $GITHUB_ENV
+          fi
+
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
-          google-ssh-key: ${{ secrets.GOOGLE_SSH_KEY }}
-          google-ssh-key-name: ${{ secrets.GOOGLE_SSH_KEY_NAME }}
+          cloud-ssh-key: ${{ secrets.CLOUD_SSH_KEY }}
+          cloud-ssh-key-name: ${{ secrets.CLOUD_SSH_KEY_NAME }}
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
@@ -203,16 +241,16 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ env.HOSTNAME_SUFFIX }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
-            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
+            downstreamClusterProvider: "${{ env.CLOUD_PROVIDER }}"
             enableNetworkPolicy: false
-            provider: "${{ vars.PROVIDER_AMAZON }}"
+            provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
@@ -254,9 +292,21 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+            azureCredentials:
+              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+            azureConfig:
+              diskSize: "${{ vars.AZURE_DISK_SIZE }}"
+              imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
+              imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
+              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
+              location: "${{ secrets.AZURE_LOCATION }}"
+              publisher: "${{ secrets.AZURE_PUBLISHER }}"
+              sku: "${{ vars.AZURE_SKU }}"
+              size: "${{ vars.AZURE_SIZE }}"
+              sshUser: "${{ secrets.AZURE_SSH_USER }}"
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
-              keyPath: "${{ secrets.GOOGLE_SSH_KEY_PATH }}"
+              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
               machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
@@ -269,10 +319,10 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
-              osUser: "${{ secrets.OS_USER }}"
-              osGroup: "${{ secrets.OS_GROUP }}"
+              osUser: "${{ env.OS_USER }}"
+              osGroup: "${{ env.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ env.HOSTNAME_SUFFIX }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_13 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -421,6 +471,8 @@ jobs:
         run: |
           if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
             echo "CLOUD_PROVIDER_VERSION=${{ vars.AWS_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.AZURE_PROVIDER_VERSION }}" >> $GITHUB_ENV
           elif [[ "${{ env.CLOUD_PROVIDER }}" == "google" ]]; then
             echo "CLOUD_PROVIDER_VERSION=${{ vars.GCP_PROVIDER_VERSION }}" >> $GITHUB_ENV
           fi
@@ -434,10 +486,33 @@ jobs:
             echo "DOWNSTREAM_SECURITY_GROUP_NAMES=${{ secrets.DOWNSTREAM_AWS_SECURITY_GROUP_NAMES }}" >> $GITHUB_ENV
           fi
 
-      - name: Cloud Provider Setup
-        uses: ./.github/actions/cloud-provider-setup
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
+        name: AWS Provider Setup
+        uses: ./.github/actions/aws-provider-setup
         with:
-          cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+
+      - if: ${{ env.CLOUD_PROVIDER == 'azure' }}
+        name: Azure Provider Setup
+        uses: ./.github/actions/azure-provider-setup
+        with:
+          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+      - if: ${{ env.CLOUD_PROVIDER == 'google' }}
+        name: GCP Provider Setup
+        uses: ./.github/actions/gcp-provider-setup
+        with:
           downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -464,11 +539,23 @@ jobs:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
           region: "${{ secrets.AWS_REGION }}"
 
+      - name: Set provider specific config parameters
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
+            echo "OS_USER=azureuser" >> $GITHUB_ENV
+            echo "OS_GROUP=azureuser" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ secrets.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
+          else
+            echo "OS_USER=${{ secrets.OS_USER }}" >> $GITHUB_ENV
+            echo "OS_GROUP=${{ secrets.OS_GROUP }}" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ secrets.AWS_ROUTE_53_ZONE }}" >> $GITHUB_ENV
+          fi
+
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
-          google-ssh-key: ${{ secrets.GOOGLE_SSH_KEY }}
-          google-ssh-key-name: ${{ secrets.GOOGLE_SSH_KEY_NAME }}
+          cloud-ssh-key: ${{ secrets.CLOUD_SSH_KEY }}
+          cloud-ssh-key-name: ${{ secrets.CLOUD_SSH_KEY_NAME }}
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
@@ -521,16 +608,16 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ env.HOSTNAME_SUFFIX }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
-            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
+            downstreamClusterProvider: "${{ env.CLOUD_PROVIDER }}"
             enableNetworkPolicy: false
-            provider: "${{ vars.PROVIDER_AMAZON }}"
+            provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
@@ -572,9 +659,21 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+            azureCredentials:
+              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+            azureConfig:
+              diskSize: "${{ vars.AZURE_DISK_SIZE }}"
+              imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
+              imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
+              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
+              location: "${{ secrets.AZURE_LOCATION }}"
+              publisher: "${{ secrets.AZURE_PUBLISHER }}"
+              sku: "${{ vars.AZURE_SKU }}"
+              size: "${{ vars.AZURE_SIZE }}"
+              sshUser: "${{ secrets.AZURE_SSH_USER }}"
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
-              keyPath: "${{ secrets.GOOGLE_SSH_KEY_PATH }}"
+              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
               machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
@@ -587,10 +686,10 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
-              osUser: "${{ secrets.OS_USER }}"
-              osGroup: "${{ secrets.OS_GROUP }}"
+              osUser: "${{ env.OS_USER }}"
+              osGroup: "${{ env.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ env.HOSTNAME_SUFFIX }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_13 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -748,14 +847,39 @@ jobs:
         run: |
           if [[ "${{ env.CLOUD_PROVIDER }}" == "aws" ]]; then
             echo "CLOUD_PROVIDER_VERSION=${{ vars.AWS_PROVIDER_VERSION }}" >> $GITHUB_ENV
+          elif [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
+            echo "CLOUD_PROVIDER_VERSION=${{ vars.AZURE_PROVIDER_VERSION }}" >> $GITHUB_ENV
           elif [[ "${{ env.CLOUD_PROVIDER }}" == "google" ]]; then
             echo "CLOUD_PROVIDER_VERSION=${{ vars.GCP_PROVIDER_VERSION }}" >> $GITHUB_ENV
           fi
 
-      - name: Cloud Provider Setup
-        uses: ./.github/actions/cloud-provider-setup
+      - if: ${{ env.CLOUD_PROVIDER == 'aws' }}
+        name: AWS Provider Setup
+        uses: ./.github/actions/aws-provider-setup
         with:
-          cloud-provider: ${{ env.CLOUD_PROVIDER }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+
+      - if: ${{ env.CLOUD_PROVIDER == 'azure' }}
+        name: Azure Provider Setup
+        uses: ./.github/actions/azure-provider-setup
+        with:
+          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
+          iam-role: ${{ secrets.TFP_IAM_ROLE }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.AWS_REGION }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+      - if: ${{ env.CLOUD_PROVIDER == 'google' }}
+        name: GCP Provider Setup
+        uses: ./.github/actions/gcp-provider-setup
+        with:
           downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -782,11 +906,23 @@ jobs:
           prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
+      - name: Set provider specific config parameters
+        run: |
+          if [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
+            echo "OS_USER=azureuser" >> $GITHUB_ENV
+            echo "OS_GROUP=azureuser" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ secrets.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
+          else
+            echo "OS_USER=${{ secrets.OS_USER }}" >> $GITHUB_ENV
+            echo "OS_GROUP=${{ secrets.OS_GROUP }}" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ secrets.AWS_ROUTE_53_ZONE }}" >> $GITHUB_ENV
+          fi
+
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
         with:
-          google-ssh-key: ${{ secrets.GOOGLE_SSH_KEY }}
-          google-ssh-key-name: ${{ secrets.GOOGLE_SSH_KEY_NAME }}
+          cloud-ssh-key: ${{ secrets.CLOUD_SSH_KEY }}
+          cloud-ssh-key-name: ${{ secrets.CLOUD_SSH_KEY_NAME }}
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
@@ -849,16 +985,16 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ env.HOSTNAME_SUFFIX }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
-            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
+            downstreamClusterProvider: "${{ env.CLOUD_PROVIDER }}"
             enableNetworkPolicy: false
-            provider: "${{ vars.PROVIDER_AMAZON }}"
+            provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
@@ -900,9 +1036,21 @@ jobs:
               ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
               loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
               targetType: "${{ vars.TARGET_TYPE }}"
+            azureCredentials:
+              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+            azureConfig:
+              diskSize: "${{ vars.AZURE_DISK_SIZE }}"
+              imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
+              imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
+              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
+              location: "${{ secrets.AZURE_LOCATION }}"
+              publisher: "${{ secrets.AZURE_PUBLISHER }}"
+              sku: "${{ vars.AZURE_SKU }}"
+              size: "${{ vars.AZURE_SIZE }}"
+              sshUser: "${{ secrets.AZURE_SSH_USER }}"
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
-              keyPath: "${{ secrets.GOOGLE_SSH_KEY_PATH }}"
+              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
               machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
@@ -915,10 +1063,10 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_12 }}"
-              osUser: "${{ secrets.OS_USER }}"
-              osGroup: "${{ secrets.OS_GROUP }}"
+              osUser: "${{ env.OS_USER }}"
+              osGroup: "${{ env.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ env.HOSTNAME_SUFFIX }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ vars.RELEASED_RANCHER_VERSION_2_12 }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
