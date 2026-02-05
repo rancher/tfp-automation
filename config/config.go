@@ -193,6 +193,7 @@ type TerraformConfig struct {
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
+	MixedArchitecture                   bool                         `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`

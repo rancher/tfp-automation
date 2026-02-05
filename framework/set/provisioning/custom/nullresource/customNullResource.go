@@ -16,6 +16,10 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+const (
+	allPublicIPs = "all_public_ips"
+)
+
 // CustomNullResource is a function that will set the null_resource configurations in the main.tf file,
 // to register the nodes to the cluster
 func CustomNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) error {
@@ -23,8 +27,10 @@ func CustomNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	nullResourceBlockBody := nullResourceBlock.Body()
 
 	var countExpression string
-	if strings.Contains(terraformConfig.Provider, aws.Aws) {
+	if strings.Contains(terraformConfig.Provider, aws.Aws) && strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
 		countExpression = general.Length + `(` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `)`
+	} else if strings.Contains(terraformConfig.Provider, aws.Aws) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+		countExpression = general.Length + `(` + general.Local + `.` + allPublicIPs + `)`
 	} else if strings.Contains(terraformConfig.Provider, vsphere.Vsphere) {
 		countExpression = general.Length + `(` + vsphere.VsphereVirtualMachine + `.` + terraformConfig.ResourcePrefix + `)`
 	}
@@ -66,7 +72,12 @@ func CustomNullResource(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	switch terraformConfig.Provider {
 	case aws.Aws:
 		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
-		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, aws.AwsInstance, terraformConfig.ResourcePrefix, general.Count, general.Index, general.PublicIp)
+
+		if strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+			hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, aws.AwsInstance, terraformConfig.ResourcePrefix, general.Count, general.Index, general.PublicIp)
+		} else {
+			hostExpression = fmt.Sprintf(`%s.%s[%s.%s]`, general.Local, allPublicIPs, general.Count, general.Index)
+		}
 	case vsphere.Vsphere:
 		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.VsphereConfig.VsphereUser))
 		hostExpression = fmt.Sprintf(`"${%s.%s[%s.%s].%s}"`, vsphere.VsphereVirtualMachine, terraformConfig.ResourcePrefix, general.Count, general.Index, general.DefaultIPAddress)

@@ -37,6 +37,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   downstreamClusterProvider: "aws"
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
+  mixedArchitecture:                              # OPTIONAL - set to true if you want mixed architecture
   provider: "aws"
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
   resourcePrefix: ""                              # REQUIRED - fill with desired value
@@ -61,6 +62,8 @@ terraform:
     ami: ""
     awsKeyName: ""
     awsInstanceType: ""
+    armAMI: ""                                    # OPTIONAL - only set if mixedArchitecture is set to true
+    armInstanceType: ""                           # OPTIONAL - only set if mixedArchitecture is set to true
     awsSubnetID: ""
     rancherSubnetID: ""
     awsVpcID: ""

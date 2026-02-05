@@ -116,6 +116,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   downstreamClusterProvider: ""           # ec2_rke1_import, ec2_rke2_import, ec2_k3s_import, vsphere_rke1_import, vsphere_rke2_import, vsphere_k3s_import
   enableNetworkPolicy: false
+  mixedArchitecture:                              # OPTIONAL - set to true if you want mixed architecture
   privateKeyPath: ""
   provider: ""                     # aws or vsphere
   windowsPrivateKeyPath: ""
@@ -133,6 +134,8 @@ terraform:
     ami: ""
     awsKeyName: ""
     awsInstanceType: ""
+    armAMI: ""                                    # OPTIONAL - only set if mixedArchitecture is set to true
+    armInstanceType: ""                           # OPTIONAL - only set if mixedArchitecture is set to true
     region: ""
     awsSecurityGroupNames: [""]
     awsSubnetID: ""

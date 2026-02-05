@@ -11,8 +11,15 @@ import (
 )
 
 // setMachineConfig is a function that will set the machine configurations in the main.tf file.
-func setMachineConfig(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, psact string) (*hclwrite.Body, error) {
-	machineConfigBlock := rootBody.AppendNewBlock(general.Resource, []string{machineConfigV2, terraformConfig.ResourcePrefix})
+func setMachineConfig(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, psact, architecture string) (*hclwrite.Body, error) {
+	var machineConfigBlock *hclwrite.Block
+
+	if architecture != "" {
+		machineConfigBlock = rootBody.AppendNewBlock(general.Resource, []string{machineConfigV2, terraformConfig.ResourcePrefix + "-" + architecture})
+	} else {
+		machineConfigBlock = rootBody.AppendNewBlock(general.Resource, []string{machineConfigV2, terraformConfig.ResourcePrefix})
+	}
+
 	machineConfigBlockBody := machineConfigBlock.Body()
 
 	if psact == clusters.RancherBaseline {

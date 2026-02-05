@@ -22,7 +22,19 @@ func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	switch terraformConfig.Provider {
 	case awsDefaults.Aws:
-		aws.CreateAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix)
+		aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-etcd",
+			terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType, terratestConfig.EtcdCount)
+
+		aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-control-plane",
+			terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType, terratestConfig.ControlPlaneCount)
+
+		if terraformConfig.MixedArchitecture {
+			aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-worker",
+				terraformConfig.AWSConfig.ARMAMI, terraformConfig.AWSConfig.ARMInstanceType, terratestConfig.WorkerCount)
+		} else {
+			aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-worker",
+				terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType, terratestConfig.WorkerCount)
+		}
 	case vsphereDefaults.Vsphere:
 		dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphereDefaults.VsphereDatacenter + `.` + vsphereDefaults.VsphereDatacenter + `.id`)
 		dataCenterValue := hclwrite.Tokens{

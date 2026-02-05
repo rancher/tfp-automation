@@ -7,6 +7,8 @@ type Networking struct {
 type Config struct {
 	AMI                   string      `json:"ami,omitempty" yaml:"ami,omitempty"`
 	AWSInstanceType       string      `json:"awsInstanceType,omitempty" yaml:"awsInstanceType,omitempty"`
+	ARMAMI                string      `json:"armAMI,omitempty" yaml:"armAMI,omitempty"`
+	ARMInstanceType       string      `json:"armInstanceType,omitempty" yaml:"armInstanceType,omitempty"`
 	AWSKeyName            string      `json:"awsKeyName,omitempty" yaml:"awsKeyName,omitempty"`
 	AWSVolumeType         string      `json:"awsVolumeType,omitempty" yaml:"awsVolumeType,omitempty"`
 	AWSRootSize           int64       `json:"awsRootSize,omitempty" yaml:"awsRootSize,omitempty"`
