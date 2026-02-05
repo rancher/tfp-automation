@@ -52,6 +52,8 @@ const (
 	httpsProxy   = "HTTPS_PROXY"
 	noProxy      = "NO_PROXY"
 	noProxyValue = "localhost,127.0.0.0/8,10.0.0.0/8,172.0.0.0/8,192.168.0.0/16,.svc,.cluster.local,cattle-system.svc,169.254.169.254"
+
+	mixedArchitecture = "mixed_architecture"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
@@ -81,14 +83,14 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 		rootBody.AppendNewline()
 	}
 
-	machineConfigBlockBody, err := setMachineConfig(rootBody, terraformConfig, terratestConfig.PSACT)
+	machineConfigBlockBody, err := setMachineConfig(rootBody, terraformConfig, terratestConfig.PSACT, "")
 	if err != nil {
 		return nil, nil, err
 	}
 
 	switch terraformConfig.Module {
 	case modules.EC2RKE2, modules.EC2K3s:
-		aws.SetAWSRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
+		aws.SetAWSRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig, terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType)
 	case modules.AzureRKE2, modules.AzureK3s:
 		azure.SetAzureRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case modules.HarvesterRKE2, modules.HarvesterK3s:
@@ -100,6 +102,16 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 	}
 
 	rootBody.AppendNewline()
+
+	if terraformConfig.MixedArchitecture {
+		mixedArchConfigBlockBody, err := setMachineConfig(rootBody, terraformConfig, terratestConfig.PSACT, mixedArchitecture)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		aws.SetAWSRKE2K3SMachineConfig(mixedArchConfigBlockBody, terraformConfig, terraformConfig.AWSConfig.ARMAMI, terraformConfig.AWSConfig.ARMInstanceType)
+		rootBody.AppendNewline()
+	}
 
 	clusterBlockBody, err := setClusterConfig(rootBody, terraformConfig, terratestConfig.PSACT, terratestConfig.KubernetesVersion)
 	if err != nil {
@@ -119,7 +131,7 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 	}
 
 	for count, pool := range terratestConfig.Nodepools {
-		err = setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody)
+		err = setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody, mixedArchitecture)
 		if err != nil {
 			return nil, nil, err
 		}

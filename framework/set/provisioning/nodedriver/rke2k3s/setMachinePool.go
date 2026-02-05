@@ -13,7 +13,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body) error {
+func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool config.Nodepool, rkeConfigBlockBody *hclwrite.Body,
+	architecture string) error {
 	poolNum := strconv.Itoa(count)
 
 	_, err := resources.SetResourceNodepoolValidation(terraformConfig, pool, poolNum)
@@ -39,16 +40,27 @@ func setMachinePool(terraformConfig *config.TerraformConfig, count int, pool con
 	machineConfigBlock := machinePoolsBlockBody.AppendNewBlock(clusters.MachineConfig, nil)
 	machineConfigBlockBody := machineConfigBlock.Body()
 
-	kind := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + ".kind")},
+	var kind, name hclwrite.Tokens
+
+	if pool.Worker && terraformConfig.MixedArchitecture {
+		kind = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + "-" + architecture + ".kind")},
+		}
+
+		name = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + "-" + architecture + ".name")},
+		}
+	} else {
+		kind = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + ".kind")},
+		}
+
+		name = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + ".name")},
+		}
 	}
 
 	machineConfigBlockBody.SetAttributeRaw(general.ResourceKind, kind)
-
-	name := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(machineConfigV2 + "." + terraformConfig.ResourcePrefix + ".name")},
-	}
-
 	machineConfigBlockBody.SetAttributeRaw(general.ResourceName, name)
 
 	return nil

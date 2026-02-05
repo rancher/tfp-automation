@@ -3,7 +3,7 @@ name: Sanity Testing
 
 on:
   schedule:
-    - cron: "0 7 * * 1,2,5"
+    - cron: "0 7 * * 1,5"
   workflow_dispatch:
     inputs:
       rancher_version:
