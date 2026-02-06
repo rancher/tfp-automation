@@ -3,10 +3,10 @@ package qase
 import (
 	"strings"
 
+	upstream "github.com/qase-tms/qase-go/qase-api-client"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/modules"
-	upstream "go.qase.io/qase-api-client"
 )
 
 // GetProvisioningSchemaParams gets a set of params from the cattle config and returns a qase params object
