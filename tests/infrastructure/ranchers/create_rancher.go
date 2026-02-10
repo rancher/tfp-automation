@@ -19,6 +19,7 @@ import (
 	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/dualstack"
+	"github.com/rancher/tfp-automation/framework/set/resources/hosted"
 	"github.com/rancher/tfp-automation/framework/set/resources/ipv6"
 	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -162,8 +163,16 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	serverNodeOne, err := sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
-	require.NoError(t, err)
+	var serverNodeOne string
+	var err error
+
+	if terraformConfig.LocalHostedCluster == nil {
+		serverNodeOne, err = sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+		require.NoError(t, err)
+	} else {
+		serverNodeOne, err = hosted.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+		require.NoError(t, err)
+	}
 
 	// For providers that do not have built-in DNS records, this will update the Rancher server URL.
 	if terraformConfig.Provider != providers.AWS && terraformConfig.Provider != providers.Azure {

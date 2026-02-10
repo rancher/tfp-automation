@@ -9,6 +9,7 @@ import (
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/linode"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
@@ -84,7 +85,7 @@ func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		}
 
 		connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
-	case azure.Azure:
+	case azure.Azure, providers.AKS:
 		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AzureConfig.SSHUser))
 
 		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`

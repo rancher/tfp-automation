@@ -146,9 +146,6 @@ export LETS_ENCRYPT_EMAIL=""                      # OPTIONAL - must provide a va
 
 See the below examples on how to run the tests:
 
-### RKE1
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityRKE1ProvisioningTestSuite$"`
-
 ### RKE2 / K3s
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityProvisioningTestSuite$"`
 
@@ -157,6 +154,9 @@ See the below examples on how to run the tests:
 
 ### Dual-stack
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityDualStackProvisioningTestSuite$"`
+
+### AKS
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityAKSProvisioningTestSuite$"`
 
 ### Upgrade
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityUpgradeRancherTestSuite$"`

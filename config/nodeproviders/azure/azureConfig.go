@@ -1,6 +1,7 @@
 package azure
 
 type Config struct {
+	AKSNodeCount            string   `json:"aksNodeCount,omitempty" yaml:"aksNodeCount,omitempty"`
 	AvailabilitySet         string   `json:"availabilitySet,omitempty" yaml:"availabilitySet,omitempty"`
 	AvailabilityZones       []string `json:"availabilityZones,omitempty" yaml:"availabilityZones,omitempty"`
 	CustomData              string   `json:"customData,omitempty" yaml:"customData,omitempty"`

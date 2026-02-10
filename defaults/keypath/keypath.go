@@ -5,6 +5,7 @@ const (
 	AirgapRKE2KeyPath       = "/modules/airgapRKE2"
 	DualStackKeyPath        = "/modules/dualstack"
 	DualStackRKE2K3SKeyPath = "/modules/dualstackRKE2K3S"
+	HostedKeyPath           = "/modules/hosted"
 	IPv6KeyPath             = "/modules/ipv6"
 	IPv6RKE2K3SKeyPath      = "/modules/ipv6RKE2K3S"
 	K3sKeyPath              = "/modules/k3s"

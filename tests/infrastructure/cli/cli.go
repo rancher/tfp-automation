@@ -24,6 +24,7 @@ var setupRancherFuncs = map[string]func(*testing.T, string) error{
 	"--airgap:upgrade": ranchers.UpgradingAirgapRancher,
 	"--dual:fresh":     ranchers.CreateDualStackRancher,
 	"--dual:upgrade":   ranchers.UpgradingDualStackRancher,
+	"--hosted:fresh":   ranchers.CreateHostedClusterRancher,
 	"--ipv6:fresh":     ranchers.CreateIPv6Rancher,
 	"--ipv6:upgrade":   ranchers.UpgradingIPv6Rancher,
 	"--normal:fresh":   ranchers.CreateRancher,
