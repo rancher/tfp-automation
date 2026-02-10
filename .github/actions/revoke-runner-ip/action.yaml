@@ -26,7 +26,7 @@ runs:
           local prefix_list_id=$1
           local cidr=$2
 
-          local max_retries=37
+          local max_retries=50
           local attempt=1
 
           while true; do
