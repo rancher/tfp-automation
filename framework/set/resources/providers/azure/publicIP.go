@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/azure"
 	"github.com/zclconf/go-cty/cty"
@@ -34,7 +35,7 @@ func CreateAzurePublicIP(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	publicIPBlockBody.SetAttributeValue(allocationMethod, cty.StringVal("Static"))
 	publicIPBlockBody.SetAttributeValue(sku, cty.StringVal("Standard"))
 
-	if strings.Contains(hostnamePrefix, "load") {
+	if strings.Contains(hostnamePrefix, "load") && terraformConfig.Provider != providers.AKS {
 		publicIPBlockBody.SetAttributeValue(domainNameLabel, cty.StringVal(terraformConfig.ResourcePrefix))
 	}
 }

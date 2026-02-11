@@ -7,4 +7,8 @@ const (
 	Linode    = "linode"
 	Harvester = "harvester"
 	Vsphere   = "vsphere"
+
+	AKS = "aks"
+	EKS = "eks"
+	GKE = "gke"
 )

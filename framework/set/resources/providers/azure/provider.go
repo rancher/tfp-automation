@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/azure"
 	"github.com/zclconf/go-cty/cty"
@@ -80,10 +81,18 @@ func CreateAzureLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terr
 	localBlock := rootBody.AppendNewBlock(locals, nil)
 	localBlockBody := localBlock.Body()
 
-	instanceIds := map[string]any{
-		serverOne:   azure.AzureLinuxVirtualMachine + "." + serverOne + ".id",
-		serverTwo:   azure.AzureLinuxVirtualMachine + "." + serverTwo + ".id",
-		serverThree: azure.AzureLinuxVirtualMachine + "." + serverThree + ".id",
+	var instanceIds map[string]any
+
+	if terraformConfig.Provider == providers.AKS {
+		instanceIds = map[string]any{
+			serverOne: azure.AzureLinuxVirtualMachine + "." + serverOne + ".id",
+		}
+	} else {
+		instanceIds = map[string]any{
+			serverOne:   azure.AzureLinuxVirtualMachine + "." + serverOne + ".id",
+			serverTwo:   azure.AzureLinuxVirtualMachine + "." + serverTwo + ".id",
+			serverThree: azure.AzureLinuxVirtualMachine + "." + serverThree + ".id",
+		}
 	}
 
 	instanceIdsBlock := localBlockBody.AppendNewBlock(instanceIDs+" =", nil)

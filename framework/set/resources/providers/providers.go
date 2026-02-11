@@ -35,7 +35,7 @@ func TunnelToProvider(provider string) ProviderResources {
 			CreateNonAirgap: aws.CreateAWSResources,
 			CreateIPv6:      aws.CreateIPv6AWSResources,
 		}
-	case providers.Azure:
+	case providers.Azure, providers.AKS:
 		logrus.Infof("Creating Azure resources...")
 		return ProviderResources{
 			CreateNonAirgap: azure.CreateAzureResources,
