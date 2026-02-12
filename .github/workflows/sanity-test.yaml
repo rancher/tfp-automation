@@ -176,7 +176,7 @@ jobs:
           if [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
             echo "OS_USER=azureuser" >> $GITHUB_ENV
             echo "OS_GROUP=azureuser" >> $GITHUB_ENV
-            echo "HOSTNAME_SUFFIX=${{ secrets.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ vars.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
           else
             echo "OS_USER=${{ secrets.OS_USER }}" >> $GITHUB_ENV
             echo "OS_GROUP=${{ secrets.OS_GROUP }}" >> $GITHUB_ENV
@@ -297,7 +297,7 @@ jobs:
               imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
               imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
+              location: "${{ vars.AZURE_LOCATION }}"
               publisher: "${{ secrets.AZURE_PUBLISHER }}"
               sku: "${{ vars.AZURE_SKU }}"
               size: "${{ vars.AZURE_SIZE }}"
@@ -305,7 +305,7 @@ jobs:
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
+              machineType: "${{ vars.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
               region: "${{ secrets.GOOGLE_REGION }}"
@@ -537,7 +537,7 @@ jobs:
           if [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
             echo "OS_USER=azureuser" >> $GITHUB_ENV
             echo "OS_GROUP=azureuser" >> $GITHUB_ENV
-            echo "HOSTNAME_SUFFIX=${{ secrets.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ vars.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
           else
             echo "OS_USER=${{ secrets.OS_USER }}" >> $GITHUB_ENV
             echo "OS_GROUP=${{ secrets.OS_GROUP }}" >> $GITHUB_ENV
@@ -658,7 +658,7 @@ jobs:
               imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
               imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
+              location: "${{ vars.AZURE_LOCATION }}"
               publisher: "${{ secrets.AZURE_PUBLISHER }}"
               sku: "${{ vars.AZURE_SKU }}"
               size: "${{ vars.AZURE_SIZE }}"
@@ -666,7 +666,7 @@ jobs:
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
+              machineType: "${{ vars.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
               region: "${{ secrets.GOOGLE_REGION }}"
@@ -898,7 +898,7 @@ jobs:
           if [[ "${{ env.CLOUD_PROVIDER }}" == "azure" ]]; then
             echo "OS_USER=azureuser" >> $GITHUB_ENV
             echo "OS_GROUP=azureuser" >> $GITHUB_ENV
-            echo "HOSTNAME_SUFFIX=${{ secrets.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
+            echo "HOSTNAME_SUFFIX=${{ vars.AZURE_LOCATION }}.cloudapp.azure.com" >> $GITHUB_ENV
           else
             echo "OS_USER=${{ secrets.OS_USER }}" >> $GITHUB_ENV
             echo "OS_GROUP=${{ secrets.OS_GROUP }}" >> $GITHUB_ENV
@@ -1028,7 +1028,7 @@ jobs:
               imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
               imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
+              location: "${{ vars.AZURE_LOCATION }}"
               publisher: "${{ secrets.AZURE_PUBLISHER }}"
               sku: "${{ vars.AZURE_SKU }}"
               size: "${{ vars.AZURE_SIZE }}"
@@ -1036,7 +1036,7 @@ jobs:
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              machineType: "${{ secrets.GOOGLE_MACHINE_TYPE }}"
+              machineType: "${{ vars.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
               region: "${{ secrets.GOOGLE_REGION }}"

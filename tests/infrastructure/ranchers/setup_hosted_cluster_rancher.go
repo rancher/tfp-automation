@@ -37,7 +37,7 @@ func CreateHostedClusterRancher(t *testing.T, provider string) error {
 		return err
 	}
 
-	if terraformConfig.Provider != providers.AKS {
+	if terraformConfig.Provider != providers.AKS && terraformConfig.Provider != providers.EKS {
 		// For providers that do not have built-in DNS records, this will update the Rancher server URL.
 		_, err = operations.ReplaceValue([]string{"rancher", "host"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
 		require.NoError(t, err)

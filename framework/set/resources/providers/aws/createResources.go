@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/sirupsen/logrus"
 )
@@ -31,10 +32,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 		}
 	}
 
-	CreateAWSLocalBlock(rootBody, terraformConfig)
-	rootBody.AppendNewline()
-
-	if terraformConfig.Standalone.CertManagerVersion != "" {
+	if terraformConfig.Standalone.CertManagerVersion != "" && terraformConfig.Provider != providers.EKS {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
 			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
@@ -55,6 +53,9 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 		CreateRoute53Record(rootBody, terraformConfig)
 		rootBody.AppendNewline()
 	}
+
+	CreateAWSLocalBlock(rootBody, terraformConfig)
+	rootBody.AppendNewline()
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
