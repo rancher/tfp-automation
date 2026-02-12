@@ -28,7 +28,7 @@ type ProviderResources struct {
 // TunnelToProvider returns an struct that allows a user to create resources from a given provider
 func TunnelToProvider(provider string) ProviderResources {
 	switch provider {
-	case providers.AWS:
+	case providers.AWS, providers.EKS:
 		logrus.Infof("Creating AWS resources...")
 		return ProviderResources{
 			CreateAirgap:    aws.CreateAirgappedAWSResources,

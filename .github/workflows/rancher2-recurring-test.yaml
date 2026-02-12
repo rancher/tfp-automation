@@ -231,7 +231,7 @@ jobs:
               dockerPort: "2376"
               faultDomainCount: "3"
               image: "${{ secrets.AZURE_IMAGE }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
+              location: "${{ vars.AZURE_LOCATION }}"
               managedDisks: false
               mode: "System"
               name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
@@ -244,7 +244,7 @@ jobs:
               osDiskSizeGB: 128
               outboundType: "loadBalancer"
               resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
-              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
+              resourceLocation: "${{ vars.AZURE_LOCATION }}"
               size: "Standard_D2_v2"
               sshUser: "${{ secrets.AZURE_SSH_USER }}"
               staticPublicIp: false
@@ -574,7 +574,7 @@ jobs:
               dockerPort: "2376"
               faultDomainCount: "3"
               image: "${{ secrets.AZURE_IMAGE }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
+              location: "${{ vars.AZURE_LOCATION }}"
               managedDisks: false
               mode: "System"
               name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
@@ -587,7 +587,7 @@ jobs:
               osDiskSizeGB: 128
               outboundType: "loadBalancer"
               resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
-              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
+              resourceLocation: "${{ vars.AZURE_LOCATION }}"
               size: "Standard_D2_v2"
               sshUser: "${{ secrets.AZURE_SSH_USER }}"
               staticPublicIp: false
@@ -926,7 +926,7 @@ jobs:
               dockerPort: "2376"
               faultDomainCount: "3"
               image: "${{ secrets.AZURE_IMAGE }}"
-              location: "${{ secrets.AZURE_LOCATION }}"
+              location: "${{ vars.AZURE_LOCATION }}"
               managedDisks: false
               mode: "System"
               name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
@@ -939,7 +939,7 @@ jobs:
               osDiskSizeGB: 128
               outboundType: "loadBalancer"
               resourceGroup: "${{ secrets.AZURE_RESOURCE_GROUP }}"
-              resourceLocation: "${{ secrets.AZURE_LOCATION }}"
+              resourceLocation: "${{ vars.AZURE_LOCATION }}"
               size: "Standard_D2_v2"
               sshUser: "${{ secrets.AZURE_SSH_USER }}"
               staticPublicIp: false

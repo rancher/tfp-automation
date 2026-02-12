@@ -76,7 +76,7 @@ func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	connectionBlockBody.SetAttributeValue(general.Host, cty.StringVal(instance))
 	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.Ssh))
 	switch terraformConfig.Provider {
-	case aws.Aws:
+	case aws.Aws, providers.EKS:
 		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.AWSUser))
 
 		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`

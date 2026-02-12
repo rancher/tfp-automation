@@ -24,26 +24,35 @@ func CreateHostedCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 	bastionPublicIP string, terratestConfig *config.TerratestConfig) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.RKE2KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	aksScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/hosted/cluster/create-aks-cluster.sh")
-
-	aksScriptContent, err := os.ReadFile(aksScriptPath)
-	if err != nil {
-		return nil, err
-	}
-
-	publicKey, err := os.ReadFile(terraformConfig.AzureConfig.KeyPath)
-	if err != nil {
-		return nil, err
-	}
-
-	encodedPUBFile := base64.StdEncoding.EncodeToString([]byte(publicKey))
-
 	switch {
 	case terraformConfig.LocalHostedCluster.AKS:
+		aksScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/hosted/cluster/create-aks-cluster.sh")
+
+		aksScriptContent, err := os.ReadFile(aksScriptPath)
+		if err != nil {
+			return nil, err
+		}
+
+		aksPublicKey, err := os.ReadFile(terraformConfig.AzureConfig.KeyPath)
+		if err != nil {
+			return nil, err
+		}
+
+		encodedPUBFile := base64.StdEncoding.EncodeToString([]byte(aksPublicKey))
+
 		createAKSCluster(rootBody, terraformConfig, bastionPublicIP, aksScriptContent, encodedPUBFile)
+	case terraformConfig.LocalHostedCluster.EKS:
+		eksScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/hosted/cluster/create-eks-cluster.sh")
+
+		eksScriptContent, err := os.ReadFile(eksScriptPath)
+		if err != nil {
+			return nil, err
+		}
+
+		createEKSCluster(rootBody, terraformConfig, bastionPublicIP, eksScriptContent)
 	}
 
-	_, err = file.Write(newFile.Bytes())
+	_, err := file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to append configurations to main.tf file. Error: %v", err)
 		return nil, err
@@ -65,6 +74,20 @@ func createAKSCluster(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/create-aks-cluster.sh"),
 		cty.StringVal("chmod +x /tmp/create-aks-cluster.sh"),
+		cty.StringVal(command),
+	}))
+}
+
+// createEKSCluster is a helper function that will create the local EKS cluster server.
+func createEKSCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, bastionPublicIP string, script []byte) {
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, bastionPublicIP, hostedCluster)
+
+	command := "bash -c '/tmp/create-eks-cluster.sh " + terraformConfig.ResourcePrefix + " " + terraformConfig.AWSConfig.Region + " " +
+		terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + "'"
+
+	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
+		cty.StringVal("printf '" + string(script) + "' > /tmp/create-eks-cluster.sh"),
+		cty.StringVal("chmod +x /tmp/create-eks-cluster.sh"),
 		cty.StringVal(command),
 	}))
 }

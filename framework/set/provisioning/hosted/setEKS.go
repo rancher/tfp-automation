@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/resourceblocks/nodeproviders/amazon"
-	format "github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
@@ -48,10 +47,6 @@ func SetEKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 	eksConfigBlockBody.SetAttributeRaw(clusters.CloudCredentialID, cloudCredID)
 	eksConfigBlockBody.SetAttributeValue(aws.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
 	eksConfigBlockBody.SetAttributeValue(clusters.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
-	awsSubnetsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSubnets)
-	eksConfigBlockBody.SetAttributeRaw(amazon.Subnets, awsSubnetsList)
-	awsSecGroupsList := format.ListOfStrings(terraformConfig.AWSConfig.AWSSecurityGroups)
-	eksConfigBlockBody.SetAttributeRaw(amazon.SecurityGroups, awsSecGroupsList)
 	eksConfigBlockBody.SetAttributeValue(amazon.PrivateAccess, cty.BoolVal(terraformConfig.AWSConfig.PrivateAccess))
 	eksConfigBlockBody.SetAttributeValue(amazon.PublicAccess, cty.BoolVal(terraformConfig.AWSConfig.PublicAccess))
 

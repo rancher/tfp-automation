@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/zclconf/go-cty/cty"
@@ -48,7 +49,12 @@ func CreateAWSLocalBlock(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	localBlockBody := localBlock.Body()
 
 	var instanceIds map[string]any
-	if terraformConfig.AWSConfig.IPAddressType != aws.IPv6 {
+
+	if terraformConfig.Provider == providers.EKS {
+		instanceIds = map[string]any{
+			serverOne: aws.AwsInstance + "." + serverOne + ".id",
+		}
+	} else if terraformConfig.AWSConfig.IPAddressType != aws.IPv6 {
 		instanceIds = map[string]any{
 			serverOne:   aws.AwsInstance + "." + serverOne + ".id",
 			serverTwo:   aws.AwsInstance + "." + serverTwo + ".id",

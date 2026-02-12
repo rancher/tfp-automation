@@ -102,7 +102,7 @@ install_cert_manager() {
     sleep 60
 }
 
-install_ingress_nginx() {
+install_aks_ingress_nginx() {
     echo "Installing ingress-nginx..."
     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
     helm repo update
@@ -118,33 +118,78 @@ install_ingress_nginx() {
     echo "Waiting for ingress-nginx to be rolled out"
     kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
 
+    # We need to wait for the public IP to be provisioned before proceeding, otherwise the Rancher installation will fail.
+    echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+    while true; do
+        INGRESS=$(kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}')
+        if [[ -n "$INGRESS" && "$INGRESS" != "<pending>" ]]; then
+            echo "Ingress-nginx is provisioned with public IP: $INGRESS"
+
+            MC_RG=$(az aks show --resource-group "$RESOURCE_GROUP_NAME" --name "$RESOURCE_PREFIX" --query nodeResourceGroup -o tsv)
+
+            # This will create the DNS label for the AKS public IP. This will be used to access Rancher once it is
+            # later deployed.
+            PUBLIC_IP_NAME=$(az network public-ip list --resource-group "$MC_RG" --query "[?starts_with(name, 'kubernetes')].name | [0]" -o tsv)
+
+            echo "Updating public IP $PUBLIC_IP_NAME with DNS label $RESOURCE_PREFIX..."
+            az network public-ip update --resource-group "$MC_RG" --name "$PUBLIC_IP_NAME" --dns-name "$RESOURCE_PREFIX" > /dev/null
+
+            break
+        else
+            echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+            sleep 5
+        fi
+    done
+}
+
+install_eks_ingress_nginx() {
+    echo "Installing ingress-nginx..."
+    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    helm repo update
+    helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+                 --namespace ingress-nginx \
+                 --set controller.service.type=LoadBalancer \
+                 --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"=nlb  \
+                 --set-string controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-internal"="false" \
+                 --set controller.service.externalTrafficPolicy=Cluster \
+                 --create-namespace
+
+    kubectl get pods --namespace ingress-nginx
+
     echo "Waiting for ingress-nginx to be rolled out"
     kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
 
-    # if provider is aks, we need to wait for the public IP to be provisioned before proceeding, otherwise the Rancher installation will fail since it needs to set the hostname to the public IP of the ingress controller
-    if [[ $PROVIDER == "aks" ]]; then
-        echo "Waiting for ingress-nginx to be provisioned with a public IP..."
-        while true; do
-            INGRESS=$(kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}')
-            if [[ -n "$INGRESS" && "$INGRESS" != "<pending>" ]]; then
-                echo "Ingress-nginx is provisioned with public IP: $INGRESS"
+    # We need to wait for the public IP to be provisioned before proceeding, otherwise the Rancher installation will fail.
+    echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+    while true; do
+        INGRESS=$(kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}')
+        if [[ -n "$INGRESS" && "$INGRESS" != "<pending>" ]]; then
+            echo "Ingress-nginx is provisioned with public IP: $INGRESS"
 
-                MC_RG=$(az aks show --resource-group "$RESOURCE_GROUP_NAME" --name "$RESOURCE_PREFIX" --query nodeResourceGroup -o tsv)
+            HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name --query "HostedZones[0].Id" --output text | sed 's|/hostedzone/||')
 
-                # This will create the DNS label for the AKS public IP. This will be used to access Rancher once it is
-                # later deployed.
-                PUBLIC_IP_NAME=$(az network public-ip list --resource-group "$MC_RG" --query "[?starts_with(name, 'kubernetes')].name | [0]" -o tsv)
+            printf '{
+  "Comment": "Add CNAME record for Rancher (tfp-automation)",
+  "Changes": [{
+    "Action": "UPSERT",
+    "ResourceRecordSet": {
+      "Name": "%s",
+      "Type": "CNAME",
+      "TTL": 300,
+      "ResourceRecords": [{"Value": "%s"}]
+    }
+  }]
+}' "$HOSTNAME" "$INGRESS" | sudo tee /tmp/change-batch.json > /dev/null
 
-                echo "Updating public IP $PUBLIC_IP_NAME with DNS label $RESOURCE_PREFIX..."
-                az network public-ip update --resource-group "$MC_RG" --name "$PUBLIC_IP_NAME" --dns-name "$RESOURCE_PREFIX" > /dev/null
 
-                break
-            else
-                echo "Waiting for ingress-nginx to be provisioned with a public IP..."
-                sleep 5
-            fi
-        done
-    fi
+            aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --change-batch file:///tmp/change-batch.json
+
+            break
+        else
+            echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+            sleep 5
+        fi
+    done
 }
 
 install_default_rancher() {
@@ -198,7 +243,13 @@ if [[ $RANCHER_TAG_VERSION == head ]]; then
 fi
 
 install_cert_manager
-install_ingress_nginx
+
+if [[ $PROVIDER == "aks" ]]; then
+    install_aks_ingress_nginx
+elif [[ $PROVIDER == "eks" ]]; then
+    install_eks_ingress_nginx
+fi
+
 install_default_rancher
 wait_for_rollout
 wait_for_rancher

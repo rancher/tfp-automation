@@ -40,6 +40,15 @@ runs:
         PREFIX="${{ inputs.prefix }}" \
         REGION="${{ inputs.region }}" \
         "${{ github.action_path }}/aws-cleanup.sh"
+
+    - if: ${{ inputs.cloud-provider == 'eks' }}
+      name: EKS cleanup
+      shell: bash
+      run: |
+        chmod +x "${{ github.action_path }}/eks-cleanup.sh"
+        PREFIX="${{ inputs.prefix }}" \
+        REGION="${{ inputs.region }}" \
+        "${{ github.action_path }}/eks-cleanup.sh"
     
     - if: ${{ inputs.cloud-provider == 'azure' }}
       name: Azure cleanup

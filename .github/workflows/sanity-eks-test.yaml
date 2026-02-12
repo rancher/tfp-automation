@@ -1,5 +1,5 @@
 ---
-name: Sanity AKS Testing
+name: Sanity EKS Testing
 
 on:
   schedule:
@@ -36,10 +36,10 @@ permissions:
   contents: read
 
 env:
-  CLOUD_PROVIDER_VERSION: "${{ vars.AZURE_PROVIDER_VERSION }}"
+  CLOUD_PROVIDER_VERSION: "${{ vars.AWS_PROVIDER_VERSION }}"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "sanity"
-  TEST_SUITE: "^TestTfpSanityAKSProvisioningTestSuite$"
+  TEST_SUITE: "^TestTfpSanityEKSProvisioningTestSuite$"
   TIMEOUT: "2h"
 
 jobs:
@@ -52,10 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: head
     env:
-      CLOUD_PROVIDER: "azure"
-      DOWNSTREAM_CLUSTER_PROVIDER: "azure"
+      CLOUD_PROVIDER: "eks"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
-      HOSTNAME_PREFIX: "tfp-aks-214"
+      HOSTNAME_PREFIX: "tfp-eks-214"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -70,18 +69,27 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Azure Provider Setup
-        uses: ./.github/actions/azure-provider-setup
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          region: ${{ secrets.AWS_REGION }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Install eksctl
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo install -m 0755 /tmp/eksctl /usr/local/bin && rm /tmp/eksctl
 
       - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
@@ -94,6 +102,12 @@ jobs:
         run: |
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.EKS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.EKS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -150,7 +164,7 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -159,62 +173,44 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             localHostedCluster:
-              aks: true
-            provider: "aks"
+              eks: true
+            provider: "eks"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
-            azureCredentials:
-              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
-              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
-              environment: "AzurePublicCloud"
-              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
-            azureConfig:
-              aksNodeCount: 3
-              availabilitySet: "docker-machine"
-              availabilityZones: ["1", "2", "3"]
-              customData: ""
-              diskSize: "${{ vars.AZURE_DISK_SIZE }}"
-              dockerPort: "2376"
-              faultDomainCount: "3"
-              image: "${{ secrets.AZURE_IMAGE }}"
-              imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
-              imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
-              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              location: "${{ vars.AZURE_LOCATION }}"
-              managedDisks: false
-              mode: "System"
-              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
-              networkDNSServiceIP: "10.30.0.16"
-              networkDockerBridgeCIDR: "172.17.0.1/16"
-              networkPlugin: "kubenet"
-              networkServiceCIDR: "10.30.0.0/24"
-              noPublicIp: false
-              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
-              osDiskSizeGB: 128
-              outboundType: "loadBalancer"
-              publisher: "${{ secrets.AZURE_PUBLISHER }}"
-              resourceGroup: "${{ env.HOSTNAME_PREFIX }}-rg"
-              resourceLocation: "${{ vars.AZURE_LOCATION }}"
-              size: "${{ vars.AZURE_SIZE }}"
-              sku: "${{ vars.AZURE_SKU }}"
-              sshUser: "${{ secrets.AZURE_SSH_USER }}"
-              staticPublicIp: false
-              storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
-              taints: ["none:PreferNoSchedule"]
-              updateDomainCount: "5"
-              vmSize: "${{ vars.AZURE_SIZE }}"
-              vnet: "${{ secrets.AZURE_VNET }}"
+            awsCredentials:
+              awsAccessKey: "$AWS_ACCESS_KEY"
+              awsSecretKey: "$AWS_SECRET_KEY"
+            awsConfig:
+              ami: "${{ secrets.EKS_AMI }}"
+              awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
+              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
+              awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
+              region: "${{ vars.EKS_REGION }}"
+              awsSecurityGroups: [${{ secrets.EKS_SECURITY_GROUPS }}]
+              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSubnetID: "${{ secrets.EKS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.EKS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
+              awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
+              awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
+              awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
+              awsUser: "${{ secrets.AWS_USER }}"
+              sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
+              timeout: "${{ vars.TIMEOUT }}"
+              ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
+              loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
+              targetType: "${{ vars.TARGET_TYPE }}"
+              publicAccess: true
+              privateAccess: true
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              osUser: "${{ secrets.AZURE_SSH_USER }}"
-              osGroup: "${{ secrets.AZURE_SSH_USER }}"
+              osUser: "${{ secrets.OS_USER }}"
+              osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -222,7 +218,7 @@ jobs:
               repo: "${{ env.RANCHER_REPO }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_14 }}"
+            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_14 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -266,8 +262,15 @@ jobs:
           google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
           google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "${{ env.HOSTNAME_PREFIX }}"
-          region: "${{ secrets.AWS_REGION }}"
+          region: "${{ vars.EKS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
+
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.EKS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.EKS_REGION }}"
 
       - name: Set job status output
         if: always()
@@ -287,15 +290,14 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13-head'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
     env:
-      CLOUD_PROVIDER: "azure"
-      DOWNSTREAM_CLUSTER_PROVIDER: "azure"
+      CLOUD_PROVIDER: "eks"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tfp-aks-213"
+      HOSTNAME_PREFIX: "tfp-eks-213"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -310,18 +312,27 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Azure Provider Setup
-        uses: ./.github/actions/azure-provider-setup
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          region: ${{ secrets.AWS_REGION }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Install eksctl
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo install -m 0755 /tmp/eksctl /usr/local/bin && rm /tmp/eksctl
 
       - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
@@ -334,6 +345,12 @@ jobs:
         run: |
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.EKS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.EKS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -390,7 +407,7 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -399,62 +416,44 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             localHostedCluster:
-              aks: true
-            provider: "aks"
+              eks: true
+            provider: "eks"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
-            azureCredentials:
-              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
-              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
-              environment: "AzurePublicCloud"
-              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
-            azureConfig:
-              aksNodeCount: 3
-              availabilitySet: "docker-machine"
-              availabilityZones: ["1", "2", "3"]
-              customData: ""
-              diskSize: "${{ vars.AZURE_DISK_SIZE }}"
-              dockerPort: "2376"
-              faultDomainCount: "3"
-              image: "${{ secrets.AZURE_IMAGE }}"
-              imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
-              imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
-              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              location: "${{ vars.AZURE_LOCATION }}"
-              managedDisks: false
-              mode: "System"
-              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
-              networkDNSServiceIP: "10.30.0.16"
-              networkDockerBridgeCIDR: "172.17.0.1/16"
-              networkPlugin: "kubenet"
-              networkServiceCIDR: "10.30.0.0/24"
-              noPublicIp: false
-              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
-              osDiskSizeGB: 128
-              outboundType: "loadBalancer"
-              publisher: "${{ secrets.AZURE_PUBLISHER }}"
-              resourceGroup: "${{ env.HOSTNAME_PREFIX }}-rg"
-              resourceLocation: "${{ vars.AZURE_LOCATION }}"
-              size: "${{ vars.AZURE_SIZE }}"
-              sku: "${{ vars.AZURE_SKU }}"
-              sshUser: "${{ secrets.AZURE_SSH_USER }}"
-              staticPublicIp: false
-              storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
-              taints: ["none:PreferNoSchedule"]
-              updateDomainCount: "5"
-              vmSize: "${{ vars.AZURE_SIZE }}"
-              vnet: "${{ secrets.AZURE_VNET }}"
+            awsCredentials:
+              awsAccessKey: "$AWS_ACCESS_KEY"
+              awsSecretKey: "$AWS_SECRET_KEY"
+            awsConfig:
+              ami: "${{ secrets.EKS_AMI }}"
+              awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
+              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
+              awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
+              region: "${{ vars.EKS_REGION }}"
+              awsSecurityGroups: [${{ secrets.EKS_SECURITY_GROUPS }}]
+              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSubnetID: "${{ secrets.EKS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.EKS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
+              awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
+              awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
+              awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
+              awsUser: "${{ secrets.AWS_USER }}"
+              sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
+              timeout: "${{ vars.TIMEOUT }}"
+              ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
+              loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
+              targetType: "${{ vars.TARGET_TYPE }}"
+              publicAccess: true
+              privateAccess: true
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              osUser: "${{ secrets.AZURE_SSH_USER }}"
-              osGroup: "${{ secrets.AZURE_SSH_USER }}"
+              osUser: "${{ secrets.OS_USER }}"
+              osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -462,7 +461,7 @@ jobs:
               repo: "${{ env.RANCHER_REPO }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_13 }}"
+            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_13 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -506,8 +505,15 @@ jobs:
           google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
           google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "${{ env.HOSTNAME_PREFIX }}"
-          region: "${{ secrets.AWS_REGION }}"
+          region: "${{ vars.EKS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
+
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.EKS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.EKS_REGION }}"
 
       - name: Set job status output
         if: always()
@@ -527,15 +533,14 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.12-head'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: staging-latest
     env:
-      CLOUD_PROVIDER: "azure"
-      DOWNSTREAM_CLUSTER_PROVIDER: "azure"
+      CLOUD_PROVIDER: "eks"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
-      HOSTNAME_PREFIX: "tfp-aks-212"
+      HOSTNAME_PREFIX: "tfp-eks-212"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -550,18 +555,27 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Azure Provider Setup
-        uses: ./.github/actions/azure-provider-setup
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          downstream-cluster-provider: ${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          region: ${{ secrets.AWS_REGION }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          azure-subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Install eksctl
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo install -m 0755 /tmp/eksctl /usr/local/bin && rm /tmp/eksctl
 
       - name: Fetch and Set DockerHub Credentials
         uses: rancher-eio/read-vault-secrets@main
@@ -574,6 +588,12 @@ jobs:
         run: |
           echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
           echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.EKS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.EKS_REGION }}"
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -608,8 +628,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_12) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_12)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
             }}
 
       - name: Set Rancher repo
@@ -637,7 +657,7 @@ jobs:
         run: |
           cat > config.yaml <<EOF
           rancher:
-            host: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
+            host: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
             adminPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
             insecure: true
             cleanup: true
@@ -646,63 +666,45 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             localHostedCluster:
-              aks: true
-            provider: "aks"
+              eks: true
+            provider: "eks"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
-            azureCredentials:
-              clientId: "${{ secrets.AZURE_CLIENT_ID }}"
-              clientSecret: "${{ secrets.AZURE_CLIENT_SECRET }}"
-              environment: "AzurePublicCloud"
-              subscriptionId: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-              tenantId: "${{ secrets.AZURE_TENANT_ID }}"
-            azureConfig:
-              aksNodeCount: 3
-              availabilitySet: "docker-machine"
-              availabilityZones: ["1", "2", "3"]
-              customData: ""
-              diskSize: "${{ vars.AZURE_DISK_SIZE }}"
-              dockerPort: "2376"
-              faultDomainCount: "3"
-              image: "${{ secrets.AZURE_IMAGE }}"
-              imageOffer: "${{ vars.AZURE_IMAGE_OFFER }}"
-              imageVersion: "${{ vars.AZURE_IMAGE_VERSION }}"
-              keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
-              location: "${{ vars.AZURE_LOCATION }}"
-              managedDisks: false
-              mode: "System"
-              name: "${{ vars.AZURE_AGENT_POOL_NAME }}"
-              networkDNSServiceIP: "10.30.0.16"
-              networkDockerBridgeCIDR: "172.17.0.1/16"
-              networkPlugin: "kubenet"
-              networkServiceCIDR: "10.30.0.0/24"
-              noPublicIp: false
-              openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
-              osDiskSizeGB: 128
-              outboundType: "loadBalancer"
-              publisher: "${{ secrets.AZURE_PUBLISHER }}"
-              resourceGroup: "${{ env.HOSTNAME_PREFIX }}-rg"
-              resourceLocation: "${{ vars.AZURE_LOCATION }}"
-              size: "${{ vars.AZURE_SIZE }}"
-              sku: "${{ vars.AZURE_SKU }}"
-              sshUser: "${{ secrets.AZURE_SSH_USER }}"
-              staticPublicIp: false
-              storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
-              taints: ["none:PreferNoSchedule"]
-              updateDomainCount: "5"
-              vmSize: "${{ vars.AZURE_SIZE }}"
-              vnet: "${{ secrets.AZURE_VNET }}"
+            awsCredentials:
+              awsAccessKey: "$AWS_ACCESS_KEY"
+              awsSecretKey: "$AWS_SECRET_KEY"
+            awsConfig:
+              ami: "${{ secrets.EKS_AMI }}"
+              awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
+              awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
+              awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
+              region: "${{ vars.EKS_REGION }}"
+              awsSecurityGroups: [${{ secrets.EKS_SECURITY_GROUPS }}]
+              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSubnetID: "${{ secrets.EKS_SUBNET_ID }}"
+              rancherSubnetID: "${{ secrets.EKS_SUBNET_ID }}"
+              awsVpcID: "${{ secrets.AWS_VPC_ID }}"
+              awsZoneLetter: "${{ vars.AWS_ZONE_LETTER }}"
+              awsRootSize: ${{ vars.AWS_ROOT_SIZE }}
+              awsRoute53Zone: "${{ secrets.AWS_ROUTE_53_ZONE }}"
+              awsUser: "${{ secrets.AWS_USER }}"
+              sshConnectionType: "${{ vars.SSH_CONNECTION_TYPE }}" 
+              timeout: "${{ vars.TIMEOUT }}"
+              ipAddressType: "${{ vars.IP_ADDRESS_TYPE }}"
+              loadBalancerType: "${{ vars.LOAD_BALANCER_TYPE }}"
+              targetType: "${{ vars.TARGET_TYPE }}"
+              publicAccess: true
+              privateAccess: true
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
-              osUser: "${{ secrets.AZURE_SSH_USER }}"
-              osGroup: "${{ secrets.AZURE_SSH_USER }}"
+              osUser: "${{ secrets.OS_USER }}"
+              osGroup: "${{ secrets.OS_GROUP }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
-              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
+              rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ secrets.AWS_ROUTE_53_ZONE }}"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
@@ -710,7 +712,7 @@ jobs:
               repo: "${{ env.RANCHER_REPO }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_12 }}"
+            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_12 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -754,8 +756,15 @@ jobs:
           google-project-id: "${{ secrets.GCP_PROJECT_ID }}"
           google-zone: "${{ secrets.GCP_ZONE }}"
           prefix: "${{ env.HOSTNAME_PREFIX }}"
-          region: "${{ secrets.AWS_REGION }}"
+          region: "${{ vars.EKS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
+
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.EKS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.EKS_REGION }}"
 
       - name: Set job status output
         if: always()

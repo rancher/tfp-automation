@@ -158,6 +158,9 @@ See the below examples on how to run the tests:
 ### AKS
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityAKSProvisioningTestSuite$"`
 
+### EKS
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityEKSProvisioningTestSuite$"`
+
 ### Upgrade
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/sanity --junitfile results.xml --jsonfile results.json -- -timeout=2h -v -run "TestTfpSanityUpgradeRancherTestSuite$"`
 
