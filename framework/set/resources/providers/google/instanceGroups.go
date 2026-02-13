@@ -12,8 +12,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// CreateGoogleCloudInsanceGroups will set up the Google Cloud instance groups.
-func CreateGoogleCloudInsanceGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
+// CreateGoogleCloudInstanceGroups will set up the Google Cloud instance groups.
+func CreateGoogleCloudInstanceGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
 	instanceGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{googleDefaults.GoogleComputeInstanceGroup, googleDefaults.GoogleComputeInstanceGroup + "_" + strconv.FormatInt(port, 10)})
 	instanceGroupBlockBody := instanceGroupBlock.Body()
 

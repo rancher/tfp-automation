@@ -59,7 +59,7 @@ sudo install -m 0755 /tmp/eksctl /usr/local/bin && rm /tmp/eksctl
 
 echo "Creating EKS cluster..."
 eksctl create cluster --name ${RESOURCE_PREFIX} --region ${AWS_REGION} --nodegroup-name ${RESOURCE_PREFIX}-ng \
-                                                                       --nodes 3 --nodes-min 3 --nodes-max 3 --managed
+                                                                       --nodes 3 --nodes-min 3 --nodes-max 3 --managed > /dev/null 2>&1
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
