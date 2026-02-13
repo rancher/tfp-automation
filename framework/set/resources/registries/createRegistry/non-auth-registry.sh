@@ -163,15 +163,21 @@ copy_images_with_crane() {
     for PATTERN in "${!IMAGE_PATTERNS[@]}"; do
         mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt | tail -n 30)
         for VERSION in "${VERSIONS[@]}"; do
-            SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-            DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-
-            crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all
-
             if [ "${PATTERN}" == "rke2-runtime" ]; then
-                WINS_SUFFIX="-windows-amd64"
-                SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
-                DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
+                if [[ "${VERSION}" == *-linux-amd64 ]]; then
+                    SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+                    DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+
+                    crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform linux/amd64
+                elif [[ "${VERSION}" == *-windows-amd64 ]]; then
+                    SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+                    DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+
+                    crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform windows/amd64
+                fi
+            else
+                SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+                DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
 
                 crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all
             fi
