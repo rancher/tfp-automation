@@ -74,3 +74,13 @@ runs:
         PROJECT_ID="${{ inputs.google-project-id }}" \
         ZONE="${{ inputs.google-zone }}" \
         "${{ github.action_path }}/google-cleanup.sh"
+
+    - if: ${{ inputs.cloud-provider == 'gke' }}
+      name: GKE cleanup
+      shell: bash
+      run: |
+        chmod +x "${{ github.action_path }}/gke-cleanup.sh"
+        PREFIX="${{ inputs.prefix }}" \
+        PROJECT_ID="${{ inputs.google-project-id }}" \
+        ZONE="${{ inputs.google-zone }}" \
+        "${{ github.action_path }}/gke-cleanup.sh"

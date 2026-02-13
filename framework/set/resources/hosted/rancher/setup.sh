@@ -14,6 +14,10 @@ RANCHER_AGENT_IMAGE=${11}
 
 RESOURCE_GROUP_NAME="${RESOURCE_PREFIX}-rg"
 
+if [[ $PROVIDER == "gke" ]]; then
+    export PATH="$PWD/google-cloud-sdk/bin:$PATH"
+fi
+
 if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
@@ -192,6 +196,38 @@ install_eks_ingress_nginx() {
     done
 }
 
+install_gke_ingress_nginx() {
+    echo "Installing ingress-nginx..."
+    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    helm repo update
+    helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+                 --namespace ingress-nginx \
+                 --set controller.service.type=LoadBalancer \
+                 --set controller.service.externalTrafficPolicy=Cluster \
+                 --create-namespace
+
+    kubectl get pods --namespace ingress-nginx
+
+    echo "Waiting for ingress-nginx to be rolled out"
+    kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
+
+    # We need to wait for the public IP to be provisioned before proceeding, otherwise the Rancher installation will fail.
+    echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+    while true; do
+        INGRESS=$(kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}')
+        if [[ -n "$INGRESS" && "$INGRESS" != "<pending>" ]]; then
+            echo "Ingress-nginx is provisioned with public IP: $INGRESS"
+
+            HOSTNAME="${INGRESS}.sslip.io"
+
+            break
+        else
+            echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+            sleep 5
+        fi
+    done
+}
+
 install_default_rancher() {
     echo "Installing Rancher"
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
@@ -239,8 +275,8 @@ check_cluster_status
 install_helm
 setup_helm_repo
 
-# Needed to get the latest chart version if RANCHER_TAG_VERSION is head
-if [[ $RANCHER_TAG_VERSION == head ]]; then
+# Needed to get the latest chart version if RANCHER_TAG_VERSION contains "head"
+if [[ $RANCHER_TAG_VERSION == *head* ]]; then
     LATEST_CHART_VERSION=$(helm search repo rancher-${REPO} --devel | tail -n +2 | head -n 1 | cut -f2)
     VERSION="--version ${LATEST_CHART_VERSION}"
 fi
@@ -251,6 +287,8 @@ if [[ $PROVIDER == "aks" ]]; then
     install_aks_ingress_nginx
 elif [[ $PROVIDER == "eks" ]]; then
     install_eks_ingress_nginx
+elif [[ $PROVIDER == "gke" ]]; then
+    install_gke_ingress_nginx
 fi
 
 install_default_rancher

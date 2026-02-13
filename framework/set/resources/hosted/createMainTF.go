@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/hosted/cluster"
+	"github.com/rancher/tfp-automation/framework/set/resources/hosted/gke"
 	"github.com/rancher/tfp-automation/framework/set/resources/hosted/rancher"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
@@ -79,6 +81,15 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		logrus.Infof("Error while creating Rancher server. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
 		return "", err
+	}
+
+	if terraformConfig.Provider == providers.GKE {
+		externalIP, err := gke.GrabGKEExternalIP(terraformConfig, terratestConfig)
+		if err != nil {
+			return "", err
+		}
+
+		terraformConfig.Standalone.RancherHostname = externalIP + sslipioSuffix
 	}
 
 	return serverOnePublicIP, nil

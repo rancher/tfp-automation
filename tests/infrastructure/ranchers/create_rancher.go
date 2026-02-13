@@ -166,11 +166,11 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 	var serverNodeOne string
 	var err error
 
-	if terraformConfig.LocalHostedCluster == nil {
-		serverNodeOne, err = sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	if terraformConfig.LocalHostedCluster {
+		serverNodeOne, err = hosted.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 		require.NoError(t, err)
 	} else {
-		serverNodeOne, err = hosted.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+		serverNodeOne, err = sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 		require.NoError(t, err)
 	}
 

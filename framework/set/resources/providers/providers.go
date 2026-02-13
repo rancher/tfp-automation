@@ -40,7 +40,7 @@ func TunnelToProvider(provider string) ProviderResources {
 		return ProviderResources{
 			CreateNonAirgap: azure.CreateAzureResources,
 		}
-	case providers.Google:
+	case providers.Google, providers.GKE:
 		logrus.Infof("Creating Google Cloud resources...")
 		return ProviderResources{
 			CreateNonAirgap: google.CreateGoogleCloudResources,
