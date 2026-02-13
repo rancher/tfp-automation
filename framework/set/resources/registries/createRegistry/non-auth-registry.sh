@@ -77,37 +77,48 @@ cert_manager_images() {
     )
 
     for IMAGE in "${CERT_MANAGER_IMAGES[@]}"; do
-        echo "${IMAGE}" | sudo tee -a /home/${USER}/rancher-images.txt > /dev/null
+        sudo docker pull ${IMAGE}
+        sudo docker tag ${IMAGE} ${HOST}/${IMAGE}
+        sudo docker push ${HOST}/${IMAGE}
     done
 }
 
-manage_images() {
-    ACTION=$1
-    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
-    PARALLEL_ACTIONS=10
+copy_images_with_crane() {
+    ARCH=$(uname -m)
+    if [[ $ARCH == "x86_64" ]]; then
+        ARCH="x86_64"
+    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+        ARCH="arm64"
+    fi
 
+    sudo wget https://github.com/google/go-containerregistry/releases/download/v0.20.6/go-containerregistry_Linux_${ARCH}.tar.gz
+    sudo tar -xf go-containerregistry_Linux_${ARCH}.tar.gz
+    sudo chmod +x crane
+    sudo mv crane /usr/local/bin/crane
+
+    PARALLEL_ACTIONS=10
     COUNTER=0
-    for IMAGE in "${IMAGES[@]}"; do
-        action "${ACTION}" "${IMAGE}"
+
+    while read -r IMAGE; do
+        [[ -z "$IMAGE" ]] && continue
+        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
         COUNTER=$((COUNTER+1))
-        
-        if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
+        if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
             wait
         fi
-    done
-
+    done < "/home/${USER}/rancher-images.txt"
     wait
-}
 
-action() {
-    ACTION=$1
-    IMAGE=$2
-    
-    if [ "$ACTION" == "pull" ]; then
-        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${HOST}/${IMAGE} &
-    elif [ "$ACTION" == "push" ]; then
-        sudo docker push ${HOST}/${IMAGE} &
-    fi
+    COUNTER=0
+    while read -r IMAGE; do
+        [[ -z "$IMAGE" ]] && continue
+        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
+        COUNTER=$((COUNTER+1))
+        if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
+            wait
+        fi
+    done < "/home/${USER}/rancher-windows-images.txt"
+    wait
 }
 
 verify_images() {
@@ -141,55 +152,6 @@ verify_images() {
     echo "Image verification complete."
 }
 
-copy_images_with_crane() {
-    ARCH=$(uname -m)
-    if [[ $ARCH == "x86_64" ]]; then
-        ARCH="x86_64"
-    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-        ARCH="arm64"
-    fi
-
-    sudo wget https://github.com/google/go-containerregistry/releases/download/v0.20.6/go-containerregistry_Linux_${ARCH}.tar.gz
-    sudo tar -xf go-containerregistry_Linux_${ARCH}.tar.gz
-    sudo chmod +x crane
-    sudo mv crane /usr/local/bin/crane
-
-    declare -A IMAGE_PATTERNS=(
-        ["mirrored-pause"]="mirrored-pause"
-        ["system-agent-installer-rke2"]="system-agent-installer-rke2"
-        ["rke2-runtime"]="rke2-runtime"
-    )
-
-    for PATTERN in "${!IMAGE_PATTERNS[@]}"; do
-        mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\K[^ ]+" /home/${USER}/rancher-images.txt | tail -n 30)
-        for VERSION in "${VERSIONS[@]}"; do
-            if [ "${PATTERN}" == "rke2-runtime" ]; then
-                if [[ "${VERSION}" == *-linux-amd64 ]]; then
-                    SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-                    DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-
-                    crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform linux/amd64
-                elif [[ "${VERSION}" == *-windows-amd64 ]]; then
-                    SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-                    DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-
-                    crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform windows/amd64
-                fi
-            else
-                SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-                DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-
-                crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all
-            fi
-        done
-    done
-
-    mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
-    for IMAGE in "${WINDOWS_IMAGES[@]}"; do
-        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure --platform all
-    done
-}
-
 verify_windows_images() {
     echo "Verifying Windows images in registry..."
 
@@ -204,7 +166,7 @@ verify_windows_images() {
                 echo "${IMAGE} exists"
             else
                 echo "${IMAGE} is missing, fixing..."
-                crane copy "docker.io/${IMAGE}" "${TARGET_IMAGE}" --insecure --platform all
+                crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
                 echo "${IMAGE} pushed successfully."
             fi
         } &
@@ -223,18 +185,6 @@ docker_login
 create_registry
 fetch_images
 cert_manager_images
-    
-echo "Pulling the images..."
-manage_images "pull"
-
-echo "Pushing the newly tagged images..."
-manage_images "push"
-
-echo "Verifying all images exist in registry..."
-verify_images
-
-echo "Copying needed Windows images with Crane..."
 copy_images_with_crane
-
-echo "Verifying Windows images exist in registry..."
+verify_images
 verify_windows_images
