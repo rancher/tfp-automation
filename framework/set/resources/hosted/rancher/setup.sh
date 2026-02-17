@@ -197,6 +197,7 @@ install_default_rancher() {
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                          --set hostname=${HOSTNAME} \
+                                                                                         ${VERSION} \
                                                                                          ${RANCHER_TAG} \
                                                                                          ${IMAGE} \
                                                                                          --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
