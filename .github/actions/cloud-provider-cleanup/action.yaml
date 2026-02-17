@@ -42,6 +42,13 @@ runs:
         "${{ github.action_path }}/aws-cleanup.sh"
 
     - if: ${{ inputs.cloud-provider == 'eks' }}
+      name: Refresh AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.iam-role }}
+        aws-region: ${{ inputs.region }}
+
+    - if: ${{ inputs.cloud-provider == 'eks' }}
       name: EKS cleanup
       shell: bash
       run: |
