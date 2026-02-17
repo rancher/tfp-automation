@@ -17,7 +17,6 @@ if [ -n "$ROUTE53_RECORD" ]; then
   CURRENT_VALUE=$(echo "$CURRENT_RECORD_JSON" | jq -r '.[0].ResourceRecords[0].Value')
 
   if [ -n "$CURRENT_VALUE" ] && [ "$CURRENT_VALUE" != "null" ]; then
-    echo "Deleting Route53 record with current value: $CURRENT_VALUE"
     aws route53 change-resource-record-sets \
       --hosted-zone-id "${HOSTED_ZONE_ID}" \
       --change-batch "{\"Changes\":[{\"Action\":\"DELETE\",\"ResourceRecordSet\":{\"Name\":\"${ROUTE53_RECORD}.\",\"Type\":\"CNAME\",\"TTL\":300,\"ResourceRecords\":[{\"Value\":\"${CURRENT_VALUE}\"}]}}]}" \
@@ -34,31 +33,11 @@ CLUSTER_NAMES=$(aws eks list-clusters --query "clusters[?starts_with(@, \`${PREF
 if [ -n "$CLUSTER_NAMES" ]; then
   for cluster in $CLUSTER_NAMES; do
     echo "Deleting cluster $cluster..."
-    nohup eksctl delete cluster --name "$cluster" --region "$AWS_REGION" > /dev/null 2>&1 &
+    eksctl utils write-kubeconfig --cluster "$cluster" --region "$AWS_REGION" > /dev/null
+    eksctl delete cluster --name "$cluster" --region "$AWS_REGION" --force --disable-nodegroup-eviction > /dev/null
   done
 else
   echo "No matching clusters found."
-fi
-
-VPC_IDS=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eksctl-${PREFIX}*" --query "Vpcs[?State=='available'].VpcId" --output text)
-SECURITY_GROUPS=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=${VPC_IDS}" --query "SecurityGroups[].GroupId" --output text)
-
-if [ -n "$SECURITY_GROUPS" ]; then
-  for sg in $SECURITY_GROUPS; do
-    echo "Deleting security group $sg..."
-    aws ec2 delete-security-group --group-id "$sg" > /dev/null 2>&1
-  done
-else
-  echo "No matching security groups found."
-fi
-
-if [ -n "$VPC_IDS" ]; then
-  for vpc in $VPC_IDS; do
-    echo "Deleting VPC $vpc..."
-    aws ec2 delete-vpc --vpc-id "$vpc" > /dev/null 2>&1
-  done
-else
-  echo "No matching VPCs found."
 fi
 
 INSTANCE_IDS=$(aws ec2 describe-instances \
@@ -68,9 +47,37 @@ INSTANCE_IDS=$(aws ec2 describe-instances \
 
 if [ -n "$INSTANCE_IDS" ]; then
   echo "Deleting EC2 instances..."
-  aws ec2 terminate-instances --instance-ids $INSTANCE_IDS > /dev/null 2>&1
+  aws ec2 terminate-instances --instance-ids $INSTANCE_IDS > /dev/null
 else
   echo "No matching instances found"
+fi
+
+VPC_IDS=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eksctl-${PREFIX}*" --query "Vpcs[?State=='available'].VpcId" --output text)
+
+if [ -n "$VPC_IDS" ]; then
+  for vpc in $VPC_IDS; do
+    ALB_ARNs=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?VpcId=='$vpc'].LoadBalancerArn" --output text)
+
+    if [ -n "$ALB_ARNs" ]; then
+      for alb in $ALB_ARNs; do
+        echo "Deleting load balancer in VPC..."
+        aws elbv2 delete-load-balancer --load-balancer-arn "$alb" > /dev/null
+      done
+    else
+      echo "No load balancers found."
+    fi
+
+    TG_ARNs=$(aws elbv2 describe-target-groups --query "TargetGroups[?VpcId=='$vpc'].TargetGroupArn" --output text)
+
+    if [ -n "$TG_ARNs" ]; then
+      for tg in $TG_ARNs; do
+        echo "Deleting target group in VPC..."
+        aws elbv2 delete-target-group --target-group-arn "$tg" > /dev/null
+      done
+    else
+      echo "No target groups found."
+    fi
+  done
 fi
 
 echo "Cleanup completed!"
