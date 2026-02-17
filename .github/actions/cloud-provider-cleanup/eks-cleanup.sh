@@ -12,11 +12,19 @@ HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name --query "HostedZones[0].I
 ROUTE53_RECORD=$(aws route53 list-resource-record-sets --hosted-zone-id "${HOSTED_ZONE_ID}" --query "ResourceRecordSets[?starts_with(Name, \`${PREFIX}\`)].Name" --output text | sed 's/\.$//')
 
 if [ -n "$ROUTE53_RECORD" ]; then
-  echo "Deleting Route53 record..."
-  aws route53 change-resource-record-sets \
-    --hosted-zone-id "${HOSTED_ZONE_ID}" \
-    --change-batch "{\"Changes\":[{\"Action\":\"DELETE\",\"ResourceRecordSet\":{\"Name\":\"${ROUTE53_RECORD}\",\"Type\":\"CNAME\",\"TTL\":300,\"ResourceRecords\":[{\"Value\":\"${PREFIX}.${ZONE}\"}]}}]}" \
-    > /dev/null 2>&1
+  echo "Fetching current Route53 record values for deletion..."
+  CURRENT_RECORD_JSON=$(aws route53 list-resource-record-sets --hosted-zone-id "${HOSTED_ZONE_ID}" --query "ResourceRecordSets[?Name=='${ROUTE53_RECORD}.'] | [?Type=='CNAME']" --output json)
+  CURRENT_VALUE=$(echo "$CURRENT_RECORD_JSON" | jq -r '.[0].ResourceRecords[0].Value')
+
+  if [ -n "$CURRENT_VALUE" ] && [ "$CURRENT_VALUE" != "null" ]; then
+    echo "Deleting Route53 record with current value: $CURRENT_VALUE"
+    aws route53 change-resource-record-sets \
+      --hosted-zone-id "${HOSTED_ZONE_ID}" \
+      --change-batch "{\"Changes\":[{\"Action\":\"DELETE\",\"ResourceRecordSet\":{\"Name\":\"${ROUTE53_RECORD}.\",\"Type\":\"CNAME\",\"TTL\":300,\"ResourceRecords\":[{\"Value\":\"${CURRENT_VALUE}\"}]}}]}" \
+      > /dev/null 2>&1
+  else
+    echo "No current value found for Route53 record, skipping deletion."
+  fi
 else
   echo "No matching Route53 records found."
 fi
