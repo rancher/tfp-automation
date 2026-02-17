@@ -48,6 +48,8 @@ upgrade_self_signed_rancher() {
                                                                                         --set 'extraEnv[0].value=prime' \
                                                                                         --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
                                                                                         --set 'extraEnv[1].value=suse' \
+                                                                                        --set 'extraEnv[2].name=CATTLE_AGENT_IMAGE' \
+                                                                                        --set "extraEnv[2].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                         --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                         --set noProxy="${NO_PROXY}" \
                                                                                         --set agentTLSMode=system-store \
@@ -80,6 +82,8 @@ upgrade_lets_encrypt_rancher() {
                                                                                          --set 'extraEnv[0].value=prime' \
                                                                                          --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
                                                                                          --set 'extraEnv[1].value=suse' \
+                                                                                         --set 'extraEnv[2].name=CATTLE_AGENT_IMAGE' \
+                                                                                         --set "extraEnv[2].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                          --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                          --set noProxy="${NO_PROXY}" \
                                                                                          --set agentTLSMode=system-store \
