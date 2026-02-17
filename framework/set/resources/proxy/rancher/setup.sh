@@ -112,6 +112,7 @@ install_self_signed_rancher() {
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
@@ -145,6 +146,7 @@ install_lets_encrypt_rancher() {
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                      --set hostname=${HOSTNAME} \
+                                                                                     ${VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
                                                                                      --set ingress.tls.source=letsEncrypt \
@@ -166,7 +168,7 @@ install_lets_encrypt_rancher() {
                                                                                      --set hostname=${HOSTNAME} \
                                                                                      ${VERSION} \
                                                                                      ${RANCHER_TAG} \
-                                                                                    ${IMAGE} \
+                                                                                     ${IMAGE} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.ingress.class=nginx \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \

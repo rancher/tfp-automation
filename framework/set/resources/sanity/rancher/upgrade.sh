@@ -42,6 +42,7 @@ upgrade_turtles_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
@@ -57,8 +58,8 @@ upgrade_turtles_off() {
 
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_FEATURES' \
@@ -70,6 +71,7 @@ upgrade_turtles_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
@@ -87,8 +89,8 @@ upgrade_turtles_off() {
                                                                                         --devel
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
@@ -112,6 +114,7 @@ upgrade_mcm_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
@@ -127,8 +130,8 @@ upgrade_mcm_off() {
 
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_FEATURES' \
@@ -140,6 +143,7 @@ upgrade_mcm_off() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
@@ -158,6 +162,7 @@ upgrade_mcm_off() {
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
@@ -181,6 +186,7 @@ upgrade_default_rancher() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
@@ -194,8 +200,8 @@ upgrade_default_rancher() {
 
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
@@ -207,6 +213,7 @@ upgrade_default_rancher() {
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
@@ -222,8 +229,8 @@ upgrade_default_rancher() {
                                                                                         --devel
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \

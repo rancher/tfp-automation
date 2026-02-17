@@ -41,8 +41,8 @@ upgrade_turtles_off() {
     if [ "$CERT_TYPE" == "self-signed" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -60,8 +60,8 @@ upgrade_turtles_off() {
 
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -74,8 +74,8 @@ upgrade_turtles_off() {
     elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -95,8 +95,8 @@ upgrade_turtles_off() {
                                                                                         --devel
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -121,8 +121,8 @@ upgrade_default_rancher() {
     if [ "$CERT_TYPE" == "self-signed" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -138,8 +138,8 @@ upgrade_default_rancher() {
 
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -150,8 +150,8 @@ upgrade_default_rancher() {
     elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
         if [ -n "$RANCHER_AGENT_IMAGE" ]; then
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
@@ -169,8 +169,8 @@ upgrade_default_rancher() {
                                                                                         --devel
         else
             helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        ${VERSION} \
                                                                                         --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
