@@ -185,8 +185,8 @@ check_cluster_status
 install_helm
 setup_helm_repo
 
-# Needed to get the latest chart version if RANCHER_TAG_VERSION is head
-if [[ $RANCHER_TAG_VERSION == head ]]; then
+# Needed to get the latest chart version if RANCHER_TAG_VERSION contains "head"
+if [[ $RANCHER_TAG_VERSION == *head* ]]; then
     LATEST_CHART_VERSION=$(helm search repo rancher-${REPO} --devel | tail -n +2 | head -n 1 | cut -f2)
     VERSION="--version ${LATEST_CHART_VERSION}"
 fi
