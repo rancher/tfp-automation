@@ -94,7 +94,7 @@ func SSHNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		}
 
 		connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
-	case google.Google:
+	case google.Google, providers.GKE:
 		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.GoogleConfig.SSHUser))
 
 		keyPathExpression := general.File + `("` + terraformConfig.PrivateKeyPath + `")`

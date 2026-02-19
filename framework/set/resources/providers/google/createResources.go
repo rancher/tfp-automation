@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,28 +21,30 @@ func CreateGoogleCloudResources(file *os.File, newFile *hclwrite.File, tfBlockBo
 	CreateGoogleCloudFirewalls(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	CreateGoogleCloudLoadBalancer(rootBody, terraformConfig)
-	rootBody.AppendNewline()
-
 	for _, instance := range instances {
 		CreateGoogleCloudInstances(rootBody, terraformConfig, terratestConfig, instance)
 		rootBody.AppendNewline()
 	}
 
-	if terraformConfig.Standalone.CertManagerVersion != "" {
-		ports := []int64{80, 443, 6443, 9345}
-		for _, port := range ports {
-			CreateGoogleCloudInsanceGroups(rootBody, terraformConfig, port)
-			rootBody.AppendNewline()
+	if terraformConfig.Provider != providers.GKE {
+		CreateGoogleCloudLoadBalancer(rootBody, terraformConfig)
+		rootBody.AppendNewline()
 
-			CreateGoogleBackendService(rootBody, terraformConfig, port)
-			rootBody.AppendNewline()
+		if terraformConfig.Standalone.CertManagerVersion != "" {
+			ports := []int64{80, 443, 6443, 9345}
+			for _, port := range ports {
+				CreateGoogleCloudInstanceGroups(rootBody, terraformConfig, port)
+				rootBody.AppendNewline()
 
-			CreateGoogleHealthCheck(rootBody, terraformConfig, port)
-			rootBody.AppendNewline()
+				CreateGoogleBackendService(rootBody, terraformConfig, port)
+				rootBody.AppendNewline()
 
-			CreateGoogleForwardingRule(rootBody, terraformConfig, port)
-			rootBody.AppendNewline()
+				CreateGoogleHealthCheck(rootBody, terraformConfig, port)
+				rootBody.AppendNewline()
+
+				CreateGoogleForwardingRule(rootBody, terraformConfig, port)
+				rootBody.AppendNewline()
+			}
 		}
 	}
 

@@ -164,12 +164,6 @@ type StandaloneRegistry struct {
 	UpgradedAssetsPath string `json:"upgradedAssetsPath,omitempty" yaml:"upgradedAssetsPath,omitempty"`
 }
 
-type LocalHostedCluster struct {
-	AKS bool `json:"aks,omitempty" yaml:"aks,omitempty"`
-	EKS bool `json:"eks,omitempty" yaml:"eks,omitempty"`
-	GKE bool `json:"gke,omitempty" yaml:"gke,omitempty"`
-}
-
 type TerraformConfig struct {
 	AWSConfig                           aws.Config                   `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
 	AWSCredentials                      aws.Credentials              `json:"awsCredentials,omitempty" yaml:"awsCredentials,omitempty"`
@@ -199,7 +193,7 @@ type TerraformConfig struct {
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
-	LocalHostedCluster                  *LocalHostedCluster          `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`
+	LocalHostedCluster                  bool                         `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`
 	MixedArchitecture                   bool                         `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`

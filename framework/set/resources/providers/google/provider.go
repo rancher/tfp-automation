@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	googleDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/google"
 	"github.com/zclconf/go-cty/cty"
@@ -48,10 +49,18 @@ func CreateGoogleCloudLocalBlock(rootBody *hclwrite.Body, terraformConfig *confi
 	localBlock := rootBody.AppendNewBlock(locals, nil)
 	localBlockBody := localBlock.Body()
 
-	instanceIds := map[string]any{
-		serverOne:   googleDefaults.GoogleComputeInstance + "." + serverOne + ".id",
-		serverTwo:   googleDefaults.GoogleComputeInstance + "." + serverTwo + ".id",
-		serverThree: googleDefaults.GoogleComputeInstance + "." + serverThree + ".id",
+	var instanceIds map[string]any
+
+	if terraformConfig.Provider == providers.GKE {
+		instanceIds = map[string]any{
+			serverOne: googleDefaults.GoogleComputeInstance + "." + serverOne + ".id",
+		}
+	} else {
+		instanceIds = map[string]any{
+			serverOne:   googleDefaults.GoogleComputeInstance + "." + serverOne + ".id",
+			serverTwo:   googleDefaults.GoogleComputeInstance + "." + serverTwo + ".id",
+			serverThree: googleDefaults.GoogleComputeInstance + "." + serverThree + ".id",
+		}
 	}
 
 	instanceIdsBlock := localBlockBody.AppendNewBlock(instanceIDs+" =", nil)
