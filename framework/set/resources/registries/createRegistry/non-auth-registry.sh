@@ -53,13 +53,6 @@ fetch_images() {
 
     sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
     sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt -O /home/${USER}/rancher-windows-images.txt
-    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-save-images.sh -O /home/${USER}/rancher-save-images.sh
-    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-load-images.sh -O /home/${USER}/rancher-load-images.sh
-        
-    sudo chmod +x /home/${USER}/rancher-save-images.sh /home/${USER}/rancher-load-images.sh
-    sudo sed -i "s/docker save/# docker save /g" /home/${USER}/rancher-save-images.sh
-    sudo sed -i "s/docker load/# docker load /g" /home/${USER}/rancher-load-images.sh
-    sudo sed -i '/mirrored-prometheus-windows-exporter/d' /home/${USER}/rancher-images.txt
 
     if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
         sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
@@ -83,7 +76,7 @@ cert_manager_images() {
     done
 }
 
-copy_images_with_crane() {
+copy_images() {
     ARCH=$(uname -m)
     if [[ $ARCH == "x86_64" ]]; then
         ARCH="x86_64"
@@ -96,38 +89,103 @@ copy_images_with_crane() {
     sudo chmod +x crane
     sudo mv crane /usr/local/bin/crane
 
+    # In the case rancher agent image has been replaced in rancher-images,txt, it does not exist in dockerhub.
+    # So we need to omit that from the source.
+    if [[ -n "${RANCHER_AGENT_IMAGE}" ]]; then
+        IMAGE_TAG=$(grep -m1 'rancher/rancher-agent:' /home/${USER}/rancher-images.txt | rev | cut -d: -f1 | rev)
+        crane copy "${RANCHER_IMAGE}:${IMAGE_TAG}" "${HOST}/${RANCHER_IMAGE}:${IMAGE_TAG}" --insecure &
+        crane copy "${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" "${HOST}/${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" --insecure &
+    fi
+
     PARALLEL_ACTIONS=10
     COUNTER=0
 
     while read -r IMAGE; do
         [[ -z "$IMAGE" ]] && continue
         crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
+
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
             wait
         fi
     done < "/home/${USER}/rancher-images.txt"
+
     wait
 
     COUNTER=0
     while read -r IMAGE; do
         [[ -z "$IMAGE" ]] && continue
         crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
+
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
             wait
         fi
     done < "/home/${USER}/rancher-windows-images.txt"
+
+    wait
+}
+
+copy_windows_images() {
+    declare -A IMAGE_PATTERNS=(
+        ["mirrored-pause"]="mirrored-pause"
+        ["system-agent-installer-rke2"]="system-agent-installer-rke2"
+        ["rke2-runtime"]="rke2-runtime"
+    )
+
+    PARALLEL_ACTIONS=10
+    COUNTER=0
+
+    for PATTERN in "${!IMAGE_PATTERNS[@]}"; do
+        mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\\K[^ ]+" /home/${USER}/rancher-images.txt | tail -n 30)
+        for VERSION in "${VERSIONS[@]}"; do
+            SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+            DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+
+            crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all &
+            COUNTER=$((COUNTER+1))
+            if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
+                wait
+            fi
+
+            if [ "${PATTERN}" == "rke2-runtime" ]; then
+                WINS_SUFFIX="-windows-amd64"
+                SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
+                DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
+
+                crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all &
+
+                COUNTER=$((COUNTER+1))
+                if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
+                    wait
+                fi
+            fi
+        done
+    done
+
+    wait
+
+    COUNTER=0
+    mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
+    for IMAGE in "${WINDOWS_IMAGES[@]}"; do
+        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure --platform all &
+
+        COUNTER=$((COUNTER+1))
+        if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
+            wait
+        fi
+    done
+
     wait
 }
 
 verify_images() {
     echo "Verifying images in registry..."
 
-    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
     PARALLEL_ACTIONS=10
     COUNTER=0
 
+    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
     for IMAGE in "${IMAGES[@]}"; do
         {
             TARGET_IMAGE=${HOST}/${IMAGE}
@@ -135,10 +193,8 @@ verify_images() {
                 echo "${IMAGE} exists"
             else
                 echo "${IMAGE} is missing, fixing..."
-                sudo docker pull ${IMAGE}
-                sudo docker tag ${IMAGE} ${TARGET_IMAGE}
-                sudo docker push ${TARGET_IMAGE}
-                echo "${TARGET_IMAGE} pushed successfully."
+                crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
+                echo "${IMAGE} pushed successfully."
             fi
         } &
         
@@ -149,16 +205,15 @@ verify_images() {
     done
 
     wait
-    echo "Image verification complete."
 }
 
 verify_windows_images() {
     echo "Verifying Windows images in registry..."
 
-    mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
     PARALLEL_ACTIONS=10
     COUNTER=0
 
+    mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
     for IMAGE in "${WINDOWS_IMAGES[@]}"; do
         {
             TARGET_IMAGE=${HOST}/${IMAGE}
@@ -178,13 +233,13 @@ verify_windows_images() {
     done
 
     wait
-    echo "Windows image verification complete."
 }
 
 docker_login
 create_registry
 fetch_images
 cert_manager_images
-copy_images_with_crane
+copy_images
+copy_windows_images
 verify_images
 verify_windows_images

@@ -2,9 +2,6 @@
 name: Sanity GKE Testing
 
 on:
-  pull_request:
-    branches:
-      - main
   schedule:
     - cron: "0 7 * * 2"
   workflow_dispatch:
@@ -47,10 +44,10 @@ env:
 
 jobs:
   v2-14:
-    # if: |
-    #   github.event_name == 'schedule' ||
-    #   github.event.inputs.run_all_versions == 'true' ||
-    #   (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: head
@@ -117,27 +114,25 @@ jobs:
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_VERSION
-          # value: |
-          #   ${{ 
-          #     github.event.inputs.rancher_version || 
-          #     (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
-          #     (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_14_HEAD) ||
-          #     (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_14_HEAD)
-          #   }}
-          value: head
+          value: |
+            ${{ 
+              github.event.inputs.rancher_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_version) || 
+              (github.event_name == 'schedule' && vars.RANCHER_VERSION_2_14_HEAD) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RANCHER_VERSION_2_14_HEAD)
+            }}
 
       - name: Set Rancher chart version
         uses: ./.github/actions/set-env-var
         with:
           key: RANCHER_CHART_VERSION
-          # value: |
-          #   ${{ 
-          #     github.event.inputs.rancher_chart_version || 
-          #     (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-          #     (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
-          #     (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
-          #   }}
-          value: 2.13.2
+          value: |
+            ${{ 
+              github.event.inputs.rancher_chart_version || 
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
+            }}
 
       - name: Set Rancher repo
         uses: ./.github/actions/set-rancher-repo
