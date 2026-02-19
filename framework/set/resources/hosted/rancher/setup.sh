@@ -106,28 +106,27 @@ install_cert_manager() {
     sleep 60
 }
 
-install_aks_ingress_nginx() {
-    echo "Installing ingress-nginx..."
-    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+install_aks_traefik() {
+    echo "Installing traefik..."
+    helm repo add traefik https://traefik.github.io/charts
     helm repo update
-    helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-                 --namespace ingress-nginx \
-                 --set controller.service.type=LoadBalancer \
-                 --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
-                 --set controller.service.externalTrafficPolicy=Cluster \
+    helm upgrade --install traefik traefik/traefik \
+                 --namespace traefik \
+                 --set service.type=LoadBalancer \
+                 --set service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
                  --create-namespace
 
-    kubectl get pods --namespace ingress-nginx
+    kubectl get pods --namespace traefik
 
-    echo "Waiting for ingress-nginx to be rolled out"
-    kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
+    echo "Waiting for traefik to be rolled out"
+    kubectl -n traefik rollout status deploy/traefik
 
     # We need to wait for the public IP to be provisioned before proceeding, otherwise the Rancher installation will fail.
-    echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+    echo "Waiting for traefik to be provisioned with a public IP..."
     while true; do
-        INGRESS=$(kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}')
-        if [[ -n "$INGRESS" && "$INGRESS" != "<pending>" ]]; then
-            echo "Ingress-nginx is provisioned with public IP: $INGRESS"
+        TRAEFIK=$(kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}')
+        if [[ -n "$TRAEFIK" && "$TRAEFIK" != "<pending>" ]]; then
+            echo "Traefik is provisioned with public IP: $TRAEFIK"
 
             MC_RG=$(az aks show --resource-group "$RESOURCE_GROUP_NAME" --name "$RESOURCE_PREFIX" --query nodeResourceGroup -o tsv)
 
@@ -140,35 +139,34 @@ install_aks_ingress_nginx() {
 
             break
         else
-            echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+            echo "Waiting for traefik to be provisioned with a public IP..."
             sleep 5
         fi
     done
 }
 
-install_eks_ingress_nginx() {
-    echo "Installing ingress-nginx..."
-    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+install_eks_traefik() {
+    echo "Installing traefik..."
+    helm repo add traefik https://traefik.github.io/charts
     helm repo update
-    helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-                 --namespace ingress-nginx \
-                 --set controller.service.type=LoadBalancer \
-                 --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"=nlb  \
-                 --set-string controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-internal"="false" \
-                 --set controller.service.externalTrafficPolicy=Cluster \
+    helm upgrade --install traefik traefik/traefik \
+                 --namespace traefik \
+                 --set service.type=LoadBalancer \
+                 --set service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"=nlb  \
+                 --set-string service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-internal"="false" \
                  --create-namespace
 
-    kubectl get pods --namespace ingress-nginx
+    kubectl get pods --namespace traefik
 
-    echo "Waiting for ingress-nginx to be rolled out"
-    kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
+    echo "Waiting for traefik to be rolled out"
+    kubectl -n traefik rollout status deploy/traefik
 
     # We need to wait for the public IP to be provisioned before proceeding, otherwise the Rancher installation will fail.
-    echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+    echo "Waiting for traefik to be provisioned with a public IP..."
     while true; do
-        INGRESS=$(kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}')
-        if [[ -n "$INGRESS" && "$INGRESS" != "<pending>" ]]; then
-            echo "Ingress-nginx is provisioned with public IP: $INGRESS"
+        TRAEFIK=$(kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}')
+        if [[ -n "$TRAEFIK" && "$TRAEFIK" != "<pending>" ]]; then
+            echo "traefik is provisioned with public IP: $TRAEFIK"
 
             HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name --query "HostedZones[0].Id" --output text | sed 's|/hostedzone/||')
 
@@ -183,46 +181,46 @@ install_eks_ingress_nginx() {
       "ResourceRecords": [{"Value": "%s"}]
     }
   }]
-}' "$HOSTNAME" "$INGRESS" | sudo tee /tmp/change-batch.json > /dev/null
+}' "$HOSTNAME" "$TRAEFIK" | sudo tee /tmp/change-batch.json > /dev/null
 
 
             aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --change-batch file:///tmp/change-batch.json
 
             break
         else
-            echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+            echo "Waiting for traefik to be provisioned with a public IP..."
             sleep 5
         fi
     done
 }
 
-install_gke_ingress_nginx() {
-    echo "Installing ingress-nginx..."
-    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+install_gke_traefik() {
+    echo "Installing traefik..."
+    helm repo add traefik https://traefik.github.io/charts
     helm repo update
-    helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-                 --namespace ingress-nginx \
-                 --set controller.service.type=LoadBalancer \
-                 --set controller.service.externalTrafficPolicy=Cluster \
+    helm upgrade --install traefik traefik/traefik \
+                 --namespace traefik \
+                 --set service.type=LoadBalancer \
+                 --set service.externalTrafficPolicy=Cluster \
                  --create-namespace
 
-    kubectl get pods --namespace ingress-nginx
+    kubectl get pods --namespace traefik
 
-    echo "Waiting for ingress-nginx to be rolled out"
-    kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
+    echo "Waiting for traefik to be rolled out"
+    kubectl -n traefik rollout status deploy/traefik
 
     # We need to wait for the public IP to be provisioned before proceeding, otherwise the Rancher installation will fail.
-    echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+    echo "Waiting for traefik to be provisioned with a public IP..."
     while true; do
-        INGRESS=$(kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}')
-        if [[ -n "$INGRESS" && "$INGRESS" != "<pending>" ]]; then
-            echo "Ingress-nginx is provisioned with public IP: $INGRESS"
+        TRAEFIK=$(kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}')
+        if [[ -n "$TRAEFIK" && "$TRAEFIK" != "<pending>" ]]; then
+            echo "Traefik is provisioned with public IP: $TRAEFIK"
 
-            HOSTNAME="${INGRESS}.sslip.io"
+            HOSTNAME="${TRAEFIK}.sslip.io"
 
             break
         else
-            echo "Waiting for ingress-nginx to be provisioned with a public IP..."
+            echo "Waiting for traefik to be provisioned with a public IP..."
             sleep 5
         fi
     done
@@ -244,7 +242,7 @@ install_default_rancher() {
                                                                                          --set "extraEnv[2].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                         --set ingress.ingressClassName=nginx \
+                                                                                         --set ingress.ingressClassName=traefik \
                                                                                          --devel
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -254,7 +252,7 @@ install_default_rancher() {
                                                                                          ${IMAGE} \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                         --set ingress.ingressClassName=nginx \
+                                                                                         --set ingress.ingressClassName=traefik \
                                                                                          --devel
         fi
 }
@@ -284,11 +282,11 @@ fi
 install_cert_manager
 
 if [[ $PROVIDER == "aks" ]]; then
-    install_aks_ingress_nginx
+    install_aks_traefik
 elif [[ $PROVIDER == "eks" ]]; then
-    install_eks_ingress_nginx
+    install_eks_traefik
 elif [[ $PROVIDER == "gke" ]]; then
-    install_gke_ingress_nginx
+    install_gke_traefik
 fi
 
 install_default_rancher
