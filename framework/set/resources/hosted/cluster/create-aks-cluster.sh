@@ -25,7 +25,7 @@ chmod 600 $PUB
 
 az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID" > /dev/null 2>&1
 
-echo "Creating AKS cluster "$CLUSTER_NAME"..."
+echo "Creating AKS cluster..."
 az aks create --resource-group "$RESOURCE_GROUP_NAME" --name "$RESOURCE_PREFIX" --node-count "$NODE_COUNT" --node-vm-size "$NODE_SIZE" \
               --enable-managed-identity --ssh-key-value "$PUB" > /dev/null 2>&1
 

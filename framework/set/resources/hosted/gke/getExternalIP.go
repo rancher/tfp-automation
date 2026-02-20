@@ -31,7 +31,7 @@ func runCommandOutput(name string, args ...string) (string, error) {
 }
 
 func getIngressExternalIP() (string, error) {
-	cmd := exec.Command("sh", "-c", "export PATH=\"$PWD/google-cloud-sdk/bin:$PATH\" && kubectl get service ingress-nginx-controller --namespace=ingress-nginx -o wide | awk 'NR==2 {print $4}'")
+	cmd := exec.Command("sh", "-c", "export PATH=\"$PWD/google-cloud-sdk/bin:$PATH\" && kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}'")
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
