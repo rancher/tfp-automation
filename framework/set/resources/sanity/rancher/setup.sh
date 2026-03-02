@@ -142,7 +142,7 @@ install_turtles_off() {
                                                                                             ${IMAGE} \
                                                                                             --set ingress.tls.source=letsEncrypt \
                                                                                             --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                            --set letsEncrypt.ingress.class=nginx \
+                                                                                            --set letsEncrypt.ingress.class=traefik \
                                                                                             --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
                                                                                             --set 'extraEnv[0].value=prime' \
                                                                                             --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
@@ -162,7 +162,7 @@ install_turtles_off() {
                                                                                             ${IMAGE} \
                                                                                             --set ingress.tls.source=letsEncrypt \
                                                                                             --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                            --set letsEncrypt.ingress.class=nginx \
+                                                                                            --set letsEncrypt.ingress.class=traefik \
                                                                                             --set 'extraEnv[0].name=CATTLE_FEATURES' \
                                                                                             --set 'extraEnv[0].value=turtles=false\,embedded-cluster-api=true' \
                                                                                             --set agentTLSMode=system-store \
@@ -216,7 +216,7 @@ install_mcm_off() {
                                                                                             ${IMAGE} \
                                                                                             --set ingress.tls.source=letsEncrypt \
                                                                                             --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                            --set letsEncrypt.ingress.class=nginx \
+                                                                                            --set letsEncrypt.ingress.class=traefik \
                                                                                             --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
                                                                                             --set 'extraEnv[0].value=prime' \
                                                                                             --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
@@ -236,7 +236,7 @@ install_mcm_off() {
                                                                                             ${IMAGE} \
                                                                                             --set ingress.tls.source=letsEncrypt \
                                                                                             --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                            --set letsEncrypt.ingress.class=nginx \
+                                                                                            --set letsEncrypt.ingress.class=traefik \
                                                                                             --set 'extraEnv[0].name=CATTLE_FEATURES' \
                                                                                             --set 'extraEnv[0].value=multi-cluster-management=false' \
                                                                                             --set agentTLSMode=system-store \
@@ -286,7 +286,7 @@ install_default_rancher() {
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
                                                                                         --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
+                                                                                        --set letsEncrypt.ingress.class=traefik \
                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                         --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
@@ -304,7 +304,7 @@ install_default_rancher() {
                                                                                         ${IMAGE} \
                                                                                         --set ingress.tls.source=letsEncrypt \
                                                                                         --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
+                                                                                        --set letsEncrypt.ingress.class=traefik \
                                                                                         --set agentTLSMode=system-store \
                                                                                         --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                         --devel

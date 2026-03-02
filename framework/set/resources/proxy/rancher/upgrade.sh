@@ -79,7 +79,7 @@ upgrade_lets_encrypt_rancher() {
                                                                                          ${IMAGE} \
                                                                                          --set ingress.tls.source=letsEncrypt \
                                                                                          --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                         --set letsEncrypt.ingress.class=nginx \
+                                                                                         --set letsEncrypt.ingress.class=traefik \
                                                                                          --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
                                                                                          --set 'extraEnv[0].value=prime' \
                                                                                          --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
@@ -98,7 +98,7 @@ upgrade_lets_encrypt_rancher() {
                                                                                          ${IMAGE} \
                                                                                          --set ingress.tls.source=letsEncrypt \
                                                                                          --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                         --set letsEncrypt.ingress.class=nginx \
+                                                                                         --set letsEncrypt.ingress.class=traefik \
                                                                                          --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                          --set noProxy="${NO_PROXY}" \
                                                                                          --set agentTLSMode=system-store \
