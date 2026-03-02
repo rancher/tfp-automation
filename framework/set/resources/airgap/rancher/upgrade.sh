@@ -81,7 +81,7 @@ upgrade_turtles_off() {
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
                                                                                         --set ingress.tls.source=letsEncrypt \
                                                                                         --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
+                                                                                        --set letsEncrypt.ingress.class=traefik \
                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                         --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
@@ -101,9 +101,8 @@ upgrade_turtles_off() {
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
                                                                                         --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
                                                                                         --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
+                                                                                        --set letsEncrypt.ingress.class=traefik \
                                                                                         --set 'extraEnv[0].name=CATTLE_FEATURES' \
                                                                                         --set 'extraEnv[0].value=turtles=false\,embedded-cluster-api=true' \
                                                                                         --set agentTLSMode=system-store \
@@ -157,7 +156,7 @@ upgrade_default_rancher() {
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
                                                                                         --set ingress.tls.source=letsEncrypt \
                                                                                         --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
+                                                                                        --set letsEncrypt.ingress.class=traefik \
                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                         --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
@@ -175,9 +174,8 @@ upgrade_default_rancher() {
                                                                                         ${IMAGE} \
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
                                                                                         --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
                                                                                         --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=nginx \
+                                                                                        --set letsEncrypt.ingress.class=traefik \
                                                                                         --set agentTLSMode=system-store \
                                                                                         --set useBundledSystemChart=true \
                                                                                         --devel
