@@ -13,10 +13,12 @@ import (
 	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/clusters"
 	timeouts "github.com/rancher/shepherd/extensions/defaults"
+	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/extensions/workloads"
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
+	"github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/services"
 	deploy "github.com/rancher/tests/actions/workloads/deployment"
 	"github.com/rancher/tfp-automation/config"
@@ -136,7 +138,10 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 
 	terraform.Apply(t, terraformOptions)
 
-	err = clusters.WaitClusterToBeUpgraded(client, clusterID)
+	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraformConfig.ResourcePrefix)
+	require.NoError(t, err)
+
+	err = provisioning.VerifyClusterReady(client, cluster)
 	require.NoError(t, err)
 
 	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, terraformConfig.ResourcePrefix, namespace)

@@ -57,6 +57,11 @@ func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body, clusterNa
 	psactBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.PodSecurityAdmission, clusterName})
 	psactBlockBody := psactBlock.Body()
 
+	provider := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(general.Rancher2 + "." + general.AdminUser)},
+	}
+
+	psactBlockBody.SetAttributeRaw(general.Provider, provider)
 	psactBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(clusters.RancherBaseline))
 	psactBlockBody.SetAttributeValue(description, cty.StringVal(baselineDescription))
 

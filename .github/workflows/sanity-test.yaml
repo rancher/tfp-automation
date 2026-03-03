@@ -979,6 +979,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ env.DOWNSTREAM_CLUSTER_PROVIDER }}"
             enableNetworkPolicy: false
+            generateV3Token: true
             provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"

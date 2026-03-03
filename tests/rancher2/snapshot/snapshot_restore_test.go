@@ -26,6 +26,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -44,20 +45,21 @@ type SnapshotRestoreTestSuite struct {
 }
 
 func (s *SnapshotRestoreTestSuite) SetupSuite() {
-	testSession := session.NewSession()
-	s.session = testSession
-
-	client, err := rancher.NewClient("", testSession)
-	require.NoError(s.T(), err)
-
-	s.client = client
-
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 
+	testSession := session.NewSession()
+	s.session = testSession
+
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(s.T(), s.terraformConfig, s.terratestConfig, keyPath)
+
 	s.terraformOptions = terraformOptions
+
+	client, err := ranchers.PostRancherSetup(s.T(), s.terraformOptions, s.rancherConfig, s.session, s.rancherConfig.Host, keyPath, false)
+	require.NoError(s.T(), err)
+
+	s.client = client
 }
 
 func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
@@ -67,6 +69,11 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 
 	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
 	require.NoError(s.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	require.NoError(s.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
@@ -94,6 +101,9 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
 		require.NoError(s.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+		require.NoError(s.T(), err)
+
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(s.T(), err)
 
@@ -115,12 +125,9 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), s.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(s.T(), s.client)
-			require.NoError(s.T(), err)
-
 			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil)
-			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(s.T(), adminClient, clusterIDs)
+			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 
 			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(s.T(), err)
@@ -128,12 +135,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			err = pods.VerifyClusterPods(s.client, cluster)
 			require.NoError(s.T(), err)
 
-			RestoreSnapshot(s.T(), adminClient, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
-
-			provisioning.VerifyClustersState(s.T(), adminClient, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(s.T(), adminClient, clusterIDs)
-			err = pods.VerifyClusterPods(s.client, cluster)
-			require.NoError(s.T(), err)
+			RestoreSnapshot(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, s.terraformOptions, configMap, newFile, rootBody, file)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])

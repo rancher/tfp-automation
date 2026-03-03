@@ -8,6 +8,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
@@ -16,6 +17,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
 	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 	"github.com/rancher/tfp-automation/framework/set/defaults/rke"
+	v1Token "github.com/rancher/tfp-automation/tests/extensions/token"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -179,6 +181,9 @@ func createProvider(rancherConfig *rancher.Config, rootBody *hclwrite.Body, conf
 
 // createProviderAlias creates a provider alias block for the standard user.
 func createProviderAlias(rancherConfig *rancher.Config, rootBody *hclwrite.Body) {
+	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	_, terraformConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
+
 	providerBlock := rootBody.AppendNewBlock(general.Provider, []string{rancher2Const})
 	providerBlockBody := providerBlock.Body()
 
@@ -190,9 +195,20 @@ func createProviderAlias(rancherConfig *rancher.Config, rootBody *hclwrite.Body)
 		Password: rancherConfig.AdminPassword,
 	}
 
-	adminToken, err := token.GenerateUserToken(adminUser, rancherConfig.Host)
-	if err != nil {
-		logrus.Fatalf("Failed to generate admin token: %v", err)
+	var adminToken *management.Token
+	var err error
+
+	if terraformConfig.GenerateV3Token {
+		adminToken, err = token.GenerateUserToken(adminUser, rancherConfig.Host)
+		if err != nil {
+			logrus.Fatalf("Failed to generate admin token: %v", err)
+		}
+
+	} else {
+		adminToken, err = v1Token.GenerateV1UserToken(adminUser, rancherConfig.Host)
+		if err != nil {
+			logrus.Fatalf("Failed to generate admin token: %v", err)
+		}
 	}
 
 	providerBlockBody.SetAttributeValue(tokenKey, cty.StringVal(adminToken.Token))

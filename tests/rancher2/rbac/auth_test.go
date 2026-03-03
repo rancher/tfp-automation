@@ -23,6 +23,7 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/rbac"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -40,20 +41,21 @@ type AuthConfigTestSuite struct {
 }
 
 func (r *AuthConfigTestSuite) SetupSuite() {
-	testSession := session.NewSession()
-	r.session = testSession
-
-	client, err := rancher.NewClient("", testSession)
-	require.NoError(r.T(), err)
-
-	r.client = client
-
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
 
+	testSession := session.NewSession()
+	r.session = testSession
+
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
+
 	r.terraformOptions = terraformOptions
+
+	client, err := ranchers.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
+	require.NoError(r.T(), err)
+
+	r.client = client
 }
 
 func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
@@ -74,6 +76,9 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, r.client.RancherConfig.AdminToken, configMap[0])
 		require.NoError(r.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, tt.authProvider, configMap[0])
@@ -118,6 +123,9 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+		require.NoError(r.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, r.client.RancherConfig.AdminToken, configMap[0])
 		require.NoError(r.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, r.terraformConfig.AuthProvider, configMap[0])

@@ -663,6 +663,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
+            generateV3Token: true
             localHostedCluster: true
             provider: "eks"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
