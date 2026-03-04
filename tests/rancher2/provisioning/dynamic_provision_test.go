@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
@@ -23,6 +24,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -41,20 +43,21 @@ type DynamicTfpProvisionTestSuite struct {
 }
 
 func (p *DynamicTfpProvisionTestSuite) SetupSuite() {
-	testSession := session.NewSession()
-	p.session = testSession
-
-	client, err := rancher.NewClient("", testSession)
-	require.NoError(p.T(), err)
-
-	p.client = client
-
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 
+	testSession := session.NewSession()
+	p.session = testSession
+
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
+
 	p.terraformOptions = terraformOptions
+
+	client, err := ranchers.PostRancherSetup(p.T(), p.terraformOptions, p.rancherConfig, p.session, p.rancherConfig.Host, keyPath, false)
+	require.NoError(p.T(), err)
+
+	p.client = client
 }
 
 func (p *DynamicTfpProvisionTestSuite) TestTfpProvisionDynamicInput() {
@@ -64,6 +67,11 @@ func (p *DynamicTfpProvisionTestSuite) TestTfpProvisionDynamicInput() {
 
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
+	require.NoError(p.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	tests := []struct {
 		name string
@@ -78,6 +86,9 @@ func (p *DynamicTfpProvisionTestSuite) TestTfpProvisionDynamicInput() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
 		require.NoError(p.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+		require.NoError(p.T(), err)
+
 		provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configMap)
 
 		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
@@ -88,12 +99,9 @@ func (p *DynamicTfpProvisionTestSuite) TestTfpProvisionDynamicInput() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
-			require.NoError(p.T(), err)
-
 			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil)
-			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
+			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(p.T(), p.client, clusterIDs)
 
 			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(p.T(), err)

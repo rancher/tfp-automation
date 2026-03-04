@@ -194,6 +194,7 @@ type TerraformConfig struct {
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
+	GenerateV3Token                     bool                         `json:"generateV3Token,omitempty" yaml:"generateV3Token,omitempty" default:"false"`
 	LocalAuthEndpoint                   bool                         `json:"localAuthEndpoint,omitempty" yaml:"localAuthEndpoint,omitempty" default:"false"`
 	LocalHostedCluster                  bool                         `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`
 	MixedArchitecture                   bool                         `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`

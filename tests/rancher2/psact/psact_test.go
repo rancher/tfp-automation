@@ -25,6 +25,7 @@ import (
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -43,20 +44,21 @@ type PSACTTestSuite struct {
 }
 
 func (p *PSACTTestSuite) SetupSuite() {
-	testSession := session.NewSession()
-	p.session = testSession
-
-	client, err := rancher.NewClient("", testSession)
-	require.NoError(p.T(), err)
-
-	p.client = client
-
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 
+	testSession := session.NewSession()
+	p.session = testSession
+
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
+
 	p.terraformOptions = terraformOptions
+
+	client, err := ranchers.PostRancherSetup(p.T(), p.terraformOptions, p.rancherConfig, p.session, p.rancherConfig.Host, keyPath, false)
+	require.NoError(p.T(), err)
+
+	p.client = client
 }
 
 func (p *PSACTTestSuite) TestTfpPSACT() {
@@ -70,6 +72,11 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
+	require.NoError(p.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
@@ -95,6 +102,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
 		require.NoError(p.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+		require.NoError(p.T(), err)
+
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(p.T(), err)
 
@@ -112,12 +122,9 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), p.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(p.T(), p.client)
-			require.NoError(p.T(), err)
-
 			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, p.terraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil)
-			provisioning.VerifyClustersState(p.T(), adminClient, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(p.T(), adminClient, clusterIDs)
+			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(p.T(), p.client, clusterIDs)
 
 			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(p.T(), err)
@@ -125,7 +132,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			err = pods.VerifyClusterPods(p.client, cluster)
 			require.NoError(p.T(), err)
 
-			provisioning.VerifyClusterPSACT(p.T(), adminClient, clusterIDs)
+			provisioning.VerifyClusterPSACT(p.T(), p.client, clusterIDs)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])

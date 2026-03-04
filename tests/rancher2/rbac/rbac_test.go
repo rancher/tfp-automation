@@ -25,6 +25,7 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -43,20 +44,21 @@ type RBACTestSuite struct {
 }
 
 func (r *RBACTestSuite) SetupSuite() {
-	testSession := session.NewSession()
-	r.session = testSession
-
-	client, err := rancher.NewClient("", testSession)
-	require.NoError(r.T(), err)
-
-	r.client = client
-
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
 
+	testSession := session.NewSession()
+	r.session = testSession
+
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
+
 	r.terraformOptions = terraformOptions
+
+	client, err := ranchers.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
+	require.NoError(r.T(), err)
+
+	r.client = client
 }
 
 func (r *RBACTestSuite) TestTfpRBAC() {
@@ -66,6 +68,11 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(r.terraformConfig)
@@ -88,6 +95,9 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
 		require.NoError(r.T(), err)
 
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+		require.NoError(r.T(), err)
+
 		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
 		require.NoError(r.T(), err)
 
@@ -102,12 +112,9 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(r.T(), r.client)
-			require.NoError(r.T(), err)
-
 			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil)
-			provisioning.VerifyClustersState(r.T(), adminClient, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(r.T(), adminClient, clusterIDs)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
 			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(r.T(), err)
@@ -115,7 +122,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			err = pods.VerifyClusterPods(r.client, cluster)
 			require.NoError(r.T(), err)
 
-			rb.RBAC(r.T(), adminClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
+			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])

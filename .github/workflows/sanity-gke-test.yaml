@@ -617,6 +617,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
+            generateV3Token: true
             localHostedCluster: true
             provider: "gke"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"

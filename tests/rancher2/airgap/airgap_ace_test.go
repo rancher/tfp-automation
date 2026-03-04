@@ -26,6 +26,7 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/ssh"
+	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -46,11 +47,15 @@ type AirgapACETestSuite struct {
 }
 
 func (a *AirgapACETestSuite) SetupSuite() {
+	a.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
+
 	testSession := session.NewSession()
 	a.session = testSession
 
-	a.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
+	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
+	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
+	a.terraformOptions = terraformOptions
 
 	sshKey, err := os.ReadFile(a.terraformConfig.PrivateKeyPath)
 	require.NoError(a.T(), err)
@@ -58,14 +63,10 @@ func (a *AirgapACETestSuite) SetupSuite() {
 	a.tunnel, err = ssh.StartBastionSSHTunnel(a.terraformConfig.AirgapBastion, a.standaloneConfig.OSUser, sshKey, "8443", a.standaloneConfig.RancherHostname, "443")
 	require.NoError(a.T(), err)
 
-	client, err := rancher.NewClient("", testSession)
+	client, err := ranchers.PostRancherSetup(a.T(), a.terraformOptions, a.rancherConfig, a.session, a.terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(a.T(), err)
 
 	a.client = client
-
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
-	a.terraformOptions = terraformOptions
 }
 
 func (a *AirgapACETestSuite) TestTfpAirgapACE() {
@@ -77,6 +78,11 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 
 	a.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(a.client)
 	require.NoError(a.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(a.T(), a.terraformOptions, a.rancherConfig, testUser, testPassword)
+	require.NoError(a.T(), err)
+
+	standardToken := standardUserToken.Token
 
 	localAuthEndpoint := config.TerraformConfig{
 		LocalAuthEndpoint: true,
@@ -96,6 +102,9 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 		defer file.Close()
 
 		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
+		require.NoError(a.T(), err)
+
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
 		require.NoError(a.T(), err)
 
 		_, err = operations.ReplaceValue([]string{"terraform", "localAuthEndpoint"}, tt.authEndpoint.LocalAuthEndpoint, configMap[0])
@@ -118,12 +127,9 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			adminClient, err := provisioning.FetchAdminClient(a.T(), a.client)
-			require.NoError(a.T(), err)
-
 			clusterIDs, _ := provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
-			provisioning.VerifyClustersState(a.T(), adminClient, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(a.T(), adminClient, clusterIDs)
+			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
 
 			cluster, err := a.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(a.T(), err)
@@ -131,7 +137,7 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 			err = pods.VerifyClusterPods(a.client, cluster)
 			require.NoError(a.T(), err)
 
-			provisioning.VerifyACEAirgap(a.T(), adminClient, cluster)
+			provisioning.VerifyACEAirgap(a.T(), a.client, cluster)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])

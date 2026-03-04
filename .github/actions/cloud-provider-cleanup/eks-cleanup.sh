@@ -79,11 +79,12 @@ if [ -n "$CLUSTER_NAMES" ]; then
     aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE DELETE_FAILED DELETE_IN_PROGRESS \
                                    --query "StackSummaries[?contains(StackName, '${PREFIX}')].StackName" \
                                    --output text | while read -r stack; do
-
-                                   echo "Deleting stack $stack"
-                                   aws cloudformation update-termination-protection --stack-name "$stack" --no-enable-termination-protection > /dev/null
-                                   aws cloudformation delete-stack --stack-name "$stack" > /dev/null
-    done                                             
+                                   if [ -n "$stack" ]; then
+                                    echo "Deleting stack $stack"
+                                    aws cloudformation update-termination-protection --stack-name "$stack" --no-enable-termination-protection > /dev/null
+                                    aws cloudformation delete-stack --stack-name "$stack" > /dev/null
+                                   fi
+                              done
 
   done
 else

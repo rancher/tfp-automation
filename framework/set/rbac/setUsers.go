@@ -40,6 +40,11 @@ func setUsers(newFile *hclwrite.File, rootBody *hclwrite.Body, rbacRole config.R
 	userBlock := rootBody.AppendNewBlock(general.Resource, []string{rancherUser, testuser})
 	userBlockBody := userBlock.Body()
 
+	provider := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(general.Rancher2 + "." + general.AdminUser)},
+	}
+
+	userBlockBody.SetAttributeRaw(general.Provider, provider)
 	userBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
 	userBlockBody.SetAttributeValue(username, cty.StringVal(testuser))
 	userBlockBody.SetAttributeValue(testPassword, cty.StringVal(testpassword))
@@ -50,6 +55,7 @@ func setUsers(newFile *hclwrite.File, rootBody *hclwrite.Body, rbacRole config.R
 	globalRoleBindingBlock := rootBody.AppendNewBlock(general.Resource, []string{globalRoleBinding, testuser})
 	globalRoleBindingBlockBody := globalRoleBindingBlock.Body()
 
+	globalRoleBindingBlockBody.SetAttributeRaw(general.Provider, provider)
 	globalRoleBindingBlockBody.SetAttributeValue(name, cty.StringVal(testuser))
 	globalRoleBindingBlockBody.SetAttributeValue(globalRoleID, cty.StringVal(user))
 
