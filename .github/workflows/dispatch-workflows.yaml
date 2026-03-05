@@ -27,6 +27,7 @@ jobs:
           - rancher2-recurring-test.yaml
           - registry-test.yaml
           - sanity-test.yaml
+          - sanity-turtles-off-test.yaml
           - sanity-upgrade-test.yaml
           - community-prime-upgrade-test.yaml
           - prime-community-upgrade-test.yaml

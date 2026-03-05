@@ -62,9 +62,5 @@ func UpgradingAirgapRancher(t *testing.T, provider string) error {
 	client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
-	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
-		toggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.UpgradedTurtles)
-	}
-
 	return nil
 }

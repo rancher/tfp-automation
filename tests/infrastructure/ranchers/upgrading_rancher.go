@@ -68,9 +68,5 @@ func UpgradingRancher(t *testing.T, provider string) error {
 		require.NoError(t, err)
 	}
 
-	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
-		toggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.UpgradedTurtles)
-	}
-
 	return nil
 }

@@ -9,7 +9,6 @@ CHART_VERSION=$6
 RANCHER_IMAGE=$7
 REGISTRY=$8
 RANCHER_AGENT_IMAGE=${9}
-UPGRADED_TURTLES=${10}
 
 if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
@@ -34,85 +33,6 @@ set -ex
 setup_helm_repo() {
   echo "Adding Helm chart repo"
   helm repo add upgraded-rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
-}
-
-upgrade_turtles_off() {
-    echo "Upgrading Rancher with Turtles off"
-    if [ "$CERT_TYPE" == "self-signed" ]; then
-        if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set systemDefaultRegistry=${REGISTRY} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                        --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                        --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                        --set 'extraEnv[1].value=prime' \
-                                                                                        --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                        --set 'extraEnv[2].value=suse' \
-                                                                                        --set 'extraEnv[3].name=CATTLE_FEATURES' \
-                                                                                        --set 'extraEnv[3].value=turtles=false\,embedded-cluster-api=true' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --set useBundledSystemChart=true \
-                                                                                        --devel
-
-        else
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set systemDefaultRegistry=${REGISTRY} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_FEATURES' \
-                                                                                        --set 'extraEnv[0].value=turtles=false\,embedded-cluster-api=true' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --set useBundledSystemChart=true \
-                                                                                        --devel
-        fi
-    elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-        if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set systemDefaultRegistry=${REGISTRY} \
-                                                                                        --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=traefik \
-                                                                                        --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                        --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                        --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                        --set 'extraEnv[1].value=prime' \
-                                                                                        --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                        --set 'extraEnv[2].value=suse' \
-                                                                                        --set 'extraEnv[3].name=CATTLE_FEATURES' \
-                                                                                        --set 'extraEnv[3].value=turtles=false\,embedded-cluster-api=true' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --set useBundledSystemChart=true \
-                                                                                        --devel
-        else
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set systemDefaultRegistry=${REGISTRY} \
-                                                                                        --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=traefik \
-                                                                                        --set 'extraEnv[0].name=CATTLE_FEATURES' \
-                                                                                        --set 'extraEnv[0].value=turtles=false\,embedded-cluster-api=true' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --set useBundledSystemChart=true \
-                                                                                        --devel
-        fi
-    else
-        echo "Unsupported CERT_TYPE: $CERT_TYPE"
-        exit 1
-    fi
 }
 
 upgrade_default_rancher() {
@@ -246,20 +166,7 @@ if [[ $RANCHER_TAG_VERSION == *head* ]]; then
     VERSION="--version ${LATEST_CHART_VERSION}"
 fi
 
-if [ -n "$UPGRADED_TURTLES" ]; then
-    case "$UPGRADED_TURTLES" in
-        "false"|"toggledOn")
-            upgrade_turtles_off
-            ;;
-        *)
-            upgrade_default_rancher
-            ;;
-    esac
-else
-    upgrade_default_rancher
-fi
-
-
+upgrade_default_rancher
 wait_for_rollout
 patch_rancher_fqdn
 wait_for_rancher

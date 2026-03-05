@@ -43,12 +43,6 @@ func UpgradeAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 		command += " \"\""
 	}
 
-	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.UpgradedTurtles != "" {
-		command += " " + terraformConfig.Standalone.FeatureFlags.UpgradedTurtles
-	} else {
-		command += " \"\""
-	}
-
 	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{

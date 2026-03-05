@@ -43,12 +43,6 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 		command += " \"\""
 	}
 
-	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.UpgradedTurtles != "" {
-		command += " " + terraformConfig.Standalone.FeatureFlags.UpgradedTurtles
-	} else {
-		command += " \"\""
-	}
-
 	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.UpgradedMCM != "" {
 		command += " " + terraformConfig.Standalone.FeatureFlags.UpgradedMCM
 	} else {
