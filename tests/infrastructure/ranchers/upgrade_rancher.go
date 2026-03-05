@@ -7,12 +7,10 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tests/actions/features"
 	reg "github.com/rancher/tests/actions/registries"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
-	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
@@ -213,15 +211,6 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, sanityKeyPath)
 
 		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, sanityKeyPath, terraformOptions)
-	}
-
-	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedTurtles != "" {
-		switch standaloneConfig.FeatureFlags.UpgradedTurtles {
-		case featureDefaults.ToggledOff:
-			features.UpdateFeatureFlag(client, featureDefaults.Turtles, false)
-		case featureDefaults.ToggledOn:
-			features.UpdateFeatureFlag(client, featureDefaults.Turtles, true)
-		}
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

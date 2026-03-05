@@ -105,7 +105,6 @@ terraform:
     upgradedRancherTagVersion: ""                 # OPTIONAL - fill out if you are performing an upgrade
     featureFlags:
       turtles: ""                                 # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
-      upgradedTurtles: ""                         # REQUIRED - "true", "false", "toggledOn", or "toggledOff"
 ```
 
 Note: Depending on what `provider` is set to, only fill out the appropriate section. Before running locally, be sure to run the following commands:

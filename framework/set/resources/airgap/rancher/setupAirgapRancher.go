@@ -44,12 +44,6 @@ func CreateAirgapRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwri
 		command += " \"\""
 	}
 
-	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.Turtles != "" {
-		command += " " + terraformConfig.Standalone.FeatureFlags.Turtles
-	} else {
-		command += " \"\""
-	}
-
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("cat <<'EOF' > /tmp/setup.sh\n" + string(scriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/setup.sh"),
