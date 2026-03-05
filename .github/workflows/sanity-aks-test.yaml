@@ -200,11 +200,9 @@ jobs:
               sshUser: "${{ secrets.AZURE_SSH_USER }}"
               staticPublicIp: false
               storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
               taints: ["none:PreferNoSchedule"]
               updateDomainCount: "5"
               vmSize: "${{ vars.AZURE_SIZE }}"
-              vnet: "${{ secrets.AZURE_VNET }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -439,11 +437,9 @@ jobs:
               sshUser: "${{ secrets.AZURE_SSH_USER }}"
               staticPublicIp: false
               storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
               taints: ["none:PreferNoSchedule"]
               updateDomainCount: "5"
               vmSize: "${{ vars.AZURE_SIZE }}"
-              vnet: "${{ secrets.AZURE_VNET }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
@@ -686,11 +682,9 @@ jobs:
               sshUser: "${{ secrets.AZURE_SSH_USER }}"
               staticPublicIp: false
               storageType: "Standard_LRS"
-              subnet: "${{ secrets.AZURE_SUBNET }}"
               taints: ["none:PreferNoSchedule"]
               updateDomainCount: "5"
               vmSize: "${{ vars.AZURE_SIZE }}"
-              vnet: "${{ secrets.AZURE_VNET }}"
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"

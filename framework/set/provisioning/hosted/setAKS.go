@@ -53,8 +53,6 @@ func SetAKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 	aksConfigBlockBody.SetAttributeValue(azure.DNSPrefix, cty.StringVal(terraformConfig.ResourcePrefix))
 	aksConfigBlockBody.SetAttributeValue(clusters.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkPlugin, cty.StringVal(terraformConfig.AzureConfig.NetworkPlugin))
-	aksConfigBlockBody.SetAttributeValue(azure.VirtualNetwork, cty.StringVal(terraformConfig.AzureConfig.Vnet))
-	aksConfigBlockBody.SetAttributeValue(azure.Subnet, cty.StringVal(terraformConfig.AzureConfig.Subnet))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkDNSServiceIP, cty.StringVal(terraformConfig.AzureConfig.NetworkDNSServiceIP))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkDockerBridgeCIDR, cty.StringVal(terraformConfig.AzureConfig.NetworkDockerBridgeCIDR))
 	aksConfigBlockBody.SetAttributeValue(azure.NetworkServiceCIDR, cty.StringVal(terraformConfig.AzureConfig.NetworkServiceCIDR))
