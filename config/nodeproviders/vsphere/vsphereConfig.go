@@ -14,6 +14,7 @@ type Config struct {
 	DataStore              string   `json:"dataStore,omitempty" yaml:"dataStore,omitempty"`
 	DatastoreCluster       string   `json:"datastoreCluster,omitempty" yaml:"datastoreCluster,omitempty"`
 	DiskSize               string   `json:"diskSize,omitempty" yaml:"diskSize,omitempty"`
+	Firmware               string   `json:"firmware,omitempty" yaml:"firmware,omitempty"`
 	Folder                 string   `json:"folder,omitempty" yaml:"folder,omitempty"`
 	GuestID                string   `json:"guestID,omitempty" yaml:"guestID,omitempty"`
 	HostSystem             string   `json:"hostSystem,omitempty" yaml:"hostSystem,omitempty"`

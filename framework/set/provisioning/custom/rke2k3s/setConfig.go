@@ -44,8 +44,15 @@ func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 		vsphere.CreateVsphereDatacenter(rootBody, terraformConfig)
 		rootBody.AppendNewline()
 
-		vsphere.CreateVsphereComputeCluster(rootBody, terraformConfig, dataCenterValue)
-		rootBody.AppendNewline()
+		if terraformConfig.VsphereConfig.Pool == "" {
+			vsphere.CreateVsphereComputeCluster(rootBody, terraformConfig, dataCenterValue)
+			rootBody.AppendNewline()
+		}
+
+		if terraformConfig.VsphereConfig.Pool != "" {
+			vsphere.CreateVsphereResourcePool(rootBody, terraformConfig, dataCenterValue)
+			rootBody.AppendNewline()
+		}
 
 		vsphere.CreateVsphereNetwork(rootBody, terraformConfig, dataCenterValue)
 		rootBody.AppendNewline()

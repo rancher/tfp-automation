@@ -89,10 +89,12 @@ terraform:
     datastore: ""
     datastoreCluster: ""
     diskSize: ""
+    firmware: ""               # OPTIONAL - set to "efi" for UEFI templates
     guestID: ""
     folder: ""
     hostSystem: ""
     memorySize: ""
+    pool: ""                   # OPTIONAL - existing resource pool name/path
     standaloneNetwork: ""
     vsphereUser: ""
 terratest:
@@ -168,10 +170,12 @@ terraform:
     datastore: ""
     datastoreCluster: ""
     diskSize: ""
+    firmware: ""               # OPTIONAL - set to "efi" for UEFI templates
     guestID: ""
     folder: ""
     hostSystem: ""
     memorySize: ""
+    pool: ""                   # OPTIONAL - existing resource pool name/path
     standaloneNetwork: ""
     vsphereUser: ""
 

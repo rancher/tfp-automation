@@ -7,6 +7,7 @@ const (
 	VsphereDatacenter             = "vsphere_datacenter"
 	VsphereDatastore              = "vsphere_datastore"
 	VsphereComputeCluster         = "vsphere_compute_cluster"
+	VsphereResourcePool           = "vsphere_resource_pool"
 	VsphereNetwork                = "vsphere_network"
 	VsphereServer                 = "vsphere_server"
 	VsphereVirtualMachine         = "vsphere_virtual_machine"

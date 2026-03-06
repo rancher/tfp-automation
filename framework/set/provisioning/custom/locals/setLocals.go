@@ -28,18 +28,20 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	localsBlockBody := localsBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, general.Custom) {
-		expression := fmt.Sprintf(`concat(`+aws.AwsInstance+`.%s-etcd.*.public_ip, `+
-			aws.AwsInstance+`.%s-control-plane.*.public_ip, `+
-			aws.AwsInstance+`.%s-worker.*.public_ip)`, terraformConfig.ResourcePrefix, terraformConfig.ResourcePrefix, terraformConfig.ResourcePrefix)
-		value := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
+		if terraformConfig.DownstreamClusterProvider == aws.Aws {
+			expression := fmt.Sprintf(`concat(`+aws.AwsInstance+`.%s-etcd.*.public_ip, `+
+				aws.AwsInstance+`.%s-control-plane.*.public_ip, `+
+				aws.AwsInstance+`.%s-worker.*.public_ip)`, terraformConfig.ResourcePrefix, terraformConfig.ResourcePrefix, terraformConfig.ResourcePrefix)
+			value := hclwrite.Tokens{
+				{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
+			}
+
+			localsBlockBody.SetAttributeRaw(allPublicIPs, value)
 		}
 
-		localsBlockBody.SetAttributeRaw(allPublicIPs, value)
-
-		expression = fmt.Sprintf(`concat([for i in range(%d) : "--etcd"], [for i in range(%d) : "--controlplane"], [for i in range(%d) : "--worker"])`,
+		expression := fmt.Sprintf(`concat([for i in range(%d) : "--etcd"], [for i in range(%d) : "--controlplane"], [for i in range(%d) : "--worker"])`,
 			terratestConfig.EtcdCount, terratestConfig.ControlPlaneCount, terratestConfig.WorkerCount)
-		value = hclwrite.Tokens{
+		value := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 		}
 
