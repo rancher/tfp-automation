@@ -11,8 +11,14 @@ const (
 
 	GKEConfig = "gke_config_v2"
 
-	NodePools         = "node_pools"
+	ClusterAddOns = "cluster_addons"
+	Config        = "config"
+	NodePools     = "node_pools"
+
+	DiskSizeGb        = "disk_size_gb"
+	ImageType         = "image_type"
 	InitialNodeCount  = "initial_node_count"
+	MachineType       = "machine_type"
 	MaxPodsConstraint = "max_pods_constraint"
 	Version           = "version"
 )

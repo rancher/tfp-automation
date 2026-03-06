@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/providers"
 	framework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/stretchr/testify/require"
 )
@@ -26,6 +27,13 @@ func Provision(t *testing.T, client, standardUserClient *rancher.Client, rancher
 
 	clusterNames, customClusterNames, err = framework.ConfigTF(standardUserClient, rancherConfig, terratestConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, isWindows, persistClusters, containsCustomModule, customClusterNames)
 	require.NoError(t, err)
+
+	// If the provisioner is GKE, we need to run terraform import for the Google driver before applying the Terraform configuration.
+	// This is needed as the Google driver is inactive by default and needs to be imported to be activated.
+	if terraformConfig.Module == providers.GKE {
+		terraform.Init(t, terraformOptions)
+		GoogleDriverImport(t, terraformOptions)
+	}
 
 	terraform.InitAndApply(t, terraformOptions)
 

@@ -15,16 +15,50 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+const (
+	active                   = "active"
+	builtin                  = "builtin"
+	googleDriver             = "google"
+	httpLoadBalancing        = "http_load_balancing"
+	horizontalPodAutoscaling = "horizontal_pod_autoscaling"
+	url                      = "url"
+)
+
 // SetGKE is a function that will set the GKE configurations in the main.tf file.
 func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File) (*hclwrite.File, *os.File, error) {
+	nodeDriverBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.NodeDriver, rancher2.NodeDriver})
+	nodeDriverBlockBody := nodeDriverBlock.Body()
+
+	provider := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(general.Rancher2 + "." + general.AdminUser)},
+	}
+
+	nodeDriverBlockBody.SetAttributeRaw(general.Provider, provider)
+	nodeDriverBlockBody.SetAttributeValue(active, cty.BoolVal(true))
+	nodeDriverBlockBody.SetAttributeValue(builtin, cty.BoolVal(true))
+	nodeDriverBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(googleDriver))
+	nodeDriverBlockBody.SetAttributeValue(url, cty.StringVal("local://"))
+
+	rootBody.AppendNewline()
+
 	cloudCredBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.CloudCredential, rancher2.CloudCredential})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
 	cloudCredBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	googleCredConfigBlock := cloudCredBlockBody.AppendNewBlock(google.GoogleCredentialConfig, nil)
-	googleCredConfigBlock.Body().SetAttributeValue(google.AuthEncodedJSON, cty.StringVal(terraformConfig.GoogleCredentials.AuthEncodedJSON))
+	googleCredConfigBlockBody := googleCredConfigBlock.Body()
+
+	googleCredConfigBlockBody.SetAttributeValue(google.AuthEncodedJSON, cty.StringVal(terraformConfig.GoogleCredentials.AuthEncodedJSON))
+
+	dependsOnBlock := `[` + rancher2.NodeDriver + `.` + rancher2.NodeDriver + `]`
+
+	server := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnBlock)},
+	}
+
+	cloudCredBlockBody.SetAttributeRaw(general.DependsOn, server)
 
 	rootBody.AppendNewline()
 
@@ -49,6 +83,12 @@ func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 	gkeConfigBlockBody.SetAttributeValue(google.Network, cty.StringVal(terraformConfig.GoogleConfig.Network))
 	gkeConfigBlockBody.SetAttributeValue(google.Subnetwork, cty.StringVal(terraformConfig.GoogleConfig.Subnetwork))
 
+	clusterAddOnsBlock := gkeConfigBlockBody.AppendNewBlock(google.ClusterAddOns, nil)
+	clusterAddOnsBlockBody := clusterAddOnsBlock.Body()
+
+	clusterAddOnsBlockBody.SetAttributeValue(httpLoadBalancing, cty.BoolVal(true))
+	clusterAddOnsBlockBody.SetAttributeValue(horizontalPodAutoscaling, cty.BoolVal(true))
+
 	for count, pool := range terratestConfig.Nodepools {
 		poolNum := strconv.Itoa(count)
 
@@ -64,6 +104,13 @@ func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 		nodePoolsBlockBody.SetAttributeValue(google.MaxPodsConstraint, cty.NumberIntVal(pool.MaxPodsConstraint))
 		nodePoolsBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+`-pool`+poolNum))
 		nodePoolsBlockBody.SetAttributeValue(google.Version, cty.StringVal(terratestConfig.KubernetesVersion))
+
+		configBlock := nodePoolsBlockBody.AppendNewBlock(google.Config, nil)
+		configBlockBody := configBlock.Body()
+
+		configBlockBody.SetAttributeValue(google.ImageType, cty.StringVal(terraformConfig.GoogleConfig.ImageType))
+		configBlockBody.SetAttributeValue(google.MachineType, cty.StringVal(terraformConfig.GoogleConfig.MachineType))
+		configBlockBody.SetAttributeValue(google.DiskSizeGb, cty.NumberIntVal(terraformConfig.GoogleConfig.Size))
 	}
 
 	return newFile, file, nil
