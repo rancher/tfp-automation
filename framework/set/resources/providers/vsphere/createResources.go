@@ -22,6 +22,7 @@ const (
 	diskEnableUUID        = "disk_enable_uuid"
 	domain                = "domain"
 	guestID               = "guest_id"
+	firmware              = "firmware"
 	hostName              = "host_name"
 	network               = "network"
 	networkInterfaceTypes = "network_interface_types"

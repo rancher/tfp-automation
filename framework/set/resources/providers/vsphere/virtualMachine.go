@@ -38,7 +38,16 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(resourcePoolExpression)},
 	}
 
-	vmBlockBody.SetAttributeRaw(resourcePoolID, resourcePoolValue)
+	resourcePoolByNameExpression := fmt.Sprintf(general.Data + `.` + vsphere.VsphereResourcePool + `.` + vsphere.VsphereResourcePool + `.id`)
+	resourcePoolByNameValue := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(resourcePoolByNameExpression)},
+	}
+
+	if terraformConfig.VsphereConfig.Pool != "" {
+		vmBlockBody.SetAttributeRaw(resourcePoolID, resourcePoolByNameValue)
+	} else {
+		vmBlockBody.SetAttributeRaw(resourcePoolID, resourcePoolValue)
+	}
 
 	dataStoreExpression := fmt.Sprintf(general.Data + `.` + vsphere.VsphereDatastore + `.` + vsphere.VsphereDatastore + `.id`)
 	dataStoreValue := hclwrite.Tokens{
@@ -62,6 +71,7 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 
 	vmBlockBody.SetAttributeValue(vsphere.Memory, cty.NumberIntVal(memory))
 	vmBlockBody.SetAttributeValue(guestID, cty.StringVal(terraformConfig.VsphereConfig.GuestID))
+	vmBlockBody.SetAttributeValue(firmware, cty.StringVal(terraformConfig.VsphereConfig.Firmware))
 
 	vmBlockBody.AppendNewline()
 
@@ -70,14 +80,6 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 
 	cdROMBlockBody.SetAttributeValue(clientDevice, cty.BoolVal(true))
 	vmBlockBody.AppendNewline()
-
-	vappBlock := vmBlockBody.AppendNewBlock(vsphere.Vapp, nil)
-	vappBlockBody := vappBlock.Body()
-
-	propertiesBlock := vappBlockBody.AppendNewBlock(vsphere.VappProperties+" =", nil)
-	propertiesBlockBody := propertiesBlock.Body()
-
-	propertiesBlockBody.SetAttributeValue(publicKeys, cty.StringVal(terraformConfig.PrivateKeyPath))
 
 	networkBlock := vmBlockBody.AppendNewBlock(vsphere.NetworkInterface, nil)
 	networkBlockBody := networkBlock.Body()
