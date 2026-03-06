@@ -60,7 +60,7 @@ func (s *TfpSanityGKEProvisioningTestSuite) TestTfpProvisioningGKESanity() {
 
 	standardToken := standardUserToken.Token
 
-	gkeNodePools := []config.Nodepool{{Quantity: 3, MaxPodsConstraint: 110}}
+	gkeNodePools := []config.Nodepool{{Quantity: 1, MaxPodsConstraint: 110}}
 
 	tests := []struct {
 		name              string
@@ -72,8 +72,6 @@ func (s *TfpSanityGKEProvisioningTestSuite) TestTfpProvisioningGKESanity() {
 	}
 
 	for _, tt := range tests {
-		s.T().Skip("Skipping GKE test due to known GH issue: https://github.com/rancher/terraform-provider-rancher2/issues/1750")
-
 		newFile, rootBody, file := rancher2.InitializeMainTF(s.terratestConfig)
 		defer file.Close()
 

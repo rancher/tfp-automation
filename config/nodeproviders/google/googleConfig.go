@@ -3,6 +3,7 @@ package google
 type Config struct {
 	Image       string `json:"image,omitempty" yaml:"image,omitempty"`
 	KeyPath     string `json:"keyPath,omitempty" yaml:"keyPath,omitempty"`
+	ImageType   string `json:"imageType,omitempty" yaml:"imageType,omitempty"`
 	MachineType string `json:"machineType,omitempty" yaml:"machineType,omitempty"`
 	Network     string `json:"network,omitempty" yaml:"network,omitempty"`
 	ProjectID   string `json:"projectID,omitempty" yaml:"projectID,omitempty"`

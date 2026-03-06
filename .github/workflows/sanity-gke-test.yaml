@@ -182,6 +182,7 @@ jobs:
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
+              imageType: "${{ vars.GOOGLE_IMAGE_TYPE }}"
               machineType: "${{ vars.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
@@ -278,7 +279,7 @@ jobs:
     env:
       CLOUD_PROVIDER: "gke"
       DOWNSTREAM_CLUSTER_PROVIDER: "google"
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_143}}"
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
       HOSTNAME_PREFIX: "tfp-gke-213"
       REPORTING_ENABLED: >-
         ${{
@@ -406,6 +407,7 @@ jobs:
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
+              imageType: "${{ vars.GOOGLE_IMAGE_TYPE }}"
               machineType: "${{ vars.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"
@@ -640,6 +642,7 @@ jobs:
             googleConfig:
               image: "${{ secrets.GOOGLE_IMAGE }}"
               keyPath: "${{ secrets.CLOUD_SSH_KEY_PATH }}"
+              imageType: "${{ vars.GOOGLE_IMAGE_TYPE }}"
               machineType: "${{ vars.GOOGLE_MACHINE_TYPE }}"
               network: "${{ vars.GOOGLE_NETWORK }}"
               projectID: "${{ secrets.GCP_PROJECT_ID }}"

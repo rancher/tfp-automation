@@ -9,5 +9,6 @@ const (
 	CloudCredential             = "rancher2_cloud_credential"
 	Cluster                     = "rancher2_cluster"
 	ClusterV2                   = "rancher2_cluster_v2"
+	NodeDriver                  = "rancher2_node_driver"
 	SecretV2                    = "rancher2_secret_v2"
 )

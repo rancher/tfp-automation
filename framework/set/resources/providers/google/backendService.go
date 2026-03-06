@@ -18,7 +18,7 @@ func CreateGoogleBackendService(rootBody *hclwrite.Body, terraformConfig *config
 
 	backendServiceBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix+"-backend-"+strconv.FormatInt(port, 10)))
 	backendServiceBlockBody.SetAttributeValue(protocol, cty.StringVal("TCP"))
-	backendServiceBlockBody.SetAttributeValue(timeoutSecond, cty.NumberIntVal(10))
+	backendServiceBlockBody.SetAttributeValue(timeoutSecond, cty.NumberIntVal(3600))
 
 	expression := "[" + googleDefaults.GoogleComputeRegionHealthCheck + "." + googleDefaults.GoogleComputeRegionHealthCheck + "_" + strconv.FormatInt(port, 10) + ".self_link]"
 	value := hclwrite.Tokens{
