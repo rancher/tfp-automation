@@ -201,7 +201,6 @@ install_gke_traefik() {
     helm upgrade --install traefik traefik/traefik \
                  --namespace traefik \
                  --set service.type=LoadBalancer \
-                 --set service.externalTrafficPolicy=Cluster \
                  --create-namespace
 
     kubectl get pods --namespace traefik
@@ -268,6 +267,22 @@ wait_for_rancher() {
     sleep 180
 }
 
+patch_rancher_fqdn() {
+  TRAEFIK=$(kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}')
+  HOSTNAME="${TRAEFIK}.sslip.io"
+
+  kubectl patch setting server-url --type=json -p="[{
+    \"op\": \"add\", 
+    \"path\": \"/value\", 
+    \"value\": \"https://${HOSTNAME}\"
+  }]"
+
+  echo "Restarting Rancher"
+  kubectl -n cattle-system rollout restart deploy/rancher
+  kubectl -n cattle-system rollout status deploy/rancher
+  kubectl -n cattle-system get deploy rancher
+}
+
 install_kubectl
 check_cluster_status
 install_helm
@@ -292,3 +307,7 @@ fi
 install_default_rancher
 wait_for_rollout
 wait_for_rancher
+
+if [[ $PROVIDER == "gke" ]]; then
+    patch_rancher_fqdn
+fi
