@@ -1,6 +1,7 @@
 package registries
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -12,6 +13,7 @@ import (
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -64,6 +66,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	customClusterNames := []string{}
 
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
@@ -123,7 +126,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil)
+			clusterIDs, customClusterNames := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
@@ -134,6 +137,17 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 			require.NoError(r.T(), err)
 
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
+
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
+				clusterIDs, _ = provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
+				provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+				provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+				err = pods.VerifyClusterPods(r.client, cluster)
+				require.NoError(r.T(), err)
+
+				provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
+			}
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
@@ -246,6 +260,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	customClusterNames := []string{}
 
 	tests := []struct {
 		name      string
@@ -297,7 +312,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil)
+			clusterIDs, customClusterNames := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
@@ -308,6 +323,17 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 			require.NoError(r.T(), err)
 
 			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
+
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
+				clusterIDs, _ = provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
+				provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+				provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+				err = pods.VerifyClusterPods(r.client, cluster)
+				require.NoError(r.T(), err)
+
+				provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
+			}
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
