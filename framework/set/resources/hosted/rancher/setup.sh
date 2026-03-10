@@ -268,19 +268,47 @@ wait_for_rancher() {
 }
 
 patch_rancher_fqdn() {
-  TRAEFIK=$(kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}')
-  HOSTNAME="${TRAEFIK}.sslip.io"
+    TRAEFIK=$(kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}')
+    HOSTNAME="${TRAEFIK}.sslip.io"
+    
+    echo "Patching Rancher FQDN: ${HOSTNAME}"
+    kubectl patch ingress rancher -n cattle-system --type=json -p="[{
+        \"op\": \"add\", 
+        \"path\": \"/spec/rules/-\", 
+        \"value\": {
+        \"host\": \"${HOSTNAME}\", 
+        \"http\": {
+            \"paths\": [{
+            \"backend\": {
+                \"service\": {
+                \"name\": \"rancher\",
+                \"port\": {
+                    \"number\": 80
+                }
+                }
+            },
+            \"pathType\": \"ImplementationSpecific\"
+            }]
+        }
+        }
+    }]"
 
-  kubectl patch setting server-url --type=json -p="[{
-    \"op\": \"add\", 
-    \"path\": \"/value\", 
-    \"value\": \"https://${HOSTNAME}\"
-  }]"
+    kubectl patch ingress rancher -n cattle-system --type=json -p="[{
+        \"op\": \"add\", 
+        \"path\": \"/spec/tls/0/hosts/-\", 
+        \"value\": \"${HOSTNAME}\"
+    }]"
 
-  echo "Restarting Rancher"
-  kubectl -n cattle-system rollout restart deploy/rancher
-  kubectl -n cattle-system rollout status deploy/rancher
-  kubectl -n cattle-system get deploy rancher
+    kubectl patch setting server-url --type=json -p="[{
+        \"op\": \"add\", 
+        \"path\": \"/value\", 
+        \"value\": \"https://${HOSTNAME}\"
+    }]"
+
+    echo "Restarting Rancher"
+    kubectl -n cattle-system rollout restart deploy/rancher
+    kubectl -n cattle-system rollout status deploy/rancher
+    kubectl -n cattle-system get deploy rancher
 }
 
 install_kubectl

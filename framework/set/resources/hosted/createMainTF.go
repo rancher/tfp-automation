@@ -89,6 +89,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return "", err
 		}
 
+		rancherConfig.Host = externalIP + sslipioSuffix
 		terraformConfig.Standalone.RancherHostname = externalIP + sslipioSuffix
 	}
 

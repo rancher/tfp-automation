@@ -19,17 +19,6 @@ func runCommand(name string, args ...string) error {
 	return nil
 }
 
-func runCommandOutput(name string, args ...string) (string, error) {
-	cmd := exec.Command(name, args...)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("command failed: %s %v\nOutput:\n%s\nError: %w", name, args, string(output), err)
-	}
-
-	return strings.TrimSpace(string(output)), nil
-}
-
 func getIngressExternalIP() (string, error) {
 	cmd := exec.Command("sh", "-c", "export PATH=\"$PWD/google-cloud-sdk/bin:$PATH\" && kubectl get service traefik --namespace=traefik -o wide | awk 'NR==2 {print $4}'")
 	output, err := cmd.CombinedOutput()
