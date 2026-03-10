@@ -184,6 +184,7 @@ jobs:
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
+              eksRegion: "${{ vars.EKS_REGION }}"
               region: "${{ vars.EKS_REGION }}"
               awsSecurityGroups: [${{ secrets.EKS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
@@ -426,6 +427,7 @@ jobs:
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
+              eksRegion: "${{ vars.EKS_REGION }}"
               region: "${{ vars.EKS_REGION }}"
               awsSecurityGroups: [${{ secrets.EKS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
@@ -676,6 +678,7 @@ jobs:
               awsKeyName: "${{ secrets.SSH_PRIVATE_KEY_NAME }}"
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
+              eksRegion: "${{ vars.EKS_REGION }}"
               region: "${{ vars.EKS_REGION }}"
               awsSecurityGroups: [${{ secrets.EKS_SECURITY_GROUPS }}]
               awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]

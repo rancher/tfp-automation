@@ -22,11 +22,13 @@ type Config struct {
 	AWSZoneLetter         string      `json:"awsZoneLetter,omitempty" yaml:"awsZoneLetter,omitempty"`
 	ClusterCIDR           string      `json:"clusterCIDR,omitempty" yaml:"clusterCIDR,omitempty"`
 	ServiceCIDR           string      `json:"serviceCIDR,omitempty" yaml:"serviceCIDR,omitempty"`
+	EKSRegion             string      `json:"eksRegion,omitempty" yaml:"eksRegion,omitempty"`
 	EnablePrimaryIPv6     bool        `json:"enablePrimaryIPv6,omitempty" yaml:"enablePrimaryIPv6,omitempty" default:"false"`
 	HTTPProtocolIPv6      string      `json:"httpProtocolIPv6,omitempty" yaml:"httpProtocolIPv6,omitempty" default:"disabled"`
 	IPAddressType         string      `json:"ipAddressType,omitempty" yaml:"ipAddressType,omitempty" default:"ipv4"`
 	IPv6AddressCount      string      `json:"ipv6AddressCount,omitempty" yaml:"ipv6AddressCount,omitempty"`
 	IPv6AddressOnly       bool        `json:"ipv6AddressOnly,omitempty" yaml:"ipv6AddressOnly,omitempty" default:"false"`
+	IPFamily              string      `json:"ipFamily,omitempty" yaml:"ipFamily,omitempty" default:"ipv4"`
 	LoadBalancerType      string      `json:"loadBalancerType,omitempty" yaml:"loadBalancerType,omitempty" default:"ipv4"`
 	Networking            *Networking `json:"networking,omitempty" yaml:"networking,omitempty"`
 	PrivateAccess         bool        `json:"privateAccess,omitempty" yaml:"privateAccess,omitempty"`
