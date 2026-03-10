@@ -180,6 +180,9 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 		_, err = operations.ReplaceValue([]string{"rancher", "host"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
 		require.NoError(t, err)
 
+		_, err = operations.ReplaceValue([]string{"terraform", "standalone", "rancherHostname"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
+		require.NoError(t, err)
+
 		rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
 		infraConfig.WriteConfigToFile(os.Getenv(configEnvironmentKey), cattleConfig)
 	}
