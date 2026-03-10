@@ -11,6 +11,7 @@ const (
 	SecurityGroups = "security_groups"
 	PrivateAccess  = "private_access"
 	PublicAccess   = "public_access"
+	IPFamily       = "ip_family"
 
 	AMI           = "ami"
 	SecurityGroup = "security_group"
