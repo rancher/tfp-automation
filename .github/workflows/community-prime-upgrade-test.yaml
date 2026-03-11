@@ -34,24 +34,24 @@ permissions:
   contents: read
 
 env:
-  CLOUD_PROVIDER_VERSION: "5.95.0"
+  CLOUD_PROVIDER_VERSION: "6.34.0"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "sanity"
   TEST_SUITE: "^TestTfpSanityUpgradeRancherTestSuite$"
   TIMEOUT: "5h"
 
 jobs:
-  v2-13:
+  v2-14:
     if: |
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.13')) && contains(inputs.rancher_version, '-alpha')
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && contains(github.event.inputs.rancher_version, '-alpha') ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14')) && contains(inputs.rancher_version, '-alpha')
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: upgrade-community-staging
     env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tfp-san-up-213"
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
+      HOSTNAME_PREFIX: "tfp-san-up-214"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'workflow_call' ||
@@ -125,8 +125,8 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}"
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_14 }}"
+          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_14 }}"
 
       - name: Create config.yaml
         run: |
@@ -197,7 +197,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
