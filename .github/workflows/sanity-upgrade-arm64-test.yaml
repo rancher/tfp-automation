@@ -129,6 +129,8 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          release-community-version: "2.15"
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
@@ -138,6 +140,16 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_15 }}"
+
+      - name: Set upgraded Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
+          env-var-name: UPGRADED_RANCHER_HELM_CHART_URL
 
       - name: Create config.yaml
         run: |
@@ -209,7 +221,7 @@ jobs:
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_15 }}"
-              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherChartRepository: "${{ env.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
@@ -306,10 +318,10 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: upgrade-community-head
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tfp-arm-up-213"
+      HOSTNAME_PREFIX: "tfp-arm-up-214"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -395,6 +407,8 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          release-community-version: "2.14"
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
@@ -404,6 +418,16 @@ jobs:
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_14 }}"
+
+      - name: Set upgraded Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
+          env-var-name: UPGRADED_RANCHER_HELM_CHART_URL
 
       - name: Create config.yaml
         run: |
@@ -475,7 +499,7 @@ jobs:
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
-              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherChartRepository: "${{ env.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
               upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
@@ -570,12 +594,12 @@ jobs:
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_12 }} -> ${{ github.event.inputs.rancher_version }}
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: upgrade-prime-staging
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
-      HOSTNAME_PREFIX: "tfp-arm-up-212"
+      HOSTNAME_PREFIX: "tfp-arm-up-213"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -677,6 +701,8 @@ jobs:
         uses: ./.github/actions/set-rancher-chart-url
         with:
           rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: true
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
           env-var-name: UPGRADED_RANCHER_HELM_CHART_URL

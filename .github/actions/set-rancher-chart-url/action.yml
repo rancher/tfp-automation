@@ -1,12 +1,18 @@
 ---
 name: "Set Rancher Chart URL"
-description: "Sets the Rancher url depending on the provided Rancher repo for Prime builds only"
+description: "Sets the Rancher url depending on the provided Rancher repo"
 inputs:
   rancher-repo:
     description: "The rancher repo"
     required: true
+  is-prime:
+    description: "Determines if the Rancher is Prime or Community"
+    required: true
+  community-chart-url:
+    description: "The Community chart url to use if the repo is latest or alpha"
+    required: true
   staging-chart-url:
-    description: "The chart url to use if the repo is latest or alpha"
+    description: "The Prime chart url to use if the repo is latest or alpha"
     required: true
   fallback-chart-url:
     description: "The fallback chart url if the repo is not latest or alpha"
@@ -26,13 +32,22 @@ runs:
       shell: bash
       run: |
         RANCHER_REPO="${{ inputs.rancher-repo }}"
+        IS_PRIME="${{ inputs.is-prime }}"
 
-        if [[ "$RANCHER_REPO" == "latest" ]] || [[ "$RANCHER_REPO" == "alpha" ]]; then
-          CHART_URL="${{ inputs.staging-chart-url }}"
-        else
-          CHART_URL="${{ inputs.fallback-chart-url }}"
+        if [[ "$IS_PRIME" == "true" ]]; then
+          if [[ "$RANCHER_REPO" == "latest" ]] || [[ "$RANCHER_REPO" == "alpha" ]]; then
+            CHART_URL="${{ inputs.staging-chart-url }}"
+          else
+            CHART_URL="${{ inputs.fallback-chart-url }}"
+          fi
+        elif [[ "$IS_PRIME" == "false" ]]; then
+          if [[ "$RANCHER_REPO" == "latest" ]] || [[ "$RANCHER_REPO" == "alpha" ]]; then
+            CHART_URL="${{ inputs.community-chart-url }}"
+          else
+            CHART_URL="${{ inputs.fallback-chart-url }}"
+          fi
         fi
-        
+
         echo "chart_url=$CHART_URL" >> $GITHUB_OUTPUT
     
     - name: Set environment variable

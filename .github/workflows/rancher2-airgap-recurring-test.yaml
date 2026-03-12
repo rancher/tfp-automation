@@ -34,8 +34,7 @@ permissions:
   contents: read
 
 env:
-  CLOUD_PROVIDER_VERSION: "6.24.0"
-  HOSTNAME_PREFIX: "tfp-arecur"
+  CLOUD_PROVIDER_VERSION: "6.34.0"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "rancher2"
   TIMEOUT: "7h"
@@ -314,7 +313,7 @@ jobs:
     environment: alpha
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
-      HOSTNAME_PREFIX: "arec-213"
+      HOSTNAME_PREFIX: "arec-214"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'workflow_call' ||
