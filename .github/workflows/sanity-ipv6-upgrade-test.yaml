@@ -139,6 +139,8 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          release-community-version: "2.15"
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
@@ -149,6 +151,16 @@ jobs:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_15 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_15 }}"
+
+      - name: Set upgraded Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
+          env-var-name: UPGRADED_RANCHER_HELM_CHART_URL
 
       - name: Create config.yaml
         run: |
@@ -319,7 +331,7 @@ jobs:
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: upgrade-community-head
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "tfp-ipv6-up-214"
@@ -408,6 +420,8 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          release-community-version: "2.14"
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
@@ -418,6 +432,16 @@ jobs:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_14 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_14 }}"
+
+      - name: Set upgraded Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
+          env-var-name: UPGRADED_RANCHER_HELM_CHART_URL
 
       - name: Create config.yaml
         run: |
@@ -694,6 +718,8 @@ jobs:
         uses: ./.github/actions/set-rancher-chart-url
         with:
           rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: true
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
           env-var-name: UPGRADED_RANCHER_HELM_CHART_URL

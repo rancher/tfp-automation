@@ -317,7 +317,7 @@ jobs:
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && contains(github.event.inputs.rancher_version, '-alpha') ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14')) && contains(inputs.rancher_version, '-alpha')
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_14 }} -> ${{ github.event.inputs.rancher_version }}
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
     env:
@@ -694,6 +694,8 @@ jobs:
         uses: ./.github/actions/set-rancher-chart-url
         with:
           rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
           env-var-name: UPGRADED_RANCHER_HELM_CHART_URL

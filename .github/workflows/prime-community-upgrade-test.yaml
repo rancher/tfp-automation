@@ -113,6 +113,15 @@ jobs:
           key: UPGRADED_RANCHER_CHART_VERSION
           value: ${{ github.event.inputs.rancher_chart_version }}
 
+      - name: Set upgraded Rancher repo
+        uses: ./.github/actions/set-rancher-repo
+        with:
+          rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          release-community-version: "2.14"
+          env-var-name: UPGRADED_RANCHER_REPO
+
       - name: Get Qase ID
         if: env.REPORTING_ENABLED == 'true'
         id: get-qase-id
@@ -121,6 +130,16 @@ jobs:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_14 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_14 }}"
+
+      - name: Set upgraded Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
+          env-var-name: UPGRADED_RANCHER_HELM_CHART_URL
 
       - name: Create config.yaml
         run: |
@@ -193,10 +212,10 @@ jobs:
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
-              upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
+              upgradedRancherChartRepository: "${{ env.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
-              upgradedRancherRepo: "${{ secrets.UPGRADED_RANCHER_REPO }}"
+              upgradedRancherRepo: "${{ env.UPGRADED_RANCHER_REPO }}"
               upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"

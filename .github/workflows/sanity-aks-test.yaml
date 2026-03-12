@@ -137,6 +137,8 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
+          is-prime: false
+          release-community-version: "2.15"
 
       - name: Get Qase ID
         id: get-qase-id
@@ -145,6 +147,15 @@ jobs:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_15 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_15 }}"
+
+      - name: Set Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
 
       - name: Create config.yaml
         run: |
@@ -210,7 +221,7 @@ jobs:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.AZURE_SSH_USER }}"
               osGroup: "${{ secrets.AZURE_SSH_USER }}"
-              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
@@ -287,7 +298,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: latest
+    environment: head
     env:
       CLOUD_PROVIDER: "azure"
       DOWNSTREAM_CLUSTER_PROVIDER: "azure"
@@ -374,6 +385,8 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
+          is-prime: false
+          release-community-version: "2.14"
 
       - name: Get Qase ID
         id: get-qase-id
@@ -382,6 +395,15 @@ jobs:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
           qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
           qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}"
+
+      - name: Set Rancher chart url
+        uses: ./.github/actions/set-rancher-chart-url
+        with:
+          rancher-repo: ${{ env.RANCHER_REPO }}
+          is-prime: false
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
+          staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
+          fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
 
       - name: Create config.yaml
         run: |
@@ -447,7 +469,7 @@ jobs:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.AZURE_SSH_USER }}"
               osGroup: "${{ secrets.AZURE_SSH_USER }}"
-              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
@@ -529,7 +551,7 @@ jobs:
       CLOUD_PROVIDER: "azure"
       DOWNSTREAM_CLUSTER_PROVIDER: "azure"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tfp-aks-212"
+      HOSTNAME_PREFIX: "tfp-aks-213"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -611,6 +633,8 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
+          is-prime: true
+          release-prime-version: "2.13"
 
       - name: Get Qase ID
         id: get-qase-id
@@ -624,6 +648,8 @@ jobs:
         uses: ./.github/actions/set-rancher-chart-url
         with:
           rancher-repo: ${{ env.RANCHER_REPO }}
+          is-prime: true
+          community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
 
@@ -693,7 +719,7 @@ jobs:
               osUser: "${{ secrets.AZURE_SSH_USER }}"
               osGroup: "${{ secrets.AZURE_SSH_USER }}"
               rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
-              rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
+              rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"

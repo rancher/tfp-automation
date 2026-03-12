@@ -1,6 +1,6 @@
 ---
 name: "Set Rancher Repo"
-description: "Sets the Rancher repo to 'latest' for RC versions, 'alpha' for alpha versions, or falls back to a specified repo"
+description: "Sets the Rancher repo depending on the inputted parameters"
 inputs:
   rancher-version:
     description: "The rancher version to check for RC or alpha"
@@ -11,6 +11,9 @@ inputs:
   is-prime:
     description: "Determines if the Rancher is Prime or Community"
     default: false
+  release-community-version:
+    description: "The release community version to use when is-prime is false"
+    default: ""
   release-prime-version:
     description: "The release prime version to use when is-prime is true"
     default: ""
@@ -31,6 +34,7 @@ runs:
         RANCHER_VERSION="${{ inputs.rancher-version }}"
         FALLBACK_REPO="${{ inputs.fallback-repo }}"
         IS_PRIME="${{ inputs.is-prime }}"
+        RELEASE_COMMUNITY_VERSION="${{ inputs.release-community-version }}"
         RELEASE_PRIME_VERSION="${{ inputs.release-prime-version }}"
 
         if [[ "$RANCHER_VERSION" == *"-rc"* ]]; then
@@ -41,6 +45,8 @@ runs:
           REPO="prime"
         elif [[ "$IS_PRIME" == "true" && -n "$RELEASE_PRIME_VERSION" ]]; then
           REPO="release-$RELEASE_PRIME_VERSION"
+        elif [[ "$IS_PRIME" == "false" && -n "$RELEASE_COMMUNITY_VERSION" ]]; then
+          REPO="release-$RELEASE_COMMUNITY_VERSION"
         else
           REPO="$FALLBACK_REPO"
         fi
