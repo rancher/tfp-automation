@@ -35,8 +35,8 @@ if [ -n "$VPC_IDS" ]; then
     ALB_ARNs=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?VpcId=='$vpc'].LoadBalancerArn" --output text)
 
     if [ -n "$ALB_ARNs" ]; then
+      echo "Deleting load balancer in VPC..."
       for alb in $ALB_ARNs; do
-        echo "Deleting load balancer in VPC..."
         aws elbv2 delete-load-balancer --load-balancer-arn "$alb" > /dev/null
       done
     else
@@ -46,8 +46,8 @@ if [ -n "$VPC_IDS" ]; then
     TG_ARNs=$(aws elbv2 describe-target-groups --query "TargetGroups[?VpcId=='$vpc'].TargetGroupArn" --output text)
 
     if [ -n "$TG_ARNs" ]; then
+      echo "Deleting target groups in VPC..."
       for tg in $TG_ARNs; do
-        echo "Deleting target group in VPC..."
         aws elbv2 delete-target-group --target-group-arn "$tg" > /dev/null
       done
     else
@@ -78,7 +78,7 @@ if [ -n "$CLUSTER_NAMES" ]; then
 
     aws cloudformation list-stacks --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE DELETE_FAILED DELETE_IN_PROGRESS \
                                    --query "StackSummaries[?contains(StackName, '${PREFIX}')].StackName" \
-                                   --output text | while read -r stack; do
+                                   --output text | tr '\t' '\n' | while read -r stack; do
                                    if [ -n "$stack" ]; then
                                     echo "Deleting stack $stack"
                                     aws cloudformation update-termination-protection --stack-name "$stack" --no-enable-termination-protection > /dev/null
