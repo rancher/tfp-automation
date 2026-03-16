@@ -24,6 +24,9 @@ const (
 	EC2RKE2 = "ec2_rke2"
 	EC2K3s  = "ec2_k3s"
 
+	GoogleRKE2 = "google_rke2"
+	GoogleK3s  = "google_k3s"
+
 	HarvesterRKE1 = "harvester_rke1"
 	HarvesterRKE2 = "harvester_rke2"
 	HarvesterK3s  = "harvester_k3s"

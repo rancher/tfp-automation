@@ -21,6 +21,7 @@
         -   [HARVESTER_RKE2 + HARVESTER_K3S](#configurations-terraform-rke2_k3s_harvester)
         -   [LINODE_RKE2 + LINODE_K3S](#configurations-terraform-rke2_k3s_linode)
         -   [VSPHERE_RKE2 + VSPHERE_K3S](#configurations-terraform-rke2_k3s_vsphere)
+        -   [GOOGLE_RKE2 + GOOGLE_K3S](#configurations-terraform-rke2_k3s_google)
     -   [Terratest](#configurations-terratest)
         -   [Nodepools](#configurations-terratest-nodepools)
             -   [AKS Nodepools](#configurations-terratest-nodepools-aks)
@@ -525,10 +526,12 @@ terraform:
 
 ```yaml
 terraform:
-  module: azure_k3s
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
+  cni: "calico"
+  defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: "azure"
+  enableNetworkPolicy: false
+  module: "azure_rke2" # or azure_k3s
+  resourcePrefix: ""
   azureCredentials:
     clientId: ""
     clientSecret: ""
@@ -564,11 +567,12 @@ terraform:
 
 ```yaml
 terraform:
-  module: ec2_rke2
-  cloudCredentialName: tf-creds-rke2
-  machineConfigName: tf-rke2
+  mcni: "calico"
+  defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: "aws"
   enableNetworkPolicy: false
-  defaultClusterRoleForProjectMembers: user
+  module: "ec2_rke2" # or ec2_k3s
+  resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
     awsSecretKey: ""
@@ -590,9 +594,12 @@ terraform:
 
 ```yaml
 terraform:
-  module: harvester_rke2
-  hostnamePrefix: tfp
-  machineConfigName: tf-hvst
+  cni: "calico"
+  defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: "harvester"
+  enableNetworkPolicy: false
+  module: "vsphere_rke2" # or vsphere_k3s
+  resourcePrefix: ""
   harvesterCredentials:
     clusterId: "c-m-clusterID"
     clusterType: "imported"
@@ -616,11 +623,12 @@ terraform:
 
 ```yaml
 terraform:
-  module: linode_k3s
-  cloudCredentialName: tf-linode-creds
-  machineConfigName: tf-k3s
+  cni: "calico"
+  defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: "linode"
   enableNetworkPolicy: false
-  defaultClusterRoleForProjectMembers: user
+  module: "linode_rke2" # or linode_k3s
+  resourcePrefix: ""
   linodeCredentials:
     linodeToken: ""
   linodeConfig:
@@ -637,10 +645,12 @@ terraform:
 
 ```yaml
 terraform:
-  module: vsphere_k3s
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
+  cni: "calico"
+  defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: "vsphere"
+  enableNetworkPolicy: false
+  module: "vsphere_rke2" # or vsphere_k3s
+  resourcePrefix: ""
   vsphereCredentials:
     password: ""
     username: ""
@@ -667,9 +677,49 @@ terraform:
     sshUser: "docker"
     sshUserGroup: "staff"
 ```
-
 ---
 
+<a name="configurations-terraform-rke2_k3s_google"></a>
+#### :small_red_triangle: [Back to top](#top)
+
+###### GOOGLE_RKE2 + GOOGLE_K3S
+
+```yaml
+terraform:
+  cni: "calico"
+  defaultClusterRoleForProjectMembers: "true"
+  downstreamClusterProvider: "google"
+  enableNetworkPolicy: false
+  module: "google_rke2" # or google_k3s
+  resourcePrefix: ""
+  googleCredentials:
+    authEncodedJson: |-
+      {
+        "type": "service_account",
+        "project_id": "<omitted>",
+        "private_key_id": "<omitted>",
+        "private_key": "<omitted>",
+        "client_email": "<omitted>",
+        "client_id": "<omitted>",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "<omitted>"
+      }
+  
+  googleConfig:
+    diskSize: 100
+    diskType: "pd-standard"
+    image: "ubuntu-os-cloud/ubuntu-2204-lts"
+    machineImage: "projects/ubuntu-os-cloud/global/images/ubuntu-2404-noble-amd64-v20260316"
+    machineType: "e2-standard-8"
+    network: "default"
+    projectID: ""
+    region: "us-central1"
+    zone: "us-central1-c"
+```
+
+---
 
 <a name="configurations-terratest"></a>
 #### :small_red_triangle: [Back to top](#top)
