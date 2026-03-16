@@ -9,6 +9,8 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/azure"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/google"
+	"github.com/rancher/tfp-automation/framework/set/defaults/providers/harvester"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
 )
@@ -25,6 +27,12 @@ func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, 
 	case azure.Azure:
 		rke2Module = modules.AzureRKE2
 		k3sModule = modules.AzureK3s
+	case google.Google:
+		rke2Module = modules.GoogleRKE2
+		k3sModule = modules.GoogleK3s
+	case harvester.Harvester:
+		rke2Module = modules.HarvesterRKE2
+		k3sModule = modules.HarvesterK3s
 	case linode.Linode:
 		rke2Module = modules.LinodeRKE2
 		k3sModule = modules.LinodeK3s
@@ -81,6 +89,8 @@ func verifyModule(module string) bool {
 		modules.EC2RKE1,
 		modules.EC2RKE2,
 		modules.EC2K3s,
+		modules.GoogleRKE2,
+		modules.GoogleK3s,
 		modules.HarvesterRKE1,
 		modules.HarvesterRKE2,
 		modules.HarvesterK3s,

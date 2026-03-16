@@ -4,16 +4,21 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
+	"github.com/rancher/tfp-automation/framework/set/defaults/general"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	aws "github.com/rancher/tfp-automation/framework/set/provisioning/providers/aws"
 	azure "github.com/rancher/tfp-automation/framework/set/provisioning/providers/azure"
+	"github.com/rancher/tfp-automation/framework/set/provisioning/providers/google"
 	harvester "github.com/rancher/tfp-automation/framework/set/provisioning/providers/harvester"
 	linode "github.com/rancher/tfp-automation/framework/set/provisioning/providers/linode"
 	vsphere "github.com/rancher/tfp-automation/framework/set/provisioning/providers/vsphere"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
+	"github.com/zclconf/go-cty/cty"
 )
 
 const (
@@ -54,16 +59,41 @@ const (
 	noProxyValue = "localhost,127.0.0.0/8,10.0.0.0/8,172.0.0.0/8,192.168.0.0/16,.svc,.cluster.local,cattle-system.svc,169.254.169.254"
 
 	mixedArchitecture = "mixed_architecture"
+
+	active       = "active"
+	builtin      = "builtin"
+	googleDriver = "google"
+	url          = "url"
 )
 
 // SetRKE2K3s is a function that will set the RKE2/K3S configurations in the main.tf file.
 func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File, rbacRole config.Role) (*hclwrite.File, *os.File, error) {
+	// GCE is not set Active as a built-in node driver in Rancher.
+	if strings.Contains(terraformConfig.Module, "google") {
+		nodeDriverBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.NodeDriver, rancher2.NodeDriver})
+		nodeDriverBlockBody := nodeDriverBlock.Body()
+
+		provider := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(general.Rancher2 + "." + general.AdminUser)},
+		}
+
+		nodeDriverBlockBody.SetAttributeRaw(general.Provider, provider)
+		nodeDriverBlockBody.SetAttributeValue(active, cty.BoolVal(true))
+		nodeDriverBlockBody.SetAttributeValue(builtin, cty.BoolVal(true))
+		nodeDriverBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(googleDriver))
+		nodeDriverBlockBody.SetAttributeValue(url, cty.StringVal("local://"))
+
+		rootBody.AppendNewline()
+	}
+
 	switch terraformConfig.Module {
 	case modules.EC2RKE2, modules.EC2K3s:
 		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
 	case modules.AzureRKE2, modules.AzureK3s:
 		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig)
+	case modules.GoogleK3s, modules.GoogleRKE2:
+		google.SetGoogleProvider(rootBody, terraformConfig)
 	case modules.HarvesterRKE2, modules.HarvesterK3s:
 		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig)
 	case modules.LinodeRKE2, modules.LinodeK3s:
@@ -93,6 +123,8 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 		aws.SetAWSRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig, terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType)
 	case modules.AzureRKE2, modules.AzureK3s:
 		azure.SetAzureRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
+	case modules.GoogleK3s, modules.GoogleRKE2:
+		google.SetGoogleRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case modules.HarvesterRKE2, modules.HarvesterK3s:
 		harvester.SetHarvesterRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	case modules.LinodeRKE2, modules.LinodeK3s:
