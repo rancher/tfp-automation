@@ -723,6 +723,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
+            generateV3Token: true
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"

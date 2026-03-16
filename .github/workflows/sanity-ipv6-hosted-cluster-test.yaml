@@ -325,6 +325,7 @@ jobs:
     environment: head
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
+      HOSTNAME_PREFIX: "hst-ipv6-214"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||

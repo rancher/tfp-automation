@@ -171,6 +171,7 @@ jobs:
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -439,6 +440,7 @@ jobs:
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -707,7 +709,9 @@ jobs:
           terraform:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
+            downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             enableNetworkPolicy: false
+            generateV3Token: true
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -766,7 +770,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ env.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
