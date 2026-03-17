@@ -82,7 +82,10 @@ terratest:
 See the below examples on how to run the tests:
 
 ### ACE
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestAirgapACETestSuite/TestTfpAirgapACE$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/airgap --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestAirgapACETestSuite/TestTfpAirgapACE$"`
+
+### API
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/airgap --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestAirgapAPITestSuite/TestTfpAirgapAPI$"`
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
