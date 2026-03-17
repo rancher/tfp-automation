@@ -17,6 +17,6 @@ func GoogleDriverImport(t *testing.T, terraformOptions *terraform.Options) {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		require.NoError(t, err, "terraform import failed")
+		require.NoError(t, err)
 	}
 }
