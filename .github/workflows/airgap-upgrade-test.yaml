@@ -694,7 +694,7 @@ jobs:
         uses: ./.github/actions/set-rancher-chart-url
         with:
           rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
-          is-prime: false
+          is-prime: true
           community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
