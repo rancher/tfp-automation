@@ -52,8 +52,8 @@ require (
 	github.com/rancher/norman v0.8.1
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/shepherd v0.0.0-20260226203127-be7fc5d07fbe
-	github.com/rancher/tests v0.0.0-20260305192440-92ac3e34d146
-	github.com/rancher/tests/actions v0.0.0-20260305192440-92ac3e34d146
+	github.com/rancher/tests v0.0.0-20260317210137-1bc6ab388ebe
+	github.com/rancher/tests/actions v0.0.0-20260317210137-1bc6ab388ebe
 	github.com/sirupsen/logrus v1.9.3
 )
 
