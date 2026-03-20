@@ -2,7 +2,7 @@
 
 In the OS check test, the following workflow is followed:
 
-1. Provision all permutations for a given AMI in parallel
+1. Provision all permutations for a given AMI in nested
 2. Run all the workload tests
 3. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 4. Repeat steps 1-3 for all AMIs provided

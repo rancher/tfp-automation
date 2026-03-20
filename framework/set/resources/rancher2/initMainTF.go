@@ -22,3 +22,17 @@ func InitializeMainTF(terratestConfig *config.TerratestConfig) (*hclwrite.File, 
 
 	return newFile, rootBody, file
 }
+
+// InitializeNestedMainTFs creates a new main.tf file in the given directory for the downstream Rancher cluster tests
+func InitializeNestedMainTFs(dir string) (*hclwrite.File, *hclwrite.Body, *os.File) {
+	newFile := hclwrite.NewEmptyFile()
+	rootBody := newFile.Body()
+
+	mainTFPath := dir + configs.MainTF
+	file, err := os.Create(mainTFPath)
+	if err != nil {
+		return nil, nil, nil
+	}
+
+	return newFile, rootBody, file
+}

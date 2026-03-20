@@ -50,12 +50,6 @@ jobs:
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: head
-    strategy:
-      fail-fast: false
-      matrix:
-        suite:
-          - rancher-server-one
-          - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_15 }}"
       HOSTNAME_PREFIX: "tfp-rec-215"
@@ -338,12 +332,6 @@ jobs:
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: head
-    strategy:
-      fail-fast: false
-      matrix:
-        suite:
-          - rancher-server-one
-          - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "tfp-rec-214"
@@ -635,12 +623,6 @@ jobs:
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: staging-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        suite:
-          - rancher-server-one
-          - rancher-server-two
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
       HOSTNAME_PREFIX: "tfp-rec-213"

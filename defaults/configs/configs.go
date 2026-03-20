@@ -1,6 +1,8 @@
 package configs
 
-import namegen "github.com/rancher/shepherd/pkg/namegenerator"
+import (
+	namegen "github.com/rancher/shepherd/pkg/namegenerator"
+)
 
 const (
 	Rancher   = "rancher"
@@ -11,12 +13,13 @@ const (
 	TestUser     = "testuser"
 	TestPassword = "testpassword"
 
-	MainTF          = "/main.tf"
-	RKEDebugLog     = "/rke_debug.log"
-	TerraformFolder = "/.terraform"
-	TFState         = "/terraform.tfstate"
-	TFStateBackup   = "/terraform.tfstate.backup"
-	TFLockHCL       = "/.terraform.lock.hcl"
+	MainTF                 = "/main.tf"
+	NestedRancherModuleDir = "/modules/rancher2"
+	RKEDebugLog            = "/rke_debug.log"
+	TerraformFolder        = "/.terraform"
+	TFState                = "/terraform.tfstate"
+	TFStateBackup          = "/terraform.tfstate.backup"
+	TFLockHCL              = "/.terraform.lock.hcl"
 )
 
 // CreateTestCredentials creates test credentials for the test user, password, cluster name, and pool name.

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
@@ -15,6 +14,7 @@ import (
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -22,6 +22,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
+	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/ssh"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
@@ -53,6 +54,10 @@ func (a *TfpAirgapUpgradeRancherTestSuite) TearDownSuite() {
 
 	_, keyPath = rancher2.SetKeyPath(keypath.UpgradeKeyPath, a.terratestConfig.PathToRepo, a.terraformConfig.Provider)
 	cleanup.Cleanup(a.T(), a.upgradeTerraformOptions, keyPath)
+
+	if a.tunnel != nil {
+		a.tunnel.StopBastionSSHTunnel()
+	}
 }
 
 func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
@@ -64,33 +69,34 @@ func (a *TfpAirgapUpgradeRancherTestSuite) SetupSuite() {
 }
 
 func (a *TfpAirgapUpgradeRancherTestSuite) TestTfpUpgradeAirgapRancher() {
-	var clusterIDs []string
-
-	standardUserClient, newFile, rootBody, file, standardToken, testUser, testPassword := ranchers.SetupResources(a.T(), a.client, a.rancherConfig, a.terratestConfig, a.terraformOptions)
+	standardUserClient, standardToken, testUser, testPassword := ranchers.SetupResources(a.T(), a.client, a.rancherConfig, a.terratestConfig, a.terraformOptions)
 
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
-	allClusterIDs := a.provisionAndVerifyCluster("Airgap_Pre_Rancher_Upgrade_", clusterIDs, newFile, rootBody, file, standardUserClient, standardToken, testUser, testPassword)
+	nestedRancherModuleDir := a.provisionAndVerifyCluster("Airgap_Pre_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
 
 	a.client, a.cattleConfig, a.terraformOptions, a.upgradeTerraformOptions = ranchers.UpgradeAirgapRancher(a.T(), a.client, a.bastion, a.registry, a.session, a.cattleConfig, a.tunnel)
-	provisioning.VerifyClustersState(a.T(), a.client, allClusterIDs)
 
-	ranchers.CleanupPreUpgradeClusters(a.T(), a.client, allClusterIDs, a.terraformConfig)
+	ranchers.CleanupDownstreamClusters(a.T(), a.client, a.terraformConfig)
+	os.RemoveAll(nestedRancherModuleDir)
 
-	standardUserClient, newFile, rootBody, file, standardToken, testUser, testPassword = ranchers.SetupResources(a.T(), a.client, a.rancherConfig, a.terratestConfig, a.terraformOptions)
+	standardUserClient, standardToken, testUser, testPassword = ranchers.SetupResources(a.T(), a.client, a.rancherConfig, a.terratestConfig, a.terraformOptions)
 
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, _ = config.LoadTFPConfigs(a.cattleConfig)
-	a.provisionAndVerifyCluster("Airgap_Post_Rancher_Upgrade_", nil, newFile, rootBody, file, standardUserClient, standardToken, testUser, testPassword)
+	nestedRancherModuleDir = a.provisionAndVerifyCluster("Airgap_Post_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
-	cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
+	ranchers.CleanupDownstreamClusters(a.T(), a.client, a.terraformConfig)
+	os.RemoveAll(nestedRancherModuleDir)
 
 	if a.terratestConfig.LocalQaseReporting {
 		results.ReportTest(a.terratestConfig)
 	}
 }
 
-func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, clusterIDs []string, newFile *hclwrite.File, rootBody *hclwrite.Body,
-	file *os.File, standardUserClient *rancher.Client, standardToken, testUser, testPassword string) []string {
+func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string, standardUserClient *rancher.Client, standardToken,
+	testUser, testPassword string) string {
+	var clusterIDs []string
+	var nestedRancherModuleDir string
+
 	customClusterNames := []string{}
 
 	tests := []struct {
@@ -103,57 +109,65 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		{"K3S", modules.AirgapK3S},
 	}
 
-	for _, tt := range tests {
-		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
-		require.NoError(a.T(), err)
+	a.T().Run(name, func(t *testing.T) {
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
-		require.NoError(a.T(), err)
+				nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(a.terraformConfig, a.terratestConfig, a.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+				require.NoError(t, err)
 
-		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		require.NoError(a.T(), err)
+				newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
+				defer file.Close()
 
-		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
-		require.NoError(a.T(), err)
+				configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
+				require.NoError(t, err)
 
-		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
-		require.NoError(a.T(), err)
+				_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+				require.NoError(t, err)
 
-		provisioning.GetK8sVersion(a.T(), standardUserClient, a.terratestConfig, a.terraformConfig, configMap)
+				_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+				require.NoError(t, err)
 
-		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+				_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.registry, configMap[0])
+				require.NoError(t, err)
 
-		tt.name = name + tt.name
+				_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.registry, configMap[0])
+				require.NoError(t, err)
 
-		a.Run((tt.name), func() {
-			clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames)
-			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
+				provisioning.GetK8sVersion(t, a.client, a.terratestConfig, a.terraformConfig, configMap)
 
-			cluster, err := a.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-			require.NoError(a.T(), err)
+				rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-			err = pods.VerifyClusterPods(a.client, cluster)
-			require.NoError(a.T(), err)
+				clusterIDs, customClusterNames = provisioning.Provision(t, a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+				provisioning.VerifyClustersState(t, a.client, clusterIDs)
+				provisioning.VerifyServiceAccountTokenSecret(t, a.client, clusterIDs)
 
-			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, customClusterNames = provisioning.Provision(a.T(), a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames)
-				provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-				provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
+				cluster, err := a.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+				require.NoError(t, err)
 
 				err = pods.VerifyClusterPods(a.client, cluster)
-				require.NoError(a.T(), err)
-			}
-		})
+				require.NoError(t, err)
 
-		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
-		err = qase.UpdateSchemaParameters(tt.name, params)
-		if err != nil {
-			logrus.Warningf("Failed to upload schema parameters %s", err)
+				if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
+					clusterIDs, customClusterNames = provisioning.Provision(t, a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+					provisioning.VerifyClustersState(t, a.client, clusterIDs)
+					provisioning.VerifyServiceAccountTokenSecret(t, a.client, clusterIDs)
+
+					err = pods.VerifyClusterPods(a.client, cluster)
+					require.NoError(t, err)
+				}
+
+				params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+				err = qase.UpdateSchemaParameters(tt.name, params)
+				if err != nil {
+					logrus.Warningf("Failed to upload schema parameters %s", err)
+				}
+			})
 		}
-	}
+	})
 
-	return ranchers.UniqueStrings(clusterIDs)
+	return nestedRancherModuleDir
 }
 
 func TestTfpAirgapUpgradeRancherTestSuite(t *testing.T) {

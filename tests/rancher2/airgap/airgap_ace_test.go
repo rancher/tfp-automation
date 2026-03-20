@@ -16,6 +16,7 @@ import (
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -24,6 +25,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
+	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/ssh"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
@@ -46,6 +48,12 @@ type AirgapACETestSuite struct {
 	tunnel             *ssh.BastionSSHTunnel
 }
 
+func (a *AirgapACETestSuite) TearDownSuite() {
+	if a.tunnel != nil {
+		a.tunnel.StopBastionSSHTunnel()
+	}
+}
+
 func (a *AirgapACETestSuite) SetupSuite() {
 	a.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	a.rancherConfig, a.terraformConfig, a.terratestConfig, a.standaloneConfig = config.LoadTFPConfigs(a.cattleConfig)
@@ -55,6 +63,7 @@ func (a *AirgapACETestSuite) SetupSuite() {
 
 	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(a.T(), a.terraformConfig, a.terratestConfig, keyPath)
+
 	a.terraformOptions = terraformOptions
 
 	sshKey, err := os.ReadFile(a.terraformConfig.PrivateKeyPath)
@@ -98,36 +107,42 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 	}
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF(a.terratestConfig)
-		defer file.Close()
+		a.T().Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
-		require.NoError(a.T(), err)
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(a.terraformConfig, a.terratestConfig, a.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+			require.NoError(t, err)
+			defer os.RemoveAll(nestedRancherModuleDir)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
-		require.NoError(a.T(), err)
+			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
+			defer file.Close()
 
-		_, err = operations.ReplaceValue([]string{"terraform", "localAuthEndpoint"}, tt.authEndpoint.LocalAuthEndpoint, configMap[0])
-		require.NoError(a.T(), err)
+			configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
+			require.NoError(t, err)
 
-		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		require.NoError(a.T(), err)
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			require.NoError(a.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.terraformConfig.PrivateRegistries.SystemDefaultRegistry, configMap[0])
-		require.NoError(a.T(), err)
+			_, err = operations.ReplaceValue([]string{"terraform", "localAuthEndpoint"}, tt.authEndpoint.LocalAuthEndpoint, configMap[0])
+			require.NoError(a.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.terraformConfig.PrivateRegistries.URL, configMap[0])
-		require.NoError(a.T(), err)
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			require.NoError(a.T(), err)
 
-		provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configMap)
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, a.terraformConfig.PrivateRegistries.SystemDefaultRegistry, configMap[0])
+			require.NoError(a.T(), err)
 
-		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, a.terraformConfig.PrivateRegistries.URL, configMap[0])
+			require.NoError(a.T(), err)
 
-		a.Run((tt.name), func() {
+			provisioning.GetK8sVersion(a.T(), a.client, a.terratestConfig, a.terraformConfig, configMap)
+
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
+			defer cleanup.Cleanup(a.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, a.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
+			clusterIDs, _ := provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
 
@@ -138,20 +153,18 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 			require.NoError(a.T(), err)
 
 			provisioning.VerifyACEAirgap(a.T(), a.client, cluster)
-		})
 
-		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
-		err = qase.UpdateSchemaParameters(tt.name, params)
-		if err != nil {
-			logrus.Warningf("Failed to upload schema parameters %s", err)
-		}
+			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			err = qase.UpdateSchemaParameters(tt.name, params)
+			if err != nil {
+				logrus.Warningf("Failed to upload schema parameters %s", err)
+			}
+		})
 	}
 
 	if a.terratestConfig.LocalQaseReporting {
 		results.ReportTest(a.terratestConfig)
 	}
-
-	a.tunnel.StopBastionSSHTunnel()
 }
 
 func TestAirgapACETestSuite(t *testing.T) {

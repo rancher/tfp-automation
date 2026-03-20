@@ -23,6 +23,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
+	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
@@ -89,30 +90,36 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	}
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
-		defer file.Close()
+		r.T().Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-		configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
-		require.NoError(r.T(), err)
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(r.terraformConfig, r.terratestConfig, r.terraformOptions, tt.name, "/modules/rancher2")
+			require.NoError(t, err)
+			defer os.RemoveAll(nestedRancherModuleDir)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
-		require.NoError(r.T(), err)
+			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
+			defer file.Close()
 
-		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		require.NoError(r.T(), err)
+			configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+			require.NoError(t, err)
 
-		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
-		require.NoError(r.T(), err)
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			require.NoError(r.T(), err)
 
-		provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configMap)
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			require.NoError(r.T(), err)
 
-		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
+			require.NoError(r.T(), err)
 
-		r.Run((tt.name), func() {
+			provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configMap)
+
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
+			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
@@ -122,14 +129,14 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			err = pods.VerifyClusterPods(r.client, cluster)
 			require.NoError(r.T(), err)
 
-			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, r.terraformOptions, configMap, tt.rbacRole, newFile, rootBody, file)
-		})
+			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, tt.rbacRole, newFile, rootBody, file, nestedRancherModuleDir)
 
-		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
-		err = qase.UpdateSchemaParameters(tt.name, params)
-		if err != nil {
-			logrus.Warningf("Failed to upload schema parameters %s", err)
-		}
+			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			err = qase.UpdateSchemaParameters(tt.name, params)
+			if err != nil {
+				logrus.Warningf("Failed to upload schema parameters %s", err)
+			}
+		})
 	}
 
 	if r.terratestConfig.LocalQaseReporting {
