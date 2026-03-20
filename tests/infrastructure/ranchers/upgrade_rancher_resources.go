@@ -1,11 +1,9 @@
 package ranchers
 
 import (
-	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	extClusters "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
@@ -13,7 +11,6 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
-	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -22,12 +19,9 @@ import (
 // This function is specifically designed for the upgrading Rancher tests to provision clusters before and after
 // the Rancher upgrade.
 func SetupResources(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terratestConfig *config.TerratestConfig,
-	terraformOptions *terraform.Options) (*rancher.Client, *hclwrite.File, *hclwrite.Body, *os.File, string, string, string) {
+	terraformOptions *terraform.Options) (*rancher.Client, string, string, string) {
 	var err error
 	var testUser, testPassword string
-
-	newFile, rootBody, file := rancher2.InitializeMainTF(terratestConfig)
-	defer file.Close()
 
 	standardUserClient, testUser, testPassword, err := standarduser.CreateStandardUser(client)
 	require.NoError(t, err)
@@ -37,23 +31,30 @@ func SetupResources(t *testing.T, client *rancher.Client, rancherConfig *rancher
 
 	standardToken := standardUserToken.Token
 
-	return standardUserClient, newFile, rootBody, file, standardToken, testUser, testPassword
+	return standardUserClient, standardToken, testUser, testPassword
 }
 
-// CleanupPreUpgradeClusters is a function that cleans up any pre-upgrade downstream clusters created during the Rancher upgrade tests.
-func CleanupPreUpgradeClusters(t *testing.T, client *rancher.Client, clusterIDs []string, terraformConfig *config.TerraformConfig) {
-	for _, clusterID := range clusterIDs {
-		clusterResp, err := client.Management.Cluster.ByID(clusterID)
+// CleanupDownstreamClusters is a function that cleans up any downstream clusters created during the Rancher upgrade tests.
+func CleanupDownstreamClusters(t *testing.T, client *rancher.Client, terraformConfig *config.TerraformConfig) {
+	clusters, err := client.Steve.SteveType(stevetypes.Provisioning).ListAll(nil)
+	require.NoError(t, err)
+
+	for _, cluster := range clusters.Data {
+		if cluster.Name == "local" {
+			continue
+		}
+
+		err = provisioning.VerifyClusterReady(client, &cluster)
 		require.NoError(t, err)
 
-		cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterResp.Name)
+		dsCluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + cluster.Name)
 		require.NoError(t, err)
 
-		logrus.Infof("Cleaning up pre-upgrade cluster: %v", cluster.ID)
-		err = extClusters.DeleteK3SRKE2Cluster(client, cluster.ID)
+		logrus.Infof("Cleaning up cluster: %v", dsCluster.ID)
+		err = extClusters.DeleteK3SRKE2Cluster(client, dsCluster.ID)
 		require.NoError(t, err)
 
-		provisioning.VerifyDeleteRKE2K3SCluster(t, client, cluster.ID)
+		provisioning.VerifyDeleteRKE2K3SCluster(t, client, dsCluster.ID)
 	}
 }
 

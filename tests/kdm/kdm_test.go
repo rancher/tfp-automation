@@ -2,6 +2,7 @@ package kdm
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -23,6 +25,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
+	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
@@ -107,30 +110,36 @@ func (k *KDMTestSuite) TestKDM() {
 	}
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF(k.terratestConfig)
-		defer file.Close()
+		k.T().Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-		configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
-		require.NoError(k.T(), err)
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(k.terraformConfig, k.terratestConfig, k.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+			require.NoError(t, err)
+			defer os.RemoveAll(nestedRancherModuleDir)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
-		require.NoError(k.T(), err)
+			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
+			defer file.Close()
 
-		_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
-		require.NoError(k.T(), err)
+			configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
+			require.NoError(t, err)
 
-		_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
-		require.NoError(k.T(), err)
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			require.NoError(k.T(), err)
 
-		provisioning.GetK8sVersion(k.T(), k.standardUserClient, k.terratestConfig, k.terraformConfig, configMap)
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+			require.NoError(k.T(), err)
 
-		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			require.NoError(k.T(), err)
 
-		k.Run((tt.name), func() {
+			provisioning.GetK8sVersion(k.T(), k.standardUserClient, k.terratestConfig, k.terraformConfig, configMap)
+
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(k.T(), k.terraformOptions, keyPath)
+			defer cleanup.Cleanup(k.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, k.terraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(k.T(), k.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(k.T(), k.client, clusterIDs)
 
@@ -139,13 +148,13 @@ func (k *KDMTestSuite) TestKDM() {
 
 			err = pods.VerifyClusterPods(k.client, cluster)
 			require.NoError(k.T(), err)
-		})
 
-		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
-		err = qase.UpdateSchemaParameters(tt.name, params)
-		if err != nil {
-			logrus.Warningf("Failed to upload schema parameters %s", err)
-		}
+			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			err = qase.UpdateSchemaParameters(tt.name, params)
+			if err != nil {
+				logrus.Warningf("Failed to upload schema parameters %s", err)
+			}
+		})
 	}
 
 	if k.terratestConfig.LocalQaseReporting {

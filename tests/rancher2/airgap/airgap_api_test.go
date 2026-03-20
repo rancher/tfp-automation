@@ -27,6 +27,12 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+func (a *AirgapAPITestSuite) TearDownSuite() {
+	if a.tunnel != nil {
+		a.tunnel.StopBastionSSHTunnel()
+	}
+}
+
 type AirgapAPITestSuite struct {
 	suite.Suite
 	client             *rancher.Client
@@ -103,8 +109,6 @@ func (a *AirgapAPITestSuite) TestTfpAirgapAPI() {
 	if a.terratestConfig.LocalQaseReporting {
 		results.ReportTest(a.terratestConfig)
 	}
-
-	a.tunnel.StopBastionSSHTunnel()
 }
 
 func TestAirgapAPITestSuite(t *testing.T) {

@@ -62,7 +62,7 @@ func SetBaselinePSACT(newFile *hclwrite.File, rootBody *hclwrite.Body, clusterNa
 	}
 
 	psactBlockBody.SetAttributeRaw(general.Provider, provider)
-	psactBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(clusters.RancherBaseline))
+	psactBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(clusters.RancherBaseline+"-"+clusterName))
 	psactBlockBody.SetAttributeValue(description, cty.StringVal(baselineDescription))
 
 	defaultsBlock := psactBlockBody.AppendNewBlock(general.Defaults, nil)
