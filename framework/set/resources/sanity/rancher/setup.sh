@@ -12,6 +12,7 @@ RANCHER_IMAGE=$9
 RANCHER_AGENT_IMAGE=${10}
 TURTLES=${11}
 MCM=${12}
+PARTNER_RC=${13}
 
 if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
@@ -85,7 +86,11 @@ install_helm() {
 
 setup_helm_repo() {
     echo "Adding Helm chart repo"
-    helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+    if [ "$REPO" == "rc" ]; then
+        helm repo add rancher-partner-${REPO} ${RANCHER_CHART_REPO}${REPO}
+    else
+        helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+    fi
 }
 
 install_cert_manager() {
@@ -315,6 +320,25 @@ install_default_rancher() {
     fi
 }
 
+install_partner_rc_rancher() {
+    echo "Creating Rancher..."
+    helm upgrade --install rancher rancher-partner-rc/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                            --set hostname=${HOSTNAME} \
+                                                                            ${VERSION} \
+                                                                            --set rancherImageTag="${RANCHER_TAG_VERSION}" \
+                                                                            --set rancherImage="${RANCHER_IMAGE}" \
+                                                                            --set 'extraEnv[0].name=RANCHER_VERSION_TYPE' \
+                                                                            --set 'extraEnv[0].value=prime' \
+                                                                            --set 'extraEnv[1].name=CATTLE_BASE_UI_BRAND' \
+                                                                            --set 'extraEnv[1].value=suse' \
+                                                                            --set 'extraEnv[2].name=CATTLE_AGENT_IMAGE' \
+                                                                            --set "extraEnv[2].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                            --set agentTLSMode=system-store \
+                                                                            --set systemDefaultRegistry="registry.rancher.com/rancher/rc" \
+                                                                            --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                            --devel
+}
+
 wait_for_rollout() {
     echo "Waiting for Rancher to be rolled out"
     kubectl -n cattle-system rollout status deploy/rancher
@@ -374,6 +398,8 @@ elif [ -n "$MCM" ]; then
             install_default_rancher
             ;;
     esac
+elif [ -n "$PARTNER_RC" ]; then
+    install_partner_rc_rancher
 else
     install_default_rancher
 fi

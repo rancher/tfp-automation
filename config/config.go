@@ -199,6 +199,7 @@ type TerraformConfig struct {
 	MixedArchitecture                   bool                         `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
+	PartnerRC                           bool                         `json:"partnerRC,omitempty" yaml:"partnerRC,omitempty" default:"false"`
 	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
 	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
 	Proxy                               *Proxy                       `json:"proxy,omitempty" yaml:"proxy,omitempty"`

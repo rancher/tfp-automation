@@ -3,6 +3,7 @@ package rancher
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
@@ -52,6 +53,12 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 
 	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.MCM != "" {
 		command += " " + terraformConfig.Standalone.FeatureFlags.MCM
+	} else {
+		command += " \"\""
+	}
+
+	if terraformConfig.PartnerRC {
+		command += " " + strconv.FormatBool(terraformConfig.PartnerRC)
 	} else {
 		command += " \"\""
 	}
