@@ -130,7 +130,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 node driver cluster prior to Rancher upgrade
-    title: Sanity_Pre_Rancher_Upgrade/RKE2
+    title: Sanity_Pre_Rancher_Upgrade_RKE2
     priority: 4
     type: 8
     is_flaky: 0
@@ -151,7 +151,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 Windows 2019 custom cluster prior to Rancher upgrade
-    title: Sanity_Pre_Rancher_Upgrade/RKE2_Windows_2019
+    title: Sanity_Pre_Rancher_Upgrade_RKE2_Windows_2019
     priority: 4
     type: 8
     is_flaky: 0
@@ -172,7 +172,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 Windows 2022 custom cluster prior to Rancher upgrade
-    title: Sanity_Pre_Rancher_Upgrade/RKE2_Windows_2022
+    title: Sanity_Pre_Rancher_Upgrade_RKE2_Windows_2022
     priority: 4
     type: 8
     is_flaky: 0
@@ -193,7 +193,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream K3S node driver cluster prior to Rancher upgrade
-    title: Sanity_Pre_Rancher_Upgrade/K3S
+    title: Sanity_Pre_Rancher_Upgrade_K3S
     priority: 4
     type: 8
     is_flaky: 0
@@ -214,7 +214,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 node driver cluster post Rancher upgrade
-    title: Sanity_Post_Rancher_Upgrade/RKE2
+    title: Sanity_Post_Rancher_Upgrade_RKE2
     priority: 4
     type: 8
     is_flaky: 0
@@ -235,7 +235,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 Windows 2019 custom cluster post Rancher upgrade
-    title: Sanity_Post_Rancher_Upgrade/RKE2_Windows_2019
+    title: Sanity_Post_Rancher_Upgrade_RKE2_Windows_2019
     priority: 4
     type: 8
     is_flaky: 0
@@ -256,7 +256,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 Windows 2022 custom cluster post Rancher upgrade
-    title: Sanity_Post_Rancher_Upgrade/RKE2_Windows_2022
+    title: Sanity_Post_Rancher_Upgrade_RKE2_Windows_2022
     priority: 4
     type: 8
     is_flaky: 0
@@ -277,7 +277,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream K3S node driver cluster post Rancher upgrade
-    title: Sanity_Post_Rancher_Upgrade/K3S
+    title: Sanity_Post_Rancher_Upgrade_K3S
     priority: 4
     type: 8
     is_flaky: 0
@@ -298,7 +298,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 node driver cluster prior to Rancher upgrade
-    title: Sanity_DualStack_Pre_Rancher_Upgrade/RKE2
+    title: Sanity_DualStack_Pre_Rancher_Upgrade_RKE2
     priority: 4
     type: 8
     is_flaky: 0
@@ -319,7 +319,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream K3S node driver cluster prior to Rancher upgrade
-    title: Sanity_DualStack_Pre_Rancher_Upgrade/K3S
+    title: Sanity_DualStack_Pre_Rancher_Upgrade_K3S
     priority: 4
     type: 8
     is_flaky: 0
@@ -340,7 +340,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 node driver cluster post Rancher upgrade
-    title: Sanity_DualStack_Post_Rancher_Upgrade/RKE2
+    title: Sanity_DualStack_Post_Rancher_Upgrade_RKE2
     priority: 4
     type: 8
     is_flaky: 0
@@ -361,7 +361,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream K3S node driver cluster post Rancher upgrade
-    title: Sanity_DualStack_Post_Rancher_Upgrade/K3S
+    title: Sanity_DualStack_Post_Rancher_Upgrade_K3S
     priority: 4
     type: 8
     is_flaky: 0
@@ -382,7 +382,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 node driver cluster prior to Rancher upgrade
-    title: Sanity_IPv6_Pre_Rancher_Upgrade/RKE2
+    title: Sanity_IPv6_Pre_Rancher_Upgrade_RKE2
     priority: 4
     type: 8
     is_flaky: 0
@@ -403,7 +403,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream K3S node driver cluster prior to Rancher upgrade
-    title: Sanity_IPv6_Pre_Rancher_Upgrade/K3S
+    title: Sanity_IPv6_Pre_Rancher_Upgrade_K3S
     priority: 4
     type: 8
     is_flaky: 0
@@ -424,7 +424,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream RKE2 node driver cluster post Rancher upgrade
-    title: Sanity_IPv6_Post_Rancher_Upgrade/RKE2
+    title: Sanity_IPv6_Post_Rancher_Upgrade_RKE2
     priority: 4
     type: 8
     is_flaky: 0
@@ -445,7 +445,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream K3S node driver cluster post Rancher upgrade
-    title: Sanity_IPv6_Post_Rancher_Upgrade/K3S
+    title: Sanity_IPv6_Post_Rancher_Upgrade_K3S
     priority: 4
     type: 8
     is_flaky: 0

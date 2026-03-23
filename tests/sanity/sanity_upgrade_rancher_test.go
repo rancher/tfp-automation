@@ -100,10 +100,10 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE2", nodeRolesDedicated, rke2Module},
-		{"RKE2_Windows_2019", nil, rke2Windows2019},
-		{"RKE2_Windows_2022", nil, rke2Windows2022},
-		{"K3S", nodeRolesDedicated, k3sModule},
+		{name + "_RKE2", nodeRolesDedicated, rke2Module},
+		{name + "_RKE2_Windows_2019", nil, rke2Windows2019},
+		{name + "_RKE2_Windows_2022", nil, rke2Windows2022},
+		{name + "_K3S", nodeRolesDedicated, k3sModule},
 	}
 
 	s.T().Run(name, func(t *testing.T) {

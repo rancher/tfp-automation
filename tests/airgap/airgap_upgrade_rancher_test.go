@@ -103,10 +103,10 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		name   string
 		module string
 	}{
-		{"RKE2", modules.AirgapRKE2},
-		{"RKE2_Windows_2019", modules.AirgapRKE2Windows2019},
-		{"RKE2_Windows_2022", modules.AirgapRKE2Windows2022},
-		{"K3S", modules.AirgapK3S},
+		{name + "_RKE2", modules.AirgapRKE2},
+		{name + "_RKE2_Windows_2019", modules.AirgapRKE2Windows2019},
+		{name + "_RKE2_Windows_2022", modules.AirgapRKE2Windows2022},
+		{name + "_K3S", modules.AirgapK3S},
 	}
 
 	a.T().Run(name, func(t *testing.T) {
