@@ -8,7 +8,6 @@ import (
 	"github.com/imdario/mergo"
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	"github.com/rancher/shepherd/clients/rancher"
-	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config/authproviders"
@@ -192,7 +191,6 @@ type TerraformConfig struct {
 	DownstreamClusterProvider           string                       `json:"downstreamClusterProvider,omitempty" yaml:"downstreamClusterProvider,omitempty"`
 	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
-	ETCDRKE1                            *management.ETCDService      `json:"etcdRKE1,omitempty" yaml:"etcdRKE1,omitempty"`
 	GenerateV3Token                     bool                         `json:"generateV3Token,omitempty" yaml:"generateV3Token,omitempty" default:"false"`
 	LocalAuthEndpoint                   bool                         `json:"localAuthEndpoint,omitempty" yaml:"localAuthEndpoint,omitempty" default:"false"`
 	LocalHostedCluster                  bool                         `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`

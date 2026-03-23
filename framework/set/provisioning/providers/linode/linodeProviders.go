@@ -9,19 +9,6 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// SetLinodeRKE1Provider is a helper function that will set the Linode RKE1
-// Terraform configurations in the main.tf file.
-func SetLinodeRKE1Provider(nodeTemplateBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	linodeConfigBlock := nodeTemplateBlockBody.AppendNewBlock(linode.LinodeConfig, nil)
-	linodeConfigBlockBody := linodeConfigBlock.Body()
-
-	linodeConfigBlockBody.SetAttributeValue(linode.Token, cty.StringVal(terraformConfig.LinodeCredentials.LinodeToken))
-
-	linodeConfigBlockBody.SetAttributeValue(linode.Image, cty.StringVal(terraformConfig.LinodeConfig.LinodeImage))
-	linodeConfigBlockBody.SetAttributeValue(linode.Region, cty.StringVal(terraformConfig.LinodeConfig.Region))
-	linodeConfigBlockBody.SetAttributeValue(linode.RootPass, cty.StringVal(terraformConfig.LinodeConfig.LinodeRootPass))
-}
-
 // SetLinodeRKE2K3SProvider is a helper function that will set the Linode RKE2/K3S
 // Terraform provider details in the main.tf file.
 func SetLinodeRKE2K3SProvider(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {

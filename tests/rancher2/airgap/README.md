@@ -47,6 +47,8 @@ terraform:
   privateKeyPath: ""
   privateRegistries:                          # This is an optional block. You must already have a private registry stood up
     url: ""
+    username: ""
+    password: ""
     systemDefaultRegistry: ""
     insecure: true
     authConfigSecretName: ""

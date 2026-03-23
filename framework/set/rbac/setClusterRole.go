@@ -13,7 +13,7 @@ import (
 
 // addClusterRole is a helper function that will add the RBAC cluster role to non `user` member in the main.tf file.
 func addClusterRole(client *rancher.Client, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rbacRole config.Role, isRKE1 bool) (*hclwrite.File, *hclwrite.Body, error) {
+	rbacRole config.Role) (*hclwrite.File, *hclwrite.Body, error) {
 	user, err := setUsers(newFile, rootBody, rbacRole)
 	if err != nil {
 		return nil, nil, err
@@ -24,20 +24,12 @@ func addClusterRole(client *rancher.Client, newFile *hclwrite.File, rootBody *hc
 	clusterRoleTemplateBindingBlock := rootBody.AppendNewBlock(general.Resource, []string{clusterRoleTemplateBinding, terraformConfig.ResourcePrefix})
 	clusterRoleTemplateBindingBlockBody := clusterRoleTemplateBindingBlock.Body()
 
-	if isRKE1 {
-		clusterBlockID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
-		}
-
-		clusterRoleTemplateBindingBlockBody.SetAttributeRaw(clusterID, clusterBlockID)
-	} else {
-		clusterBlockID, err := clusters.GetClusterIDByName(client, terraformConfig.ResourcePrefix)
-		if err != nil {
-			return newFile, rootBody, err
-		}
-
-		clusterRoleTemplateBindingBlockBody.SetAttributeValue(clusterID, cty.StringVal(clusterBlockID))
+	clusterBlockID, err := clusters.GetClusterIDByName(client, terraformConfig.ResourcePrefix)
+	if err != nil {
+		return newFile, rootBody, err
 	}
+
+	clusterRoleTemplateBindingBlockBody.SetAttributeValue(clusterID, cty.StringVal(clusterBlockID))
 
 	clusterRoleTemplateBindingBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(clusterRoleTemplateBindingName))
 	clusterRoleTemplateBindingBlockBody.SetAttributeValue(roleTemplateID, cty.StringVal(string(rbacRole)))
@@ -48,12 +40,7 @@ func addClusterRole(client *rancher.Client, newFile *hclwrite.File, rootBody *hc
 
 	clusterRoleTemplateBindingBlockBody.SetAttributeRaw(userID, newUser)
 
-	var dependsOn string
-	if isRKE1 {
-		dependsOn = `[` + rancher2.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
-	} else {
-		dependsOn = `[` + rancher2.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
-	}
+	dependsOn := `[` + rancher2.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
 
 	value := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOn)},

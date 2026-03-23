@@ -11,14 +11,13 @@ Please see below for more details for your config. Please note that the config c
 4. [Setup Airgap Rancher](#Setup-Airgap-Rancher)
 5. [Setup Proxy Rancher](#Setup-Proxy-Rancher)
 6. [Setup Registry Rancher](#Setup-Registry-Rancher)
-7. [Setup RKE1 Cluster](#Setup-RKE1-Cluster)
-8. [Setup RKE2 Cluster](#Setup-RKE2-Cluster)
-9. [Setup K3S Cluster](#Setup-K3S-Cluster)
-10. [Setup Airgap RKE2 Cluster](#Setup-Airgap-RKE2-Cluster)
-11. [Setup Dualstack RKE2 Cluster](#Setup-Dualstack-RKE2-Cluster)
-12. [Setup Dualstack K3S Cluster](#Setup-Dualstack-K3S-Cluster)
-13. [Setup IPv6 RKE2 Cluster](#Setup-IPv6-RKE2-Cluster)
-14. [Setup IPv6 K3S Cluster](#Setup-IPv6-K3S-Cluster)
+7. [Setup RKE2 Cluster](#Setup-RKE2-Cluster)
+8. [Setup K3S Cluster](#Setup-K3S-Cluster)
+9. [Setup Airgap RKE2 Cluster](#Setup-Airgap-RKE2-Cluster)
+10. [Setup Dualstack RKE2 Cluster](#Setup-Dualstack-RKE2-Cluster)
+11. [Setup Dualstack K3S Cluster](#Setup-Dualstack-K3S-Cluster)
+12. [Setup IPv6 RKE2 Cluster](#Setup-IPv6-RKE2-Cluster)
+13. [Setup IPv6 K3S Cluster](#Setup-IPv6-K3S-Cluster)
 
 ## Setup Rancher
 
@@ -507,47 +506,6 @@ See the below examples on how to run the tests in the CLI:
 `go run main.go --registry fresh`
 
 To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
-
-## Setup RKE1 Cluster
-
-See below an example config on setting up a standalone RKE1 cluster:
-
-```yaml
-terraform:
-  privateKeyPath: ""
-  resourcePrefix: ""
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    ami: ""
-    awsKeyName: ""
-    awsInstanceType: ""
-    region: ""
-    awsSubnetID: ""
-    awsVpcID: ""
-    awsZoneLetter: ""
-    awsRootSize: 100
-    region: ""
-    awsUser: ""
-    sshConnectionType: ""
-    standaloneSecurityGroupNames: [""]
-    timeout: ""
-  standalone:
-    osUser: ""
-```
-
-Before running, be sure to run the following commands:
-
-```yaml
-export RKE_PROVIDER_VERSION=""
-export CATTLE_TEST_CONFIG=<path/to/yaml>
-export CLOUD_PROVIDER_VERSION=""
-```
-
-See the below examples on how to run:
-
-`go run CreateRKE1Cluster.go`
 
 ## Setup RKE2 Cluster
 

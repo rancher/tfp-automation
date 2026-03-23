@@ -11,11 +11,6 @@
         -   [AKS](#configurations-terraform-aks)
         -   [EKS](#configurations-terraform-eks)
         -   [GKE](#configurations-terraform-gke)
-        -   [AZURE_RKE1](#configurations-terraform-azure_rke1)
-        -   [EC2_RKE1](#configurations-terraform-ec2_rke1)
-        -   [HARVESTER_RKE1](#configurations-terraform-harvester_rke1)
-        -   [LINODE_RKE1](#configurations-terraform-linode_rke1)
-        -   [VSPHERE_RKE1](#configurations-terraform-vsphere_rke1)
         -   [AZURE_RKE2 + AZURE_K3S](#configurations-terraform-rke2_k3s_azure)
         -   [EC2_RKE2 + EC2_K3S](#configurations-terraform-rke2_k3s_ec2)
         -   [HARVESTER_RKE2 + HARVESTER_K3S](#configurations-terraform-rke2_k3s_harvester)
@@ -27,7 +22,7 @@
             -   [AKS Nodepools](#configurations-terratest-nodepools-aks)
             -   [EKS Nodepools](#configurations-terratest-nodepools-eks)
             -   [GKE Nodepools](#configurations-terratest-nodepools-gke)
-            -   [RKE1, RKE2, K3S Nodepools](#configurations-terratest-nodepools-rke1_rke2_k3s)
+            -   [RKE2, K3S Nodepools](#configurations-terratest-nodepools-rke2_k3s)
         -  [Provision](#configurations-terratest-provision)
         -  [Snapshots](#configurations-terratest-snapshots)
         -  [Build Module](#configurations-terratest-build_module)
@@ -220,36 +215,16 @@ terraform:
       folder: ""
       region: ""
       skipSSLVerify: true
-  etcdRKE1:                                   # This is an optional block
-    backupConfig:
-      enabled: true
-      intervalHours: 12
-      safeTimestamp: true
-      timeout: 120
-      s3BackupConfig:
-        accessKey: ""
-        bucketName: ""
-        endpoint: ""
-        folder: ""
-        region: ""
-        secretKey: ""
-    retention: "72h"
-    snapshot: false
   cloudCredentialName: ""
   defaultClusterRoleForProjectMembers: "true" # Can be "true" or "false"
   enableNetworkPolicy: false                  # Can be true or false
   hostnamePrefix: ""   
-  machineConfigName: ""                       # RKE2/K3S specific
-  networkPlugin: ""                           # RKE1 specific
-  nodeTemplateName: ""                        # RKE1 specific
+  machineConfigName: ""
   privateRegistries:                          # This is an optional block. You must already have a private registry stood up
-    engineInsecureRegistry: ""                # RKE1 specific
     url: ""
-    systemDefaultRegistry: ""                 # RKE2/K3S specific, can be left blank
-    username: ""                              # RKE1 specific
-    password: ""                              # RKE1 specific
+    systemDefaultRegistry: ""                 # OPTIONAL
     insecure: true
-    authConfigSecretName: ""                  # RKE2/K3S specific
+    authConfigSecretName: ""                  # OPTIONAL
     mirrorHostname: ""
     mirrorEndpoint: ""
     mirrorRewrite: ""
@@ -363,158 +338,6 @@ terraform:
     projectID: ""
     network: default
     subnetwork: default
-```
-
----
-
-<a name="configurations-terraform-azure_rke1"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-###### AZURE_RKE1
-
-```yaml
-terraform:
-  module: azure_rke1
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
-  azureCredentials:
-    clientId: ""
-    clientSecret: ""
-    environment: "AzurePublicCloud"
-    subscriptionId: ""
-    tenantId: ""
-  azureConfig:
-    availabilitySet: "docker-machine"
-    subscriptionId: ""
-    customData: ""
-    diskSize: "100"
-    dockerPort: "2376"
-    faultDomainCount: "3"
-    image: "Canonical:0001-com-ubuntu-server-jammy:22_04-lts:latest"
-    location: "westus2"
-    managedDisks: false
-    noPublicIp: false
-    openPort: ["6443/tcp","2379/tcp","2380/tcp","8472/udp","4789/udp","9796/tcp","10256/tcp","10250/tcp","10251/tcp","10252/tcp"]
-    privateIpAddress: ""
-    resourceGroup: ""
-    size: "Standard_D2_v2"
-    sshUser: "azureuser"
-    staticPublicIp: false
-    storageType: "Standard_LRS"
-    updateDomainCount: "5"
-```
----
-
-<a name="configurations-terraform-ec2_rke1"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-###### EC2_RKE1
-
-```yaml
-terraform:
-  module: ec2_rke1
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    ami:
-    awsInstanceType: t3.medium
-    region: us-east-2
-    awsSecurityGroupNames:
-      - security-group-name
-    awsSubnetID: subnet-xxxxxxxx
-    awsVpcID: vpc-xxxxxxxx
-    awsZoneLetter: a
-    awsRootSize: 80
-```
----
-
-<a name="configurations-terraform-harvester_rke1"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-###### HARVESTER_RKE1
-
-```yaml
-terraform:
-  module: harvester_rke1
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
-  harvesterCredentials:
-    clusterId: "c-m-clusterID"
-    clusterType: "imported"
-    kubeconfigContent: |
-      kubeconfig-content
-  harvesterConfig:
-    diskSize: "30"
-    cpuCount: "4"
-    memorySize: "8"
-    networkNames: ["default/net-name"]
-    imageName: "default/image-name"
-    vmNamespace: "default"
-    sshUser: "ubuntu"
-```
----
-
-<a name="configurations-terraform-linode_rke1"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-###### LINODE_RKE1
-
-```yaml
-terraform:
-  module: linode_rke1
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
-  linodeCredentials:
-    linodeToken: ""
-  linodeConfig:
-    region: us-east
-    linodeRootPass: ""
-```
----
-
-<a name="configurations-terraform-vsphere_rke1"></a>
-#### :small_red_triangle: [Back to top](#top)
-
-###### VSPHERE_RKE1
-
-```yaml
-terraform:
-  module: vsphere_rke1
-  networkPlugin: canal
-  nodeTemplateName: tf-rke1-template
-  hostnamePrefix: tfp
-  vsphereCredentials:
-    password: ""
-    username: ""
-    vcenter: ""
-    vcenterPort: "443"
-  vsphereConfig:  
-    cfgparam: ["disk.enableUUID=TRUE"]
-    cloneFrom: ""
-    cloudConfig: ""
-    contentLibrary: ""
-    cpuCount: "4"
-    creationType: "template"
-    datacenter: ""
-    datastore: ""
-    datastoreCluster: ""
-    diskSize: "40000"
-    folder: ""
-    hostsystem: ""
-    memorySize: "8192"
-    network: [""]
-    pool: ""
-    sshPassword: "tcuser"
-    sshPort: "22"
-    sshUser: "docker"
-    sshUserGroup: "staff"
 ```
 
 ---
@@ -778,10 +601,10 @@ nodepools:
     maxPodsContraint: 110
 ```
 
-<a name="configurations-terratest-nodepools-rke1_rke2_k3s"></a>
+<a name="configurations-terratest-nodepools-rke2_k3s"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-###### RKE1, RKE2, and K3S - all share the same nodepool configurations
+###### RKE2, and K3S - all share the same nodepool configurations
 
 For these modules, the required nodepool fields are the `quantity`, as type `int64`, as well as the roles to be assigned, each to be set or toggled via boolean - [`etcd`, `controlplane`, `worker`]. The following example will create three node pools, each with individual roles, and one node per pool.
 
@@ -843,9 +666,6 @@ terratest:
   
   # GKE without leading v but with tail ending included
   # e.g. 1.28.7-gke.1026000
-  
-  # RKE1 with leading v and -rancher1-1 tail
-  # e.g. v1.28.7-rancher1-1
 
   # RKE2 with leading v and +rke2r# tail
   # e.g. v1.28.7+rke2r1

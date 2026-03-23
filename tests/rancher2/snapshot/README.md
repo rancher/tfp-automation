@@ -10,8 +10,6 @@ In the snapshot tests, the following workflow is followed:
 6. Perform post etcd restore checks
 7. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 
-NOTE: Only RKE2/K3s clusters are supported in this package - RKE1 clusters are NOT supported. For reference, see this [ticket](https://github.com/rancher/terraform-provider-rancher2/issues/1292). 
-
 Please see below for more details for your config. Please note that the config can be in either JSON or YAML (all examples are illustrated in YAML).
 
 ## Table of Contents

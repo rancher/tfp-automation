@@ -3,7 +3,7 @@
 In the tfp-automation provisioning sanity test, the following workflow is followed:
 
 1. Setup Rancher HA utilizing Terraform resources + specified provider infrastructure
-2. Provision downstream RKE1 / RKE2 / K3S clusters.
+2. Provision downstream RKE2 and K3S clusters.
 3. Perform post-cluster provisioning checks
 4. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 
@@ -43,13 +43,12 @@ terraform:
   resourcePrefix: ""                              # REQUIRED - fill with desired value
   windowsPrivateKeyPath: ""                       # REQUIRED - specify Windows private key that will be used to access created instances
   privateRegistries:                              # This is an optional block. You must already have a private registry stood up
-    engineInsecureRegistry: ""                    # RKE1 specific
     url: ""
-    systemDefaultRegistry: ""                     # RKE2/K3S specific, can be left blank
-    username: ""                                  # RKE1 specific
-    password: ""                                  # RKE1 specific
+    systemDefaultRegistry: ""                     # OPTIONAL
+    username: ""
+    password: ""
     insecure: true
-    authConfigSecretName: ""                      # RKE2/K3S specific
+    authConfigSecretName: ""                      # OPTIONAL
     mirrorHostname: ""
     mirrorEndpoint: ""
   ##########################################

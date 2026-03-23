@@ -13,7 +13,7 @@ import (
 
 // addProjectMember is a helper function that will add the RBAC project member to `user` in the main.tf file.
 func addProjectMember(client *rancher.Client, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	rbacRole config.Role, isRKE1 bool) (*hclwrite.File, *hclwrite.Body, error) {
+	rbacRole config.Role) (*hclwrite.File, *hclwrite.Body, error) {
 	user, err := setUsers(newFile, rootBody, rbacRole)
 	if err != nil {
 		return nil, nil, err
@@ -26,29 +26,16 @@ func addProjectMember(client *rancher.Client, newFile *hclwrite.File, rootBody *
 
 	projectBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(projectName))
 
-	if isRKE1 {
-		clusterBlockID := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.Cluster + "." + terraformConfig.ResourcePrefix + ".id")},
-		}
-
-		projectBlockBody.SetAttributeRaw(clusterID, clusterBlockID)
-	} else {
-		clusterBlockID, err := clusters.GetClusterIDByName(client, terraformConfig.ResourcePrefix)
-		if err != nil {
-			return newFile, rootBody, err
-		}
-
-		projectBlockBody.SetAttributeValue(clusterID, cty.StringVal(clusterBlockID))
+	clusterBlockID, err := clusters.GetClusterIDByName(client, terraformConfig.ResourcePrefix)
+	if err != nil {
+		return newFile, rootBody, err
 	}
+
+	projectBlockBody.SetAttributeValue(clusterID, cty.StringVal(clusterBlockID))
 
 	rootBody.AppendNewline()
 
-	var dependsOn string
-	if isRKE1 {
-		dependsOn = `[` + rancher2.Cluster + `.` + terraformConfig.ResourcePrefix + `]`
-	} else {
-		dependsOn = `[` + rancher2.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
-	}
+	dependsOn := `[` + rancher2.ClusterV2 + `.` + terraformConfig.ResourcePrefix + `]`
 
 	value := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOn)},
@@ -74,11 +61,7 @@ func addProjectMember(client *rancher.Client, newFile *hclwrite.File, rootBody *
 
 	projectRoleTemplateBindingBody.SetAttributeRaw(userID, newUser)
 
-	if isRKE1 {
-		dependsOn = `[` + projectRoleTemplateBinding + `.` + terraformConfig.ResourcePrefix + `]`
-	} else {
-		dependsOn = `[` + projectRoleTemplateBinding + `.` + terraformConfig.ResourcePrefix + `]`
-	}
+	dependsOn = `[` + projectRoleTemplateBinding + `.` + terraformConfig.ResourcePrefix + `]`
 
 	value = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOn)},

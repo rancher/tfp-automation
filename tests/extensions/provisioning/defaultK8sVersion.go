@@ -26,12 +26,7 @@ func GetK8sVersion(t *testing.T, client *rancher.Client, terratestConfig *config
 	operations.LoadObjectFromMap(config.TerratestConfigurationFileKey, configMap[0], terratest)
 
 	if terratest.KubernetesVersion == "" {
-		if strings.Contains(terraform.Module, clustertypes.RKE1) {
-			defaultVersions, err := kubernetesversions.Default(client, clusters.RKE1ClusterType.String(), nil)
-			require.NoError(t, err)
-
-			defaultVersion = defaultVersions[0]
-		} else if strings.Contains(terraform.Module, clustertypes.RKE2) {
+		if strings.Contains(terraform.Module, clustertypes.RKE2) {
 			defaultVersions, err := kubernetesversions.Default(client, clusters.RKE2ClusterType.String(), nil)
 			require.NoError(t, err)
 

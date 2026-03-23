@@ -3,7 +3,7 @@
 In the tfp-automation airgap provisioning test, the following workflow is followed:
 
 1. Setup airgapped-Rancher HA utilizing Terraform resources + specified provider infrastructure
-2. Provision downstream RKE1 / RKE2 / K3S clusters.
+2. Provision downstream RKE2 and K3S clusters.
 3. Perform post-cluster provisioning checks
 4. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 

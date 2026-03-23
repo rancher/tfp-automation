@@ -43,7 +43,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 
 		clusterNames = append(clusterNames, terraformConfig.ResourcePrefix)
 
-		if (strings.Contains(terraformConfig.Module, general.Custom) || strings.Contains(terraformConfig.Module, general.Airgap)) && !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
+		if strings.Contains(terraformConfig.Module, general.Custom) || strings.Contains(terraformConfig.Module, general.Airgap) {
 			customClusterNames = append(customClusterNames, terraformConfig.ResourcePrefix)
 		}
 
