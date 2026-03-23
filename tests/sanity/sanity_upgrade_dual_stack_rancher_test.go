@@ -95,8 +95,8 @@ func (s *TfpSanityDualStackUpgradeRancherTestSuite) provisionAndVerifyCluster(na
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE2", nodeRolesDedicated, rke2Module},
-		{"K3S", nodeRolesDedicated, k3sModule},
+		{name + "_RKE2", nodeRolesDedicated, rke2Module},
+		{name + "_K3S", nodeRolesDedicated, k3sModule},
 	}
 
 	s.T().Run(name, func(t *testing.T) {

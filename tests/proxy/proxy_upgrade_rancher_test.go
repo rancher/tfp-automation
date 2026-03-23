@@ -99,10 +99,10 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"K3S", nodeRolesDedicated, modules.EC2K3s},
+		{name + "_RKE2", nodeRolesDedicated, modules.EC2RKE2},
+		{name + "_RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
+		{name + "_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
+		{name + "_K3S", nodeRolesDedicated, modules.EC2K3s},
 	}
 
 	p.T().Run(name, func(t *testing.T) {
