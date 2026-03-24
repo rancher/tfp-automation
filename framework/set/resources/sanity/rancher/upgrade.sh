@@ -10,23 +10,17 @@ RANCHER_IMAGE=$7
 RANCHER_AGENT_IMAGE=${8}
 UPGRADED_MCM=${9}
 
-if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
-    RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
-    IMAGE="--set rancherImage=${RANCHER_IMAGE}"
-    VERSION="--version ${CHART_VERSION}"
-else
-    IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
+IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
 
-    if [[ -n "$RANCHER_AGENT_IMAGE" || "$RANCHER_IMAGE" == registry* ]]; then
-        IMAGE_REPOSITORY="rancher"
-    else
-        IMAGE_REPOSITORY="${RANCHER_IMAGE#*/}"
+if [[ -n "$RANCHER_AGENT_IMAGE" || "$RANCHER_IMAGE" == registry* ]]; then
+    IMAGE_REPOSITORY="rancher"
+else
+    IMAGE_REPOSITORY="${RANCHER_IMAGE#*/}"
     fi
     
-    RANCHER_TAG="--set image.tag=${RANCHER_TAG_VERSION}"
-    IMAGE="--set image.repository=${IMAGE_REPOSITORY} --set image.registry=${IMAGE_REGISTRY}"
-    VERSION="--version ${CHART_VERSION}"
-fi
+RANCHER_TAG="--set image.tag=${RANCHER_TAG_VERSION}"
+IMAGE="--set image.repository=${IMAGE_REPOSITORY} --set image.registry=${IMAGE_REGISTRY}"
+VERSION="--version ${CHART_VERSION}"
 
 set -ex
 
