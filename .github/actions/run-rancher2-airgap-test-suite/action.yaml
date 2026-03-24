@@ -32,8 +32,8 @@ runs:
           cp results_airgap.json results.json
 
           if [[ "${{ inputs.reporting }}" == "true" ]]; then
-            ./validation/pipeline/scripts/build_qase_reporter_v2.sh;
-            ./validation/reporter;
+            ./pipeline/scripts/build_qase_reporter.sh;
+            ./reporter;
           fi
       shell: bash
       continue-on-error: true
