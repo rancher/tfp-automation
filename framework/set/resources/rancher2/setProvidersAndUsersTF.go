@@ -11,7 +11,6 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
@@ -233,13 +232,6 @@ func getRequiredProviderVersions(configMap []map[string]any) (source, rancherPro
 		source = "rancher/rancher2"
 		if strings.Contains(rancherProviderVersion, rc) {
 			source = "terraform.local/local/rancher2"
-		}
-
-		if strings.Contains(module, general.Import) && strings.Contains(module, clustertypes.RKE1) {
-			rkeProviderVersion = os.Getenv(rkeEnvVar)
-			if rkeProviderVersion == "" {
-				logrus.Fatalf("Expected env var not set %s", rkeEnvVar)
-			}
 		}
 
 		if strings.Contains(module, general.Custom) || strings.Contains(module, general.Import) || strings.Contains(module, general.Airgap) ||

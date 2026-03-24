@@ -26,14 +26,14 @@ const (
 
 // RoleCheck is a helper function that will check if the RBAC role is either `clusterOwner` or `projectOwner`.
 func RoleCheck(client *rancher.Client, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, terraform *config.TerraformConfig,
-	rbacRole config.Role, isRKE1 bool) (*hclwrite.File, *hclwrite.Body, error) {
+	rbacRole config.Role) (*hclwrite.File, *hclwrite.Body, error) {
 	if strings.Contains(string(rbacRole), string(config.ClusterOwner)) {
-		newFile, rootBody, err := addClusterRole(client, newFile, rootBody, terraform, rbacRole, isRKE1)
+		newFile, rootBody, err := addClusterRole(client, newFile, rootBody, terraform, rbacRole)
 		if err != nil {
 			return newFile, rootBody, err
 		}
 	} else if strings.Contains(string(rbacRole), string(config.ProjectOwner)) {
-		newFile, rootBody, err := addProjectMember(client, newFile, rootBody, terraform, rbacRole, isRKE1)
+		newFile, rootBody, err := addProjectMember(client, newFile, rootBody, terraform, rbacRole)
 		if err != nil {
 			return newFile, rootBody, err
 		}

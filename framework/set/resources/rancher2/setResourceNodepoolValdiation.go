@@ -25,7 +25,7 @@ func SetResourceNodepoolValidation(terraformConfig *config.TerraformConfig, pool
 		}
 
 		return true, nil
-	case strings.Contains(module, clustertypes.RKE1) || strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S):
+	case strings.Contains(module, clustertypes.RKE2) || strings.Contains(module, clustertypes.K3S):
 		if !pool.Etcd && !pool.Controlplane && !pool.Worker {
 			return false, fmt.Errorf(`No roles selected for pool %v. At least one role is required`, poolNum)
 		}

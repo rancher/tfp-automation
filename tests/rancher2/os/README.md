@@ -18,7 +18,7 @@ rancher:
   cleanup: true
 
 terraform:
-  module: [ec2_rke1, ec2_rke2, ec2_k3s, ec2_rke1_custom, ec2_rke2_custom, ec2_k3s_custom, ec2_rke1_import, ec2_rke2_import, ec2_k3s_import]
+  module: [ec2_rke2, ec2_k3s, ec2_rke2_custom, ec2_k3s_custom, ec2_rke2_import, ec2_k3s_import]
   cni: [calico]
   resourcePrefix: "oscheck"
   privateKeyPath: ""

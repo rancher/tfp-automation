@@ -3,7 +3,7 @@
 In the tfp-automation private registries test, the following workflow is followed:
 
 1. Setup Rancher HA utilizing Terraform resources + specified provider infrastructure. A global registry is set as the system default registry while an authenticated and non-authenticated registry are created.
-2. Provision downstream RKE1 / RKE2 / K3S clusters - done using the global registry, authenticated registry and non-authenticated registry.
+2. Provision downstream RKE2 and K3S clusters - done using the global registry, authenticated registry and non-authenticated registry.
 3. Perform post-cluster provisioning checks
 4. Cleanup resources (Terraform explicitly needs to call its cleanup method so that each test doesn't experience caching issues)
 

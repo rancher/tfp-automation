@@ -42,9 +42,11 @@ terraform:
   resourcePrefix: ""                              # REQUIRED - fill with desired value
   privateRegistries:                              # This is an optional block. You must already have a private registry stood up
     url: ""
-    systemDefaultRegistry: ""                     # RKE2/K3S specific, can be left blank
+    username: ""
+    password: ""
+    systemDefaultRegistry: ""                     # OPTIONAL
     insecure: true
-    authConfigSecretName: ""                      # RKE2/K3S specific
+    authConfigSecretName: ""                      # OPTIONAL
     mirrorHostname: ""
     mirrorEndpoint: ""
   ##########################################

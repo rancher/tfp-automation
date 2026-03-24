@@ -21,7 +21,6 @@ const (
 	KubernetesVersion                   = "kubernetes_version"
 	Network                             = "network"
 	Plugin                              = "plugin"
-	RKE1PrivateRegistries               = "private_registries"
 	PrivateRegistries                   = "registries"
 	EngineInsecureRegistry              = "engine_insecure_registry"
 	Config                              = "config"

@@ -72,9 +72,7 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 
 	localsBlockBody.SetAttributeRaw(clusters.ResourcePrefix, resourcePrefixValue)
 
-	if !strings.Contains(terraformConfig.Module, clustertypes.RKE1) {
-		setV2ClusterLocalBlock(localsBlockBody, terraformConfig, customClusterNames)
-	}
+	setV2ClusterLocalBlock(localsBlockBody, terraformConfig, customClusterNames)
 
 	return file, nil
 }

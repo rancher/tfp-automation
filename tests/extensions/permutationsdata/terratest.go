@@ -38,8 +38,6 @@ func CreateK8sRelationships(cattleConfig map[string]any) ([]permutations.Relatio
 			k8sType = "k3s"
 		} else if strings.Contains(module.(string), "rke2") {
 			k8sType = "rke2"
-		} else if strings.Contains(module.(string), "rke1") {
-			k8sType = "rancher"
 		}
 
 		var matchedK8sVersions []any

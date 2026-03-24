@@ -4,16 +4,13 @@ import (
 	"encoding/base64"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
-	"github.com/rancher/tfp-automation/framework/set/defaults/rke"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/imported/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/zclconf/go-cty/cty"
@@ -55,10 +52,6 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	command := "bash -c '/tmp/import-nodes.sh " + encodedPEMFile + " " + terraformConfig.Standalone.OSUser + " " +
 		terraformConfig.Standalone.OSGroup + " " + nodeOnePublicDNS + " " + importCommand
 
-	if strings.Contains(terraformConfig.Module, clustertypes.RKE1) && strings.Contains(terraformConfig.Module, general.Import) {
-		command += " " + kubeConfig
-	}
-
 	command += "'"
 
 	// Need to first create a null resource block to copy the script to the node.
@@ -79,8 +72,6 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 		dependsOnServer = `[` + general.NullResource + `.` + addServerTwoName + `, ` + general.NullResource + `.` + addServerThreeName + `]`
 	case modules.ImportEC2RKE2Windows2019, modules.ImportEC2RKE2Windows2022:
 		dependsOnServer = `[` + general.TimeSleep + `.` + general.TimeSleep + `-` + terraformConfig.ResourcePrefix + `-import_wins` + `]`
-	case modules.ImportEC2RKE1, modules.ImportVsphereRKE1:
-		dependsOnServer = `[` + rke.RKECluster + `.` + terraformConfig.ResourcePrefix + `]`
 	}
 
 	server := hclwrite.Tokens{
@@ -90,7 +81,7 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 
 	// A second null resource block is needed to properly run the script on the node. This is because the cluster registration
-	// token and RKE1 kube config will be not passed correctly as Bash parameters.
+	// token will not be passed correctly as Bash parameters.
 	importClusterName := terraformConfig.ResourcePrefix + `_` + importCluster
 	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName)
 
