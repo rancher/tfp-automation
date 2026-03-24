@@ -14,7 +14,7 @@ TURTLES=${11}
 MCM=${12}
 PARTNER_RC=${13}
 
-if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
+if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
     VERSION="--version ${CHART_VERSION}"

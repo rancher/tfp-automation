@@ -12,7 +12,7 @@ RANCHER_AGENT_IMAGE=${9}
 PROXY_PORT="3228"
 NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,.svc\\,.cluster.local\\,cattle-system.svc\\,169.254.169.254"
 
-if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
+if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
     VERSION="--version ${CHART_VERSION}"

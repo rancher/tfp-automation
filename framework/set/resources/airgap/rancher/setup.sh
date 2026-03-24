@@ -12,7 +12,7 @@ RANCHER_IMAGE=$9
 REGISTRY=${10}
 RANCHER_AGENT_IMAGE=${11}
 
-if [[ $RANCHER_TAG_VERSION == v2.11* ]]; then
+if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${REGISTRY}/${RANCHER_IMAGE}"
     VERSION="--version ${CHART_VERSION}"
