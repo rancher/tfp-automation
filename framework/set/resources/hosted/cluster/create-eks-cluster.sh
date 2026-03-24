@@ -62,12 +62,15 @@ eksctl create cluster --name ${RESOURCE_PREFIX} --region ${AWS_REGION} --nodegro
                                                                        --nodes 3 --nodes-min 3 --nodes-max 3 --managed > /dev/null 2>&1
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-ROLE_NAME=$(aws iam list-roles --query "Roles[?contains(RoleName, 'tfp-automation')].RoleName" --output text | tr '\t' '\n' | grep -v '^None$' | head -n 1)
 
-echo "Creating service account ..."
-kubectl create serviceaccount aws-load-balancer-controller -n kube-system > /dev/null 2>&1
-kubectl annotate serviceaccount aws-load-balancer-controller -n kube-system \
-  eks.amazonaws.com/role-arn=arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME} --overwrite
+echo "Creating service account and associating OIDC provider..."
+eksctl utils associate-iam-oidc-provider --region=${AWS_REGION} --cluster=${RESOURCE_PREFIX} --approve
+eksctl create iamserviceaccount --cluster=${RESOURCE_PREFIX} \
+                                --namespace=kube-system \
+                                --name=aws-load-balancer-controller \
+                                --attach-policy-arn=arn:aws:iam::${ACCOUNT_ID}:policy/AWSLoadBalancerControllerIAMPolicy \
+                                --override-existing-serviceaccounts \
+                                --region ${AWS_REGION} --approve
 
 echo "Installing AWS Load Balancer Controller..."
 helm repo add eks https://aws.github.io/eks-charts
