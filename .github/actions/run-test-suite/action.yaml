@@ -19,5 +19,5 @@ runs:
       run: |
         set +e
         gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }} \
-        --junitfile results.xml --jsonfile results.json -- -timeout=${{ inputs.timeout }} -v -run "${{ inputs.test-suite }}"
+        --junitfile results.xml --jsonfile results.json -- -parallel 4 -timeout=${{ inputs.timeout }} -v -run "${{ inputs.test-suite }}"
       shell: bash
