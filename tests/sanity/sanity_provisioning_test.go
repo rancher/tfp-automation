@@ -7,6 +7,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	v1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
@@ -75,6 +76,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
+	rke2ImportedModule, rke2ImportedWindows2019, rke2ImportedWindows2022, k3sImportedModule := provisioning.ImportedClusterModules(s.terraformConfig)
 
 	tests := []struct {
 		name      string
@@ -85,6 +87,10 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		{"Sanity_RKE2_Windows_2019", nil, rke2Windows2019},
 		{"Sanity_RKE2_Windows_2022", nil, rke2Windows2022},
 		{"Sanity_K3S", nodeRolesDedicated, k3sModule},
+		{"Sanity_Imported_RKE2", nodeRolesDedicated, rke2ImportedModule},
+		{"Sanity_Imported_RKE2_Windows_2019", nil, rke2ImportedWindows2019},
+		{"Sanity_Imported_RKE2_Windows_2022", nil, rke2ImportedWindows2022},
+		{"Sanity_Imported_K3S", nodeRolesDedicated, k3sImportedModule},
 	}
 
 	for _, tt := range tests {
@@ -125,13 +131,23 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 
-			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-			require.NoError(s.T(), err)
+			var cluster *v1.SteveAPIObject
+
+			if strings.Contains(terraform.Module, clustertypes.IMPORT) {
+				clusterResp, err := s.client.Management.Cluster.ByID(clusterIDs[0])
+				require.NoError(s.T(), err)
+
+				cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterResp.ID)
+				require.NoError(s.T(), err)
+			} else {
+				cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+				require.NoError(s.T(), err)
+			}
 
 			err = pods.VerifyClusterPods(s.client, cluster)
 			require.NoError(s.T(), err)
 
-			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) && !strings.Contains(terraform.Module, clustertypes.IMPORT) {
 				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)

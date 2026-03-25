@@ -87,6 +87,90 @@
       "14": Validation
       "18": Hostbusters
 
+  - description: Provisions downstream imported RKE2 cluster
+    title: Sanity_Imported_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream imported RKE2 Windows 2019 cluster
+    title: Sanity_Imported_RKE2_Windows_2019
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 Windows 2019 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream imported RKE2 Windows 2022 cluster
+    title: Sanity_Imported_RKE2_Windows_2022
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 Windows 2022 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream imported K3S cluster
+    title: Sanity_Imported_K3S
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported K3S cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
   - description: Provisions downstream RKE2 node driver cluster
     title: Sanity_IPv6_RKE2
     priority: 4
@@ -213,6 +297,90 @@
       "14": Validation
       "18": Hostbusters
 
+  - description: Provisions downstream RKE2 imported cluster prior to Rancher upgrade
+    title: Sanity_Pre_Rancher_Upgrade_Imported_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 Windows 2019 imported cluster prior to Rancher upgrade
+    title: Sanity_Pre_Rancher_Upgrade_Imported_RKE2_Windows_2019
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 Windows 2019 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 Windows 2022 imported cluster prior to Rancher upgrade
+    title: Sanity_Pre_Rancher_Upgrade_Imported_RKE2_Windows_2022
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 Windows 2022 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream K3S imported cluster prior to Rancher upgrade
+    title: Sanity_Pre_Rancher_Upgrade_Imported_K3S
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported K3S cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
   - description: Provisions downstream RKE2 node driver cluster post Rancher upgrade
     title: Sanity_Post_Rancher_Upgrade_RKE2
     priority: 4
@@ -284,6 +452,90 @@
     automation: 2
     steps:
     - action: Provision downstream K3S node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 imported cluster post Rancher upgrade
+    title: Sanity_Post_Rancher_Upgrade_Imported_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 Windows 2019 imported cluster post Rancher upgrade
+    title: Sanity_Post_Rancher_Upgrade_Imported_RKE2_Windows_2019
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 Windows 2019 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream RKE2 Windows 2022 imported cluster post Rancher upgrade
+    title: Sanity_Post_Rancher_Upgrade_Imported_RKE2_Windows_2022
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported RKE2 Windows 2022 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream K3S imported cluster post Rancher upgrade
+    title: Sanity_Post_Rancher_Upgrade_Imported_K3S
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream imported K3S cluster
       expectedresult: ""
       data: ""
       position: 1
