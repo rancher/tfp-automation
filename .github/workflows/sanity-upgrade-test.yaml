@@ -441,8 +441,8 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14')) && contains(inputs.rancher_version, '-alpha')
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && (contains(github.event.inputs.rancher_version, '-alpha') || contains(github.event.inputs.rancher_version, '-rc')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14')) && (contains(inputs.rancher_version, '-alpha') || contains(inputs.rancher_version, '-rc'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: upgrade-community-head
@@ -820,8 +820,8 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && contains(github.event.inputs.rancher_version, '-alpha') ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.13')) && contains(inputs.rancher_version, '-alpha')
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && (contains(github.event.inputs.rancher_version, '-alpha') || contains(github.event.inputs.rancher_version, '-rc')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.13')) && (contains(inputs.rancher_version, '-alpha') || contains(inputs.rancher_version, '-rc'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: upgrade-prime-staging
