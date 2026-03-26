@@ -27,7 +27,7 @@ runs:
   steps:
     - if: ${{ inputs.cloud-provider == 'aws' }}
       name: Refresh AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
       with:
         role-to-assume: ${{ inputs.iam-role }}
         aws-region: ${{ inputs.region }}
@@ -43,7 +43,7 @@ runs:
 
     - if: ${{ inputs.cloud-provider == 'eks' }}
       name: Refresh AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
       with:
         role-to-assume: ${{ inputs.iam-role }}
         aws-region: ${{ inputs.region }}

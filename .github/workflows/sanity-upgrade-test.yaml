@@ -80,7 +80,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
         with:
           submodules: recursive
 
@@ -154,7 +154,7 @@ jobs:
           gcp-service-account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Fetch and Set DockerHub Credentials
-        uses: rancher-eio/read-vault-secrets@main
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 #v3
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
@@ -359,7 +359,7 @@ jobs:
         shell: bash
 
       - name: Set up Go environment
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 #v6
         with:
           go-version-file: "./go.mod"
 
@@ -367,10 +367,10 @@ jobs:
         run: ./.github/scripts/build-packages.sh
 
       - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
+        run: go install gotest.tools/gotestsum@c4a0df2e75a225d979a444342dd3db752b53619f
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 #v4
         with:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
@@ -459,7 +459,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
         with:
           submodules: recursive
 
@@ -533,7 +533,7 @@ jobs:
           gcp-service-account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Fetch and Set DockerHub Credentials
-        uses: rancher-eio/read-vault-secrets@main
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 #v3
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
@@ -738,7 +738,7 @@ jobs:
         shell: bash
 
       - name: Set up Go environment
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 #v6
         with:
           go-version-file: "./go.mod"
 
@@ -746,10 +746,10 @@ jobs:
         run: ./.github/scripts/build-packages.sh
 
       - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
+        run: go install gotest.tools/gotestsum@c4a0df2e75a225d979a444342dd3db752b53619f
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 #v4
         with:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
@@ -838,7 +838,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
         with:
           submodules: recursive
 
@@ -912,7 +912,7 @@ jobs:
           gcp-service-account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Fetch and Set DockerHub Credentials
-        uses: rancher-eio/read-vault-secrets@main
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 #v3
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
@@ -1119,7 +1119,7 @@ jobs:
         shell: bash
 
       - name: Set up Go environment
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 #v6
         with:
           go-version-file: "./go.mod"
 
@@ -1127,10 +1127,10 @@ jobs:
         run: ./.github/scripts/build-packages.sh
 
       - name: Install gotestsum
-        run: go install gotest.tools/gotestsum@latest
+        run: go install gotest.tools/gotestsum@c4a0df2e75a225d979a444342dd3db752b53619f
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 #v4
         with:
           terraform_version: ${{ vars.TERRAFORM_VERSION }}
           terraform_wrapper: false
