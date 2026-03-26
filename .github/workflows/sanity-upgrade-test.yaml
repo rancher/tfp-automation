@@ -64,7 +64,7 @@ jobs:
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_14 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: upgrade-community-head
     env:
@@ -443,7 +443,7 @@ jobs:
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && (contains(github.event.inputs.rancher_version, '-alpha') || contains(github.event.inputs.rancher_version, '-rc')) ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14')) && (contains(inputs.rancher_version, '-alpha') || contains(inputs.rancher_version, '-rc'))
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_14 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: upgrade-community-head
     env:
@@ -1090,6 +1090,7 @@ jobs:
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
               certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
+              k3sVersion: "${{ vars.K3S_VERSION_2_13 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ env.OS_USER }}"
               osGroup: "${{ env.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"

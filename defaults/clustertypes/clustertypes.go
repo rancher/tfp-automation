@@ -10,4 +10,5 @@ const (
 	RANCHER = "-rancher"
 	CUSTOM  = "custom"
 	WINDOWS = "windows"
+	IMPORT  = "import"
 )
