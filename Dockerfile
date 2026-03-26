@@ -11,7 +11,7 @@ COPY . ./
 SHELL ["/bin/bash", "-c"]
 
 RUN go mod download && \
-    go install gotest.tools/gotestsum@latest
+    go install gotest.tools/gotestsum@c4a0df2e75a225d979a444342dd3db752b53619f
 
 ARG QASE_TEST_RUN_ID
 ARG TERRAFORM_VERSION

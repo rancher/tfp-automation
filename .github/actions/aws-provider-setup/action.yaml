@@ -19,13 +19,13 @@ runs:
   using: composite
   steps:
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
       with:
         role-to-assume: ${{ inputs.iam-role }}
         aws-region: ${{ inputs.region }}
 
     - name: Get AWS credentials from Secrets Manager
-      uses: aws-actions/aws-secretsmanager-get-secrets@v2
+      uses: aws-actions/aws-secretsmanager-get-secrets@3a411b6ec5cace3d626412dd917e7bfeac242cfa #v3
       with:
         secret-ids: |
           AWS_ACCESS_KEY, ${{ inputs.aws-access-key-id }}
