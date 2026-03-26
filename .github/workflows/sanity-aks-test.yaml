@@ -128,8 +128,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_14) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_14)
             }}
 
       - name: Set Rancher repo
@@ -376,8 +376,8 @@ jobs:
             ${{ 
               github.event.inputs.rancher_chart_version || 
               (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
-              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_13) ||
-              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_13)
+              (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_14) ||
+              (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_14)
             }}
 
       - name: Set Rancher repo
@@ -393,8 +393,8 @@ jobs:
         uses: ./.github/actions/get-qase-id
         with:
           triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_13 }}"
-          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}"
+          qase_release_id: "${{ vars.QASE_RELEASE_TEST_RUN_ID_2_14 }}"
+          qase_recurring_id: "${{ vars.QASE_RECURRING_TEST_RUN_ID_2_14 }}"
 
       - name: Set Rancher chart url
         uses: ./.github/actions/set-rancher-chart-url
