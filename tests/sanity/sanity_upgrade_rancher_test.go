@@ -7,6 +7,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	v1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
@@ -94,7 +95,6 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	customClusterNames := []string{}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
-
 	tests := []struct {
 		name      string
 		nodeRoles []config.Nodepool
@@ -141,13 +141,23 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				provisioning.VerifyClustersState(t, s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(t, s.client, clusterIDs)
 
-				cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-				require.NoError(t, err)
+				var cluster *v1.SteveAPIObject
+
+				if strings.Contains(terraform.Module, clustertypes.IMPORT) {
+					clusterResp, err := s.client.Management.Cluster.ByID(clusterIDs[0])
+					require.NoError(t, err)
+
+					cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterResp.ID)
+					require.NoError(t, err)
+				} else {
+					cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+					require.NoError(t, err)
+				}
 
 				err = pods.VerifyClusterPods(s.client, cluster)
 				require.NoError(t, err)
 
-				if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
+				if strings.Contains(terraform.Module, clustertypes.WINDOWS) && !strings.Contains(terraform.Module, clustertypes.IMPORT) {
 					clusterIDs, customClusterNames = provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
 					provisioning.VerifyClustersState(t, s.client, clusterIDs)
 					provisioning.VerifyServiceAccountTokenSecret(t, s.client, clusterIDs)

@@ -317,7 +317,7 @@ jobs:
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && contains(github.event.inputs.rancher_version, '-alpha') ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14')) && contains(inputs.rancher_version, '-alpha')
-    name: ${{ vars.RELEASED_RANCHER_VERSION_2_13 }} -> ${{ github.event.inputs.rancher_version }}
+    name: ${{ vars.RELEASED_RANCHER_VERSION_2_14 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: latest
     env:
