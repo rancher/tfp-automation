@@ -23,24 +23,28 @@ func setRKEConfig(clusterBlockBody *hclwrite.Body, terraformConfig *config.Terra
 		rkeConfigBlockBody.SetAttributeRaw(clusters.ChartValues, chartValues)
 	}
 
-	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
-		var cidrValues hclwrite.Tokens
+	var cidrValues hclwrite.Tokens
 
+	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 		if strings.Contains(terraformConfig.Module, clustertypes.K3S) {
 			cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{
 				hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " +
-					terraformConfig.AWSConfig.ServiceCIDR + "\nflannel-ipv6-masq: true\nEOF"},
+					terraformConfig.AWSConfig.ServiceCIDR + "\nflannel-ipv6-masq: true" + "\ningress-controller: \"traefik\"\nEOF"},
 			})
 		} else {
 			cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{
 				hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " +
-					terraformConfig.AWSConfig.ServiceCIDR + "\nEOF"},
+					terraformConfig.AWSConfig.ServiceCIDR + "\ningress-controller: \"traefik\"\nEOF"},
 			})
 		}
 
-		rkeConfigBlockBody.SetAttributeRaw(clusters.MachineGlobalConfig, cidrValues)
-
+	} else {
+		cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{
+			hcl.TraverseRoot{Name: "<<EOF\ningress-controller: \"traefik\"\nEOF"},
+		})
 	}
+
+	rkeConfigBlockBody.SetAttributeRaw(clusters.MachineGlobalConfig, cidrValues)
 
 	return rkeConfigBlockBody, nil
 }

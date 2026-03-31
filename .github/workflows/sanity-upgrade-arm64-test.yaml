@@ -160,6 +160,7 @@ jobs:
             insecure: true
             cleanup: true
           terraform:
+            armArchitecture: true
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
@@ -438,6 +439,7 @@ jobs:
             insecure: true
             cleanup: true
           terraform:
+            armArchitecture: true
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
@@ -716,6 +718,7 @@ jobs:
             insecure: true
             cleanup: true
           terraform:
+            armArchitecture: true
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"

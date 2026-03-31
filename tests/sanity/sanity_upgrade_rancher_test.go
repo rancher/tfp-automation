@@ -7,7 +7,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	v1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
@@ -112,6 +111,10 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				t.Skip("Skipping Windows test on non-AWS provider")
 			}
 
+			if strings.Contains(tt.name, "K3S") && s.terraformConfig.ARMAchitecture {
+				s.T().Skip("Skipping K3S test - issue logged here: https://github.com/rancher/rancher/issues/54447")
+			}
+
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
@@ -141,23 +144,13 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				provisioning.VerifyClustersState(t, s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(t, s.client, clusterIDs)
 
-				var cluster *v1.SteveAPIObject
-
-				if strings.Contains(terraform.Module, clustertypes.IMPORT) {
-					clusterResp, err := s.client.Management.Cluster.ByID(clusterIDs[0])
-					require.NoError(t, err)
-
-					cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterResp.ID)
-					require.NoError(t, err)
-				} else {
-					cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-					require.NoError(t, err)
-				}
+				cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+				require.NoError(t, err)
 
 				err = pods.VerifyClusterPods(s.client, cluster)
 				require.NoError(t, err)
 
-				if strings.Contains(terraform.Module, clustertypes.WINDOWS) && !strings.Contains(terraform.Module, clustertypes.IMPORT) {
+				if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 					clusterIDs, customClusterNames = provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
 					provisioning.VerifyClustersState(t, s.client, clusterIDs)
 					provisioning.VerifyServiceAccountTokenSecret(t, s.client, clusterIDs)

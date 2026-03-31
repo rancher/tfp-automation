@@ -17,7 +17,7 @@ const (
 )
 
 // CreateImportedNullResource is a helper function that will create the null_resource for the cluster.
-func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, publicDNS, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
+func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, publicIP, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
 	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, resourceName})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
@@ -27,7 +27,7 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 	connectionBlock := provisionerBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	hostExpression := `"` + publicDNS + `"`
+	hostExpression := `"` + publicIP + `"`
 
 	newHost := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(hostExpression)},
