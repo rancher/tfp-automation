@@ -54,7 +54,8 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 			}
 		}
 
-		if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) && !strings.Contains(terraformConfig.Module, general.Airgap) {
+		if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) && !strings.Contains(terraformConfig.Module, general.Airgap) &&
+			!strings.Contains(terraformConfig.Module, clustertypes.AKS) && !strings.Contains(terraformConfig.Module, clustertypes.EKS) && !strings.Contains(terraformConfig.Module, clustertypes.GKE) {
 			newFile, file, err = NodeDriverClusters(client, terraformConfig, terratestConfig, rbacRole, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, nil, err

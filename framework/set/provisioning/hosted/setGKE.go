@@ -44,7 +44,7 @@ func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 
 	rootBody.AppendNewline()
 
-	cloudCredBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.CloudCredential, rancher2.CloudCredential})
+	cloudCredBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.CloudCredential, terraformConfig.ResourcePrefix})
 	cloudCredBlockBody := cloudCredBlock.Body()
 
 	cloudCredBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
@@ -64,7 +64,7 @@ func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 
 	rootBody.AppendNewline()
 
-	clusterBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.Cluster, rancher2.Cluster})
+	clusterBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.Cluster, terraformConfig.ResourcePrefix})
 	clusterBlockBody := clusterBlock.Body()
 
 	clusterBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
@@ -75,7 +75,7 @@ func SetGKE(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 	gkeConfigBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 
 	cloudCredSecret := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.CloudCredential + "." + rancher2.CloudCredential + ".id")},
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(rancher2.CloudCredential + "." + terraformConfig.ResourcePrefix + ".id")},
 	}
 
 	gkeConfigBlockBody.SetAttributeRaw(google.GoogleCredentialSecret, cloudCredSecret)
