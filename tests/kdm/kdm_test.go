@@ -120,26 +120,26 @@ func (k *KDMTestSuite) TestKDM() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			configMap, err := provisioning.UniquifyTerraform([]map[string]any{k.cattleConfig})
+			cattleConfig, err := provisioning.UniquifyTerraform(k.cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
 			require.NoError(k.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
 			require.NoError(k.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
 			require.NoError(k.T(), err)
 
-			provisioning.GetK8sVersion(k.T(), k.standardUserClient, k.terratestConfig, k.terraformConfig, configMap)
+			provisioning.GetK8sVersion(k.standardUserClient, cattleConfig)
 
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(k.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(k.T(), k.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(k.T(), k.client, clusterIDs)
 
@@ -149,7 +149,7 @@ func (k *KDMTestSuite) TestKDM() {
 			err = pods.VerifyClusterPods(k.client, cluster)
 			require.NoError(k.T(), err)
 
-			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

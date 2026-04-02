@@ -84,22 +84,22 @@ func (a *AirgapAPITestSuite) TestTfpAirgapAPI() {
 		newFile, rootBody, file := rancher2.InitializeMainTF(a.terratestConfig)
 		defer file.Close()
 
-		configMap, err := provisioning.UniquifyTerraform([]map[string]any{a.cattleConfig})
+		cattleConfig, err := provisioning.UniquifyTerraform(a.cattleConfig)
 		require.NoError(a.T(), err)
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, a.rancherConfig.AdminToken, configMap[0])
+		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, a.rancherConfig.AdminToken, cattleConfig)
 		require.NoError(a.T(), err)
 
-		rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+		rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
 		a.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(a.T(), a.terraformOptions, keyPath)
 
-			provisioning.AirgapUIOfflinePreferred(a.T(), a.terraformOptions, rancher, terraform, terratest, rootBody, newFile, file, tt.setting, configMap)
+			provisioning.AirgapUIOfflinePreferred(a.T(), a.terraformOptions, rancher, terraform, terratest, rootBody, newFile, file, tt.setting, []map[string]any{cattleConfig})
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+		params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 		err = qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)

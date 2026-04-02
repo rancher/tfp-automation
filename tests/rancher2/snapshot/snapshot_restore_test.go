@@ -105,29 +105,29 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
+			cattleConfig, err := provisioning.UniquifyTerraform(s.cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
 			require.NoError(s.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
 			require.NoError(s.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
 			require.NoError(s.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotRestore"}, tt.etcdSnapshot.SnapshotInput.SnapshotRestore, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotRestore"}, tt.etcdSnapshot.SnapshotInput.SnapshotRestore, cattleConfig)
 			require.NoError(s.T(), err)
 
-			provisioning.GetK8sVersion(s.T(), s.client, s.terratestConfig, s.terraformConfig, configMap)
+			provisioning.GetK8sVersion(s.client, cattleConfig)
 
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 
@@ -137,9 +137,9 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			err = pods.VerifyClusterPods(s.client, cluster)
 			require.NoError(s.T(), err)
 
-			RestoreSnapshot(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, nestedRancherModuleDir)
+			RestoreSnapshot(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, nestedRancherModuleDir)
 
-			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

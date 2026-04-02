@@ -100,26 +100,26 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			configMap, err := provisioning.UniquifyTerraform([]map[string]any{r.cattleConfig})
+			cattleConfig, err := provisioning.UniquifyTerraform(r.cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
 			require.NoError(r.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
 			require.NoError(r.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, nodeRolesDedicated, cattleConfig)
 			require.NoError(r.T(), err)
 
-			provisioning.GetK8sVersion(r.T(), r.client, r.terratestConfig, r.terraformConfig, configMap)
+			provisioning.GetK8sVersion(r.client, cattleConfig)
 
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
 
@@ -129,9 +129,9 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			err = pods.VerifyClusterPods(r.client, cluster)
 			require.NoError(r.T(), err)
 
-			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, tt.rbacRole, newFile, rootBody, file, nestedRancherModuleDir)
+			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, tt.rbacRole, newFile, rootBody, file, nestedRancherModuleDir)
 
-			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

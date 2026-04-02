@@ -95,23 +95,23 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+			cattleConfig, err := provisioning.UniquifyTerraform(p.cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
 			require.NoError(p.T(), err)
 
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
 			require.NoError(p.T(), err)
 
-			provisioning.GetK8sVersion(p.T(), p.client, p.terratestConfig, p.terraformConfig, configMap)
+			provisioning.GetK8sVersion(p.client, cattleConfig)
 
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
+			clusterIDs, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(p.T(), p.client, clusterIDs)
 
@@ -121,7 +121,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			err = pods.VerifyClusterPods(p.client, cluster)
 			require.NoError(p.T(), err)
 
-			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)
