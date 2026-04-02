@@ -13,19 +13,14 @@ const (
 	resourcePrefixKey = "resourcePrefix"
 )
 
-func UniquifyTerraform(cattleConfigs []map[string]any) ([]map[string]any, error) {
+func UniquifyTerraform(cattleConfig map[string]any) (map[string]any, error) {
 	resourcePrefix := []string{config.TerraformConfigurationFileKey, resourcePrefixKey}
-	var uniqueCattleConfigs []map[string]any
-	for _, cattleConfig := range cattleConfigs {
-		cattleConfig, err := uniquifyField(resourcePrefix, cattleConfig)
-		if err != nil {
-			return nil, err
-		}
-
-		uniqueCattleConfigs = append(uniqueCattleConfigs, cattleConfig)
+	cattleConfig, err := uniquifyField(resourcePrefix, cattleConfig)
+	if err != nil {
+		return nil, err
 	}
 
-	return uniqueCattleConfigs, nil
+	return cattleConfig, nil
 }
 
 func uniquifyField(keyPath []string, cattleConfig map[string]any) (map[string]any, error) {

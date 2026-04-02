@@ -77,8 +77,12 @@ func (o *OSValidationTestSuite) SetupSuite() {
 	permutedConfigs, err := permutations.Permute([]permutations.Permutation{*modulePermutation, *cniPermutation}, o.cattleConfig)
 	require.NoError(o.T(), err)
 
-	o.permutedConfigs, err = provisioning.UniquifyTerraform(permutedConfigs)
-	require.NoError(o.T(), err)
+	o.permutedConfigs = make([]map[string]any, 0, len(permutedConfigs))
+	for _, permutedConfig := range permutedConfigs {
+		uniqueConfig, uniqueErr := provisioning.UniquifyTerraform(permutedConfig)
+		require.NoError(o.T(), uniqueErr)
+		o.permutedConfigs = append(o.permutedConfigs, uniqueConfig)
+	}
 
 	_, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(o.permutedConfigs[0])
 
