@@ -29,7 +29,7 @@ const (
 )
 
 // ImportNodes is a function that will import the nodes to the cluster
-func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, nodeOnePublicDNS, kubeConfig, importCommand string) error {
+func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, nodeOnePublicIP, importCommand string) error {
 	userDir, _ := rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/provisioning/imported/import-nodes.sh")
@@ -46,17 +46,14 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	encodedPEMFile := base64.StdEncoding.EncodeToString([]byte(privateKey))
 
-	kubeConfig = `\"` + kubeConfig + `\"`
 	importCommand = `\"` + importCommand + `\"`
 
 	command := "bash -c '/tmp/import-nodes.sh " + encodedPEMFile + " " + terraformConfig.Standalone.OSUser + " " +
-		terraformConfig.Standalone.OSGroup + " " + nodeOnePublicDNS + " " + importCommand
-
-	command += "'"
+		terraformConfig.Standalone.OSGroup + " " + importCommand + "'"
 
 	// Need to first create a null resource block to copy the script to the node.
 	copyScriptName := terraformConfig.ResourcePrefix + `_` + copyScript
-	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, copyScriptName)
+	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicIP, copyScriptName)
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/import-nodes.sh"),
@@ -83,7 +80,7 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	// A second null resource block is needed to properly run the script on the node. This is because the cluster registration
 	// token will not be passed correctly as Bash parameters.
 	importClusterName := terraformConfig.ResourcePrefix + `_` + importCluster
-	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicDNS, importClusterName)
+	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedNullResource(rootBody, terraformConfig, nodeOnePublicIP, importClusterName)
 
 	provisionerBlockBody.SetAttributeRaw(general.Inline, hclwrite.Tokens{
 		{Type: hclsyntax.TokenOQuote, Bytes: []byte(`["`), SpacesBefore: 1},

@@ -65,7 +65,7 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 
 	importCommand := imported.GetImportCommand(terraformConfig.ResourcePrefix)
 
-	err := imported.ImportNodes(rootBody, terraformConfig, terratestConfig, nodeOnePublicIP, "", importCommand[serverOneName])
+	err := imported.ImportNodes(rootBody, terraformConfig, terratestConfig, nodeOnePublicIP, importCommand[serverOneName])
 	if err != nil {
 		return nil, nil, err
 	}

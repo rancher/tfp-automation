@@ -79,8 +79,6 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 			version + " " + serverOnePrivateIP + " " + token + " " + terraformConfig.CNI + "'"
 	}
 
-	command += " || true"
-
 	// For imported clusters, need to first put the script on the machine before running it.
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(script) + "' > /tmp/init-server.sh"),
@@ -129,8 +127,6 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 			command = "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + version + " " + serverOnePrivateIP + " " +
 				instance + " " + token + " " + terraformConfig.CNI + "'"
 		}
-
-		command += " || true"
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("echo '" + string(script) + "' > /tmp/add-servers.sh"),

@@ -7,7 +7,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	v1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
@@ -76,7 +75,6 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
-	rke2ImportedModule, _, _, k3sImportedModule := provisioning.ImportedClusterModules(s.terraformConfig)
 
 	tests := []struct {
 		name      string
@@ -87,13 +85,15 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		{"Sanity_RKE2_Windows_2019", nil, rke2Windows2019},
 		{"Sanity_RKE2_Windows_2022", nil, rke2Windows2022},
 		{"Sanity_K3S", nodeRolesDedicated, k3sModule},
-		{"Sanity_Imported_RKE2", nodeRolesDedicated, rke2ImportedModule},
-		{"Sanity_Imported_K3S", nodeRolesDedicated, k3sImportedModule},
 	}
 
 	for _, tt := range tests {
 		if strings.Contains(tt.name, "Windows") && (s.terraformConfig.Provider != aws.Aws) {
 			s.T().Skip("Skipping Windows test on non-AWS provider")
+		}
+
+		if strings.Contains(tt.name, "K3S") && (s.terraformConfig.ARMAchitecture || s.terraformConfig.MixedArchitecture) {
+			s.T().Skip("Skipping K3S test - issue logged here: https://github.com/rancher/rancher/issues/54447")
 		}
 
 		s.T().Run(tt.name, func(t *testing.T) {
@@ -129,23 +129,13 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
 
-			var cluster *v1.SteveAPIObject
-
-			if strings.Contains(terraform.Module, clustertypes.IMPORT) {
-				clusterResp, err := s.client.Management.Cluster.ByID(clusterIDs[0])
-				require.NoError(s.T(), err)
-
-				cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterResp.ID)
-				require.NoError(s.T(), err)
-			} else {
-				cluster, err = s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-				require.NoError(s.T(), err)
-			}
+			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			require.NoError(s.T(), err)
 
 			err = pods.VerifyClusterPods(s.client, cluster)
 			require.NoError(s.T(), err)
 
-			if strings.Contains(terraform.Module, clustertypes.WINDOWS) && !strings.Contains(terraform.Module, clustertypes.IMPORT) {
+			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
 				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
@@ -153,6 +143,86 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 				err = pods.VerifyClusterPods(s.client, cluster)
 				require.NoError(s.T(), err)
 			}
+
+			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			err = qase.UpdateSchemaParameters(tt.name, params)
+			if err != nil {
+				logrus.Warningf("Failed to upload schema parameters %s", err)
+			}
+		})
+	}
+
+	if s.terratestConfig.LocalQaseReporting {
+		results.ReportTest(s.terratestConfig)
+	}
+}
+
+func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
+	var err error
+	var testUser, testPassword string
+	var clusterIDs []string
+
+	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
+	require.NoError(s.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	require.NoError(s.T(), err)
+
+	standardToken := standardUserToken.Token
+
+	rke2ImportedModule, _, _, k3sImportedModule := provisioning.ImportedClusterModules(s.terraformConfig)
+
+	tests := []struct {
+		name   string
+		module string
+	}{
+		{"Sanity_Imported_RKE2", rke2ImportedModule},
+		{"Sanity_Imported_K3S", k3sImportedModule},
+	}
+
+	for _, tt := range tests {
+		if s.terraformConfig.ARMAchitecture || s.terraformConfig.MixedArchitecture {
+			s.T().Skip("Skipping imported tests")
+		}
+
+		s.T().Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(s.terraformConfig, s.terratestConfig, s.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+			require.NoError(t, err)
+			defer os.RemoveAll(nestedRancherModuleDir)
+
+			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
+			defer file.Close()
+
+			configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
+			require.NoError(t, err)
+
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			require.NoError(s.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			require.NoError(s.T(), err)
+
+			provisioning.GetK8sVersion(s.T(), s.standardUserClient, s.terratestConfig, s.terraformConfig, configMap)
+
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
+
+			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
+			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
+
+			clusterResp, err := s.client.Management.Cluster.ByID(clusterIDs[0])
+			require.NoError(s.T(), err)
+
+			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterResp.ID)
+			require.NoError(s.T(), err)
+
+			err = pods.VerifyClusterPods(s.client, cluster)
+			require.NoError(s.T(), err)
 
 			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
 			err = qase.UpdateSchemaParameters(tt.name, params)

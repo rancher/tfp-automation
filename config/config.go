@@ -194,6 +194,7 @@ type TerraformConfig struct {
 	GenerateV3Token                     bool                         `json:"generateV3Token,omitempty" yaml:"generateV3Token,omitempty" default:"false"`
 	LocalAuthEndpoint                   bool                         `json:"localAuthEndpoint,omitempty" yaml:"localAuthEndpoint,omitempty" default:"false"`
 	LocalHostedCluster                  bool                         `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`
+	ARMAchitecture                      bool                         `json:"armArchitecture,omitempty" yaml:"armArchitecture,omitempty" default:"false"`
 	MixedArchitecture                   bool                         `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`
 	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
 	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
