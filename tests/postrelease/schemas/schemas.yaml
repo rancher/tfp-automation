@@ -1,0 +1,36 @@
+- projects:
+  - RRT
+  - RM
+  suite: Go Automation/TFP/PostRelease
+  cases:
+  - description: Sets up a released Rancher version
+    title: Post_Release
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Sets up Rancher
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Upgrades a previously released Rancher version to the newest released Rancher version
+    title: Post_Release_Upgrade
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Upgrades a previously released Rancher version to the newest released Rancher version
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters

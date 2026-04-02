@@ -1,0 +1,39 @@
+---
+name: Close Qase Test Run
+description: "Accepts a rancher tag and closes the corresponding Qase test run"
+inputs:
+  qase_run_id:
+    description: "Qase test run ID to close"
+    required: true
+  qase_project_id:
+    description: "Qase project ID"
+    required: true
+  qase_token:
+    description: "Qase token"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Close Qase test run
+      shell: bash
+      run: |
+        RUN_ID="${{ inputs.qase_run_id }}"
+        PROJECT="${{ inputs.qase_project_id }}"
+        TOKEN="${{ inputs.qase_token }}"
+
+        echo "Closing Qase run ID: $RUN_ID"
+
+        RESPONSE=$(curl -s -X POST \
+          -H "Content-Type: application/json" \
+          -H "Token: $TOKEN" \
+          "https://api.qase.io/v1/run/$PROJECT/$RUN_ID/complete")
+
+        STATUS=$(echo "$RESPONSE" | jq -r '.status')
+
+        if [ "$STATUS" != "true" ]; then
+          echo "Failed to close Qase run: $RESPONSE"
+          exit 1
+        fi
+
+        echo "Qase run successfully closed"
