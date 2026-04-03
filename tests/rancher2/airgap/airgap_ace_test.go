@@ -12,6 +12,8 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
@@ -142,10 +144,11 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, a.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(a.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(a.T(), a.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(a.T(), a.client, clusterIDs)
-
+			clusters, _ := provisioning.Provision(a.T(), a.client, a.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+			err = provisioningActions.VerifyClusterReady(a.client, clusters[0])
+			require.NoError(a.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(a.client, clusters[0].Name)
+			require.NoError(a.T(), err)
 			cluster, err := a.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(a.T(), err)
 

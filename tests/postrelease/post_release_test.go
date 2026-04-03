@@ -52,10 +52,10 @@ func (s *TfpPostReleaseTestSuite) TestTfpPostRelease() {
 			err = pods.VerifyClusterPods(s.client, cluster)
 			require.NoError(s.T(), err)
 
-			configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
+			cattleConfig, err := provisioning.UniquifyTerraform(s.cattleConfig)
 			require.NoError(t, err)
 
-			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

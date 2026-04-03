@@ -12,6 +12,9 @@ import (
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
+
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
@@ -139,10 +142,12 @@ func (k *KDMTestSuite) TestKDM() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, k.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(k.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(k.T(), k.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(k.T(), k.client, clusterIDs)
+			clusters, _ := provisioning.Provision(k.T(), k.client, k.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+			err = provisioningActions.VerifyClusterReady(k.client, clusters[0])
+			require.NoError(k.T(), err)
 
+			err = clusterActions.VerifyServiceAccountTokenSecret(k.client, clusters[0].Name)
+			require.NoError(k.T(), err)
 			cluster, err := k.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(k.T(), err)
 

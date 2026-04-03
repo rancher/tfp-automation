@@ -9,71 +9,16 @@ import (
 	provv1 "github.com/rancher/rancher/pkg/apis/provisioning.cattle.io/v1"
 	"github.com/rancher/shepherd/clients/rancher"
 	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
-	clusterExtensions "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/kubeconfig"
-	"github.com/rancher/shepherd/extensions/workloads/pods"
-	clusterActions "github.com/rancher/tests/actions/clusters"
-	"github.com/rancher/tests/actions/psact"
 	"github.com/rancher/tests/actions/registries"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	"github.com/rancher/tfp-automation/tests/extensions/postProvisioning"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
-
-// VerifyClustersState validates that all clusters are active and have no pod errors.
-func VerifyClustersState(t *testing.T, client *rancher.Client, clusterIDs []string) {
-	for _, clusterID := range clusterIDs {
-		cluster, err := client.Management.Cluster.ByID(clusterID)
-		require.NoError(t, err)
-
-		logrus.Infof("Waiting for cluster %v to be in an active state...", cluster.Name)
-		err = postProvisioning.IsClusterActive(client, clusterID)
-		require.NoError(t, err)
-
-		logrus.Infof("Waiting for all nodes to be active on cluster: %s", cluster.Name)
-		err = postProvisioning.AreNodesActive(client, clusterID)
-		require.NoError(t, err)
-	}
-}
-
-// VerifyV3ClustersPods validates that all pods in the v3 clusters are running without errors.
-func VerifyV3ClustersPods(t *testing.T, client *rancher.Client, clusterIDs []string) {
-	for _, clusterID := range clusterIDs {
-		podErrors := pods.StatusPods(client, clusterID)
-		require.Empty(t, podErrors)
-	}
-}
-
-// VerifyServiceAccountTokenSecret validates that the service account token secret exists for each cluster
-func VerifyServiceAccountTokenSecret(t *testing.T, client *rancher.Client, clusterIDs []string) {
-	for _, clusterID := range clusterIDs {
-		clusterName, err := clusterExtensions.GetClusterNameByID(client, clusterID)
-		require.NoError(t, err)
-
-		clusterToken, err := clusterActions.CheckServiceAccountTokenSecret(client, clusterName)
-		require.NoError(t, err)
-		require.NotEmpty(t, clusterToken)
-	}
-}
-
-// VerifyClusterPSACT validates that psact clusters can provision an nginx deployment
-func VerifyClusterPSACT(t *testing.T, client *rancher.Client, clusterIDs []string) {
-	for _, clusterID := range clusterIDs {
-		cluster, err := client.Management.Cluster.ByID(clusterID)
-		require.NoError(t, err)
-
-		psactName := cluster.DefaultPodSecurityAdmissionConfigurationTemplateName
-		if psactName == string(config.RancherPrivileged) || psactName == string(config.RancherRestricted) {
-			err := psact.CreateNginxDeployment(client, clusterID, psactName)
-			require.NoError(t, err)
-		}
-	}
-}
 
 // VerifyRegistry validates that the expected registry is set.
 func VerifyRegistry(t *testing.T, client *rancher.Client, clusterID string, terraformConfig *config.TerraformConfig) {

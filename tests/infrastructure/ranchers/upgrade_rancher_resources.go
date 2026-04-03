@@ -7,7 +7,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	extClusters "github.com/rancher/shepherd/extensions/clusters"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
-	"github.com/rancher/tests/actions/provisioning"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
@@ -44,7 +44,7 @@ func CleanupDownstreamClusters(t *testing.T, client *rancher.Client, terraformCo
 			continue
 		}
 
-		err = provisioning.VerifyClusterReady(client, &cluster)
+		err = provisioningActions.VerifyClusterReady(client, &cluster)
 		require.NoError(t, err)
 
 		dsCluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + cluster.Name)
@@ -54,7 +54,7 @@ func CleanupDownstreamClusters(t *testing.T, client *rancher.Client, terraformCo
 		err = extClusters.DeleteK3SRKE2Cluster(client, dsCluster.ID)
 		require.NoError(t, err)
 
-		provisioning.VerifyDeleteRKE2K3SCluster(t, client, dsCluster.ID)
+		provisioningActions.VerifyDeleteRKE2K3SCluster(t, client, dsCluster.ID)
 	}
 }
 

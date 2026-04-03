@@ -2,6 +2,7 @@ package provisioning
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/pkg/config/operations"
@@ -63,6 +64,22 @@ func ImportedClusterModules(terraformConfig *config.TerraformConfig) (string, st
 	}
 
 	return rke2Module, rke2Windows2019, rke2Windows2022, k3sModule
+}
+
+func IsImportedModule(module string) bool {
+	if strings.Contains(module, "import") {
+		return true
+	}
+
+	return false
+}
+
+func IsHostedModule(module string) bool {
+	if strings.Contains(module, "gke") || strings.Contains(module, "eks") || strings.Contains(module, "aks") {
+		return true
+	}
+
+	return false
 }
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
