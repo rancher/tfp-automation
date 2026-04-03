@@ -41,6 +41,17 @@ func VerifyClustersState(t *testing.T, client *rancher.Client, clusterIDs []stri
 	}
 }
 
+// VerifyClusterReady validates that a cluster is active and ready
+func VerifyClusterReady(client *rancher.Client, cluster *steveV1.SteveAPIObject) error {
+	status := &provv1.ClusterStatus{}
+	err := steveV1.ConvertToK8sType(cluster.Status, status)
+	if err != nil {
+		return err
+	}
+
+	return postProvisioning.IsClusterActive(client, status.ClusterName)
+}
+
 // VerifyV3ClustersPods validates that all pods in the v3 clusters are running without errors.
 func VerifyV3ClustersPods(t *testing.T, client *rancher.Client, clusterIDs []string) {
 	for _, clusterID := range clusterIDs {

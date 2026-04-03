@@ -10,6 +10,8 @@ import (
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
@@ -125,9 +127,11 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, customClusterNames := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
+			clusters, customClusterNames := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
+			require.NoError(s.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
+			require.NoError(s.T(), err)
 
 			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(s.T(), err)
@@ -136,9 +140,11 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			require.NoError(s.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusterIDs, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-				provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-				provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
+				clusters, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
+				require.NoError(s.T(), err)
+				err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
+				require.NoError(s.T(), err)
 
 				err = pods.VerifyClusterPods(s.client, cluster)
 				require.NoError(s.T(), err)
@@ -211,11 +217,13 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
+			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
+			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
+			require.NoError(s.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
+			require.NoError(s.T(), err)
 
-			clusterResp, err := s.client.Management.Cluster.ByID(clusterIDs[0])
+			clusterResp, err := s.client.Management.Cluster.ByID(clusters[0].ID)
 			require.NoError(s.T(), err)
 
 			cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterResp.ID)

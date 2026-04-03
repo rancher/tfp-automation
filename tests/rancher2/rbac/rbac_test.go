@@ -12,6 +12,8 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
@@ -119,9 +121,11 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+			clusters, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
+			err = provisioningActions.VerifyClusterReady(r.client, clusters[0])
+			require.NoError(r.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(r.client, clusters[0].Name)
+			require.NoError(r.T(), err)
 
 			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 			require.NoError(r.T(), err)

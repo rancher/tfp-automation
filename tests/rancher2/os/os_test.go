@@ -13,7 +13,9 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/config/operations/permutations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
 	"github.com/rancher/tests/actions/nodes/ec2"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
@@ -132,10 +134,12 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
-			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, "")
+			clusters, _ := provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, "")
 			time.Sleep(2 * time.Minute)
-			provisioning.VerifyClustersState(o.T(), o.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(o.T(), o.client, clusterIDs)
+			err = provisioningActions.VerifyClusterReady(o.client, clusters[0])
+			require.NoError(o.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(o.client, clusters[0].Name)
+			require.NoError(o.T(), err)
 		})
 
 		for _, clusterID := range clusterIDs {

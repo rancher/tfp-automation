@@ -8,6 +8,8 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
@@ -107,9 +109,11 @@ func (s *TfpSanityEKSProvisioningTestSuite) TestTfpProvisioningEKSSanity() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(s.T(), s.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(s.T(), s.client, clusterIDs)
+			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
+			require.NoError(s.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
+			require.NoError(s.T(), err)
 			provisioning.VerifyV3ClustersPods(s.T(), s.client, clusterIDs)
 
 			params := tfpQase.GetProvisioningSchemaParams(configMap[0])

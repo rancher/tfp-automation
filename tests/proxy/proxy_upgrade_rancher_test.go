@@ -10,6 +10,8 @@ import (
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
@@ -137,9 +139,11 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 
 				tt.name = name + tt.name
 
-				clusterIDs, customClusterNames := provisioning.Provision(p.T(), p.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-				provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
-				provisioning.VerifyServiceAccountTokenSecret(p.T(), p.client, clusterIDs)
+				clusters, customClusterNames := provisioning.Provision(p.T(), p.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+				err = provisioningActions.VerifyClusterReady(p.client, clusters[0])
+				require.NoError(p.T(), err)
+				err = clusterActions.VerifyServiceAccountTokenSecret(p.client, clusters[0].Name)
+				require.NoError(p.T(), err)
 
 				cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 				require.NoError(p.T(), err)
@@ -148,9 +152,11 @@ func (p *TfpProxyUpgradeRancherTestSuite) provisionAndVerifyCluster(name string,
 				require.NoError(p.T(), err)
 
 				if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-					clusterIDs, customClusterNames = provisioning.Provision(p.T(), p.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-					provisioning.VerifyClustersState(p.T(), p.client, clusterIDs)
-					provisioning.VerifyServiceAccountTokenSecret(p.T(), p.client, clusterIDs)
+					clusters, customClusterNames = provisioning.Provision(p.T(), p.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+					err = provisioningActions.VerifyClusterReady(p.client, clusters[0])
+					require.NoError(p.T(), err)
+					err = clusterActions.VerifyServiceAccountTokenSecret(p.client, clusters[0].Name)
+					require.NoError(p.T(), err)
 
 					err = pods.VerifyClusterPods(p.client, cluster)
 					require.NoError(p.T(), err)

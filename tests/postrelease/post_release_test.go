@@ -13,6 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"

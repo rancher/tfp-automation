@@ -7,9 +7,12 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
@@ -96,6 +99,7 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	testUser, testPassword string) string {
 	var clusterIDs []string
 	var nestedRancherModuleDir string
+	var clusters []*steveV1.SteveAPIObject
 
 	customClusterNames := []string{}
 
@@ -139,9 +143,12 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 
 				rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
 
-				clusterIDs, customClusterNames = provisioning.Provision(t, a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-				provisioning.VerifyClustersState(t, a.client, clusterIDs)
-				provisioning.VerifyServiceAccountTokenSecret(t, a.client, clusterIDs)
+				clusters, customClusterNames = provisioning.Provision(t, a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+				err = provisioningActions.VerifyClusterReady(a.client, clusters[0])
+				require.NoError(t, err)
+
+				err = clusterActions.VerifyServiceAccountTokenSecret(a.client, clusters[0].Name)
+				require.NoError(t, err)
 
 				cluster, err := a.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
 				require.NoError(t, err)
@@ -150,9 +157,12 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				require.NoError(t, err)
 
 				if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-					clusterIDs, customClusterNames = provisioning.Provision(t, a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
-					provisioning.VerifyClustersState(t, a.client, clusterIDs)
-					provisioning.VerifyServiceAccountTokenSecret(t, a.client, clusterIDs)
+					clusters, customClusterNames = provisioning.Provision(t, a.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+					err = provisioningActions.VerifyClusterReady(a.client, clusters[0])
+					require.NoError(t, err)
+
+					err = clusterActions.VerifyServiceAccountTokenSecret(a.client, clusters[0].Name)
+					require.NoError(t, err)
 
 					err = pods.VerifyClusterPods(a.client, cluster)
 					require.NoError(t, err)
