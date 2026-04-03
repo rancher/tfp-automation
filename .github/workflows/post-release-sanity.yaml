@@ -8,6 +8,11 @@ on:
         description: "Rancher version"
       rancher_chart_version:
         description: "Rancher chart version"
+      run_all_versions:
+        description: "Run all supported versions if manually triggered"
+        required: false
+        default: false
+        type: boolean
       reporting:
         description: "Enable reporting to Qase and Slack"
         required: false
@@ -30,14 +35,33 @@ permissions:
 
 env:
   CLOUD_PROVIDER_VERSION: "6.34.0"
-  LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
-  PACKAGE: "sanity"
-  TEST_SUITE: "^TestTfpSanityProvisioningTestSuite$"
+  PACKAGE: "postrelease"
+  TEST_SUITE: "^TestTfpPostReleaseTestSuite$"
   TIMEOUT: "5h"
 
-jobs:  
+jobs:
+  create-qase-run:
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.create-qase-run.outputs.id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        with:
+          submodules: recursive
+      
+      - name: Create Qase test run
+        id: create-qase-run
+        uses: ./.github/actions/create-qase-test-run
+        with:
+          test_run_name: "Post Rancher Release Validations"
+          qase_project_id: ${{ secrets.HB_QASE_PROJECT_ID }}
+          qase_token: ${{ secrets.QASE_TOKEN }}
+
   v2-14:
+    needs: [create-qase-run]
     if: |
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-rc') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-head') ||
@@ -131,14 +155,6 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
-
-      - name: Get Qase ID
-        if: env.REPORTING_ENABLED == 'true'
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_14 }}
 
       - name: Create config.yaml
         run: |
@@ -244,7 +260,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run Post Release Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -256,14 +272,6 @@ jobs:
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
-          region: "${{ secrets.AWS_REGION }}"
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
-
-      - name: Cloud Provider Downstream Cleanup
-        if: always()
-        uses: ./.github/actions/cloud-provider-cleanup
-        with:
-          prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
@@ -283,7 +291,7 @@ jobs:
         if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
+          qase-test-run-id: ${{ needs.create-qase-run.outputs.run_id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -296,7 +304,9 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   v2-14-prime:
+    needs: [create-qase-run]
     if: |
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-rc') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-head') ||
@@ -391,14 +401,6 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
           is-prime: true
-
-      - name: Get Qase ID
-        if: env.REPORTING_ENABLED == 'true'
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_14 }}
 
       - name: Create config.yaml
         run: |
@@ -505,7 +507,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run Post Release Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -517,14 +519,6 @@ jobs:
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX_PRIME }}"
-          region: "${{ secrets.AWS_REGION }}"
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
-
-      - name: Cloud Provider Downstream Cleanup
-        if: always()
-        uses: ./.github/actions/cloud-provider-cleanup
-        with:
-          prefix: "auto-${{ env.HOSTNAME_PREFIX_PRIME }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
@@ -544,7 +538,7 @@ jobs:
         if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
+          qase-test-run-id: ${{ needs.create-qase-run.outputs.run_id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -557,7 +551,9 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
   
   v2-13:
+    needs: [create-qase-run]
     if: |
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && !contains(github.event.inputs.rancher_version, '-rc') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && !contains(github.event.inputs.rancher_version, '-head') ||
@@ -652,14 +648,6 @@ jobs:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
           is-prime: true
-
-      - name: Get Qase ID
-        if: env.REPORTING_ENABLED == 'true'
-        id: get-qase-id
-        uses: ./.github/actions/get-qase-id
-        with:
-          triggered_tag: ${{ github.event.inputs.rancher_version }}
-          qase_recurring_id: ${{ vars.QASE_RECURRING_TEST_RUN_ID_2_13 }}
 
       - name: Create config.yaml
         run: |
@@ -766,7 +754,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run Post Release Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -778,14 +766,6 @@ jobs:
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX_PRIME }}"
-          region: "${{ secrets.AWS_REGION }}"
-          iam-role: ${{ secrets.TFP_IAM_ROLE }}
-
-      - name: Cloud Provider Downstream Cleanup
-        if: always()
-        uses: ./.github/actions/cloud-provider-cleanup
-        with:
-          prefix: "auto-${{ env.HOSTNAME_PREFIX_PRIME }}"
           region: "${{ secrets.AWS_REGION }}"
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
@@ -805,7 +785,7 @@ jobs:
         if: always() && env.REPORTING_ENABLED == 'true'
         uses: ./.github/actions/report-to-qase
         with:
-          qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
+          qase-test-run-id: ${{ needs.create-qase-run.outputs.run_id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
 
       - name: Reporting Results to Slack
@@ -816,3 +796,20 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  close-qase-run:
+    needs: [create-qase-run, v2-14, v2-14-prime, v2-13]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        with:
+          submodules: recursive
+
+      - name: Close Qase test run
+        uses: ./.github/actions/close-qase-test-run
+        with:
+          qase_run_id: ${{ needs.create-qase-run.outputs.run_id }}
+          qase_project_id: ${{ secrets.HB_QASE_PROJECT_ID }}
+          qase_token: ${{ secrets.QASE_TOKEN }}

@@ -1,0 +1,46 @@
+---
+name: Create Qase Test Run
+description: "Accepts a rancher tag and returns the corresponding Qase ID for a release test run"
+inputs:
+  test_run_name:
+    description: "Name of the test run to create in Qase"
+    required: true
+  qase_project_id:
+    description: "Qase project ID"
+    required: true
+  qase_token:
+    description: "Qase token"
+    required: true
+
+outputs:
+  id:
+    description: "Qase ID for the appropriate release test run, based on the provided Rancher tag"
+    value: ${{ steps.create-qase-run.outputs.run_id }}
+
+runs:
+  using: composite
+  steps:
+    - name: Create Qase test run
+      shell: bash
+      id: create-qase-run
+      run: |
+        PROJECT="${{ inputs.qase_project_id }}"
+        TOKEN="${{ inputs.qase_token }}"
+
+        RUN_NAME="${{ inputs.test_run_name }} - $(date +'%m/%d/%Y')"
+
+        RESPONSE=$(curl -s -X POST \
+          -H "Content-Type: application/json" \
+          -H "Token: $TOKEN" \
+          -d "{\"title\": \"$RUN_NAME\", \"is_autotest\": true}" \
+          "https://api.qase.io/v1/run/$PROJECT")
+
+        RUN_ID=$(echo "$RESPONSE" | jq -r '.result.id')
+
+        if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+          echo "Failed to create Qase run: $RESPONSE"
+          exit 1
+        fi
+
+        echo "Created Qase run ID: $RUN_ID"
+        echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
