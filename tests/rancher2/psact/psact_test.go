@@ -103,29 +103,29 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			configMap, err := provisioning.UniquifyTerraform([]map[string]any{p.cattleConfig})
+			cattleConfig, err := provisioning.UniquifyTerraform(p.cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"terratest", "psact"}, tt.psact, configMap[0])
+			_, err = operations.ReplaceValue([]string{"terratest", "psact"}, tt.psact, cattleConfig)
 			require.NoError(t, err)
 
-			provisioning.GetK8sVersion(t, p.client, p.terratestConfig, p.terraformConfig, configMap)
+			provisioning.GetK8sVersion(p.client, cattleConfig)
 
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(t, p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
+			clusterIDs, _ := provisioning.Provision(t, p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
 			provisioning.VerifyClustersState(t, p.client, clusterIDs)
 			provisioning.VerifyServiceAccountTokenSecret(t, p.client, clusterIDs)
 
@@ -137,7 +137,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 
 			provisioning.VerifyClusterPSACT(t, p.client, clusterIDs)
 
-			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

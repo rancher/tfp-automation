@@ -110,23 +110,23 @@ func (s *TfpSanityIPv6UpgradeRancherTestSuite) provisionAndVerifyCluster(name st
 				newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 				defer file.Close()
 
-				configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
+				cattleConfig, err := provisioning.UniquifyTerraform(s.cattleConfig)
 				require.NoError(t, err)
 
-				_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, configMap[0])
+				_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
 				require.NoError(t, err)
 
-				_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, configMap[0])
+				_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
 				require.NoError(t, err)
 
-				_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, configMap[0])
+				_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
 				require.NoError(t, err)
 
-				provisioning.GetK8sVersion(t, standardUserClient, s.terratestConfig, s.terraformConfig, configMap)
+				provisioning.GetK8sVersion(standardUserClient, cattleConfig)
 
-				rancher, terraform, terratest, _ := config.LoadTFPConfigs(configMap[0])
+				rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
-				clusterIDs, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, configMap, newFile, rootBody, file, false, true, true, clusterIDs, nil, nestedRancherModuleDir)
+				clusterIDs, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, true, true, clusterIDs, nil, nestedRancherModuleDir)
 				provisioning.VerifyClustersState(t, s.client, clusterIDs)
 				provisioning.VerifyServiceAccountTokenSecret(t, s.client, clusterIDs)
 
@@ -136,7 +136,7 @@ func (s *TfpSanityIPv6UpgradeRancherTestSuite) provisionAndVerifyCluster(name st
 				err = pods.VerifyClusterPods(s.client, cluster)
 				require.NoError(t, err)
 
-				params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+				params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 				err = qase.UpdateSchemaParameters(tt.name, params)
 				if err != nil {
 					logrus.Warningf("Failed to upload schema parameters %s", err)
