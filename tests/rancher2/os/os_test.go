@@ -8,18 +8,18 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/shepherd/extensions/cloudcredentials"
-	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/config/operations/permutations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
 	"github.com/rancher/tests/actions/nodes/ec2"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -136,27 +136,27 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
-			clusterIDs, _ = provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, "")
+			clusters, _ := provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, "")
 			time.Sleep(2 * time.Minute)
-			provisioning.VerifyClustersState(o.T(), o.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(o.T(), o.client, clusterIDs)
+			err = provisioningActions.VerifyClusterReady(o.client, clusters[0])
+			require.NoError(o.T(), err)
+
+			err = clusterActions.VerifyServiceAccountTokenSecret(o.client, clusters[0].Name)
+			require.NoError(o.T(), err)
+
+			for _, cluster := range clusters {
+				workloadConfigs := new(workloads.Workloads)
+				operations.LoadObjectFromMap(workloads.WorkloadsConfigurationFileKey, o.cattleConfig, workloadConfigs)
+
+				logrus.Infof("Creating workloads on cluster: %s", cluster.Name)
+				createdWorkloads, err := workloads.CreateWorkloads(o.client, cluster.Name, *workloadConfigs)
+				require.NoError(o.T(), err)
+
+				logrus.Infof("Verifying workloads on cluster: %s", cluster.Name)
+				_, err = workloads.VerifyWorkloads(o.client, cluster.Name, *createdWorkloads)
+				require.NoError(o.T(), err)
+			}
 		})
-
-		for _, clusterID := range clusterIDs {
-			cluster, err := o.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + clusterID)
-			require.NoError(o.T(), err)
-
-			workloadConfigs := new(workloads.Workloads)
-			operations.LoadObjectFromMap(workloads.WorkloadsConfigurationFileKey, o.cattleConfig, workloadConfigs)
-
-			logrus.Infof("Creating workloads on cluster: %s", cluster.Name)
-			createdWorkloads, err := workloads.CreateWorkloads(o.client, cluster.Name, *workloadConfigs)
-			require.NoError(o.T(), err)
-
-			logrus.Infof("Verifying workloads on cluster: %s", cluster.Name)
-			_, err = workloads.VerifyWorkloads(o.client, cluster.Name, *createdWorkloads)
-			require.NoError(o.T(), err)
-		}
 
 		for _, cattleConfig := range batch {
 			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)

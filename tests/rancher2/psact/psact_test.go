@@ -8,17 +8,17 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -125,17 +125,17 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), perTestTerraformOptions, keyPath)
 
-			clusterIDs, _ := provisioning.Provision(t, p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(t, p.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(t, p.client, clusterIDs)
-
-			cluster, err := p.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			clusters, _ := provisioning.Provision(t, p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, clusterIDs, nil, nestedRancherModuleDir)
+			err = provisioningActions.VerifyClusterReady(p.client, clusters[0])
 			require.NoError(t, err)
 
-			err = pods.VerifyClusterPods(p.client, cluster)
+			err = clusterActions.VerifyServiceAccountTokenSecret(p.client, clusters[0].Name)
 			require.NoError(t, err)
 
-			provisioning.VerifyClusterPSACT(t, p.client, clusterIDs)
+			err = pods.VerifyClusterPods(p.client, clusters[0])
+			require.NoError(t, err)
+
+			provisioningActions.VerifyPSACT(t, p.client, clusters[0])
 
 			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)

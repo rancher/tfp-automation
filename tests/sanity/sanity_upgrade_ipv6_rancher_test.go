@@ -6,15 +6,15 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	clusterActions "github.com/rancher/tests/actions/clusters"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
@@ -126,14 +126,14 @@ func (s *TfpSanityIPv6UpgradeRancherTestSuite) provisionAndVerifyCluster(name st
 
 				rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
 
-				clusterIDs, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, true, true, clusterIDs, nil, nestedRancherModuleDir)
-				provisioning.VerifyClustersState(t, s.client, clusterIDs)
-				provisioning.VerifyServiceAccountTokenSecret(t, s.client, clusterIDs)
-
-				cluster, err := s.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+				clusters, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, true, true, clusterIDs, nil, nestedRancherModuleDir)
+				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
 				require.NoError(t, err)
 
-				err = pods.VerifyClusterPods(s.client, cluster)
+				err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
+				require.NoError(t, err)
+
+				err = pods.VerifyClusterPods(s.client, clusters[0])
 				require.NoError(t, err)
 
 				params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
