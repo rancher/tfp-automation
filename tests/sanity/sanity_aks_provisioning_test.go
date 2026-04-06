@@ -75,6 +75,8 @@ func (s *TfpSanityAKSProvisioningTestSuite) TestTfpProvisioningAKSSanity() {
 	}
 
 	for _, tt := range tests {
+		s.T().Skip("Skipping test - resource quota needs to be increased so GHA workflow properly runs")
+
 		s.T().Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
