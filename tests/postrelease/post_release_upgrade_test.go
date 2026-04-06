@@ -13,7 +13,6 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
-	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -54,10 +53,7 @@ func (s *TfpPostReleaseUpgradeTestSuite) TestTfpPostReleaseUpgrade() {
 			err = pods.VerifyClusterPods(s.client, cluster)
 			require.NoError(s.T(), err)
 
-			configMap, err := provisioning.UniquifyTerraform([]map[string]any{s.cattleConfig})
-			require.NoError(t, err)
-
-			params := tfpQase.GetProvisioningSchemaParams(configMap[0])
+			params := tfpQase.GetProvisioningSchemaParams([]map[string]any{s.cattleConfig}[0])
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)
