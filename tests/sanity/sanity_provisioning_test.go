@@ -92,10 +92,6 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			s.T().Skip("Skipping Windows test on non-AWS provider")
 		}
 
-		if strings.Contains(tt.name, "K3S") && (s.terraformConfig.ARMAchitecture || s.terraformConfig.MixedArchitecture) {
-			s.T().Skip("Skipping K3S test - issue logged here: https://github.com/rancher/rancher/issues/54447")
-		}
-
 		s.T().Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
