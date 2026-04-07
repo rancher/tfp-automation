@@ -3,6 +3,7 @@ package hosted
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -49,7 +50,10 @@ func SetEKS(terraformConfig *config.TerraformConfig, terratestConfig *config.Ter
 	eksConfigBlockBody.SetAttributeValue(clusters.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 	eksConfigBlockBody.SetAttributeValue(amazon.PrivateAccess, cty.BoolVal(terraformConfig.AWSConfig.PrivateAccess))
 	eksConfigBlockBody.SetAttributeValue(amazon.PublicAccess, cty.BoolVal(terraformConfig.AWSConfig.PublicAccess))
-	eksConfigBlockBody.SetAttributeValue(amazon.IPFamily, cty.StringVal(terraformConfig.AWSConfig.IPFamily))
+
+	if terraformConfig.Standalone != nil && !strings.Contains(terraformConfig.Standalone.RancherTagVersion, "v2.13") {
+		eksConfigBlockBody.SetAttributeValue(amazon.IPFamily, cty.StringVal(terraformConfig.AWSConfig.IPFamily))
+	}
 
 	for count, pool := range terratestConfig.Nodepools {
 		poolNum := strconv.Itoa(count)
