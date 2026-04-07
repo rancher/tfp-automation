@@ -111,10 +111,6 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 				t.Skip("Skipping Windows test on non-AWS provider")
 			}
 
-			if strings.Contains(tt.name, "K3S") && s.terraformConfig.ARMAchitecture {
-				s.T().Skip("Skipping K3S test - issue logged here: https://github.com/rancher/rancher/issues/54447")
-			}
-
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
