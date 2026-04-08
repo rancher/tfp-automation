@@ -18,23 +18,18 @@ sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
 
 echo "token: ${RKE2_TOKEN}
+system-default-registry: ${REGISTRY}
 tls-san:
   - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
 
-sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
-  docker.io:
-    endpoint:
-      - "https://registry-1.docker.io"
-  "${REGISTRY}":
+  "docker.io":
     endpoint:
       - "https://${REGISTRY}"
-
+    rewrite:
+      "^rancher/(.*)": "${REGISTRY}/rancher/\$1"
 configs:
-  "docker.io":
-    auth:
-      username: "${REGISTRY_USERNAME}"
-      password: "${REGISTRY_PASSWORD}"
   "${REGISTRY}":
     tls:
       insecure_skip_verify: true
