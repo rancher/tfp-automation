@@ -8,11 +8,6 @@ on:
         description: "Rancher version"
       rancher_chart_version:
         description: "Rancher chart version"
-      run_all_versions:
-        description: "Run all supported versions if manually triggered"
-        required: false
-        default: false
-        type: boolean
       reporting:
         description: "Enable reporting to Qase and Slack"
         required: false
@@ -42,7 +37,6 @@ env:
 jobs:
   create-qase-run:
     if: |
-      github.event.inputs.run_all_versions == 'true' ||
       ((github.event_name == 'workflow_dispatch' && (startsWith(github.event.inputs.rancher_version, 'v2.14') || startsWith(github.event.inputs.rancher_version, 'v2.13'))) && !contains(github.event.inputs.rancher_version, '-alpha') &&
       (github.event_name == 'workflow_dispatch' && (startsWith(github.event.inputs.rancher_version, 'v2.14') || startsWith(github.event.inputs.rancher_version, 'v2.13'))) && !contains(github.event.inputs.rancher_version, '-rc') &&
       (github.event_name == 'workflow_dispatch' && (startsWith(github.event.inputs.rancher_version, 'v2.14') || startsWith(github.event.inputs.rancher_version, 'v2.13'))) && !contains(github.event.inputs.rancher_version, '-head')) ||
@@ -62,14 +56,13 @@ jobs:
         id: create-qase-run
         uses: ./.github/actions/create-qase-test-run
         with:
-          test_run_name: "Post Rancher Release Validations"
+          test_run_name: "[${{ github.event.inputs.rancher_version || inputs.rancher_version }}] Post Rancher Release Validations"
           qase_project_id: ${{ secrets.HB_QASE_PROJECT_ID }}
           qase_token: ${{ secrets.QASE_TOKEN }}
 
   v2-14:
     needs: [create-qase-run]
     if: |
-      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-rc') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-head') ||
@@ -314,7 +307,6 @@ jobs:
   v2-14-prime:
     needs: [create-qase-run]
     if: |
-      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-rc') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && !contains(github.event.inputs.rancher_version, '-head') ||
@@ -561,7 +553,6 @@ jobs:
   v2-13:
     needs: [create-qase-run]
     if: |
-      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && !contains(github.event.inputs.rancher_version, '-alpha') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && !contains(github.event.inputs.rancher_version, '-rc') &&
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && !contains(github.event.inputs.rancher_version, '-head') ||
@@ -807,6 +798,7 @@ jobs:
 
   close-qase-run:
     needs: [create-qase-run, v2-14, v2-14-prime, v2-13]
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
