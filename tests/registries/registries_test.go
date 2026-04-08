@@ -62,6 +62,193 @@ func (r *TfpRegistriesTestSuite) SetupSuite() {
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, r.standaloneConfig = config.LoadTFPConfigs(r.cattleConfig)
 }
 
+func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
+	var err error
+	var testUser, testPassword string
+	var clusterIDs []string
+
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
+	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
+	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+
+	tests := []struct {
+		name      string
+		module    string
+		nodeRoles []config.Nodepool
+	}{
+		{"Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"Auth_K3S", modules.EC2K3s, nodeRolesAll},
+	}
+
+	for _, tt := range tests {
+		r.T().Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(r.terraformConfig, r.terratestConfig, r.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+			require.NoError(t, err)
+			defer os.RemoveAll(nestedRancherModuleDir)
+
+			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
+			defer file.Close()
+
+			cattleConfig, err := provisioning.UniquifyTerraform(r.cattleConfig)
+			require.NoError(t, err)
+
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.authRegistry, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.authRegistry, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, cattleConfig)
+			require.NoError(r.T(), err)
+
+			provisioning.GetK8sVersion(r.standardUserClient, cattleConfig)
+
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
+
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
+
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			require.NoError(r.T(), err)
+
+			err = pods.VerifyClusterPods(r.client, cluster)
+			require.NoError(r.T(), err)
+
+			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
+
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+			err = qase.UpdateSchemaParameters(tt.name, params)
+			if err != nil {
+				logrus.Warningf("Failed to upload schema parameters %s", err)
+			}
+		})
+	}
+
+	if r.terratestConfig.LocalQaseReporting {
+		results.ReportTest(r.terratestConfig)
+	}
+}
+
+func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
+	var err error
+	var testUser, testPassword string
+	var clusterIDs []string
+
+	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
+	require.NoError(r.T(), err)
+
+	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	require.NoError(r.T(), err)
+
+	standardToken := standardUserToken.Token
+
+	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
+	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+
+	tests := []struct {
+		name      string
+		module    string
+		nodeRoles []config.Nodepool
+	}{
+		{"ECR_RKE2", modules.EC2RKE2, nodeRolesDedicated},
+		{"ECR_K3S", modules.EC2K3s, nodeRolesAll},
+	}
+
+	for _, tt := range tests {
+		r.T().Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(r.terraformConfig, r.terratestConfig, r.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+			require.NoError(t, err)
+			defer os.RemoveAll(nestedRancherModuleDir)
+
+			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
+			defer file.Close()
+
+			cattleConfig, err := provisioning.UniquifyTerraform(r.cattleConfig)
+			require.NoError(t, err)
+
+			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.terraformConfig.StandaloneRegistry.ECRURI, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.terraformConfig.StandaloneRegistry.ECRURI, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "username"}, r.terraformConfig.StandaloneRegistry.ECRUsername, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "password"}, r.terraformConfig.StandaloneRegistry.ECRPassword, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, cattleConfig)
+			require.NoError(r.T(), err)
+
+			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "authConfigSecretName"}, r.terraformConfig.PrivateRegistries.AuthConfigSecretName+"-ecr", cattleConfig)
+			require.NoError(r.T(), err)
+
+			provisioning.GetK8sVersion(r.standardUserClient, cattleConfig)
+
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
+
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
+
+			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
+			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
+			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
+
+			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
+			require.NoError(r.T(), err)
+
+			err = pods.VerifyClusterPods(r.client, cluster)
+			require.NoError(r.T(), err)
+
+			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
+
+			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+			err = qase.UpdateSchemaParameters(tt.name, params)
+			if err != nil {
+				logrus.Warningf("Failed to upload schema parameters %s", err)
+			}
+		})
+	}
+
+	if r.terratestConfig.LocalQaseReporting {
+		results.ReportTest(r.terratestConfig)
+	}
+}
+
 func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	var err error
 	var testUser, testPassword string
@@ -171,95 +358,6 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	}
 }
 
-func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
-	var err error
-	var testUser, testPassword string
-	var clusterIDs []string
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
-
-	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-
-	tests := []struct {
-		name      string
-		module    string
-		nodeRoles []config.Nodepool
-	}{
-		{"Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Auth_K3S", modules.EC2K3s, nodeRolesAll},
-	}
-
-	for _, tt := range tests {
-		r.T().Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(r.terraformConfig, r.terratestConfig, r.terraformOptions, tt.name, configs.NestedRancherModuleDir)
-			require.NoError(t, err)
-			defer os.RemoveAll(nestedRancherModuleDir)
-
-			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
-			defer file.Close()
-
-			cattleConfig, err := provisioning.UniquifyTerraform(r.cattleConfig)
-			require.NoError(t, err)
-
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.authRegistry, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.authRegistry, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, cattleConfig)
-			require.NoError(r.T(), err)
-
-			provisioning.GetK8sVersion(r.standardUserClient, cattleConfig)
-
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
-
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
-
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
-
-			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-			require.NoError(r.T(), err)
-
-			err = pods.VerifyClusterPods(r.client, cluster)
-			require.NoError(r.T(), err)
-
-			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
-
-			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
-			err = qase.UpdateSchemaParameters(tt.name, params)
-			if err != nil {
-				logrus.Warningf("Failed to upload schema parameters %s", err)
-			}
-		})
-	}
-
-	if r.terratestConfig.LocalQaseReporting {
-		results.ReportTest(r.terratestConfig)
-	}
-}
-
 func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 	var err error
 	var testUser, testPassword string
@@ -355,104 +453,6 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 
 				provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 			}
-
-			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
-			err = qase.UpdateSchemaParameters(tt.name, params)
-			if err != nil {
-				logrus.Warningf("Failed to upload schema parameters %s", err)
-			}
-		})
-	}
-
-	if r.terratestConfig.LocalQaseReporting {
-		results.ReportTest(r.terratestConfig)
-	}
-}
-
-func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
-	var err error
-	var testUser, testPassword string
-	var clusterIDs []string
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
-
-	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-
-	tests := []struct {
-		name      string
-		module    string
-		nodeRoles []config.Nodepool
-	}{
-		{"ECR_RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"ECR_K3S", modules.EC2K3s, nodeRolesAll},
-	}
-
-	for _, tt := range tests {
-		r.T().Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(r.terraformConfig, r.terratestConfig, r.terraformOptions, tt.name, configs.NestedRancherModuleDir)
-			require.NoError(t, err)
-			defer os.RemoveAll(nestedRancherModuleDir)
-
-			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
-			defer file.Close()
-
-			cattleConfig, err := provisioning.UniquifyTerraform(r.cattleConfig)
-			require.NoError(t, err)
-
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, r.terraformConfig.StandaloneRegistry.ECRURI, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, r.terraformConfig.StandaloneRegistry.ECRURI, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "username"}, r.terraformConfig.StandaloneRegistry.ECRUsername, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "password"}, r.terraformConfig.StandaloneRegistry.ECRPassword, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "standaloneRegistry", "authenticated"}, true, cattleConfig)
-			require.NoError(r.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "authConfigSecretName"}, r.terraformConfig.PrivateRegistries.AuthConfigSecretName+"-ecr", cattleConfig)
-			require.NoError(r.T(), err)
-
-			provisioning.GetK8sVersion(r.standardUserClient, cattleConfig)
-
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
-
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
-
-			clusterIDs, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
-			provisioning.VerifyClustersState(r.T(), r.client, clusterIDs)
-			provisioning.VerifyServiceAccountTokenSecret(r.T(), r.client, clusterIDs)
-
-			cluster, err := r.client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraform.ResourcePrefix)
-			require.NoError(r.T(), err)
-
-			err = pods.VerifyClusterPods(r.client, cluster)
-			require.NoError(r.T(), err)
-
-			provisioning.VerifyRegistry(r.T(), r.client, clusterIDs[0], terraform)
 
 			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
