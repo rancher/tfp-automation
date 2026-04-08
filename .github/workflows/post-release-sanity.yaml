@@ -41,6 +41,14 @@ env:
 
 jobs:
   create-qase-run:
+    if: |
+      github.event.inputs.run_all_versions == 'true' ||
+      ((github.event_name == 'workflow_dispatch' && (startsWith(github.event.inputs.rancher_version, 'v2.14') || startsWith(github.event.inputs.rancher_version, 'v2.13'))) && !contains(github.event.inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_dispatch' && (startsWith(github.event.inputs.rancher_version, 'v2.14') || startsWith(github.event.inputs.rancher_version, 'v2.13'))) && !contains(github.event.inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_dispatch' && (startsWith(github.event.inputs.rancher_version, 'v2.14') || startsWith(github.event.inputs.rancher_version, 'v2.13'))) && !contains(github.event.inputs.rancher_version, '-head')) ||
+      ((github.event_name == 'workflow_call' && (startsWith(inputs.rancher_version, 'v2.14') || startsWith(inputs.rancher_version, 'v2.13'))) && !contains(inputs.rancher_version, '-alpha') &&
+      (github.event_name == 'workflow_call' && (startsWith(inputs.rancher_version, 'v2.14') || startsWith(inputs.rancher_version, 'v2.13'))) && !contains(inputs.rancher_version, '-rc') &&
+      (github.event_name == 'workflow_call' && (startsWith(inputs.rancher_version, 'v2.14') || startsWith(inputs.rancher_version, 'v2.13'))) && !contains(inputs.rancher_version, '-head'))
     runs-on: ubuntu-latest
     outputs:
       run_id: ${{ steps.create-qase-run.outputs.id }}
@@ -799,7 +807,6 @@ jobs:
 
   close-qase-run:
     needs: [create-qase-run, v2-14, v2-14-prime, v2-13]
-    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
