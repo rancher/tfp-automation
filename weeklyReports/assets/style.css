@@ -1,0 +1,50 @@
+body { 
+    font-family: 'Inter', Arial, sans-serif; 
+}
+
+.toggle-btn-modern {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 18px;
+  font-size: 1em;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-left: 8px;
+}
+
+.toggle-btn-modern:hover {
+  background: #1d4ed8;
+}
+
+.graph-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 0.5em;
+}
+
+.workflow-title {
+  font-family: 'Courier New', monospace, Verdana, Geneva;
+  font-size: 1.2em;
+  font-weight: bold;
+  min-width: 340px;
+  display: inline-block;
+  overflow-wrap: anywhere;
+}
+
+.workflow-header-row {
+  display: flex;
+  justify-content: space-between;
+  max-width: 50%;
+}
+
+.chart-container {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}

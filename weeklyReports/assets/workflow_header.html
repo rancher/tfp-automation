@@ -1,0 +1,6 @@
+<div style='margin-bottom:1em;'>
+  <div class="workflow-header-row" style="width:100%;">
+    <span class='workflow-title'>{{.WorkflowName}}</span>
+    <button onclick="toggleChart('{{.DivID}}', this)" id="{{.BtnID}}" class="toggle-btn-modern">show</button>
+  </div>
+  <div id='{{.DivID}}' class="chart-container" style='display:none;'>

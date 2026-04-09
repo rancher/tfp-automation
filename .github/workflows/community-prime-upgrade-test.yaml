@@ -289,3 +289,16 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-channel: ${{ secrets.SLACK_CHANNEL }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Save test result as artifact for weekly summary
+        if: always()
+        run: |
+          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.UPGRADED_RANCHER_VERSION }}\", \"workflow\": \"community-prime-upgrade\", \"job\": \"v2-14\" }" > test-result-community-prime-upgrade-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
+        shell: bash
+
+      - name: Upload test result weekly summary
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
+        with:
+          name: test-result-community-prime-upgrade-test-v2-14-${{ github.run_id }}
+          path: test-result-community-prime-upgrade-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
