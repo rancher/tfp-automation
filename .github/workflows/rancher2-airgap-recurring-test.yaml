@@ -304,13 +304,13 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Save test result as artifact for weekly summary
-        if: always()
+        if: always() && github.event_name == 'schedule'
         run: |
           echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"rancher2-airgap-recurring-test\", \"job\": \"v2-15\" }" > test-result-rancher2-airgap-recurring-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
-        if: always()
+        if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
           name: test-result-rancher2-airgap-recurring-test-v2-15-${{ github.run_id }}
@@ -580,13 +580,13 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Save test result as artifact for weekly summary
-        if: always()
+        if: always() && github.event_name == 'schedule'
         run: |
           echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"rancher2-airgap-recurring-test\", \"job\": \"v2-14\" }" > test-result-rancher2-airgap-recurring-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
-        if: always()
+        if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
           name: test-result-rancher2-airgap-recurring-test-v2-14-${{ github.run_id }}
@@ -868,13 +868,13 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Save test result as artifact for weekly summary
-        if: always()
+        if: always() && github.event_name == 'schedule'
         run: |
           echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"rancher2-airgap-recurring-test\", \"job\": \"v2-13\" }" > test-result-rancher2-airgap-recurring-test-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
-        if: always()
+        if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
           name: test-result-rancher2-airgap-recurring-test-v2-13-${{ github.run_id }}
