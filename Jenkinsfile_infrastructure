@@ -81,9 +81,7 @@ node {
           gcloud auth activate-service-account ${env.GOOGLE_TFP_EMAIL} --key-file=/tmp/gcp-key.json 2>&1 &&
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json &&
           az login --service-principal -u \"${AZURE_TFP_CLIENT_ID}\" -p \"${AZURE_TFP_CLIENT_SECRET}\" --tenant \"${AZURE_TFP_TENANT_ID}\" > /dev/null 2>&1 &&
-          go run ${rootPath}tests/infrastructure/main.go ${params.TEST_CASE};
-          ${rootPath}pipeline/scripts/build_qase_reporter.sh;
-          if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"
+          go run ${rootPath}tests/infrastructure/main.go ${params.TEST_CASE}"
         """
       } catch(err) {
           echo 'Test run had failures. Collecting results...'

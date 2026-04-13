@@ -1,0 +1,88 @@
+name: Weekly Test Summary
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+jobs:
+  weekly-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        with:
+          submodules: recursive
+
+      - name: Download all test result artifacts from last week
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd #v8
+        with:
+          script: |
+            const fs = require('fs');
+            const now = new Date();
+            const since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+            let count = 0;
+
+            for (const artifact of artifacts.data.artifacts) {
+              if (!artifact.name.startsWith('test-result-')) continue;
+              const created = new Date(artifact.created_at);
+              if (created < since) continue;
+              count++;
+              console.log(`Downloading artifact: ${artifact.name}`);
+              const download = await github.rest.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+                archive_format: 'zip',
+              });
+              fs.writeFileSync(`./${artifact.name}.zip`, Buffer.from(download.data));
+            }
+
+      - name: Unzip all artifacts
+        run: |
+          for f in test-result-*.zip; do
+            unzip -o "$f" -d results
+          done
+        shell: bash
+
+      - name: Set up Go environment
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 #v6
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Generate weekly summary chart
+        run: |
+          go run weeklyReports/generate_weekly_chart.go
+
+      - name: Copy required assets to results
+        run: |
+          cp weeklyReports/assets/style.css results/
+          cp weeklyReports/assets/toggle.js results/
+          cp weeklyReports/assets/rancher.png results/
+
+      - name: Upload summary chart artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
+        with:
+          path: |
+            results/weekly_summary.html
+            results/style.css
+            results/toggle.js
+            results/rancher.png
+
+      - name: Report to Slack
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "*GitHub Action Weekly Test Summary* for ${{ github.repository }}\nWorkflow: ${{ github.workflow }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*${{ github.repository }} - ${{ github.workflow }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"

@@ -46,6 +46,7 @@ require (
 )
 
 require (
+	github.com/go-echarts/go-echarts/v2 v2.7.1
 	github.com/gruntwork-io/terratest v0.49.0
 	github.com/imdario/mergo v0.3.16
 	github.com/qase-tms/qase-go/qase-api-client v1.2.1
@@ -158,7 +159,7 @@ require (
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/text v0.31.0
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -69,20 +69,11 @@ node {
       try {
         sh """
           docker run --name ${testContainer} -t --env-file ${envFile} --add-host ${env.FQDN}:127.0.0.1 ${imageName} sh -c "
-          go run ${rootPath}tests/infrastructure/main.go ${params.TEST_CASE};
-          ${rootPath}pipeline/scripts/build_qase_reporter.sh;
-          if [ -f ${rootPath}reporter ]; then ${rootPath}reporter; fi"
+          go run ${rootPath}tests/infrastructure/main.go ${params.TEST_CASE}"
         """
       } catch(err) {
           echo 'Test run had failures. Collecting results...'
       }
-    }
-    stage('Test Report') {
-      sh "docker cp ${testContainer}:${rootPath}${testResultsOut} ."
-      step([$class: 'JUnitResultArchiver', testResults: "**/${testResultsOut}"])
-      sh "docker stop ${testContainer}"
-      sh "docker rm -v ${testContainer}"
-      sh "docker rmi -f ${imageName}"
     }
   }
 }
