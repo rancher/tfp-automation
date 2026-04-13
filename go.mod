@@ -1,6 +1,6 @@
 module github.com/rancher/tfp-automation
 
-go 1.25.0
+go 1.25.5
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.27 // for compatibilty with docker 20.10.x
@@ -52,9 +52,9 @@ require (
 	github.com/qase-tms/qase-go/qase-api-client v1.2.1
 	github.com/rancher/norman v0.8.1
 	github.com/rancher/rancher/pkg/apis v0.0.0
-	github.com/rancher/shepherd v0.0.0-20260226203127-be7fc5d07fbe
-	github.com/rancher/tests v0.0.0-20260317210137-1bc6ab388ebe
-	github.com/rancher/tests/actions v0.0.0-20260317210137-1bc6ab388ebe
+	github.com/rancher/shepherd v0.0.0-20260407221419-05978184aa1e
+	github.com/rancher/tests v0.0.0-20260413201020-6018f720768d
+	github.com/rancher/tests/actions v0.0.0-20260413201020-6018f720768d
 	github.com/sirupsen/logrus v1.9.3
 )
 

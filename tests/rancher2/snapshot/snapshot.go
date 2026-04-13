@@ -18,7 +18,7 @@ import (
 	"github.com/rancher/shepherd/extensions/workloads/pods"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	namegen "github.com/rancher/shepherd/pkg/namegenerator"
-	"github.com/rancher/tests/actions/provisioning"
+	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/services"
 	deploy "github.com/rancher/tests/actions/workloads/deployment"
 	"github.com/rancher/tfp-automation/config"
@@ -58,7 +58,7 @@ const (
 // RestoreSnapshot creates workloads, takes a snapshot of the cluster, restores the cluster and verifies the workloads created after
 // a snapshot no longer are present in the cluster
 func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options, configMap []map[string]any,
+	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options, cattleConfig map[string]any,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) {
 	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
 
@@ -73,10 +73,10 @@ func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *ranche
 
 	deploymentResp, serviceResp := createWorkloads(t, client, clusterID, podTemplate, initialWorkloadName, isCattleLabeled, DeploymentSteveType)
 
-	snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, testUser, testPassword, clusterID, terraformOptions, configMap, newFile, rootBody, file, nestedRancherModuleDir)
+	snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, testUser, testPassword, clusterID, terraformOptions, cattleConfig, newFile, rootBody, file, nestedRancherModuleDir)
 	require.NoError(t, err)
 
-	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, testUser, testPassword, clusterID, terraformOptions, configMap, newFile, rootBody, file, nestedRancherModuleDir)
+	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, testUser, testPassword, clusterID, terraformOptions, cattleConfig, newFile, rootBody, file, nestedRancherModuleDir)
 
 	_, err = steveclient.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
 	require.Error(t, err)
@@ -95,12 +95,12 @@ func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *ranche
 // snapshotV2Prov takes a snapshot of the cluster and creates a deployment and service in the cluster.
 func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, podTemplate corev1.PodTemplateSpec, testUser, testPassword, clusterID string,
-	terraformOptions *terraform.Options, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	terraformOptions *terraform.Options, cattleConfig map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File, nestedRancherModuleDir string) (string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
-	_, err := operations.ReplaceValue([]string{"terratest", "snapshotInput", "createSnapshot"}, true, configMap[0])
+	_, err := operations.ReplaceValue([]string{"terratest", "snapshotInput", "createSnapshot"}, true, cattleConfig)
 	require.NoError(t, err)
 
-	_, _, err = framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil, nestedRancherModuleDir)
+	_, _, err = framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, nil, nestedRancherModuleDir)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -123,17 +123,17 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 // restoreV2Prov restores the cluster to the previous state after a snapshot is taken.
 func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, snapshotName, testUser, testPassword string, clusterID string, terraformOptions *terraform.Options,
-	configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) {
-	_, err := operations.ReplaceValue([]string{"terratest", "snapshotInput", "createSnapshot"}, false, configMap[0])
+	cattleConfig map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) {
+	_, err := operations.ReplaceValue([]string{"terratest", "snapshotInput", "createSnapshot"}, false, cattleConfig)
 	require.NoError(t, err)
 
-	_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "restoreSnapshot"}, true, configMap[0])
+	_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "restoreSnapshot"}, true, cattleConfig)
 	require.NoError(t, err)
 
-	_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotName"}, snapshotName, configMap[0])
+	_, err = operations.ReplaceValue([]string{"terratest", "snapshotInput", "snapshotName"}, snapshotName, cattleConfig)
 	require.NoError(t, err)
 
-	_, _, err = framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", configMap, newFile, rootBody, file, false, false, false, nil, nestedRancherModuleDir)
+	_, _, err = framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, false, nil, nestedRancherModuleDir)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -141,7 +141,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraformConfig.ResourcePrefix)
 	require.NoError(t, err)
 
-	err = provisioning.VerifyClusterReady(client, cluster)
+	err = provisioningActions.VerifyClusterReady(client, cluster)
 	require.NoError(t, err)
 
 	clusterObject, _, err := clusters.GetProvisioningClusterByName(client, terraformConfig.ResourcePrefix, namespace)
