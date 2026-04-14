@@ -230,5 +230,12 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
+	usesRegistryPrefix, err := reg.CheckAllClusterPodsForRegistryPrefix(client, local, globalRegistry)
+	require.NoError(t, err)
+
+	if !usesRegistryPrefix {
+		t.Fatalf("ERROR: not all of the local cluster pods are using the global registry")
+	}
+
 	return client, authRegistry, nonAuthRegistry, globalRegistry, standaloneTerraformOptions, terraformOptions, cattleConfig
 }
