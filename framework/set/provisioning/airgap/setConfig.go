@@ -36,7 +36,7 @@ func SetAirgapRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 	instances := []string{}
 	if strings.Contains(terraformConfig.Module, clustertypes.RKE2) {
 		instances = []string{airgapNodeOne, airgapNodeTwo, airgapNodeThree}
-	} else if terraformConfig.Module == modules.AirgapK3S {
+	} else if terraformConfig.Module == modules.AirgapAWSK3S {
 		instances = []string{airgapNodeOne}
 	}
 

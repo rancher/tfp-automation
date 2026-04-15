@@ -6,7 +6,7 @@ rancher:
 
 # TERRAFORM CONFIG
 terraform:
-  module: ec2_rke2
+  module: aws_rke2_nodedriver
   cni: calico
   resourcePrefix: "tfp"
   privateKeyPath: ""

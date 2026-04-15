@@ -11,12 +11,12 @@
         -   [AKS](#configurations-terraform-aks)
         -   [EKS](#configurations-terraform-eks)
         -   [GKE](#configurations-terraform-gke)
-        -   [AZURE_RKE2 + AZURE_K3S](#configurations-terraform-rke2_k3s_azure)
-        -   [EC2_RKE2 + EC2_K3S](#configurations-terraform-rke2_k3s_ec2)
-        -   [HARVESTER_RKE2 + HARVESTER_K3S](#configurations-terraform-rke2_k3s_harvester)
-        -   [LINODE_RKE2 + LINODE_K3S](#configurations-terraform-rke2_k3s_linode)
-        -   [VSPHERE_RKE2 + VSPHERE_K3S](#configurations-terraform-rke2_k3s_vsphere)
-        -   [GOOGLE_RKE2 + GOOGLE_K3S](#configurations-terraform-rke2_k3s_google)
+        -   [AZURE_RKE2_NODEDRIVER + AZURE_K3S_NODEDRIVER](#configurations-terraform-rke2_k3s_azure)
+        -   [AWS_RKE2_NODEDRIVER + AWS_K3S_NODEDRIVER](#configurations-terraform-rke2_k3s_ec2)
+        -   [HARVESTER_RKE2_NODEDRIVER + HARVESTER_K3S_NODEDRIVER](#configurations-terraform-rke2_k3s_harvester)
+        -   [LINODE_RKE2_NODEDRIVER + LINODE_K3S_NODEDRIVER](#configurations-terraform-rke2_k3s_linode)
+        -   [VSPHERE_RKE2_NODEDRIVER + VSPHERE_K3S_NODEDRIVER](#configurations-terraform-rke2_k3s_vsphere)
+        -   [GOOGLE_RKE2_NODEDRIVER + GOOGLE_K3S_NODEDRIVER](#configurations-terraform-rke2_k3s_google)
     -   [Terratest](#configurations-terratest)
         -   [Nodepools](#configurations-terratest-nodepools)
             -   [AKS Nodepools](#configurations-terratest-nodepools-aks)
@@ -246,7 +246,7 @@ Note: At this time, private registries for RKE2/K3s MUST be used with provider v
 
 ```yaml
 terraform:
-  module: aks
+  module: azure_aks_hosted
   cloudCredentialName: tf-aks
   azureCredentials:
     clientId: ""
@@ -288,7 +288,7 @@ terraform:
 
 ```yaml
 terraform:
-  module: eks
+  module: aws_eks_hosted
   cloudCredentialName: tf-eks
   hostnamePrefix: tfp
   awsCredentials:
@@ -316,7 +316,7 @@ terraform:
 
 ```yaml
 terraform:
-  module: gke
+  module: google_gke_hosted
   cloudCredentialName: tf-creds-gke
   hostnamePrefix: tfp
   googleCredentials:
@@ -345,7 +345,7 @@ terraform:
 <a name="configurations-terraform-rke2_k3s_azure"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-###### AZURE_RKE2 + AZURE_K3S
+###### AZURE_RKE2_NODEDRIVER + AZURE_K3S_NODEDRIVER
 
 ```yaml
 terraform:
@@ -353,7 +353,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   downstreamClusterProvider: "azure"
   enableNetworkPolicy: false
-  module: "azure_rke2" # or azure_k3s
+  module: "azure_rke2_nodedriver" # or azure_k3s_nodedriver
   resourcePrefix: ""
   azureCredentials:
     clientId: ""
@@ -386,7 +386,7 @@ terraform:
 <a name="configurations-terraform-rke2_k3s_ec2"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-###### EC2_RKE2 + EC2_K3S
+###### AWS_RKE2_NODEDRIVER + AWS_K3S_NODEDRIVER
 
 ```yaml
 terraform:
@@ -394,7 +394,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   downstreamClusterProvider: "aws"
   enableNetworkPolicy: false
-  module: "ec2_rke2" # or ec2_k3s
+  module: "aws_rke2_nodedriver" # or aws_k3s_nodedriver
   resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
@@ -413,7 +413,7 @@ terraform:
 <a name="configurations-terraform-rke2_k3s_harvester"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-###### HARVESTER_RKE2 + HARVESTER_K3S
+###### HARVESTER_RKE2_NODEDRIVER + HARVESTER_K3S_NODEDRIVER
 
 ```yaml
 terraform:
@@ -421,7 +421,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   downstreamClusterProvider: "harvester"
   enableNetworkPolicy: false
-  module: "vsphere_rke2" # or vsphere_k3s
+  module: "vsphere_rke2_nodedriver" # or vsphere_k3s_nodedriver
   resourcePrefix: ""
   harvesterCredentials:
     clusterId: "c-m-clusterID"
@@ -442,7 +442,7 @@ terraform:
 <a name="configurations-terraform-rke2_k3s_linode"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-###### LINODE_RKE2 + LINODE_K3S
+###### LINODE_RKE2_NODEDRIVER + LINODE_K3S_NODEDRIVER
 
 ```yaml
 terraform:
@@ -450,7 +450,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   downstreamClusterProvider: "linode"
   enableNetworkPolicy: false
-  module: "linode_rke2" # or linode_k3s
+  module: "linode_rke2_nodedriver" # or linode_k3s_nodedriver
   resourcePrefix: ""
   linodeCredentials:
     linodeToken: ""
@@ -464,7 +464,7 @@ terraform:
 <a name="configurations-terraform-rke2_k3s_vsphere"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-###### VSPHERE_RKE2 + VSPHERE_K3S
+###### VSPHERE_RKE2_NODEDRIVER + VSPHERE_K3S_NODEDRIVER
 
 ```yaml
 terraform:
@@ -472,7 +472,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   downstreamClusterProvider: "vsphere"
   enableNetworkPolicy: false
-  module: "vsphere_rke2" # or vsphere_k3s
+  module: "vsphere_rke2_nodedriver" # or vsphere_k3s_nodedriver
   resourcePrefix: ""
   vsphereCredentials:
     password: ""
@@ -505,7 +505,7 @@ terraform:
 <a name="configurations-terraform-rke2_k3s_google"></a>
 #### :small_red_triangle: [Back to top](#top)
 
-###### GOOGLE_RKE2 + GOOGLE_K3S
+###### GOOGLE_RKE2_NODEDRIVER + GOOGLE_K3S_NODEDRIVER
 
 ```yaml
 terraform:
@@ -513,7 +513,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"
   downstreamClusterProvider: "google"
   enableNetworkPolicy: false
-  module: "google_rke2" # or google_k3s
+  module: "google_rke2_nodedriver" # or google_k3s_nodedriver
   resourcePrefix: ""
   googleCredentials:
     authEncodedJson: |-

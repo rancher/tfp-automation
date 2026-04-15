@@ -74,7 +74,7 @@ func (s *TfpSanityEKSProvisioningTestSuite) TestTfpProvisioningEKSSanity() {
 		nodePools         []config.Nodepool
 		kubernetesVersion string
 	}{
-		{"Sanity_EKS", modules.EKS, eksNodePools, s.terratestConfig.EKSKubernetesVersion},
+		{"Sanity_EKS", modules.HostedAWSEKS, eksNodePools, s.terratestConfig.EKSKubernetesVersion},
 	}
 
 	for _, tt := range tests {

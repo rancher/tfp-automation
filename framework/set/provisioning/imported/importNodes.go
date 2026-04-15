@@ -63,11 +63,11 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	var dependsOnServer string
 
 	switch terraformConfig.Module {
-	case modules.ImportEC2RKE2, modules.ImportEC2K3s, modules.ImportVsphereRKE2, modules.ImportVsphereK3s:
+	case modules.ImportedAWSRKE2, modules.ImportedAWSK3S, modules.ImportedVsphereRKE2, modules.ImportedVsphereK3S:
 		addServerTwoName := addServer + terraformConfig.ResourcePrefix + `_` + serverTwo
 		addServerThreeName := addServer + terraformConfig.ResourcePrefix + `_` + serverThree
 		dependsOnServer = `[` + general.NullResource + `.` + addServerTwoName + `, ` + general.NullResource + `.` + addServerThreeName + `]`
-	case modules.ImportEC2RKE2Windows2019, modules.ImportEC2RKE2Windows2022:
+	case modules.ImportedAWSRKE2Windows2019, modules.ImportedAWSRKE2Windows2022:
 		dependsOnServer = `[` + general.TimeSleep + `.` + general.TimeSleep + `-` + terraformConfig.ResourcePrefix + `-import_wins` + `]`
 	}
 

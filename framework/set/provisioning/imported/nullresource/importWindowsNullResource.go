@@ -41,9 +41,9 @@ func CreateImportedWindowsNullResource(rootBody *hclwrite.Body, terraformConfig 
 	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.WinRM))
 	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
-	if strings.Contains(terraformConfig.Module, modules.ImportEC2RKE2Windows2019) {
+	if strings.Contains(terraformConfig.Module, modules.ImportedAWSRKE2Windows2019) {
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
-	} else if strings.Contains(terraformConfig.Module, modules.ImportEC2RKE2Windows2022) {
+	} else if strings.Contains(terraformConfig.Module, modules.ImportedAWSRKE2Windows2022) {
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
 	}
 

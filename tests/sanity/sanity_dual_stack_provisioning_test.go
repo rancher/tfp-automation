@@ -78,8 +78,8 @@ func (s *TfpSanityDualStackProvisioningTestSuite) TestTfpProvisioningSanityDualS
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Sanity_DualStack_RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Sanity_DualStack_K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"Sanity_DualStack_RKE2", nodeRolesDedicated, modules.NodeDriverAWSRKE2},
+		{"Sanity_DualStack_K3S", nodeRolesDedicated, modules.NodeDriverAWSK3S},
 	}
 
 	for _, tt := range tests {

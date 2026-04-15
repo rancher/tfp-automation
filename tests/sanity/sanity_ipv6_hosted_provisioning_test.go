@@ -80,7 +80,7 @@ func (s *TfpSanityIPv6HostedProvisioningTestSuite) TestTfpProvisioningSanityIPv6
 		module            string
 		kubernetesVersion string
 	}{
-		{"Sanity_IPv6_EKS", eksNodePools, modules.EKS, s.terratestConfig.EKSKubernetesVersion},
+		{"Sanity_IPv6_EKS", eksNodePools, modules.HostedAWSEKS, s.terratestConfig.EKSKubernetesVersion},
 	}
 
 	for _, tt := range tests {

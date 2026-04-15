@@ -6,6 +6,7 @@ import (
 
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/modules"
 )
 
 // SetResourceNodepoolValidation is a function that will validate the nodepool configurations.
@@ -13,13 +14,13 @@ func SetResourceNodepoolValidation(terraformConfig *config.TerraformConfig, pool
 	module := terraformConfig.Module
 
 	switch {
-	case module == clustertypes.AKS || module == clustertypes.GKE:
+	case module == modules.HostedAzureAKS || module == modules.HostedGoogleGKE:
 		if pool.Quantity <= 0 {
 			return false, fmt.Errorf(`Invalid quantity specified for pool %v. Quantity must be greater than 0.`, poolNum)
 		}
 
 		return true, nil
-	case module == clustertypes.EKS:
+	case module == modules.HostedAWSEKS:
 		if pool.DesiredSize <= 0 {
 			return false, fmt.Errorf(`Invalid desired size specified for pool %v. Desired size must be greater than 0.`, poolNum)
 		}

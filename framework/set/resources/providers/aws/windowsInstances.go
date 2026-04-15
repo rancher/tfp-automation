@@ -98,7 +98,7 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	connectionBlockBody.SetAttributeValue(aws.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
 	configBlockBody.AppendNewline()
 
-	if terraformConfig.Module == modules.ImportEC2RKE2Windows2019 || terraformConfig.Module == modules.ImportEC2RKE2Windows2022 {
+	if terraformConfig.Module == modules.ImportedAWSRKE2Windows2019 || terraformConfig.Module == modules.ImportedAWSRKE2Windows2022 {
 		serverTwoName := terraformConfig.ResourcePrefix + `_server2`
 		serverThreeName := terraformConfig.ResourcePrefix + `_server3`
 		dependsOnServer := `[` + general.NullResource + `.` + serverTwoName + `, ` + general.NullResource + `.` + serverThreeName + `]`
@@ -119,9 +119,9 @@ func CreateAirgappedWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig
 
 	configBlockBody.SetAttributeValue(aws.AssociatePublicIPAddress, cty.BoolVal(false))
 
-	if strings.Contains(terraformConfig.Module, modules.AirgapRKE2Windows2019) {
+	if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2019) {
 		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2019AMI))
-	} else if strings.Contains(terraformConfig.Module, modules.AirgapRKE2Windows2022) {
+	} else if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2022) {
 		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2022AMI))
 	}
 
@@ -161,9 +161,9 @@ func CreateAirgappedWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig
 	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.WinRM))
 	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
-	if strings.Contains(terraformConfig.Module, modules.AirgapRKE2Windows2019) {
+	if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2019) {
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
-	} else if strings.Contains(terraformConfig.Module, modules.AirgapRKE2Windows2022) {
+	} else if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2022) {
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
 	}
 

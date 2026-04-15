@@ -84,10 +84,10 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 		name   string
 		module string
 	}{
-		{"Custom_TFP_RKE2", modules.CustomEC2RKE2},
-		{"Custom_TFP_RKE2_Windows_2019", modules.CustomEC2RKE2Windows2019},
-		{"Custom_TFP_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022},
-		{"Custom_TFP_K3S", modules.CustomEC2K3s},
+		{"Custom_TFP_RKE2", modules.CustomAWSRKE2},
+		{"Custom_TFP_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019},
+		{"Custom_TFP_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022},
+		{"Custom_TFP_K3S", modules.CustomAWSK3S},
 	}
 
 	for _, tt := range tests {

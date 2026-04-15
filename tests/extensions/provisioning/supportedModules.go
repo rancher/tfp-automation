@@ -21,25 +21,25 @@ func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, 
 	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
 	switch terraformConfig.DownstreamClusterProvider {
 	case aws.Aws:
-		rke2Module = modules.EC2RKE2
-		rke2Windows2019 = modules.CustomEC2RKE2Windows2019
-		rke2Windows2022 = modules.CustomEC2RKE2Windows2022
-		k3sModule = modules.EC2K3s
+		rke2Module = modules.NodeDriverAWSRKE2
+		rke2Windows2019 = modules.CustomAWSRKE2Windows2019
+		rke2Windows2022 = modules.CustomAWSRKE2Windows2022
+		k3sModule = modules.NodeDriverAWSK3S
 	case azure.Azure:
-		rke2Module = modules.AzureRKE2
-		k3sModule = modules.AzureK3s
+		rke2Module = modules.NodeDriverAzureRKE2
+		k3sModule = modules.NodeDriverAzureK3S
 	case google.Google:
-		rke2Module = modules.GoogleRKE2
-		k3sModule = modules.GoogleK3s
+		rke2Module = modules.NodeDriverGoogleRKE2
+		k3sModule = modules.NodeDriverGoogleK3S
 	case harvester.Harvester:
-		rke2Module = modules.HarvesterRKE2
-		k3sModule = modules.HarvesterK3s
+		rke2Module = modules.NodeDriverHarvesterRKE2
+		k3sModule = modules.NodeDriverHarvesterK3S
 	case linode.Linode:
-		rke2Module = modules.LinodeRKE2
-		k3sModule = modules.LinodeK3s
+		rke2Module = modules.NodeDriverLinodeRKE2
+		k3sModule = modules.NodeDriverLinodeK3S
 	case vsphere.Vsphere:
-		rke2Module = modules.VsphereRKE2
-		k3sModule = modules.VsphereK3s
+		rke2Module = modules.NodeDriverVsphereRKE2
+		k3sModule = modules.NodeDriverVsphereK3S
 	default:
 		panic("Unsupported provider: " + terraformConfig.DownstreamClusterProvider)
 	}
@@ -52,13 +52,13 @@ func ImportedClusterModules(terraformConfig *config.TerraformConfig) (string, st
 	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
 	switch terraformConfig.DownstreamClusterProvider {
 	case aws.Aws:
-		rke2Module = modules.ImportEC2RKE2
-		rke2Windows2019 = modules.ImportEC2RKE2Windows2019
-		rke2Windows2022 = modules.ImportEC2RKE2Windows2022
-		k3sModule = modules.ImportEC2K3s
+		rke2Module = modules.ImportedAWSRKE2
+		rke2Windows2019 = modules.ImportedAWSRKE2Windows2019
+		rke2Windows2022 = modules.ImportedAWSRKE2Windows2022
+		k3sModule = modules.ImportedAWSK3S
 	case vsphere.Vsphere:
-		rke2Module = modules.ImportVsphereRKE2
-		k3sModule = modules.ImportVsphereK3s
+		rke2Module = modules.ImportedVsphereRKE2
+		k3sModule = modules.ImportedVsphereK3S
 	default:
 		panic("Unsupported provider: " + terraformConfig.DownstreamClusterProvider)
 	}
@@ -75,11 +75,7 @@ func IsImportedModule(module string) bool {
 }
 
 func IsHostedModule(module string) bool {
-	if strings.Contains(module, "gke") || strings.Contains(module, "eks") || strings.Contains(module, "aks") {
-		return true
-	}
-
-	return false
+	return module == modules.HostedAzureAKS || module == modules.HostedAWSEKS || module == modules.HostedGoogleGKE
 }
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
@@ -97,37 +93,37 @@ func SupportedModules(terraformOptions *terraform.Options, configMap []map[strin
 
 func verifyModule(module string) bool {
 	supportedModules := []string{
-		modules.AKS,
-		modules.EKS,
-		modules.GKE,
-		modules.AzureRKE2,
-		modules.AzureK3s,
-		modules.EC2RKE2,
-		modules.EC2K3s,
-		modules.GoogleRKE2,
-		modules.GoogleK3s,
-		modules.HarvesterRKE2,
-		modules.HarvesterK3s,
-		modules.LinodeRKE2,
-		modules.LinodeK3s,
-		modules.VsphereRKE2,
-		modules.VsphereK3s,
-		modules.CustomEC2RKE2,
-		modules.CustomEC2RKE2Windows2019,
-		modules.CustomEC2RKE2Windows2022,
-		modules.CustomEC2K3s,
+		modules.HostedAzureAKS,
+		modules.HostedAWSEKS,
+		modules.HostedGoogleGKE,
+		modules.NodeDriverAzureRKE2,
+		modules.NodeDriverAzureK3S,
+		modules.NodeDriverAWSRKE2,
+		modules.NodeDriverAWSK3S,
+		modules.NodeDriverGoogleRKE2,
+		modules.NodeDriverGoogleK3S,
+		modules.NodeDriverHarvesterRKE2,
+		modules.NodeDriverHarvesterK3S,
+		modules.NodeDriverLinodeRKE2,
+		modules.NodeDriverLinodeK3S,
+		modules.NodeDriverVsphereRKE2,
+		modules.NodeDriverVsphereK3S,
+		modules.CustomAWSRKE2,
+		modules.CustomAWSRKE2Windows2019,
+		modules.CustomAWSRKE2Windows2022,
+		modules.CustomAWSK3S,
 		modules.CustomVsphereRKE2,
-		modules.CustomVsphereK3s,
-		modules.AirgapRKE2,
-		modules.AirgapRKE2Windows2019,
-		modules.AirgapRKE2Windows2022,
-		modules.AirgapK3S,
-		modules.ImportEC2RKE2,
-		modules.ImportEC2RKE2Windows2019,
-		modules.ImportEC2RKE2Windows2022,
-		modules.ImportEC2K3s,
-		modules.ImportVsphereRKE2,
-		modules.ImportVsphereK3s,
+		modules.CustomVsphereK3S,
+		modules.AirgapAWSRKE2,
+		modules.AirgapAWSRKE2Windows2019,
+		modules.AirgapAWSRKE2Windows2022,
+		modules.AirgapAWSK3S,
+		modules.ImportedAWSRKE2,
+		modules.ImportedAWSRKE2Windows2019,
+		modules.ImportedAWSRKE2Windows2022,
+		modules.ImportedAWSK3S,
+		modules.ImportedVsphereRKE2,
+		modules.ImportedVsphereK3S,
 	}
 
 	return slices.Contains(supportedModules, module)

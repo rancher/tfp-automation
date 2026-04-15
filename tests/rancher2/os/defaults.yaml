@@ -6,7 +6,7 @@ rancher:
 
 # TERRAFORM CONFIG - PERMUTATIONS SETUP
 terraform:
-  module: [ec2_rke2, ec2_k3s, ec2_rke2_custom, ec2_k3s_custom, ec2_rke2_import, ec2_k3s_import]
+  module: [aws_rke2_nodedriver, aws_k3s_nodedriver, aws_rke2_custom, aws_k3s_custom, aws_rke2_imported, aws_k3s_imported]
   cni: [calico]
   resourcePrefix: "oscheck"
   privateKeyPath: ""
