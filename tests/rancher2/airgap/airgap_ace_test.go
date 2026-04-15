@@ -102,8 +102,8 @@ func (a *AirgapACETestSuite) TestTfpAirgapACE() {
 		module       string
 		authEndpoint config.TerraformConfig
 	}{
-		{"RKE2_Airgap_ACE", modules.AirgapRKE2, localAuthEndpoint},
-		{"K3S_Airgap_ACE", modules.AirgapK3S, localAuthEndpoint},
+		{"RKE2_Airgap_ACE", modules.AirgapAWSRKE2, localAuthEndpoint},
+		{"K3S_Airgap_ACE", modules.AirgapAWSK3S, localAuthEndpoint},
 	}
 
 	for _, tt := range tests {

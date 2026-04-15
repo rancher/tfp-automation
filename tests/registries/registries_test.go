@@ -83,8 +83,8 @@ func (r *TfpRegistriesTestSuite) TestTfpAuthenticatedRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Auth_K3S", modules.EC2K3s, nodeRolesAll},
+		{"Auth_RKE2", modules.NodeDriverAWSRKE2, nodeRolesDedicated},
+		{"Auth_K3S", modules.NodeDriverAWSK3S, nodeRolesAll},
 	}
 
 	for _, tt := range tests {
@@ -172,8 +172,8 @@ func (r *TfpRegistriesTestSuite) TestTfpECRRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"ECR_RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"ECR_K3S", modules.EC2K3s, nodeRolesAll},
+		{"ECR_RKE2", modules.NodeDriverAWSRKE2, nodeRolesDedicated},
+		{"ECR_K3S", modules.NodeDriverAWSK3S, nodeRolesAll},
 	}
 
 	for _, tt := range tests {
@@ -271,10 +271,10 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Global_RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Global_RKE2_Windows_2019", modules.CustomEC2RKE2Windows2019, nil},
-		{"Global_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022, nil},
-		{"Global_K3S", modules.EC2K3s, nodeRolesAll},
+		{"Global_RKE2", modules.NodeDriverAWSRKE2, nodeRolesDedicated},
+		{"Global_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019, nil},
+		{"Global_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022, nil},
+		{"Global_K3S", modules.NodeDriverAWSK3S, nodeRolesAll},
 	}
 
 	for _, tt := range tests {
@@ -383,10 +383,10 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Non_Auth_RKE2", modules.EC2RKE2, nodeRolesDedicated},
-		{"Non_Auth_RKE2_Windows_2019", modules.CustomEC2RKE2Windows2019, nil},
-		{"Non_Auth_RKE2_Windows_2022", modules.CustomEC2RKE2Windows2022, nil},
-		{"Non_Auth_K3S", modules.EC2K3s, nodeRolesAll},
+		{"Non_Auth_RKE2", modules.NodeDriverAWSRKE2, nodeRolesDedicated},
+		{"Non_Auth_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019, nil},
+		{"Non_Auth_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022, nil},
+		{"Non_Auth_K3S", modules.NodeDriverAWSK3S, nodeRolesAll},
 	}
 
 	for _, tt := range tests {

@@ -106,8 +106,8 @@ func (k *KDMTestSuite) TestKDM() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"KDM_Sanity_RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"KDM_Sanity_K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"KDM_Sanity_RKE2", nodeRolesDedicated, modules.NodeDriverAWSRKE2},
+		{"KDM_Sanity_K3S", nodeRolesDedicated, modules.NodeDriverAWSK3S},
 	}
 
 	for _, tt := range tests {

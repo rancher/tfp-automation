@@ -88,17 +88,17 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 	}
 
 	switch terraformConfig.Module {
-	case modules.EC2RKE2, modules.EC2K3s:
+	case modules.NodeDriverAWSRKE2, modules.NodeDriverAWSK3S:
 		aws.SetAWSRKE2K3SProvider(rootBody, terraformConfig)
-	case modules.AzureRKE2, modules.AzureK3s:
+	case modules.NodeDriverAzureRKE2, modules.NodeDriverAzureK3S:
 		azure.SetAzureRKE2K3SProvider(rootBody, terraformConfig)
-	case modules.GoogleK3s, modules.GoogleRKE2:
+	case modules.NodeDriverGoogleK3S, modules.NodeDriverGoogleRKE2:
 		google.SetGoogleProvider(rootBody, terraformConfig)
-	case modules.HarvesterRKE2, modules.HarvesterK3s:
+	case modules.NodeDriverHarvesterRKE2, modules.NodeDriverHarvesterK3S:
 		harvester.SetHarvesterCredentialProvider(rootBody, terraformConfig)
-	case modules.LinodeRKE2, modules.LinodeK3s:
+	case modules.NodeDriverLinodeRKE2, modules.NodeDriverLinodeK3S:
 		linode.SetLinodeRKE2K3SProvider(rootBody, terraformConfig)
-	case modules.VsphereRKE2, modules.VsphereK3s:
+	case modules.NodeDriverVsphereRKE2, modules.NodeDriverVsphereK3S:
 		vsphere.SetVsphereRKE2K3SProvider(rootBody, terraformConfig)
 	}
 
@@ -119,17 +119,17 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 	}
 
 	switch terraformConfig.Module {
-	case modules.EC2RKE2, modules.EC2K3s:
+	case modules.NodeDriverAWSRKE2, modules.NodeDriverAWSK3S:
 		aws.SetAWSRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig, terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType)
-	case modules.AzureRKE2, modules.AzureK3s:
+	case modules.NodeDriverAzureRKE2, modules.NodeDriverAzureK3S:
 		azure.SetAzureRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case modules.GoogleK3s, modules.GoogleRKE2:
+	case modules.NodeDriverGoogleK3S, modules.NodeDriverGoogleRKE2:
 		google.SetGoogleRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case modules.HarvesterRKE2, modules.HarvesterK3s:
+	case modules.NodeDriverHarvesterRKE2, modules.NodeDriverHarvesterK3S:
 		harvester.SetHarvesterRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case modules.LinodeRKE2, modules.LinodeK3s:
+	case modules.NodeDriverLinodeRKE2, modules.NodeDriverLinodeK3S:
 		linode.SetLinodeRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
-	case modules.VsphereRKE2, modules.VsphereK3s:
+	case modules.NodeDriverVsphereRKE2, modules.NodeDriverVsphereK3S:
 		vsphere.SetVsphereRKE2K3SMachineConfig(machineConfigBlockBody, terraformConfig)
 	}
 
@@ -185,7 +185,7 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 		}
 	}
 
-	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.EC2) {
+	if terraformConfig.PrivateRegistries != nil && strings.Contains(terraformConfig.Module, modules.AWS) {
 		if terraformConfig.PrivateRegistries.Username != "" {
 			rootBody.AppendNewline()
 			CreateRegistrySecret(terraformConfig, rootBody)

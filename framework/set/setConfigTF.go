@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/locals"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -47,7 +48,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 			customClusterNames = append(customClusterNames, terraformConfig.ResourcePrefix)
 		}
 
-		if strings.Contains(terraformConfig.Module, clustertypes.AKS) || strings.Contains(terraformConfig.Module, clustertypes.EKS) || strings.Contains(terraformConfig.Module, clustertypes.GKE) {
+		if terraformConfig.Module == modules.HostedAzureAKS || terraformConfig.Module == modules.HostedAWSEKS || terraformConfig.Module == modules.HostedGoogleGKE {
 			newFile, file, err = HostedClusters(terraformConfig, terratestConfig, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, nil, err
@@ -55,7 +56,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 		}
 
 		if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) && !strings.Contains(terraformConfig.Module, general.Airgap) &&
-			!strings.Contains(terraformConfig.Module, clustertypes.AKS) && !strings.Contains(terraformConfig.Module, clustertypes.EKS) && !strings.Contains(terraformConfig.Module, clustertypes.GKE) {
+			terraformConfig.Module != modules.HostedAzureAKS && terraformConfig.Module != modules.HostedAWSEKS && terraformConfig.Module != modules.HostedGoogleGKE {
 			newFile, file, err = NodeDriverClusters(client, terraformConfig, terratestConfig, rbacRole, newFile, rootBody, file)
 			if err != nil {
 				return clusterNames, nil, err

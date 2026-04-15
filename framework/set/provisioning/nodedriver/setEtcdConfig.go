@@ -22,7 +22,7 @@ func setEtcdConfig(rkeConfigBlockBody *hclwrite.Body, terraformConfig *config.Te
 	snapshotBlockBody.SetAttributeValue(snapshotScheduleCron, cty.StringVal(terraformConfig.ETCD.SnapshotScheduleCron))
 	snapshotBlockBody.SetAttributeValue(snapshotRetention, cty.NumberIntVal(int64(terraformConfig.ETCD.SnapshotRetention)))
 
-	if strings.Contains(terraformConfig.Module, modules.EC2) && terraformConfig.ETCD.S3 != nil {
+	if strings.Contains(terraformConfig.Module, modules.AWS) && terraformConfig.ETCD.S3 != nil {
 		s3ConfigBlock := snapshotBlockBody.AppendNewBlock(s3Config, nil)
 		s3ConfigBlockBody := s3ConfigBlock.Body()
 

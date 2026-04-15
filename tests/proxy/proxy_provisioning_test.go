@@ -71,10 +71,10 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"No_Proxy_RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"No_Proxy_RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"No_Proxy_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"No_Proxy_K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"No_Proxy_RKE2", nodeRolesDedicated, modules.NodeDriverAWSRKE2},
+		{"No_Proxy_RKE2_Windows_2019", nil, modules.CustomAWSRKE2Windows2019},
+		{"No_Proxy_RKE2_Windows_2022", nil, modules.CustomAWSRKE2Windows2022},
+		{"No_Proxy_K3S", nodeRolesDedicated, modules.NodeDriverAWSK3S},
 	}
 
 	customClusterNames := []string{}
@@ -177,10 +177,10 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 		nodeRoles []config.Nodepool
 		module    string
 	}{
-		{"Proxy_Provisioning_RKE2", nodeRolesDedicated, modules.EC2RKE2},
-		{"Proxy_Provisioning_RKE2_Windows_2019", nil, modules.CustomEC2RKE2Windows2019},
-		{"Proxy_Provisioning_RKE2_Windows_2022", nil, modules.CustomEC2RKE2Windows2022},
-		{"Proxy_Provisioning_K3S", nodeRolesDedicated, modules.EC2K3s},
+		{"Proxy_Provisioning_RKE2", nodeRolesDedicated, modules.NodeDriverAWSRKE2},
+		{"Proxy_Provisioning_RKE2_Windows_2019", nil, modules.CustomAWSRKE2Windows2019},
+		{"Proxy_Provisioning_RKE2_Windows_2022", nil, modules.CustomAWSRKE2Windows2022},
+		{"Proxy_Provisioning_K3S", nodeRolesDedicated, modules.NodeDriverAWSK3S},
 	}
 
 	for _, tt := range tests {

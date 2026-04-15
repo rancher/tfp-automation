@@ -104,7 +104,7 @@ func getCNIParam(terraform *config.TerraformConfig) upstream.TestCaseParameterCr
 }
 
 func getAMIParam(terraform *config.TerraformConfig) upstream.TestCaseParameterCreate {
-	if strings.Contains(terraform.Module, modules.EC2) {
+	if strings.Contains(terraform.Module, modules.AWS) {
 		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: "AMI", Values: []string{terraform.AWSConfig.AMI}}}
 	}
 

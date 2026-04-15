@@ -1,47 +1,47 @@
 package modules
 
 const (
-	AKS = "aks"
-	EKS = "eks"
-	GKE = "gke"
+	HostedAzureAKS  = "azure_aks_hosted"
+	HostedAWSEKS    = "aws_eks_hosted"
+	HostedGoogleGKE = "google_gke_hosted"
 
-	AzureRKE2 = "azure_rke2"
-	AzureK3s  = "azure_k3s"
+	NodeDriverAzureRKE2 = "azure_rke2_nodedriver"
+	NodeDriverAzureK3S  = "azure_k3s_nodedriver"
 
-	CustomEC2RKE2            = "ec2_rke2_custom"
-	CustomEC2RKE2Windows2019 = "ec2_rke2_windows_2019_custom"
-	CustomEC2RKE2Windows2022 = "ec2_rke2_windows_2022_custom"
-	CustomEC2K3s             = "ec2_k3s_custom"
+	CustomAWSRKE2            = "aws_rke2_custom"
+	CustomAWSRKE2Windows2019 = "aws_rke2_windows_2019_custom"
+	CustomAWSRKE2Windows2022 = "aws_rke2_windows_2022_custom"
+	CustomAWSK3S             = "aws_k3s_custom"
 
 	CustomVsphereRKE2 = "vsphere_rke2_custom"
-	CustomVsphereK3s  = "vsphere_k3s_custom"
+	CustomVsphereK3S  = "vsphere_k3s_custom"
 
-	EC2     = "ec2"
-	EC2RKE2 = "ec2_rke2"
-	EC2K3s  = "ec2_k3s"
+	AWS               = "aws"
+	NodeDriverAWSRKE2 = "aws_rke2_nodedriver"
+	NodeDriverAWSK3S  = "aws_k3s_nodedriver"
 
-	GoogleRKE2 = "google_rke2"
-	GoogleK3s  = "google_k3s"
+	NodeDriverGoogleRKE2 = "google_rke2_nodedriver"
+	NodeDriverGoogleK3S  = "google_k3s_nodedriver"
 
-	HarvesterRKE2 = "harvester_rke2"
-	HarvesterK3s  = "harvester_k3s"
+	NodeDriverHarvesterRKE2 = "harvester_rke2_nodedriver"
+	NodeDriverHarvesterK3S  = "harvester_k3s_nodedriver"
 
-	ImportEC2RKE2            = "ec2_rke2_import"
-	ImportEC2RKE2Windows2019 = "ec2_rke2_windows_2019_import"
-	ImportEC2RKE2Windows2022 = "ec2_rke2_windows_2022_import"
-	ImportEC2K3s             = "ec2_k3s_import"
+	ImportedAWSRKE2            = "aws_rke2_imported"
+	ImportedAWSRKE2Windows2019 = "aws_rke2_windows_2019_imported"
+	ImportedAWSRKE2Windows2022 = "aws_rke2_windows_2022_imported"
+	ImportedAWSK3S             = "aws_k3s_imported"
 
-	ImportVsphereRKE2 = "vsphere_rke2_import"
-	ImportVsphereK3s  = "vsphere_k3s_import"
+	ImportedVsphereRKE2 = "vsphere_rke2_imported"
+	ImportedVsphereK3S  = "vsphere_k3s_imported"
 
-	LinodeRKE2 = "linode_rke2"
-	LinodeK3s  = "linode_k3s"
+	NodeDriverLinodeRKE2 = "linode_rke2_nodedriver"
+	NodeDriverLinodeK3S  = "linode_k3s_nodedriver"
 
-	VsphereRKE2 = "vsphere_rke2"
-	VsphereK3s  = "vsphere_k3s"
+	NodeDriverVsphereRKE2 = "vsphere_rke2_nodedriver"
+	NodeDriverVsphereK3S  = "vsphere_k3s_nodedriver"
 
-	AirgapRKE2            = "airgap_rke2"
-	AirgapRKE2Windows2019 = "airgap_rke2_windows_2019"
-	AirgapRKE2Windows2022 = "airgap_rke2_windows_2022"
-	AirgapK3S             = "airgap_k3s"
+	AirgapAWSRKE2            = "aws_rke2_airgap"
+	AirgapAWSRKE2Windows2019 = "aws_rke2_windows_2019_airgap"
+	AirgapAWSRKE2Windows2022 = "aws_rke2_windows_2022_airgap"
+	AirgapAWSK3S             = "aws_k3s_airgap"
 )

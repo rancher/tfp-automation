@@ -37,7 +37,7 @@ func getRKE2K3sRegistrationCommands(terraformConfig *config.TerraformConfig) (ma
 		nodePrivateIPs[airgapNodeTwo] = airgapNodeTwoPrivateIP
 		nodePrivateIPs[airgapNodeThree] = airgapNodeThreePrivateIP
 		nodePrivateIPs[airgapWindowsNode] = airgapWindowsNodePrivateIP
-	} else if terraformConfig.Module == modules.AirgapK3S {
+	} else if terraformConfig.Module == modules.AirgapAWSK3S {
 		commands[airgapNodeOne] = allRolesRegistrationCommand
 		nodePrivateIPs[airgapNodeOne] = airgapNodeOnePrivateIP
 	}

@@ -74,7 +74,7 @@ func (s *TfpSanityAKSProvisioningTestSuite) TestTfpProvisioningAKSSanity() {
 		nodePools         []config.Nodepool
 		kubernetesVersion string
 	}{
-		{"Sanity_AKS", modules.AKS, aksNodePools, s.terratestConfig.AKSKubernetesVersion},
+		{"Sanity_AKS", modules.HostedAzureAKS, aksNodePools, s.terratestConfig.AKSKubernetesVersion},
 	}
 
 	for _, tt := range tests {

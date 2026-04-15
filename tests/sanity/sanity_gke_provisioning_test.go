@@ -74,7 +74,7 @@ func (s *TfpSanityGKEProvisioningTestSuite) TestTfpProvisioningGKESanity() {
 		nodePools         []config.Nodepool
 		kubernetesVersion string
 	}{
-		{"Sanity_GKE", modules.GKE, gkeNodePools, s.terratestConfig.GKEKubernetesVersion},
+		{"Sanity_GKE", modules.HostedGoogleGKE, gkeNodePools, s.terratestConfig.GKEKubernetesVersion},
 	}
 
 	for _, tt := range tests {

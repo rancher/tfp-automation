@@ -2,11 +2,10 @@ package set
 
 import (
 	"os"
-	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/clustertypes"
+	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/hosted"
 )
 
@@ -15,21 +14,21 @@ func HostedClusters(terraformConfig *config.TerraformConfig, terratestConfig *co
 	rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	var err error
 
-	if strings.Contains(terraformConfig.Module, clustertypes.AKS) {
+	if terraformConfig.Module == modules.HostedAzureAKS {
 		newFile, file, err = hosted.SetAKS(terraformConfig, terratestConfig, newFile, rootBody, file)
 		if err != nil {
 			return newFile, file, err
 		}
 	}
 
-	if strings.Contains(terraformConfig.Module, clustertypes.EKS) {
+	if terraformConfig.Module == modules.HostedAWSEKS {
 		newFile, file, err = hosted.SetEKS(terraformConfig, terratestConfig, newFile, rootBody, file)
 		if err != nil {
 			return newFile, file, err
 		}
 	}
 
-	if strings.Contains(terraformConfig.Module, clustertypes.GKE) {
+	if terraformConfig.Module == modules.HostedGoogleGKE {
 		newFile, file, err = hosted.SetGKE(terraformConfig, terratestConfig, newFile, rootBody, file)
 		if err != nil {
 			return newFile, file, err
