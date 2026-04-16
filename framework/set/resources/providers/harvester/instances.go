@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/harvester"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/zclconf/go-cty/cty"
 	"golang.org/x/crypto/ssh"
 )
@@ -74,7 +75,7 @@ func CreateHarvesterInstances(rootBody *hclwrite.Body, terraformConfig *config.T
 	configBlockBody := configBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, general.Custom) {
-		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+		totalNodeCount := customnodepools.TotalNodeCount(terratestConfig)
 		configBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(totalNodeCount))
 	}
 

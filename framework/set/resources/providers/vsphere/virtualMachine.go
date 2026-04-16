@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -20,7 +21,7 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 	vmBlockBody := vmBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, general.Custom) {
-		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+		totalNodeCount := customnodepools.TotalNodeCount(terratestConfig)
 		vmBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(totalNodeCount))
 
 		vmNameExpression := fmt.Sprintf(` "%s-${%s.%s}"`, hostnamePrefix, general.Count, general.Index)

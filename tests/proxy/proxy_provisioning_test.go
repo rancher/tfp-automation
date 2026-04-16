@@ -65,6 +65,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 	var clusterIDs []string
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
 
 	tests := []struct {
 		name      string
@@ -72,8 +73,8 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpNoProxyProvisioning() {
 		module    string
 	}{
 		{"No_Proxy_RKE2", nodeRolesDedicated, modules.NodeDriverAWSRKE2},
-		{"No_Proxy_RKE2_Windows_2019", nil, modules.CustomAWSRKE2Windows2019},
-		{"No_Proxy_RKE2_Windows_2022", nil, modules.CustomAWSRKE2Windows2022},
+		{"No_Proxy_RKE2_Windows_2019", nodeRolesWindows, modules.CustomAWSRKE2Windows2019},
+		{"No_Proxy_RKE2_Windows_2022", nodeRolesWindows, modules.CustomAWSRKE2Windows2022},
 		{"No_Proxy_K3S", nodeRolesDedicated, modules.NodeDriverAWSK3S},
 	}
 
@@ -171,6 +172,7 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
 
 	tests := []struct {
 		name      string
@@ -178,8 +180,8 @@ func (p *TfpProxyProvisioningTestSuite) TestTfpProxyProvisioning() {
 		module    string
 	}{
 		{"Proxy_Provisioning_RKE2", nodeRolesDedicated, modules.NodeDriverAWSRKE2},
-		{"Proxy_Provisioning_RKE2_Windows_2019", nil, modules.CustomAWSRKE2Windows2019},
-		{"Proxy_Provisioning_RKE2_Windows_2022", nil, modules.CustomAWSRKE2Windows2022},
+		{"Proxy_Provisioning_RKE2_Windows_2019", nodeRolesWindows, modules.CustomAWSRKE2Windows2019},
+		{"Proxy_Provisioning_RKE2_Windows_2022", nodeRolesWindows, modules.CustomAWSRKE2Windows2022},
 		{"Proxy_Provisioning_K3S", nodeRolesDedicated, modules.NodeDriverAWSK3S},
 	}
 

@@ -100,9 +100,14 @@ terraform:
     rke2Version: ""
 
 terratest:
-  etcdCount: 3
-  controlPlaneCount: 2
-  workerCount: 3
-  windowsNodeCount: 1
+  nodepools:
+    - quantity: 3
+      etcd: true
+    - quantity: 2
+      controlplane: true
+    - quantity: 3
+      worker: true
+    - quantity: 1
+      windows: true
   pathToRepo: ""
   snapshotInput: {}

@@ -231,10 +231,15 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_15 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            etcdCount: ${{ vars.ETCD_COUNT }}
-            controlPlaneCount: ${{ vars.CP_COUNT }}
-            workerCount: ${{ vars.WORKER_COUNT }}
-            windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
+            nodepools:
+              - quantity: ${{ vars.ETCD_COUNT }}
+                etcd: true
+              - quantity: ${{ vars.CP_COUNT }}
+                controlplane: true
+              - quantity: ${{ vars.WORKER_COUNT }}
+                worker: true
+              - quantity: ${{ vars.WINDOWS_NODE_COUNT }}
+                windows: true
             snapshotInput: {}
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_15 }}"
             eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_15 }}"
@@ -535,10 +540,15 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            etcdCount: ${{ vars.ETCD_COUNT }}
-            controlPlaneCount: ${{ vars.CP_COUNT }}
-            workerCount: ${{ vars.WORKER_COUNT }}
-            windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
+            nodepools:
+              - quantity: ${{ vars.ETCD_COUNT }}
+                etcd: true
+              - quantity: ${{ vars.CP_COUNT }}
+                controlplane: true
+              - quantity: ${{ vars.WORKER_COUNT }}
+                worker: true
+              - quantity: ${{ vars.WINDOWS_NODE_COUNT }}
+                windows: true
             snapshotInput: {}
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_14 }}"
             eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_14 }}"
@@ -832,10 +842,15 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            etcdCount: ${{ vars.ETCD_COUNT }}
-            controlPlaneCount: ${{ vars.CP_COUNT }}
-            workerCount: ${{ vars.WORKER_COUNT }}
-            windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
+            nodepools:
+              - quantity: ${{ vars.ETCD_COUNT }}
+                etcd: true
+              - quantity: ${{ vars.CP_COUNT }}
+                controlplane: true
+              - quantity: ${{ vars.WORKER_COUNT }}
+                worker: true
+              - quantity: ${{ vars.WINDOWS_NODE_COUNT }}
+                windows: true
             snapshotInput: {}
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_13 }}"
             eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_13 }}"

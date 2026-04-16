@@ -228,10 +228,15 @@ jobs:
               registryName: "${{ secrets.REGISTRY_NAME }}"
               upgradedAssetsPath: "${{ secrets.UPGRADED_ASSETS_PATH }}"
           terratest:
-            etcdCount: 1
-            controlPlaneCount: 1
-            workerCount: 1
-            windowsNodeCount: 1
+            nodepools:
+              - quantity: 1
+                etcd: true
+              - quantity: 1
+                controlplane: true
+              - quantity: 1
+                worker: true
+              - quantity: 1
+                windows: true
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
 
@@ -514,10 +519,15 @@ jobs:
               registryName: "${{ secrets.REGISTRY_NAME }}"
               upgradedAssetsPath: "${{ secrets.UPGRADED_ASSETS_PATH }}"
           terratest:
-            etcdCount: 1
-            controlPlaneCount: 1
-            workerCount: 1
-            windowsNodeCount: 1
+            nodepools:
+              - quantity: 1
+                etcd: true
+              - quantity: 1
+                controlplane: true
+              - quantity: 1
+                worker: true
+              - quantity: 1
+                windows: true
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
 
@@ -814,10 +824,15 @@ jobs:
               registryName: "${{ secrets.REGISTRY_NAME }}"
               upgradedAssetsPath: "${{ secrets.UPGRADED_ASSETS_PATH }}"
           terratest:
-            etcdCount: 1
-            controlPlaneCount: 1
-            workerCount: 1
-            windowsNodeCount: 1
+            nodepools:
+              - quantity: 1
+                etcd: true
+              - quantity: 1
+                controlplane: true
+              - quantity: 1
+                worker: true
+              - quantity: 1
+                windows: true
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
           EOF
 

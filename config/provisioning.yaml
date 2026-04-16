@@ -59,6 +59,6 @@ terratest:
       etcd: false
       controlplane: false
       worker: true
-  nodeCount: 3
+    - quantity: 1
+      windows: true
   kubernetesVersion: ""
-  windowsNodeCount: 1

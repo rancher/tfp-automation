@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -34,7 +35,7 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	configBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.AwsInstance, hostnamePrefix + "-windows"})
 	configBlockBody := configBlock.Body()
 
-	configBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(terratestConfig.WindowsNodeCount))
+	configBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(customnodepools.WindowsNodeCount(terratestConfig)))
 
 	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && strings.Contains(terraformConfig.Module, "2019") {
 		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2019AMI))

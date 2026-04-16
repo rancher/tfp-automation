@@ -97,10 +97,21 @@ terraform:
     standaloneNetwork: ""
     vsphereUser: ""
 terratest:
-  etcdCount: 3
-  controlPlaneCount: 2
-  workerCount: 3
-  windowsNodeCount: 1
+  nodepools:
+    - quantity: 3
+      etcd: true
+      controlplane: false
+      worker: false
+    - quantity: 2
+      etcd: false
+      controlplane: true
+      worker: false
+    - quantity: 3
+      etcd: false
+      controlplane: false
+      worker: true
+    - quantity: 1
+      windows: true
 ```
 
 For running the imported clusters, reference the example config block below:
@@ -186,10 +197,21 @@ terraform:
     rke2Version: ""                     # Ensure rke2r1 suffix is appended (i.e. v1.xx.x+rke2r1)
 
 terratest:
-  etcdCount: 3
-  controlPlaneCount: 2
-  workerCount: 3
-  windowsNodeCount: 1
+  nodepools:
+    - quantity: 3
+      etcd: true
+      controlplane: false
+      worker: false
+    - quantity: 2
+      etcd: false
+      controlplane: true
+      worker: false
+    - quantity: 3
+      etcd: false
+      controlplane: false
+      worker: true
+    - quantity: 1
+      windows: true
   pathToRepo: "go/src/github.com/rancher/tfp-automation"
 ```
 
