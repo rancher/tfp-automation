@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	googleDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/google"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -19,7 +20,7 @@ func CreateGoogleCloudInstances(rootBody *hclwrite.Body, terraformConfig *config
 	configBlockBody := configBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, general.Custom) {
-		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+		totalNodeCount := customnodepools.TotalNodeCount(terratestConfig)
 		configBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(totalNodeCount))
 	}
 

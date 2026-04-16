@@ -265,6 +265,7 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 	require.NoError(r.T(), err)
 
 	standardToken := standardUserToken.Token
+	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
 
 	tests := []struct {
 		name      string
@@ -272,8 +273,8 @@ func (r *TfpRegistriesTestSuite) TestTfpGlobalRegistry() {
 		nodeRoles []config.Nodepool
 	}{
 		{"Global_RKE2", modules.NodeDriverAWSRKE2, nodeRolesDedicated},
-		{"Global_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019, nil},
-		{"Global_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022, nil},
+		{"Global_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019, nodeRolesWindows},
+		{"Global_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022, nodeRolesWindows},
 		{"Global_K3S", modules.NodeDriverAWSK3S, nodeRolesAll},
 	}
 
@@ -376,6 +377,7 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 
 	nodeRolesAll := []config.Nodepool{config.AllRolesNodePool}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
 	customClusterNames := []string{}
 
 	tests := []struct {
@@ -384,8 +386,8 @@ func (r *TfpRegistriesTestSuite) TestTfpNonAuthenticatedRegistry() {
 		nodeRoles []config.Nodepool
 	}{
 		{"Non_Auth_RKE2", modules.NodeDriverAWSRKE2, nodeRolesDedicated},
-		{"Non_Auth_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019, nil},
-		{"Non_Auth_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022, nil},
+		{"Non_Auth_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019, nodeRolesWindows},
+		{"Non_Auth_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022, nodeRolesWindows},
 		{"Non_Auth_K3S", modules.NodeDriverAWSK3S, nodeRolesAll},
 	}
 

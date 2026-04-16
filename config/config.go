@@ -63,6 +63,14 @@ var WorkerNodePool = Nodepool{
 	Quantity:     3,
 }
 
+var WindowsNodePool = Nodepool{
+	Etcd:         false,
+	Controlplane: false,
+	Worker:       false,
+	Windows:      true,
+	Quantity:     1,
+}
+
 var AllRolesNodePool = Nodepool{
 	Etcd:         true,
 	Controlplane: true,
@@ -91,6 +99,7 @@ type Nodepool struct {
 	Quantity          int64  `json:"quantity,omitempty" yaml:"quantity,omitempty"`
 	Etcd              bool   `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 	Controlplane      bool   `json:"controlplane,omitempty" yaml:"controlplane,omitempty"`
+	Windows           bool   `json:"windows,omitempty" yaml:"windows,omitempty"`
 	DiskSize          int64  `json:"diskSize,omitempty" yaml:"diskSize,omitempty"`
 	Worker            bool   `json:"worker,omitempty" yaml:"worker,omitempty"`
 	InstanceType      string `json:"instanceType,omitempty" yaml:"instanceType,omitempty"`
@@ -222,16 +231,12 @@ type TerratestConfig struct {
 	GKEKubernetesVersion string     `json:"gkeKubernetesVersion,omitempty" yaml:"gkeKubernetesVersion,omitempty"`
 	KubernetesVersion    string     `json:"kubernetesVersion,omitempty" yaml:"kubernetesVersion,omitempty"`
 	LocalQaseReporting   bool       `json:"localQaseReporting,omitempty" yaml:"localQaseReporting,omitempty" default:"false"`
-	EtcdCount            int64      `json:"etcdCount,omitempty" yaml:"etcdCount,omitempty"`
-	ControlPlaneCount    int64      `json:"controlPlaneCount,omitempty" yaml:"controlPlaneCount,omitempty"`
-	WorkerCount          int64      `json:"workerCount,omitempty" yaml:"workerCount,omitempty"`
 	Nodepools            []Nodepool `json:"nodepools,omitempty" yaml:"nodepools,omitempty"`
 	PathToRepo           string     `json:"pathToRepo,omitempty" yaml:"pathToRepo,omitempty"`
 	PSACT                string     `json:"psact,omitempty" yaml:"psact,omitempty"`
 	SnapshotInput        Snapshots  `json:"snapshotInput,omitempty" yaml:"snapshotInput,omitempty"`
 	StandaloneLogging    bool       `json:"standaloneLogging,omitempty" yaml:"standaloneLogging,omitempty"`
 	TFLogging            bool       `json:"tfLogging,omitempty" yaml:"tfLogging,omitempty"`
-	WindowsNodeCount     int64      `json:"windowsNodeCount,omitempty" yaml:"windowsNodeCount,omitempty"`
 }
 
 // LoadTFPConfigs loads the TFP configurations from the provided map

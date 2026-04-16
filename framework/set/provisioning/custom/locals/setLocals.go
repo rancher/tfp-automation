@@ -13,6 +13,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -29,42 +30,32 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 
 	if strings.Contains(terraformConfig.Module, general.Custom) {
 		if terraformConfig.DownstreamClusterProvider == aws.Aws {
-			expression := fmt.Sprintf(`concat(`+aws.AwsInstance+`.%s-etcd.*.public_ip, `+
-				aws.AwsInstance+`.%s-control-plane.*.public_ip, `+
-				aws.AwsInstance+`.%s-worker.*.public_ip)`, terraformConfig.ResourcePrefix, terraformConfig.ResourcePrefix, terraformConfig.ResourcePrefix)
+			expression, err := customnodepools.BuildAWSPublicIPExpression(terraformConfig, terratestConfig)
+			if err != nil {
+				return nil, err
+			}
+
 			value := hclwrite.Tokens{
 				{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
 			}
 
 			localsBlockBody.SetAttributeRaw(allPublicIPs, value)
 		}
-
-		expression := fmt.Sprintf(`concat([for i in range(%d) : "--etcd"], [for i in range(%d) : "--controlplane"], [for i in range(%d) : "--worker"])`,
-			terratestConfig.EtcdCount, terratestConfig.ControlPlaneCount, terratestConfig.WorkerCount)
-		value := hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(expression)},
-		}
-
-		localsBlockBody.SetAttributeRaw(clusters.RoleFlags, value)
-	} else {
-		var roleFlags []cty.Value
-
-		for range terratestConfig.EtcdCount {
-			roleFlags = append(roleFlags, cty.StringVal(clusters.EtcdRoleFlag))
-		}
-
-		for range terratestConfig.ControlPlaneCount {
-			roleFlags = append(roleFlags, cty.StringVal(clusters.ControlPlaneRoleFlag))
-		}
-
-		for range terratestConfig.WorkerCount {
-			roleFlags = append(roleFlags, cty.StringVal(clusters.WorkerRoleFlag))
-		}
-
-		localsBlockBody.SetAttributeValue(clusters.RoleFlags, cty.ListVal(roleFlags))
 	}
 
-	totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+	roleFlags, err := customnodepools.BuildRoleFlags(terraformConfig, terratestConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	roleFlagValues := make([]cty.Value, 0, len(roleFlags))
+	for _, roleFlag := range roleFlags {
+		roleFlagValues = append(roleFlagValues, cty.StringVal(roleFlag))
+	}
+
+	localsBlockBody.SetAttributeValue(clusters.RoleFlags, cty.ListVal(roleFlagValues))
+
+	totalNodeCount := customnodepools.TotalNodeCount(terratestConfig)
 	resourcePrefixExpression := fmt.Sprintf(`[for i in range(%d) : "%s-${i}"]`, totalNodeCount, terraformConfig.ResourcePrefix)
 	resourcePrefixValue := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(resourcePrefixExpression)},

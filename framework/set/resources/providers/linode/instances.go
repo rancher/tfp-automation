@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/format"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	linodeDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -20,7 +21,7 @@ func CreateLinodeInstances(rootBody *hclwrite.Body, terraformConfig *config.Terr
 	configBlockBody := configBlock.Body()
 
 	if strings.Contains(terraformConfig.Module, general.Custom) {
-		totalNodeCount := terratestConfig.EtcdCount + terratestConfig.ControlPlaneCount + terratestConfig.WorkerCount
+		totalNodeCount := customnodepools.TotalNodeCount(terratestConfig)
 		configBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(totalNodeCount))
 	}
 

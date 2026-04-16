@@ -75,10 +75,21 @@ terraform:
     sshTimeout: "5m"
 
 terratest:
-  etcdCount: 1
-  controlPlaneCount: 1
-  workerCount: 1
-  windowsNodeCount: 1
+  nodepools:
+    - quantity: 1
+      etcd: true
+      controlplane: false
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: true
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: false
+      worker: true
+    - quantity: 1
+      windows: true
 ```
 
 See the below examples on how to run the tests:

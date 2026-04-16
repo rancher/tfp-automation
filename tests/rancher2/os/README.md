@@ -53,22 +53,19 @@ terraform:
 ```yaml
 terratest:
   nodepools:
-    - quantity: 1
+    - quantity: 3
       etcd: true
       controlplane: false
       worker: false
-    - quantity: 1
+    - quantity: 2
       etcd: false
       controlplane: true
       worker: false
-    - quantity: 1
+    - quantity: 3
       etcd: false
       controlplane: false
       worker: true
   kubernetesVersion: [v1.32.2-rancher1-1, v1.32.2+rke2r1, v1.32.2+k3s1]
-  etcdCount: 3
-  controlPlaneCount: 2
-  workerCount: 3
 ```
 
 ### Run Command:

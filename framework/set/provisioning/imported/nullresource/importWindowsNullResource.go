@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -25,10 +26,11 @@ func CreateImportedWindowsNullResource(rootBody *hclwrite.Body, terraformConfig 
 	connectionBlockBody := connectionBlock.Body()
 
 	var hostExpression string
+	windowsCount := customnodepools.WindowsNodeCount(terratestConfig)
 
-	if terratestConfig.WindowsNodeCount == 1 {
+	if windowsCount == 1 {
 		hostExpression = `"${` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[0].` + general.PublicIp + `}"`
-	} else if terratestConfig.WindowsNodeCount > 1 {
+	} else if windowsCount > 1 {
 		hostExpression = `"${` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows[` + general.Count + `.` + general.Index + `].` + general.PublicIp + `}"`
 	}
 

@@ -170,6 +170,10 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 	}
 
 	for count, pool := range terratestConfig.Nodepools {
+		if pool.Windows {
+			continue
+		}
+
 		err = setMachinePool(terraformConfig, count, pool, rkeConfigBlockBody, mixedArchitecture)
 		if err != nil {
 			return nil, nil, err

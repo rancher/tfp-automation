@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	awsDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	vsphereDefaults "github.com/rancher/tfp-automation/framework/set/defaults/providers/vsphere"
+	customnodepools "github.com/rancher/tfp-automation/framework/set/provisioning/custom/nodepools"
 	"github.com/rancher/tfp-automation/framework/set/provisioning/custom/nullresource"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/vsphere"
@@ -22,18 +23,14 @@ func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	switch terraformConfig.Provider {
 	case awsDefaults.Aws:
-		aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-etcd",
-			terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType, terratestConfig.EtcdCount)
+		instanceGroups, err := customnodepools.BuildAWSInstanceGroups(terraformConfig, terratestConfig)
+		if err != nil {
+			return nil, nil, err
+		}
 
-		aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-control-plane",
-			terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType, terratestConfig.ControlPlaneCount)
-
-		if terraformConfig.MixedArchitecture {
-			aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-worker",
-				terraformConfig.AWSConfig.ARMAMI, terraformConfig.AWSConfig.ARMInstanceType, terratestConfig.WorkerCount)
-		} else {
-			aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, terraformConfig.ResourcePrefix+"-worker",
-				terraformConfig.AWSConfig.AMI, terraformConfig.AWSConfig.AWSInstanceType, terratestConfig.WorkerCount)
+		for _, instanceGroup := range instanceGroups {
+			aws.CreateCustomClusterAWSInstances(rootBody, terraformConfig, terratestConfig, instanceGroup.ResourceName,
+				instanceGroup.AMI, instanceGroup.InstanceType, instanceGroup.Quantity)
 		}
 	case vsphereDefaults.Vsphere:
 		dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphereDefaults.VsphereDatacenter + `.` + vsphereDefaults.VsphereDatacenter + `.id`)

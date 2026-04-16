@@ -219,10 +219,15 @@ jobs:
               upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            etcdCount: ${{ vars.ETCD_COUNT }}
-            controlPlaneCount: ${{ vars.CP_COUNT }}
-            workerCount: ${{ vars.WORKER_COUNT }}
-            windowsNodeCount: ${{ vars.WINDOWS_NODE_COUNT }}
+            nodepools:
+              - quantity: ${{ vars.ETCD_COUNT }}
+                etcd: true
+              - quantity: ${{ vars.CP_COUNT }}
+                controlplane: true
+              - quantity: ${{ vars.WORKER_COUNT }}
+                worker: true
+              - quantity: ${{ vars.WINDOWS_NODE_COUNT }}
+                windows: true
           EOF
 
       - name: Export CATTLE_TEST_CONFIG

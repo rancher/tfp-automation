@@ -654,7 +654,6 @@ terratest:
   eksKubernetesVersion: ""
   gkeKubernetesVersion: ""
   kubernetesVersion: ""
-  nodeCount: 3
 
   # Below are the expected formats for all module kubernetes versions
   
