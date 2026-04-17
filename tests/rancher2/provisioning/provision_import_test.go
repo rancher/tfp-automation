@@ -10,7 +10,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
@@ -98,6 +97,10 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 		p.T().Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(p.cattleConfig)
+			rancher.AdminToken = standardToken
+			terraform.Module = tt.module
+
 			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(p.terraformConfig, p.terratestConfig, p.terraformOptions, tt.name, configs.NestedRancherModuleDir)
 			require.NoError(t, err)
 			defer os.RemoveAll(nestedRancherModuleDir)
@@ -105,34 +108,30 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			cattleConfig, err := provisioning.UniquifyTerraform(p.cattleConfig)
-			require.NoError(t, err)
-
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
-			require.NoError(p.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
-			require.NoError(p.T(), err)
-
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
+			terraform = provisioning.UniquifyTerraform(terraform)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(p.T(), perTestTerraformOptions, keyPath)
 
-			clusters, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
+			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
+			clusters, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, true, clusterIDs, "", nestedRancherModuleDir)
+
+			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 			err = provisioningActions.VerifyClusterReady(p.client, clusters[0])
 			require.NoError(p.T(), err)
 
+			logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
 			err = clusterActions.VerifyServiceAccountTokenSecret(p.client, clusters[0].Name)
 			require.NoError(p.T(), err)
 
+			logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
 			err = pods.VerifyClusterPods(p.client, clusters[0])
 			require.NoError(p.T(), err)
 
 			err = imported.SetUpgradeImportedCluster(p.client, terraform)
 			require.NoError(p.T(), err)
 
-			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+			params := tfpQase.GetProvisioningSchemaParams(p.terraformConfig, p.terratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

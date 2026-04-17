@@ -7,7 +7,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
@@ -90,8 +89,6 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	testUser, testPassword string) string {
 	var clusterIDs []string
 	var nestedRancherModuleDir string
-
-	customClusterNames := []string{}
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
 	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
@@ -115,52 +112,52 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
+				rancher, terraform, terratest, _ := config.LoadTFPConfigs(s.cattleConfig)
+				rancher.AdminToken = standardToken
+				terratest.Nodepools = tt.nodeRoles
+				terraform.Module = tt.module
+
 				nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(s.terraformConfig, s.terratestConfig, s.terraformOptions, tt.name, configs.NestedRancherModuleDir)
 				require.NoError(t, err)
 
 				newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 				defer file.Close()
 
-				cattleConfig, err := provisioning.UniquifyTerraform(s.cattleConfig)
-				require.NoError(t, err)
+				terraform = provisioning.UniquifyTerraform(terraform)
 
-				_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
-				require.NoError(t, err)
+				logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
+				clusters, customClusterName := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, true, true, clusterIDs, "", nestedRancherModuleDir)
 
-				_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
-				require.NoError(t, err)
-
-				_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
-				require.NoError(t, err)
-
-				err = provisioning.GetK8sVersion(standardUserClient, cattleConfig)
-				require.NoError(t, err)
-
-				rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
-
-				clusters, customClusterNames := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+				logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
 				require.NoError(t, err)
 
+				logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
 				err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
 				require.NoError(t, err)
 
+				logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
 				err = pods.VerifyClusterPods(s.client, clusters[0])
 				require.NoError(t, err)
 
 				if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-					clusters, customClusterNames = provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+					logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
+					clusters, _ = provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, true, true, true, clusterIDs, customClusterName, nestedRancherModuleDir)
+
+					logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 					err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
 					require.NoError(t, err)
 
+					logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
 					err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
 					require.NoError(t, err)
 
+					logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
 					err = pods.VerifyClusterPods(s.client, clusters[0])
 					require.NoError(t, err)
 				}
 
-				params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+				params := tfpQase.GetProvisioningSchemaParams(s.terraformConfig, s.terratestConfig)
 				err = qase.UpdateSchemaParameters(tt.name, params)
 				if err != nil {
 					logrus.Warningf("Failed to upload schema parameters %s", err)

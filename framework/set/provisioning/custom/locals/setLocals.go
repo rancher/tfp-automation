@@ -22,7 +22,7 @@ const (
 
 // SetLocals is a function that will set the locals configurations in the main.tf file.
 func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	configMap []map[string]any, newFile *hclwrite.File, file *os.File, customClusterNames []string) (*os.File, error) {
+	newFile *hclwrite.File, file *os.File, customClusterName string) (*os.File, error) {
 	localsBlock := rootBody.AppendNewBlock(general.Locals, nil)
 	localsBlockBody := localsBlock.Body()
 
@@ -61,18 +61,18 @@ func SetLocals(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 
 	localsBlockBody.SetAttributeRaw(clusters.ResourcePrefix, resourcePrefixValue)
 
-	setV2ClusterLocalBlock(localsBlockBody, terraformConfig, customClusterNames)
+	setV2ClusterLocalBlock(localsBlockBody, terraformConfig, customClusterName)
 
 	return file, nil
 }
 
-func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customClusterNames []string) {
-	for _, name := range customClusterNames {
-		setCustomClusterLocalBlock(localsBlockBody, name, terraformConfig)
+func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customClusterName string) {
+	if customClusterName != "" {
+		setCustomClusterLocalBlock(localsBlockBody, customClusterName, terraformConfig)
 	}
 
 	//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
-	if strings.Contains(terraformConfig.Module, general.Custom) {
+	if (strings.Contains(terraformConfig.Module, general.Custom)) && customClusterName != terraformConfig.ResourcePrefix {
 		setCustomClusterLocalBlock(localsBlockBody, terraformConfig.ResourcePrefix, terraformConfig)
 	}
 }

@@ -4,8 +4,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
@@ -79,16 +77,12 @@ func IsHostedModule(module string) bool {
 }
 
 // SupportedModules is a function that will check if the user-inputted module is supported.
-func SupportedModules(terraformOptions *terraform.Options, configMap []map[string]any) bool {
-	var isSupported bool
-	for _, cattleConfig := range configMap {
-		tfConfig := new(config.TerraformConfig)
-		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, tfConfig)
-
-		isSupported = verifyModule(tfConfig.Module)
+func SupportedModules(terraformConfig *config.TerraformConfig) bool {
+	if terraformConfig == nil {
+		return false
 	}
 
-	return isSupported
+	return verifyModule(terraformConfig.Module)
 }
 
 func verifyModule(module string) bool {
