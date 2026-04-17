@@ -115,7 +115,6 @@ func verifyModule(module string) bool {
 		modules.CustomVsphereRKE2,
 		modules.CustomVsphereK3S,
 		modules.AirgapAWSRKE2,
-		modules.AirgapAWSRKE2Windows2019,
 		modules.AirgapAWSRKE2Windows2022,
 		modules.AirgapAWSK3S,
 		modules.ImportedAWSRKE2,

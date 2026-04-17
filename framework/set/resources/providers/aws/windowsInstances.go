@@ -120,9 +120,7 @@ func CreateAirgappedWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig
 
 	configBlockBody.SetAttributeValue(aws.AssociatePublicIPAddress, cty.BoolVal(false))
 
-	if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2019) {
-		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2019AMI))
-	} else if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2022) {
+	if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2022) {
 		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2022AMI))
 	}
 
@@ -162,9 +160,7 @@ func CreateAirgappedWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig
 	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.WinRM))
 	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
-	if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2019) {
-		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
-	} else if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2022) {
+	if strings.Contains(terraformConfig.Module, modules.AirgapAWSRKE2Windows2022) {
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
 	}
 

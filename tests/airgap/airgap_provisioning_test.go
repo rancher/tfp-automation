@@ -85,7 +85,6 @@ func (a *TfpAirgapProvisioningTestSuite) TestTfpAirgapProvisioning() {
 		module string
 	}{
 		{"Airgap_RKE2", modules.AirgapAWSRKE2},
-		{"Airgap_RKE2_Windows_2019", modules.AirgapAWSRKE2Windows2019},
 		{"Airgap_RKE2_Windows_2022", modules.AirgapAWSRKE2Windows2022},
 		{"Airgap_K3S", modules.AirgapAWSK3S},
 	}

@@ -106,7 +106,6 @@ func (a *TfpAirgapUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 		module string
 	}{
 		{name + "_RKE2", modules.AirgapAWSRKE2},
-		{name + "_RKE2_Windows_2019", modules.AirgapAWSRKE2Windows2019},
 		{name + "_RKE2_Windows_2022", modules.AirgapAWSRKE2Windows2022},
 		{name + "_K3S", modules.AirgapAWSK3S},
 	}

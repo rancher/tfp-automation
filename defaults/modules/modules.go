@@ -41,7 +41,6 @@ const (
 	NodeDriverVsphereK3S  = "vsphere_k3s_nodedriver"
 
 	AirgapAWSRKE2            = "aws_rke2_airgap"
-	AirgapAWSRKE2Windows2019 = "aws_rke2_windows_2019_airgap"
 	AirgapAWSRKE2Windows2022 = "aws_rke2_windows_2022_airgap"
 	AirgapAWSK3S             = "aws_k3s_airgap"
 )
