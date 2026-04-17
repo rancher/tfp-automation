@@ -79,7 +79,10 @@ func (o *OSValidationTestSuite) SetupSuite() {
 
 	o.permutedConfigs = make([]map[string]any, 0, len(permutedConfigs))
 	for _, permutedConfig := range permutedConfigs {
-		uniqueConfig, uniqueErr := provisioning.UniquifyTerraform(permutedConfig)
+		_, terraformConfig, _, _ := config.LoadTFPConfigs(permutedConfig)
+		uniqueTerraform := provisioning.UniquifyTerraform(terraformConfig)
+
+		uniqueConfig, uniqueErr := operations.ReplaceValue([]string{"terraform", "resourcePrefix"}, uniqueTerraform.ResourcePrefix, permutedConfig)
 		require.NoError(o.T(), uniqueErr)
 		o.permutedConfigs = append(o.permutedConfigs, uniqueConfig)
 	}
@@ -111,7 +114,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 	newFile, rootBody, file := rancher2.InitializeMainTF(o.terratestConfig)
 	defer file.Close()
 
-	customClusterNames := []string{}
+	customClusterName := ""
 
 	for ami, batch := range configBatches {
 		_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, o.terratestConfig.PathToRepo, "")
@@ -136,7 +139,7 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
-			clusters, _ := provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, batch, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, "")
+			clusters, _ := provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, newFile, rootBody, file, false, false, true, clusterIDs, customClusterName, "")
 			time.Sleep(2 * time.Minute)
 			err = provisioningActions.VerifyClusterReady(o.client, clusters[0])
 			require.NoError(o.T(), err)
@@ -158,8 +161,8 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 			}
 		})
 
-		for _, cattleConfig := range batch {
-			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+		for range batch {
+			params := tfpQase.GetProvisioningSchemaParams(o.terraformConfig, o.terratestConfig)
 			err = qase.UpdateSchemaParameters(testName, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

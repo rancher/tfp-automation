@@ -9,7 +9,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
@@ -75,26 +74,21 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
-		cattleConfig, err := provisioning.UniquifyTerraform(r.cattleConfig)
-		require.NoError(r.T(), err)
+		rancher, terraform, _, _ := config.LoadTFPConfigs(r.cattleConfig)
+		rancher.AdminToken = r.client.RancherConfig.AdminToken
+		terraform.AuthProvider = tt.authProvider
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, r.client.RancherConfig.AdminToken, cattleConfig)
-		require.NoError(r.T(), err)
-
-		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, tt.authProvider, cattleConfig)
-		require.NoError(r.T(), err)
-
-		rancher, terraform, _, _ := config.LoadTFPConfigs(cattleConfig)
+		terraform = provisioning.UniquifyTerraform(terraform)
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, []map[string]any{cattleConfig}, newFile, rootBody, file)
+			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
-		err = qase.UpdateSchemaParameters(tt.name, params)
+		params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
+		err := qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
 		}
@@ -122,26 +116,21 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
 
-		cattleConfig, err := provisioning.UniquifyTerraform(r.cattleConfig)
-		require.NoError(r.T(), err)
+		rancher, terraform, _, _ := config.LoadTFPConfigs(r.cattleConfig)
+		rancher.AdminToken = r.client.RancherConfig.AdminToken
+		terraform.AuthProvider = r.terraformConfig.AuthProvider
 
-		_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, r.client.RancherConfig.AdminToken, cattleConfig)
-		require.NoError(r.T(), err)
-
-		_, err = operations.ReplaceValue([]string{"terraform", "authProvider"}, r.terraformConfig.AuthProvider, cattleConfig)
-		require.NoError(r.T(), err)
-
-		rancher, terraform, _, _ := config.LoadTFPConfigs(cattleConfig)
+		terraform = provisioning.UniquifyTerraform(terraform)
 
 		r.Run((tt.name), func() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, []map[string]any{cattleConfig}, newFile, rootBody, file)
+			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
-		err = qase.UpdateSchemaParameters(tt.name, params)
+		params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
+		err := qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
 		}

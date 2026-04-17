@@ -30,9 +30,7 @@ func (r *BuildModuleTestSuite) TestBuildModule() {
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
 
-	configMap := []map[string]any{r.cattleConfig}
-
-	err := provisioning.BuildModule(r.T(), r.rancherConfig, r.terraformConfig, r.terratestConfig, configMap)
+	err := provisioning.BuildModule(r.T(), r.rancherConfig, r.terraformConfig, r.terratestConfig)
 	require.NoError(r.T(), err)
 }
 

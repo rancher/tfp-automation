@@ -11,7 +11,7 @@ import (
 
 // ImportedClusters is a function that will set the imported clusters in the main.tf file.
 func ImportedClusters(client *rancher.Client, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, configMap []map[string]any,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File,
 	isWindows bool) (*hclwrite.File, *os.File, error) {
 	var err error
 

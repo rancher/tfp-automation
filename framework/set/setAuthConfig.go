@@ -21,9 +21,11 @@ import (
 func AuthConfig(rancherConfig *rancher.Config, testUser, testPassword string, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
 	var err error
 
-	newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, true, newFile, rootBody, configMap, false)
+	_, terraform, _, _ := config.LoadTFPConfigs(configMap[0])
 
-	rancherConfig, terraform, _, _ := config.LoadTFPConfigs(configMap[0])
+	newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, true, newFile, rootBody, terraform, false)
+
+	rancherConfig, terraform, _, _ = config.LoadTFPConfigs(configMap[0])
 	authProvider := terraform.AuthProvider
 
 	switch authProvider {
