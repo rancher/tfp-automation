@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
@@ -107,22 +106,4 @@ func setCustomClusterLocalBlock(localsBlockBody *hclwrite.Body, name string, ter
 	}
 
 	localsBlockBody.SetAttributeRaw(name+"_"+clusters.InsecureWindowsNodeCommand, windowsInsecureNodeCommand)
-
-	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && (terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "") {
-		setWindowsProxyLocalBlock(localsBlockBody, name)
-	}
-}
-
-func setWindowsProxyLocalBlock(localsBlockBody *hclwrite.Body, name string) error {
-	// Terraform, by design, results to a .cmd file. Need to explictily call powershell.exe
-	envReplace := fmt.Sprintf(`replace(local.%s_windows_original_node_command, "$env:", "powershell.exe $env:")`, name)
-	curlReplace := fmt.Sprintf(`"${replace(%s, "curl.exe", "curl.exe --insecure")}"`, envReplace)
-
-	proxyWindowsInsecureNodeCommand := hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(curlReplace)},
-	}
-
-	localsBlockBody.SetAttributeRaw(name+"_"+clusters.InsecureWindowsProxyNodeCommand, proxyWindowsInsecureNodeCommand)
-
-	return nil
 }

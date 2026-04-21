@@ -53,11 +53,6 @@ const (
 	endpoints             = "endpoints"
 	rewrites              = "rewrites"
 
-	httpProxy    = "HTTP_PROXY"
-	httpsProxy   = "HTTPS_PROXY"
-	noProxy      = "NO_PROXY"
-	noProxyValue = "localhost,127.0.0.0/8,10.0.0.0/8,172.0.0.0/8,192.168.0.0/16,.svc,.cluster.local,cattle-system.svc,169.254.169.254"
-
 	mixedArchitecture = "mixed_architecture"
 
 	active       = "active"
@@ -148,13 +143,6 @@ func SetRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config
 	clusterBlockBody, err := setClusterConfig(rootBody, terraformConfig, terratestConfig)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
-		err = SetProxyConfig(clusterBlockBody, terraformConfig)
-		if err != nil {
-			return nil, nil, err
-		}
 	}
 
 	if terraformConfig.LocalAuthEndpoint {
