@@ -84,8 +84,6 @@ func (s *TfpSanityIPv6HostedProvisioningTestSuite) TestTfpProvisioningSanityIPv6
 	}
 
 	for _, tt := range tests {
-		s.T().Skip("Skipping due to known issue: https://github.com/rancher/rancher/issues/54475")
-
 		if !(strings.Contains(s.terraformConfig.Standalone.RancherTagVersion, "v2.14") || strings.Contains(s.terraformConfig.Standalone.RancherTagVersion, "head")) {
 			s.T().Skip("Skipping IPv6 EKS test - only supported on Rancher v2.14+")
 		}
