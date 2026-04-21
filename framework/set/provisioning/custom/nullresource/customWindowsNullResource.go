@@ -47,16 +47,8 @@ func CustomWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.
 
 	connectionBlockBody.SetAttributeRaw(general.Host, host)
 
-	var regCommand hclwrite.Tokens
-
-	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
-		regCommand = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + general.Local + `.` + clusterName + "_" + clusters.InsecureWindowsProxyNodeCommand + `}"]`)},
-		}
-	} else {
-		regCommand = hclwrite.Tokens{
-			{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + general.Local + `.` + clusterName + "_" + clusters.InsecureWindowsNodeCommand + `}"]`)},
-		}
+	regCommand := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(`["powershell.exe ${` + general.Local + `.` + clusterName + "_" + clusters.InsecureWindowsNodeCommand + `}"]`)},
 	}
 
 	provisionerBlockBody.SetAttributeRaw(general.Inline, regCommand)
