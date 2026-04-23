@@ -41,7 +41,6 @@ const (
 	Defaults     = "defaults"
 	Index        = "index"
 	File         = "file"
-	Airgap       = "airgap"
 	Custom       = "custom"
 	Import       = "import"
 	Registry     = "registry"

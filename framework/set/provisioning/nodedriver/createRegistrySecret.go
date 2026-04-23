@@ -18,7 +18,7 @@ const (
 	username     = "username"
 )
 
-// CreateRegistrySecret is a function that will set the airgap RKE2/K3s cluster configurations in the main.tf file.
+// CreateRegistrySecret is a function that will set the registry secret configurations in the main.tf file.
 func CreateRegistrySecret(terraformConfig *config.TerraformConfig, rootBody *hclwrite.Body) {
 	secretBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.SecretV2, terraformConfig.ResourcePrefix})
 	secretBlockBody := secretBlock.Body()

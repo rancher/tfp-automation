@@ -54,48 +54,9 @@ terraform:
     authConfigSecretName: ""
     mirrorHostname: ""
     mirrorEndpoint: ""
-  
-  awsCredentials:
-    awsAccessKey: ""
-    awsSecretKey: ""
-  awsConfig:
-    awsKeyName: ""
-    ami: ""
-    awsInstanceType: ""
-    region: ""
-    awsSecurityGroupNames: [""]
-    awsSubnetID: ""
-    rancherSubnetID: ""
-    awsVpcID: ""
-    awsZoneLetter: ""
-    awsRootSize: 100
-    region: ""
-    awsUser: ""
-    sshConnectionType: "ssh"
-    sshTimeout: "5m"
-
-terratest:
-  nodepools:
-    - quantity: 1
-      etcd: true
-      controlplane: false
-      worker: false
-    - quantity: 1
-      etcd: false
-      controlplane: true
-      worker: false
-    - quantity: 1
-      etcd: false
-      controlplane: false
-      worker: true
-    - quantity: 1
-      windows: true
 ```
 
 See the below examples on how to run the tests:
-
-### ACE
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/airgap --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestAirgapACETestSuite/TestTfpAirgapACE$"`
 
 ### API
 `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/airgap --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestAirgapAPITestSuite/TestTfpAirgapAPI$"`
@@ -109,4 +70,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestAirgapACETestSuite/TestTfpAirgapACE$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/provisioning --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestAirgapAPITestSuite/TestTfpAirgapAPI$";/path/to/tfp-automation/reporter`

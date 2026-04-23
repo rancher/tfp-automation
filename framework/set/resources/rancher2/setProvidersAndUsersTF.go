@@ -234,7 +234,7 @@ func getRequiredProviderVersions(configMap []map[string]any) (source, rancherPro
 			source = "terraform.local/local/rancher2"
 		}
 
-		if strings.Contains(module, general.Custom) || strings.Contains(module, general.Import) || strings.Contains(module, general.Airgap) ||
+		if strings.Contains(module, general.Custom) || strings.Contains(module, general.Import) ||
 			strings.Contains(module, ec2) {
 			cloudProviderVersion = os.Getenv(cloudProviderEnvVar)
 			if cloudProviderVersion == "" {
