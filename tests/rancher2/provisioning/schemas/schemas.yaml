@@ -4,397 +4,704 @@
   suite: Go Automation/TFP/Provisioning
   cases:
   - description: Provisions downstream RKE2/K3S node driver cluster
+    preconditions: null
+    postconditions: null
     title: 8_nodes_3_etcd_2_cp_3_worker
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream RKE2/K3S cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provisions downstream RKE2 custom cluster
+    preconditions: null
+    postconditions: null
     title: Custom_TFP_RKE2
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream RKE2 custom cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters:
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle:
+        title: CNI
+        values:
+        - calico
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle:
+        title: K8sVersion
+        values:
+        - v1.34.5+k3s1
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provisions downstream RKE2 Windows 2019 custom cluster
+    preconditions: null
+    postconditions: null
     title: Custom_TFP_RKE2_Windows_2019
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream RKE2 Windows 2019 custom cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provisions downstream RKE2 Windows 2022 custom cluster
+    preconditions: null
+    postconditions: null
     title: Custom_TFP_RKE2_Windows_2022
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream RKE2 Windows 2022 custom cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provisions downstream K3S custom cluster
+    preconditions: null
+    postconditions: null
     title: Custom_TFP_K3S
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream K3S custom cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters:
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle:
+        title: CNI
+        values:
+        - calico
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    - parametergroup: null
+      parametershared: null
+      parametersingle:
+        title: K8sVersion
+        values:
+        - v1.34.5+k3s1
+    - parametergroup: null
+      parametershared: null
+      parametersingle: null
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Upgrade imported RKE2 cluster
+    preconditions: null
+    postconditions: null
     title: Upgrade_Imported_RKE2
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Import RKE2 cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post imported cluster checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Upgrade imported RKE2 cluster
       expectedresult: ""
       data: ""
       position: 3
       attachments: []
+      steps: []
     - action: Post upgrade checks
       expectedresult: ""
       data: ""
       position: 4
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Upgrade imported RKE2 Windows 2019 cluster
+    preconditions: null
+    postconditions: null
     title: Upgrade_Imported_RKE2_Windows_2019
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Import RKE2 Windows 2019 cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post imported cluster checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Upgrade imported RKE2 Windows 2019 cluster
       expectedresult: ""
       data: ""
       position: 3
       attachments: []
+      steps: []
     - action: Post upgrade checks
       expectedresult: ""
       data: ""
       position: 4
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Upgrade imported RKE2 Windows 2022 cluster
+    preconditions: null
+    postconditions: null
     title: Upgrade_Imported_RKE2_Windows_2022
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Import RKE2 Windows 2022 cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post imported cluster checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Upgrade imported RKE2 Windows 2022 cluster
       expectedresult: ""
       data: ""
       position: 3
       attachments: []
+      steps: []
     - action: Post upgrade checks
       expectedresult: ""
       data: ""
       position: 4
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Upgrade imported K3S cluster
+    preconditions: null
+    postconditions: null
     title: Upgrade_Imported_K3S
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Import K3S cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post imported cluster checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Upgrade imported K3S cluster
       expectedresult: ""
       data: ""
       position: 3
       attachments: []
+      steps: []
     - action: Post upgrade checks
       expectedresult: ""
       data: ""
       position: 4
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provision AKS hosted cluster
+    preconditions: null
+    postconditions: null
     title: Provision_AKS_Cluster
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision AKS hosted cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provision EKS hosted cluster
+    preconditions: null
+    postconditions: null
     title: Provision_EKS_Cluster
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision EKS hosted cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provision GKE hosted cluster
+    preconditions: null
+    postconditions: null
     title: Provision_GKE_Cluster
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision GKE hosted cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
       "14": Validation
       "18": Hostbusters
-
+    createdat: null
+    updatedat: null
   - description: Provisions downstream RKE2 cluster with custom data directory
+    preconditions: null
+    postconditions: null
     title: RKE2_Data_Directory
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream RKE2 node driver cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Verify data directories
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
-        "14": Validation
-        "18": Hostbusters
-
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
+      "14": Validation
+      "18": Hostbusters
+    createdat: null
+    updatedat: null
   - description: Provisions downstream K3S cluster with custom data directory
+    preconditions: null
+    postconditions: null
     title: K3S_Data_Directory
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream K3S node driver cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Verify data directories
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
-        "14": Validation
-        "18": Hostbusters
-
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
+      "14": Validation
+      "18": Hostbusters
+    createdat: null
+    updatedat: null
   - description: Provisions downstream RKE2 cluster with ACE enabled
+    preconditions: null
+    postconditions: null
     title: RKE2_ACE
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream RKE2 node driver cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Verify ACE functionality
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
-        "14": Validation
-        "18": Hostbusters
-
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
+      "14": Validation
+      "18": Hostbusters
+    createdat: null
+    updatedat: null
   - description: Provisions downstream K3S cluster with ACE enabled
+    preconditions: null
+    postconditions: null
     title: K3S_ACE
+    severity: null
     priority: 4
+    behavior: null
     type: 8
-    is_flaky: 0
+    layer: null
+    isflaky: null
+    suiteid: null
+    milestoneid: null
     automation: 2
+    status: null
+    attachments: []
     steps:
     - action: Provision downstream K3S node driver cluster
       expectedresult: ""
       data: ""
       position: 1
       attachments: []
+      steps: []
     - action: Post cluster creation checks
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
+      steps: []
     - action: Verify ACE functionality
       expectedresult: ""
       data: ""
       position: 2
       attachments: []
-    custom_field:
-        "14": Validation
-        "18": Hostbusters
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
+      "14": Validation
+      "18": Hostbusters
+    createdat: null
+    updatedat: null

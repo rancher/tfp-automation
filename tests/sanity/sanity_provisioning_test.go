@@ -7,7 +7,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/pkg/config/operations"
+	steveV1 "github.com/rancher/shepherd/clients/rancher/v1"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
@@ -63,7 +63,8 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 	var testUser, testPassword string
 	var clusterIDs []string
 
-	customClusterNames := []string{}
+	customClusterName := ""
+	var clusters []*steveV1.SteveAPIObject
 
 	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
 	require.NoError(s.T(), err)
@@ -96,6 +97,11 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		s.T().Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(s.cattleConfig)
+			rancher.AdminToken = standardToken
+			terratest.Nodepools = tt.nodeRoles
+			terraform.Module = tt.module
+
 			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(s.terraformConfig, s.terratestConfig, s.terraformOptions, tt.name, configs.NestedRancherModuleDir)
 			require.NoError(t, err)
 			defer os.RemoveAll(nestedRancherModuleDir)
@@ -103,27 +109,15 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			cattleConfig, err := provisioning.UniquifyTerraform(s.cattleConfig)
+			terratest, err = provisioning.GetK8sVersion(s.standardUserClient, terraform, terratest)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
-			require.NoError(s.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
-			require.NoError(s.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
-			require.NoError(s.T(), err)
-
-			err = provisioning.GetK8sVersion(s.standardUserClient, cattleConfig)
-			require.NoError(t, err)
-
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
+			terraform = provisioning.UniquifyTerraform(terraform)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
-			clusters, customClusterNames := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+			clusters, customClusterName = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, true, clusterIDs, customClusterName, nestedRancherModuleDir)
 			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
 			require.NoError(s.T(), err)
 
@@ -134,7 +128,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			require.NoError(s.T(), err)
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				clusters, customClusterNames = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, true, true, true, clusterIDs, customClusterNames, nestedRancherModuleDir)
+				clusters, customClusterName = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, true, true, true, clusterIDs, customClusterName, nestedRancherModuleDir)
 				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
 				require.NoError(s.T(), err)
 
@@ -145,7 +139,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 				require.NoError(s.T(), err)
 			}
 
-			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+			params := tfpQase.GetProvisioningSchemaParams(s.terraformConfig, s.terratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -189,6 +183,8 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
 		s.T().Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(s.cattleConfig)
+
 			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(s.terraformConfig, s.terratestConfig, s.terraformOptions, tt.name, configs.NestedRancherModuleDir)
 			require.NoError(t, err)
 			defer os.RemoveAll(nestedRancherModuleDir)
@@ -196,24 +192,18 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			cattleConfig, err := provisioning.UniquifyTerraform(s.cattleConfig)
+			rancher.AdminToken = standardToken
+			terraform.Module = tt.module
+
+			terratest, err = provisioning.GetK8sVersion(s.standardUserClient, terraform, terratest)
 			require.NoError(t, err)
 
-			_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
-			require.NoError(s.T(), err)
-
-			_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
-			require.NoError(s.T(), err)
-
-			err = provisioning.GetK8sVersion(s.standardUserClient, cattleConfig)
-			require.NoError(t, err)
-
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
+			terraform = provisioning.UniquifyTerraform(terraform)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
-			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, false, true, clusterIDs, nil, nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, true, clusterIDs, "", nestedRancherModuleDir)
 			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
 			require.NoError(s.T(), err)
 
@@ -223,7 +213,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
 			err = pods.VerifyClusterPods(s.client, clusters[0])
 			require.NoError(s.T(), err)
 
-			params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+			params := tfpQase.GetProvisioningSchemaParams(s.terraformConfig, s.terratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
@@ -104,29 +103,23 @@ func (s *TfpSanityIPv6UpgradeRancherTestSuite) provisionAndVerifyCluster(name st
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
+				rancher, terraform, terratest, _ := config.LoadTFPConfigs(s.cattleConfig)
+				rancher.AdminToken = standardToken
+				terratest.Nodepools = tt.nodeRoles
+				terraform.Module = tt.module
+
 				nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(s.terraformConfig, s.terratestConfig, s.terraformOptions, tt.name, configs.NestedRancherModuleDir)
 				require.NoError(t, err)
 
 				newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 				defer file.Close()
 
-				cattleConfig, err := provisioning.UniquifyTerraform(s.cattleConfig)
+				terratest, err = provisioning.GetK8sVersion(standardUserClient, terraform, terratest)
 				require.NoError(t, err)
 
-				_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, standardToken, cattleConfig)
-				require.NoError(t, err)
+				terraform = provisioning.UniquifyTerraform(terraform)
 
-				_, err = operations.ReplaceValue([]string{"terratest", "nodepools"}, tt.nodeRoles, cattleConfig)
-				require.NoError(t, err)
-
-				_, err = operations.ReplaceValue([]string{"terraform", "module"}, tt.module, cattleConfig)
-				require.NoError(t, err)
-
-				provisioning.GetK8sVersion(standardUserClient, cattleConfig)
-
-				rancher, terraform, terratest, _ := config.LoadTFPConfigs(cattleConfig)
-
-				clusters, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{cattleConfig}, newFile, rootBody, file, false, true, true, clusterIDs, nil, nestedRancherModuleDir)
+				clusters, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, true, true, clusterIDs, "", nestedRancherModuleDir)
 				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
 				require.NoError(t, err)
 
@@ -136,7 +129,7 @@ func (s *TfpSanityIPv6UpgradeRancherTestSuite) provisionAndVerifyCluster(name st
 				err = pods.VerifyClusterPods(s.client, clusters[0])
 				require.NoError(t, err)
 
-				params := tfpQase.GetProvisioningSchemaParams(cattleConfig)
+				params := tfpQase.GetProvisioningSchemaParams(s.terraformConfig, s.terratestConfig)
 				err = qase.UpdateSchemaParameters(tt.name, params)
 				if err != nil {
 					logrus.Warningf("Failed to upload schema parameters %s", err)

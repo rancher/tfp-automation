@@ -11,19 +11,19 @@ import (
 
 // CustomClusters is a function that will set the custom clusters in the main.tf file.
 func CustomClusters(client *rancher.Client, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, configMap []map[string]any,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File,
 	isWindows bool) (*hclwrite.File, *os.File, error) {
 	var err error
 
 	if !isWindows {
-		newFile, file, err = custom.SetCustomRKE2K3s(terraformConfig, terratestConfig, configMap, newFile, rootBody, file)
+		newFile, file, err = custom.SetCustomRKE2K3s(terraformConfig, terratestConfig, newFile, rootBody, file)
 		if err != nil {
 			return newFile, file, err
 		}
 	}
 
 	if isWindows {
-		newFile, file, err := custom.SetCustomRKE2Windows(terraformConfig, terratestConfig, configMap, newFile, rootBody, file)
+		newFile, file, err := custom.SetCustomRKE2Windows(terraformConfig, terratestConfig, newFile, rootBody, file)
 		if err != nil {
 			return newFile, file, err
 		}

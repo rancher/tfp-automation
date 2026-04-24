@@ -18,8 +18,9 @@ import (
 
 // ConfigTF sets the main.tf file based on the module type.
 func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestConfig *config.TerratestConfig, testUser, testPassword string,
-	rbacRole config.Role, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters,
-	customModule bool, customClusterNames []string, nestedRancherModuleDir string) ([]string, []string, error) {
+	rbacRole config.Role, terraformConfig *config.TerraformConfig,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters,
+	customModule bool, customClusterName string, nestedRancherModuleDir string) ([]string, string, error) {
 	var err error
 
 	clusterNames := []string{}
@@ -30,62 +31,56 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 	}
 
 	if !strings.Contains(string(newFile.Bytes()), general.RequiredProviders) {
-		newFile, rootBody = rancher2.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, false, newFile, rootBody, configMap, customModule)
+		newFile, rootBody = rancher2.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, false, newFile, rootBody, terraformConfig, customModule)
 	}
 
-	rootBody.AppendNewline()
+	if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) {
+		containsCustomModule = true
+	}
 
-	for i, cattleConfig := range configMap {
-		_, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
+	clusterNames = append(clusterNames, terraformConfig.ResourcePrefix)
 
-		if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) {
-			containsCustomModule = true
+	if strings.Contains(terraformConfig.Module, general.Custom) {
+		customClusterName = terraformConfig.ResourcePrefix
+	}
+
+	if terraformConfig.Module == modules.HostedAzureAKS || terraformConfig.Module == modules.HostedAWSEKS || terraformConfig.Module == modules.HostedGoogleGKE {
+		newFile, file, err = HostedClusters(terraformConfig, terratestConfig, newFile, rootBody, file)
+		if err != nil {
+			return clusterNames, "", err
+		}
+	}
+
+	if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) &&
+		terraformConfig.Module != modules.HostedAzureAKS && terraformConfig.Module != modules.HostedAWSEKS && terraformConfig.Module != modules.HostedGoogleGKE {
+		newFile, file, err = NodeDriverClusters(client, terraformConfig, terratestConfig, rbacRole, newFile, rootBody, file)
+		if err != nil {
+			return clusterNames, "", err
+		}
+	}
+
+	if strings.Contains(terraformConfig.Module, general.Custom) {
+		newFile, file, err = CustomClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, isWindows)
+		if err != nil {
+			return clusterNames, "", err
+		}
+	}
+
+	if strings.Contains(terraformConfig.Module, general.Import) {
+		newFile, file, err = ImportedClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, isWindows)
+		if err != nil {
+			return clusterNames, "", err
+		}
+	}
+
+	if containsCustomModule {
+		localsBlock := newFile.Body().FirstMatchingBlock(general.Locals, nil)
+		if localsBlock != nil {
+			newFile.Body().RemoveBlock(localsBlock)
 		}
 
-		clusterNames = append(clusterNames, terraformConfig.ResourcePrefix)
-
-		if strings.Contains(terraformConfig.Module, general.Custom) {
-			customClusterNames = append(customClusterNames, terraformConfig.ResourcePrefix)
-		}
-
-		if terraformConfig.Module == modules.HostedAzureAKS || terraformConfig.Module == modules.HostedAWSEKS || terraformConfig.Module == modules.HostedGoogleGKE {
-			newFile, file, err = HostedClusters(terraformConfig, terratestConfig, newFile, rootBody, file)
-			if err != nil {
-				return clusterNames, nil, err
-			}
-		}
-
-		if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) &&
-			terraformConfig.Module != modules.HostedAzureAKS && terraformConfig.Module != modules.HostedAWSEKS && terraformConfig.Module != modules.HostedGoogleGKE {
-			newFile, file, err = NodeDriverClusters(client, terraformConfig, terratestConfig, rbacRole, newFile, rootBody, file)
-			if err != nil {
-				return clusterNames, nil, err
-			}
-		}
-
-		if strings.Contains(terraformConfig.Module, general.Custom) {
-			newFile, file, err = CustomClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, configMap, isWindows)
-			if err != nil {
-				return clusterNames, nil, err
-			}
-		}
-
-		if strings.Contains(terraformConfig.Module, general.Import) {
-			newFile, file, err = ImportedClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, configMap, isWindows)
-			if err != nil {
-				return clusterNames, nil, err
-			}
-		}
-
-		if i == len(configMap)-1 && containsCustomModule {
-			localsBlock := newFile.Body().FirstMatchingBlock(general.Locals, nil)
-			if localsBlock != nil {
-				newFile.Body().RemoveBlock(localsBlock)
-			}
-
-			file, err = locals.SetLocals(rootBody, terraformConfig, terratestConfig, configMap, newFile, file, customClusterNames)
-			rootBody.AppendNewline()
-		}
+		file, err = locals.SetLocals(rootBody, terraformConfig, terratestConfig, newFile, file, customClusterName)
+		rootBody.AppendNewline()
 	}
 
 	// This is needed to ensure there is no duplications in the main.tf file.
@@ -93,14 +88,14 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 	file, err = os.Create(mainTFPath)
 	if err != nil {
 		logrus.Infof("Failed to reset/overwrite main.tf file. Error: %v", err)
-		return clusterNames, customClusterNames, err
+		return clusterNames, customClusterName, err
 	}
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
 		logrus.Infof("Failed to write configurations to main.tf file. Error: %v", err)
-		return clusterNames, customClusterNames, err
+		return clusterNames, customClusterName, err
 	}
 
-	return clusterNames, customClusterNames, nil
+	return clusterNames, customClusterName, nil
 }

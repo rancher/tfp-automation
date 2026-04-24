@@ -9,7 +9,6 @@ import (
 	management "github.com/rancher/shepherd/clients/rancher/generated/management/v3"
 	"github.com/rancher/shepherd/extensions/token"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
@@ -57,26 +56,27 @@ const (
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
 func SetProvidersAndUsersTF(rancherConfig *rancher.Config, testUser, testPassword string, authProvider bool,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, configMap []map[string]any, customModule bool) (*hclwrite.File, *hclwrite.Body) {
-	createRequiredProviders(rootBody, configMap, customModule)
-	createProvider(rancherConfig, rootBody, configMap, customModule)
+	newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customModule bool) (*hclwrite.File, *hclwrite.Body) {
+	createRequiredProviders(rootBody, terraformConfig, customModule)
+	createProvider(rancherConfig, rootBody, terraformConfig, customModule)
 	createProviderAlias(rancherConfig, rootBody)
 
 	return newFile, rootBody
 }
 
 // createRequiredProviders creates the required_providers block.
-func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any, customModule bool) {
+func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customModule bool) {
 	tfBlock := rootBody.AppendNewBlock(terraform, nil)
 	tfBlockBody := tfBlock.Body()
 
 	reqProvsBlock := tfBlockBody.AppendNewBlock(requiredProviders, nil)
 	reqProvsBlockBody := reqProvsBlock.Body()
 
-	terraformConfig := new(config.TerraformConfig)
-	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraformConfig)
+	if terraformConfig == nil {
+		return
+	}
 
-	source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion := getRequiredProviderVersions(configMap)
+	source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion := getRequiredProviderVersions(terraformConfig)
 
 	if rancherProviderVersion != "" {
 		reqProvsBlockBody.SetAttributeValue(rancher2Const, cty.ObjectVal(map[string]cty.Value{
@@ -124,11 +124,12 @@ func createRequiredProviders(rootBody *hclwrite.Body, configMap []map[string]any
 }
 
 // createProvider creates a provider block for the given rancher config.
-func createProvider(rancherConfig *rancher.Config, rootBody *hclwrite.Body, configMap []map[string]any, customModule bool) {
-	_, _, cloudProviderVersion, _, _ := getRequiredProviderVersions(configMap)
+func createProvider(rancherConfig *rancher.Config, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customModule bool) {
+	_, _, cloudProviderVersion, _, _ := getRequiredProviderVersions(terraformConfig)
 
-	terraformConfig := new(config.TerraformConfig)
-	operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, configMap[0], terraformConfig)
+	if terraformConfig == nil {
+		return
+	}
 
 	if cloudProviderVersion != "" && terraformConfig.Provider == aws.Aws && customModule {
 		awsProvBlock := rootBody.AppendNewBlock(general.Provider, []string{aws.Aws})
@@ -217,34 +218,34 @@ func createProviderAlias(rancherConfig *rancher.Config, rootBody *hclwrite.Body)
 }
 
 // Determines the required providers from the list of configs.
-func getRequiredProviderVersions(configMap []map[string]any) (source, rancherProviderVersion, rkeProviderVersion, localProviderVersion,
+func getRequiredProviderVersions(terraformConfig *config.TerraformConfig) (source, rancherProviderVersion, rkeProviderVersion, localProviderVersion,
 	cloudProviderVersion string) {
-	for _, cattleConfig := range configMap {
-		terraformConfig := new(config.TerraformConfig)
-		operations.LoadObjectFromMap(config.TerraformConfigurationFileKey, cattleConfig, terraformConfig)
-		module := terraformConfig.Module
+	if terraformConfig == nil {
+		return source, rancherProviderVersion, rkeProviderVersion, localProviderVersion, cloudProviderVersion
+	}
 
-		rancherProviderVersion = os.Getenv(providerEnvVar)
-		if rancherProviderVersion == "" {
-			logrus.Fatalf("Expected env var not set %s", providerEnvVar)
+	module := terraformConfig.Module
+
+	rancherProviderVersion = os.Getenv(providerEnvVar)
+	if rancherProviderVersion == "" {
+		logrus.Fatalf("Expected env var not set %s", providerEnvVar)
+	}
+
+	source = "rancher/rancher2"
+	if strings.Contains(rancherProviderVersion, rc) {
+		source = "terraform.local/local/rancher2"
+	}
+
+	if strings.Contains(module, general.Custom) || strings.Contains(module, general.Import) ||
+		strings.Contains(module, ec2) {
+		cloudProviderVersion = os.Getenv(cloudProviderEnvVar)
+		if cloudProviderVersion == "" {
+			logrus.Fatalf("Expected env var not set %s", cloudProviderEnvVar)
 		}
 
-		source = "rancher/rancher2"
-		if strings.Contains(rancherProviderVersion, rc) {
-			source = "terraform.local/local/rancher2"
-		}
-
-		if strings.Contains(module, general.Custom) || strings.Contains(module, general.Import) ||
-			strings.Contains(module, ec2) {
-			cloudProviderVersion = os.Getenv(cloudProviderEnvVar)
-			if cloudProviderVersion == "" {
-				logrus.Fatalf("Expected env var not set %s", cloudProviderEnvVar)
-			}
-
-			localProviderVersion = os.Getenv(localProviderEnvVar)
-			if localProviderVersion == "" {
-				logrus.Fatalf("Expected env var not set %s", localProviderEnvVar)
-			}
+		localProviderVersion = os.Getenv(localProviderEnvVar)
+		if localProviderVersion == "" {
+			logrus.Fatalf("Expected env var not set %s", localProviderEnvVar)
 		}
 	}
 

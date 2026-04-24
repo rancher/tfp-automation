@@ -19,7 +19,7 @@ import (
 )
 
 // SetCustomRKE2K3s is a function that will set the custom RKE2/K3s cluster configurations in the main.tf file.
-func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, configMap []map[string]any,
+func SetCustomRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) (*hclwrite.File, *os.File, error) {
 	switch terraformConfig.Provider {
 	case awsDefaults.Aws:

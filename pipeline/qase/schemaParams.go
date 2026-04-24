@@ -9,10 +9,9 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 )
 
-// GetProvisioningSchemaParams gets a set of params from the cattle config and returns a qase params object
-func GetProvisioningSchemaParams(configMap map[string]any) []upstream.TestCaseParameterCreate {
+// GetProvisioningSchemaParams gets a set of params from the terraform/terratest config and returns a qase params object
+func GetProvisioningSchemaParams(terraform *config.TerraformConfig, terratest *config.TerratestConfig) []upstream.TestCaseParameterCreate {
 	var params []upstream.TestCaseParameterCreate
-	_, terraform, terratest, _ := config.LoadTFPConfigs(configMap)
 
 	params = append(params,
 		getRunType(terraform),

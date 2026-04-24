@@ -31,11 +31,11 @@ const (
 // AirgapUIOfflinePreferredCheck is a function that will attempt to load the V3 and VI API pages
 // in an airgapped environment.
 func AirgapUIOfflinePreferred(t *testing.T, terraformOptions *terraform.Options, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, rootBody *hclwrite.Body, newFile *hclwrite.File, file *os.File, setting string, configMap []map[string]any) {
+	terratestConfig *config.TerratestConfig, rootBody *hclwrite.Body, newFile *hclwrite.File, file *os.File, setting string) {
 	newFile.Body().Clear()
 
 	if !strings.Contains(string(newFile.Bytes()), general.RequiredProviders) {
-		newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, "admin", rancherConfig.AdminPassword, false, newFile, rootBody, configMap, false)
+		newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, "admin", rancherConfig.AdminPassword, false, newFile, rootBody, terraformConfig, false)
 	}
 
 	settingBlock := rootBody.AppendNewBlock(general.Resource, []string{rancher2.Setting, rancher2.Setting})
