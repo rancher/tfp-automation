@@ -18,7 +18,6 @@ import (
 
 const (
 	allPublicIPs = "all_public_ips"
-	noProxy      = "localhost,127.0.0.0/8,10.0.0.0/8,172.0.0.0/8,192.168.0.0/16,.svc,.cluster.local,cattle-system.svc,169.254.169.25"
 )
 
 // SetLocals is a function that will set the locals configurations in the main.tf file.
@@ -73,7 +72,7 @@ func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *con
 	}
 
 	//Temporary workaround until fetching insecure node command is available for rancher2_cluster_v2 resoureces with tfp-rancher2
-	if strings.Contains(terraformConfig.Module, general.Custom) || strings.Contains(terraformConfig.Module, general.Airgap) {
+	if strings.Contains(terraformConfig.Module, general.Custom) {
 		setCustomClusterLocalBlock(localsBlockBody, terraformConfig.ResourcePrefix, terraformConfig)
 	}
 }

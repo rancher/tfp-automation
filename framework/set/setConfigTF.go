@@ -38,13 +38,13 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 	for i, cattleConfig := range configMap {
 		_, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
-		if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) || strings.Contains(terraformConfig.Module, general.Airgap) {
+		if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) {
 			containsCustomModule = true
 		}
 
 		clusterNames = append(clusterNames, terraformConfig.ResourcePrefix)
 
-		if strings.Contains(terraformConfig.Module, general.Custom) || strings.Contains(terraformConfig.Module, general.Airgap) {
+		if strings.Contains(terraformConfig.Module, general.Custom) {
 			customClusterNames = append(customClusterNames, terraformConfig.ResourcePrefix)
 		}
 
@@ -55,7 +55,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 			}
 		}
 
-		if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) && !strings.Contains(terraformConfig.Module, general.Airgap) &&
+		if !strings.Contains(terraformConfig.Module, general.Custom) && !strings.Contains(terraformConfig.Module, general.Import) &&
 			terraformConfig.Module != modules.HostedAzureAKS && terraformConfig.Module != modules.HostedAWSEKS && terraformConfig.Module != modules.HostedGoogleGKE {
 			newFile, file, err = NodeDriverClusters(client, terraformConfig, terratestConfig, rbacRole, newFile, rootBody, file)
 			if err != nil {
@@ -65,13 +65,6 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 
 		if strings.Contains(terraformConfig.Module, general.Custom) {
 			newFile, file, err = CustomClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, configMap, isWindows)
-			if err != nil {
-				return clusterNames, nil, err
-			}
-		}
-
-		if strings.Contains(terraformConfig.Module, general.Airgap) {
-			newFile, file, err = AirgapClusters(client, terraformConfig, terratestConfig, newFile, rootBody, file, configMap, isWindows)
 			if err != nil {
 				return clusterNames, nil, err
 			}
