@@ -6,15 +6,20 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/session"
 	reg "github.com/rancher/tests/actions/registries"
+	"github.com/rancher/tests/actions/workloads/deployment"
+	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
+	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/ssh"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
@@ -67,6 +72,17 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 		t.Fatalf("ERROR: not all of the local cluster pods are using the private registry")
 	}
 
+	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetLocal + "/local")
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster deployments (%s)", cluster.Name)
+	err = deployment.VerifyClusterDeployments(client, cluster)
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster pods (%s)", cluster.Name)
+	err = pods.VerifyClusterPods(client, cluster)
+	require.NoError(t, err)
+
 	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
 
@@ -104,6 +120,17 @@ func UpgradeDualStackRancher(t *testing.T, client *rancher.Client, serverNodeOne
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
+	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetLocal + "/local")
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster deployments (%s)", cluster.Name)
+	err = deployment.VerifyClusterDeployments(client, cluster)
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster pods (%s)", cluster.Name)
+	err = pods.VerifyClusterPods(client, cluster)
+	require.NoError(t, err)
+
 	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
 
@@ -140,6 +167,17 @@ func UpgradeIPv6Rancher(t *testing.T, client *rancher.Client, serverNodeOne stri
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetLocal + "/local")
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster deployments (%s)", cluster.Name)
+	err = deployment.VerifyClusterDeployments(client, cluster)
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster pods (%s)", cluster.Name)
+	err = pods.VerifyClusterPods(client, cluster)
+	require.NoError(t, err)
 
 	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
@@ -179,6 +217,17 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
+	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetLocal + "/local")
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster deployments (%s)", cluster.Name)
+	err = deployment.VerifyClusterDeployments(client, cluster)
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster pods (%s)", cluster.Name)
+	err = pods.VerifyClusterPods(client, cluster)
+	require.NoError(t, err)
+
 	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
 
@@ -215,6 +264,17 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
+
+	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetLocal + "/local")
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster deployments (%s)", cluster.Name)
+	err = deployment.VerifyClusterDeployments(client, cluster)
+	require.NoError(t, err)
+
+	logrus.Infof("Verifying cluster pods (%s)", cluster.Name)
+	err = pods.VerifyClusterPods(client, cluster)
+	require.NoError(t, err)
 
 	return client, updatedCattleConfig, terraformOptions, upgradeTerraformOptions
 }
