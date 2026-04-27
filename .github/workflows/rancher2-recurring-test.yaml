@@ -231,6 +231,8 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_15 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
+            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
+            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true
@@ -241,9 +243,6 @@ jobs:
               - quantity: ${{ vars.WINDOWS_NODE_COUNT }}
                 windows: true
             snapshotInput: {}
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_15 }}"
-            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_15 }}"
-            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_15 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -540,6 +539,8 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
+            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
+            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true
@@ -550,9 +551,6 @@ jobs:
               - quantity: ${{ vars.WINDOWS_NODE_COUNT }}
                 windows: true
             snapshotInput: {}
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_14 }}"
-            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_14 }}"
-            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_14 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG
@@ -842,6 +840,8 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
+            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
+            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true
@@ -852,9 +852,6 @@ jobs:
               - quantity: ${{ vars.WINDOWS_NODE_COUNT }}
                 windows: true
             snapshotInput: {}
-            aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_13 }}"
-            eksKubernetesVersion: "${{ vars.EKS_KUBERNETES_VERSION_2_13 }}"
-            gkeKubernetesVersion: "${{ vars.GKE_KUBERNETES_VERSION_2_13 }}"
           EOF
 
       - name: Export CATTLE_TEST_CONFIG

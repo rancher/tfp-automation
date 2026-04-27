@@ -207,6 +207,8 @@ jobs:
               upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
+            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
+            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true
