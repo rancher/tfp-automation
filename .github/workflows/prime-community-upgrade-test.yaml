@@ -219,8 +219,8 @@ jobs:
               upgradedRancherTagVersion: "${{ env.UPGRADED_RANCHER_VERSION }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
-            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
+            tfLogging: ${{ vars.TERRAFORM_LOGGING }}
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true

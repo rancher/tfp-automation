@@ -229,8 +229,8 @@ jobs:
               repo: "${{ env.RANCHER_REPO }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
-            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
+            tfLogging: ${{ vars.TERRAFORM_LOGGING }}
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_15 }}"
           EOF
 
@@ -491,8 +491,8 @@ jobs:
               repo: "${{ env.RANCHER_REPO }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
-            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
+            tfLogging: ${{ vars.TERRAFORM_LOGGING }}
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_14 }}"
           EOF
 
@@ -755,8 +755,8 @@ jobs:
               repo: "${{ env.RANCHER_REPO }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
-            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
+            tfLogging: ${{ vars.TERRAFORM_LOGGING }}
             aksKubernetesVersion: "${{ vars.AKS_KUBERNETES_VERSION_2_13 }}"
           EOF
 

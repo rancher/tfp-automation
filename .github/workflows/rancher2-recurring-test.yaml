@@ -231,8 +231,8 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_15 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
-            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
+            tfLogging: ${{ vars.TERRAFORM_LOGGING }}
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true
@@ -539,8 +539,8 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
-            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
+            tfLogging: ${{ vars.TERRAFORM_LOGGING }}
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true
@@ -840,8 +840,8 @@ jobs:
               rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
           terratest:
             pathToRepo: "${{ secrets.PATH_TO_REPO }}"
-            standaloneLogging: "${{ vars.TERRAFORM_STANDALONE_LOGGING }}"
-            tfLogging: "${{ vars.TERRAFORM_LOGGING }}"
+            standaloneLogging: ${{ vars.TERRAFORM_STANDALONE_LOGGING }}
+            tfLogging: ${{ vars.TERRAFORM_LOGGING }}
             nodepools:
               - quantity: ${{ vars.ETCD_COUNT }}
                 etcd: true
