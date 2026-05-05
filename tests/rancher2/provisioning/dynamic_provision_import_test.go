@@ -32,7 +32,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type DynamicUpgradeImportedClusterTestSuite struct {
+type DynamicImportedClusterTestSuite struct {
 	suite.Suite
 	client             *rancher.Client
 	standardUserClient *rancher.Client
@@ -44,7 +44,7 @@ type DynamicUpgradeImportedClusterTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (p *DynamicUpgradeImportedClusterTestSuite) SetupSuite() {
+func (p *DynamicImportedClusterTestSuite) SetupSuite() {
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 
@@ -62,7 +62,7 @@ func (p *DynamicUpgradeImportedClusterTestSuite) SetupSuite() {
 	p.client = client
 }
 
-func (p *DynamicUpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDynamicInput() {
+func (p *DynamicImportedClusterTestSuite) TestTfpImportedClusterDynamicInput() {
 	var err error
 	var testUser, testPassword string
 
@@ -132,6 +132,6 @@ func (p *DynamicUpgradeImportedClusterTestSuite) TestTfpUpgradeImportedClusterDy
 	}
 }
 
-func TestDynamicUpgradeImportedClusterTestSuite(t *testing.T) {
-	suite.Run(t, new(DynamicUpgradeImportedClusterTestSuite))
+func TestDynamicImportedClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(DynamicImportedClusterTestSuite))
 }
