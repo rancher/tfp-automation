@@ -22,7 +22,6 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
-	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
@@ -34,7 +33,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type UpgradeImportedClusterTestSuite struct {
+type ImportedClusterTestSuite struct {
 	suite.Suite
 	client             *rancher.Client
 	standardUserClient *rancher.Client
@@ -46,7 +45,7 @@ type UpgradeImportedClusterTestSuite struct {
 	terraformOptions   *terraform.Options
 }
 
-func (p *UpgradeImportedClusterTestSuite) SetupSuite() {
+func (p *ImportedClusterTestSuite) SetupSuite() {
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 
@@ -64,7 +63,7 @@ func (p *UpgradeImportedClusterTestSuite) SetupSuite() {
 	p.client = client
 }
 
-func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
+func (p *ImportedClusterTestSuite) TestTfpImportedCluster() {
 	var err error
 	var testUser, testPassword string
 
@@ -82,10 +81,10 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 		name   string
 		module string
 	}{
-		{"Upgrade_Imported_RKE2", rke2Module},
-		{"Upgrade_Imported_RKE2_Windows_2019", rke2Windows2019},
-		{"Upgrade_Imported_RKE2_Windows_2022", rke2Windows2022},
-		{"Upgrade_Imported_K3S", k3sModule},
+		{"Imported_RKE2", rke2Module},
+		{"Imported_RKE2_Windows_2019", rke2Windows2019},
+		{"Imported_RKE2_Windows_2022", rke2Windows2022},
+		{"Imported_K3S", k3sModule},
 	}
 
 	for _, tt := range tests {
@@ -127,9 +126,6 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 			err = pods.VerifyClusterPods(p.client, clusters[0])
 			require.NoError(p.T(), err)
 
-			err = imported.SetUpgradeImportedCluster(p.client, terraform)
-			require.NoError(p.T(), err)
-
 			params := tfpQase.GetProvisioningSchemaParams(p.terraformConfig, p.terratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
@@ -143,6 +139,6 @@ func (p *UpgradeImportedClusterTestSuite) TestTfpUpgradeImportedCluster() {
 	}
 }
 
-func TestTfpUpgradeImportedClusterTestSuite(t *testing.T) {
-	suite.Run(t, new(UpgradeImportedClusterTestSuite))
+func TestTfpImportedClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(ImportedClusterTestSuite))
 }
