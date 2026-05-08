@@ -43,15 +43,26 @@ copy_certs() {
 
 fetch_images() {
     echo "Downloading ${RANCHER_VERSION} image list and scripts..."
-    wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt
+    curl -fsSL --max-time 30 -o /home/${USER}/rancher-images.txt ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt
+    curl -fsSL --max-time 30 -o /home/${USER}/sha256sum.txt ${ASSET_DIR}${RANCHER_VERSION}/sha256sum.txt
+
+    echo "Validating checksums for Rancher image lists..."
+    CHECKSUM_LINE=$(grep "rancher-images.txt" /home/${USER}/sha256sum.txt)
+    if [ -z "$CHECKSUM_LINE" ]; then
+        echo "ERROR: Checksum for rancher-images.txt not found in sha256sum.txt file!"
+        exit 1
+    fi
+
+    CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
+    echo "$CHECKSUM  /home/${USER}/rancher-images.txt" | sha256sum -c -
 
     echo "Cutting the tags from the image names..."
     while read LINE; do
         echo ${LINE} | cut -d: -f1
-    done < rancher-images.txt > rancher-images-no-tags.txt
+    done < /home/${USER}/rancher-images.txt > /home/${USER}/rancher-images-no-tags.txt
 
     echo "Creating ECR repositories..."
-    for IMAGE in $(cat rancher-images-no-tags.txt); do
+    for IMAGE in $(cat /home/${USER}/rancher-images-no-tags.txt); do
         if aws ecr describe-repositories --repository-names ${IMAGE} >/dev/null 2>&1; then
             echo "Repository ${IMAGE} already exists. Skipping."
         else

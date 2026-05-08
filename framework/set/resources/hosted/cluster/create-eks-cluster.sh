@@ -20,7 +20,7 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
 fi
 
 echo "Downloading AWS CLI..."
-curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o "awscliv2.zip"
+curl -fsSL --max-time 30 -o "awscliv2.zip" "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip"
 unzip awscliv2.zip > /dev/null
 sudo ./aws/install > /dev/null
 rm -rf aws awscliv2.zip

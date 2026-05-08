@@ -20,7 +20,7 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
 fi
 
 echo "Installing gcloud..."
-curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-${ARCH}.tar.gz
+curl -fsSL --max-time 30 -o "google-cloud-cli-linux-${ARCH}.tar.gz" "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-${ARCH}.tar.gz"
 tar -xf google-cloud-cli-linux-${ARCH}.tar.gz
 ./google-cloud-sdk/install.sh --quiet > /dev/null
 rm google-cloud-cli-linux-${ARCH}.tar.gz

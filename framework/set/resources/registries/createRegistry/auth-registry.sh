@@ -57,8 +57,28 @@ create_registry() {
 
 fetch_images() {
     echo "Fetching Rancher image lists..."
-    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt -O /home/${USER}/rancher-images.txt
-    sudo wget ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt -O /home/${USER}/rancher-windows-images.txt
+    curl -fsSL --max-time 30 -o /home/${USER}/rancher-images.txt ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt
+    curl -fsSL --max-time 30 -o /home/${USER}/rancher-windows-images.txt ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt
+    curl -fsSL --max-time 30 -o /home/${USER}/sha256sum.txt ${ASSET_DIR}${RANCHER_VERSION}/sha256sum.txt
+
+    echo "Validating checksums for Rancher image lists..."
+    CHECKSUM_LINE=$(grep "rancher-images.txt" /home/${USER}/sha256sum.txt)
+    if [ -z "$CHECKSUM_LINE" ]; then
+        echo "ERROR: Checksum for rancher-images.txt not found in sha256sum.txt file!"
+        exit 1
+    fi
+
+    CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
+    echo "$CHECKSUM  /home/${USER}/rancher-images.txt" | sha256sum -c -
+
+    WIN_CHECKSUM_LINE=$(grep "rancher-windows-images.txt" /home/${USER}/sha256sum.txt)
+    if [ -z "$WIN_CHECKSUM_LINE" ]; then
+        echo "ERROR: Checksum for rancher-windows-images.txt not found in sha256sum.txt file!"
+        exit 1
+    fi
+
+    WIN_CHECKSUM=$(echo "$WIN_CHECKSUM_LINE" | awk "{print \$1}")
+    echo "$WIN_CHECKSUM  /home/${USER}/rancher-windows-images.txt" | sha256sum -c -
 
     if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
         sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt

@@ -32,9 +32,10 @@ ENV LOCALS_PROVIDER_VERSION=${LOCALS_PROVIDER_VERSION}
 ENV CLOUD_PROVIDER_VERSION=${CLOUD_PROVIDER_VERSION}
 ENV KUBERNETES_PROVIDER_VERSION=${KUBERNETES_PROVIDER_VERSION}
 ENV LETS_ENCRYPT_EMAIL=${LETS_ENCRYPT_EMAIL}
+ENV CURL="curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-connrefused --connect-timeout 10 --max-time 30"
 
 RUN zypper install -y openssh wget unzip > /dev/null
-RUN (curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz && \
+RUN ($CURL -o google-cloud-cli-linux-x86_64.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz && \
     tar -xf google-cloud-cli-linux-x86_64.tar.gz && \
     ./google-cloud-sdk/install.sh --quiet && \
     rm google-cloud-cli-linux-x86_64.tar.gz) > /dev/null 2>&1
@@ -45,7 +46,9 @@ RUN zypper install -y azure-cli > /dev/null 2>&1
 
 ENV PATH $PATH:/root/go/src/github.com/rancher/tfp-automation/google-cloud-sdk/bin
 
-RUN (wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+RUN ($CURL -o terraform_${TERRAFORM_VERSION}_linux_amd64.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    $CURL -o terraform_${TERRAFORM_VERSION}_SHA256SUMS https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS && \
+    grep "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" terraform_${TERRAFORM_VERSION}_SHA256SUMS | sha256sum -c && \
     zypper --non-interactive update && \
     unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
     rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
