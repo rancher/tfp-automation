@@ -22,10 +22,11 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
 fi
 
 echo "Installing kubectl"
-sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
-sudo chmod +x kubectl
-
-sudo mv kubectl /usr/local/bin/
+KUBECTL_VERSION="v1.36.0"
+curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
+curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
+echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 sudo mkdir -p /etc/rancher/k3s
 sudo touch /etc/rancher/k3s/registries.yaml
@@ -44,7 +45,9 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/k3s/registries.yaml > /dev/null
 
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} sh -s - server --cluster-init --cluster-cidr=${CLUSTER_CIDR} --service-cidr=${SERVICE_CIDR}
+curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
+chmod +x install.sh
+sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} sh install.sh - server --cluster-init --cluster-cidr=${CLUSTER_CIDR} --service-cidr=${SERVICE_CIDR}
 
 sudo mkdir -p /home/${USER}/.kube
 sudo chown ${USER}:${GROUP} /etc/rancher/k3s/k3s.yaml

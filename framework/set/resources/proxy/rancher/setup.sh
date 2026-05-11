@@ -43,7 +43,10 @@ install_kubectl() {
     fi
 
     echo "Installing kubectl"
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
+    KUBECTL_VERSION="v1.36.0"
+    curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
+    curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
+    echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
     sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
     mkdir -p ~/.kube
     rm kubectl
@@ -77,11 +80,23 @@ check_cluster_status() {
 }
 
 install_helm() {
+    HELM_VERSION="v4.1.4"
+    ARCH=$(uname -m)
+    if [[ $ARCH == "x86_64" ]]; then
+        ARCH="amd64"
+    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+        ARCH="arm64"
+    fi
+
     echo "Installing Helm"
-    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    chmod +x get_helm.sh
-    ./get_helm.sh
-    rm get_helm.sh
+    curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
+    curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256 https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
+
+    echo "$(cat helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256) helm-${HELM_VERSION}-linux-${ARCH}.tar.gz" | sha256sum -c
+    tar -xf helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
+    sudo mv linux-${ARCH}/helm /usr/local/bin/helm
+    rm -rf linux-${ARCH} helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
+    rm helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
 }
 
 setup_helm_repo() {

@@ -44,14 +44,25 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+curl -fsSL --max-time 30 -o /home/${USER}/install.sh https://get.rke2.io
 
-curl -sfL https://get.rke2.io --output install.sh
-sudo chmod +x install.sh
+echo "Validating checksum for rke2-images.linux-${ARCH}.tar.zst"
+ZIP_NAME="rke2-images.linux-${ARCH}.tar.zst"
+CHECKSUM_LINE=$(grep "${ZIP_NAME}" /home/${USER}/sha256sum-${ARCH}.txt)
 
-sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh
+if [ -z "$CHECKSUM_LINE" ]; then
+  echo "ERROR: Checksum for $ZIP_NAME not found in sha256sum-${ARCH}.txt file!"
+  exit 1
+fi
+
+CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
+echo "$CHECKSUM  /home/${USER}/rke2-images.linux-${ARCH}.tar.zst" | sha256sum -c -
+
+sudo chmod +x /home/${USER}/install.sh
+sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh /home/${USER}/install.sh
 sudo systemctl enable rke2-server
 sudo systemctl start rke2-server
 

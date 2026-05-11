@@ -13,14 +13,14 @@ base64 -d <<< $PEM_FILE > /home/$USER/airgap.pem
 PEM=/home/$USER/airgap.pem
 chmod 600 $PEM
 
-wget https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s
-wget https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s-images.txt
-wget https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s-airgap-images-amd64.tar.gz
-wget https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s-airgap-images-arm64.tar.gz
-wget https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/sha256sum-amd64.txt
-wget https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/sha256sum-arm64.txt
+curl -fsSL --max-time 30 -o k3s https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s
+curl -fsSL --max-time 30 -o k3s-images.txt https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s-images.txt
+curl -fsSL --max-time 30 -o k3s-airgap-images-amd64.tar.gz https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s-airgap-images-amd64.tar.gz
+curl -fsSL --max-time 30 -o k3s-airgap-images-arm64.tar.gz https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/k3s-airgap-images-arm64.tar.gz
+curl -fsSL --max-time 30 -o sha256sum-amd64.txt https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/sha256sum-amd64.txt
+curl -fsSL --max-time 30 -o sha256sum-arm64.txt https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}+k3s1/sha256sum-arm64.txt
+curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
 
-curl -sfL https://get.k3s.io --output install.sh
 chmod +x k3s
 chmod +x install.sh
 
@@ -31,8 +31,23 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
+echo "Validating checksum for k3s-airgap-images-${ARCH}.tar.gz"
+ZIP_NAME="k3s-airgap-images-${ARCH}.tar.gz"
+CHECKSUM_LINE=$(grep "${ZIP_NAME}" sha256sum-${ARCH}.txt)
+
+if [ -z "$CHECKSUM_LINE" ]; then
+  echo "ERROR: Checksum for $ZIP_NAME not found in sha256sum-${ARCH}.txt file!"
+  exit 1
+fi
+
+CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
+echo "$CHECKSUM k3s-airgap-images-${ARCH}.tar.gz" | sha256sum -c -
+
 echo "Installing kubectl"
-sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
+KUBECTL_VERSION="v1.36.0"
+curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
+curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
+echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
 sudo chmod +x kubectl
 
 echo "Copying files to K3S server one"
@@ -60,4 +75,5 @@ sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null i
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-amd64.txt ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
 
-sudo mv kubectl /usr/local/bin/
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+rm kubectl

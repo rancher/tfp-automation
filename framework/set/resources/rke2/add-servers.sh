@@ -20,9 +20,21 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-wget https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+curl -fsSL --max-time 30 -o rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+curl -fsSL --max-time 30 -o rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+curl -fsSL --max-time 30 -o sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+
+echo "Validating checksum for rke2.linux-${ARCH}.tar.gz"
+ZIP_NAME="rke2.linux-${ARCH}.tar.gz"
+CHECKSUM_LINE=$(grep "${ZIP_NAME}" sha256sum-${ARCH}.txt)
+
+if [ -z "$CHECKSUM_LINE" ]; then
+  echo "ERROR: Checksum for $ZIP_NAME not found in sha256sum-${ARCH}.txt file!"
+  exit 1
+fi
+
+CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
+echo "$CHECKSUM  rke2.linux-${ARCH}.tar.gz" | sha256sum -c -
 
 if [[ "${USER}" == "root" ]]; then
   mkdir -p /home/root
@@ -54,7 +66,7 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null
 
-curl -sfL https://get.rke2.io --output install.sh
+curl -fsSL --max-time 30 -o install.sh https://get.rke2.io
 chmod +x install.sh
 
 sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh

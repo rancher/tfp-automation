@@ -15,7 +15,10 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
 fi
 
 echo "Installing kubectl"
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
+KUBECTL_VERSION="v1.36.0"
+curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
+curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
+echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 mkdir -p ~/.kube
 rm kubectl

@@ -60,11 +60,23 @@ check_cluster_status() {
 }
 
 install_helm() {
+  HELM_VERSION="v4.1.4"
+  ARCH=$(uname -m)
+  if [[ $ARCH == "x86_64" ]]; then
+      ARCH="amd64"
+  elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+      ARCH="arm64"
+  fi
+
   echo "Installing Helm"
-  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-  chmod +x get_helm.sh
-  ./get_helm.sh
-  rm get_helm.sh
+  curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
+  curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256 https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
+
+  echo "$(cat helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256) helm-${HELM_VERSION}-linux-${ARCH}.tar.gz" | sha256sum -c
+  tar -xf helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
+  sudo mv linux-${ARCH}/helm /usr/local/bin/helm
+  rm -rf linux-${ARCH} helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
+  rm helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
 }
 
 setup_helm_repo() {

@@ -20,7 +20,18 @@ chmod 600 $PUB
 
 . /etc/os-release
 
-[[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash > /dev/null 2>&1
+[[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && \
+    sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release && \
+    sudo mkdir -p /etc/apt/keyrings && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/microsoft.gpg > /dev/null && \
+    sudo chmod go+r /etc/apt/keyrings/microsoft.gpg && \
+    AZ_DIST=$(lsb_release -cs)
+echo "Types: deb
+URIs: https://packages.microsoft.com/repos/azure-cli/
+Suites: ${AZ_DIST}
+Components: main
+Architectures: $(dpkg --print-architecture)
+Signed-by: /etc/apt/keyrings/microsoft.gpg" | sudo tee /etc/apt/sources.list.d/azure-cli.sources > /dev/null && \
+    sudo apt-get update && sudo apt-get install azure-cli -y > /dev/null 2>&1
 [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install -y azure-cli > /dev/null 2>&1
 
 az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID" > /dev/null 2>&1

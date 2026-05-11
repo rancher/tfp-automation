@@ -35,9 +35,21 @@ fi
 
 DIR=~/.terraform.d/plugins/terraform.local/local/${PROVIDER}/${VERSION_TAG}/${PLATFORM}
 (umask u=rwx,g=rwx,o=rwx && mkdir -p $DIR)
-curl -sfL https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_${PLATFORM}.zip -o /tmp/provider.zip
-unzip -o /tmp/provider.zip -d ${DIR}
+curl -fsSL --max-time 30 -o /tmp/provider.zip https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_${PLATFORM}.zip
+curl -fsSL --max-time 30 -o /tmp/provider.sha256sums https://github.com/rancher/terraform-provider-${PROVIDER}/releases/download/${VERSION}/terraform-provider-${PROVIDER}_${VERSION_TAG}_SHA256SUMS
 
+ZIP_NAME="terraform-provider-${PROVIDER}_${VERSION_TAG}_${PLATFORM}.zip"
+CHECKSUM_LINE=$(grep "${ZIP_NAME}" /tmp/provider.sha256sums)
+
+if [ -z "$CHECKSUM_LINE" ]; then
+  echo "ERROR: Checksum for $ZIP_NAME not found in SHA256SUMS file!"
+  exit 1
+fi
+
+CHECKSUM=$(echo "$CHECKSUM_LINE" | awk '{print $1}')
+echo "$CHECKSUM  /tmp/provider.zip" | sha256sum -c
+
+unzip -o /tmp/provider.zip -d ${DIR}
 BINARY=$(find ${DIR} -type f -name "terraform-provider-${PROVIDER}_v${VERSION_TAG}")
 
 if [ -f "$BINARY" ]; then
