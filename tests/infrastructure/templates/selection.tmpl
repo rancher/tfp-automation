@@ -18,9 +18,9 @@
 
         <main>
             <div class="container">
-                <h2>Select Cluster or Rancher</h2>
+                <h2>Select Cluster, Rancher, or Registry</h2>
 
-                <!-- Cluster or Rancher Form -->
+                <!-- Cluster, Rancher, or Registry Form -->
                 <form id="selectionForm" action="/installtype" method="post">
                     <input type="hidden" name="selection" id="selectionInput" value="" />
                     <label class="form-label-radio">
@@ -28,6 +28,9 @@
                     </label>
                     <label class="form-label-radio">
                         <input type="radio" class="form-radio" name="selectionRadio" value="rancher" required /> Rancher
+                    </label>
+                    <label class="form-label-radio">
+                        <input type="radio" class="form-radio" name="selectionRadio" value="registry" required /> Registry
                     </label>
 
                     <button type="submit" class="form-button">Next &#8594;</button>
@@ -44,6 +47,8 @@
                         this.action = '/clustertype';
                     } else if (selected.value === 'rancher') {
                         this.action = '/ranchertype';
+                    } else if (selected.value === 'registry') {
+                        this.action = '/registrytype';
                     }
 
                 });

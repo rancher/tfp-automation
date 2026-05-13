@@ -45,9 +45,7 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/k3s/registries.yaml > /dev/null
 
-curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
-chmod +x install.sh
-sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} sh install.sh - server --cluster-init --cluster-cidr=${CLUSTER_CIDR} --service-cidr=${SERVICE_CIDR}
+curl -fsSL --max-time 30 https://get.k3s.io | INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} sh -s - server --cluster-init --cluster-cidr=${CLUSTER_CIDR} --service-cidr=${SERVICE_CIDR}
 
 sudo mkdir -p /home/${USER}/.kube
 sudo chown ${USER}:${GROUP} /etc/rancher/k3s/k3s.yaml

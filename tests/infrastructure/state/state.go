@@ -29,3 +29,12 @@ var RancherStageMessage = []string{
 	"\nRegistry Rancher : ~2.5 hours",
 	"\n\nThe Rancher URL will be displayed once the setup successfully finishes.",
 }
+
+var RegistryStageMessage = []string{
+	"Please do not close this window while the setup is in progress.",
+	"\n\nAll Registries : ~3 hours",
+	"\nAuthenticated Registry : ~1 hour",
+	"\nNon-Authenticated Registry : ~40 minutes",
+	"\nECR : ~50 minutes",
+	"\n\nThe registry access information will be displayed once the setup successfully finishes.",
+}

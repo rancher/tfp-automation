@@ -6,6 +6,7 @@ import (
 
 	"github.com/rancher/tfp-automation/tests/infrastructure/clusters"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+	"github.com/rancher/tfp-automation/tests/infrastructure/registries"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,12 +35,19 @@ var setupRancherFuncs = map[string]func(*testing.T, string) error{
 	"--registry:fresh": ranchers.CreateRegistryRancher,
 }
 
+var setupRegistryFuncs = map[string]func(*testing.T, string) error{
+	"--registries-all":     registries.SetupAllRegistries,
+	"--registries-auth":    registries.SetupAuthenticatedRegistry,
+	"--registries-nonauth": registries.SetupNonAuthenticatedRegistry,
+	"--registries-ecr":     registries.SetupECR,
+}
+
 // RunCLI is a function that runs the CLI setup based on command-line arguments
 func RunCLI() int {
 	t := &testing.T{}
 	key := os.Args[1]
 
-	// If there are two arguments, we assume this is a Rancher setup. If only one, it's a cluster setup.
+	// If there are two arguments, we assume this is a Rancher setup. If only one, it's a cluster or registry setup.
 	if len(os.Args) > 2 {
 		key += ":" + os.Args[2]
 
@@ -51,6 +59,13 @@ func RunCLI() int {
 		}
 	} else {
 		if setupFunc, ok := setupClusterFuncs[key]; ok {
+			err := setupFunc(t, "")
+			require.NoError(t, err)
+
+			return 0
+		}
+
+		if setupFunc, ok := setupRegistryFuncs[key]; ok {
 			err := setupFunc(t, "")
 			require.NoError(t, err)
 
