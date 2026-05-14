@@ -1,0 +1,47 @@
+---
+name: "GH Model Prompt"
+description: "Run a GitHub Model prompt using a .prompt.yml and dynamic input"
+inputs:
+  prompt_file:
+    description: "Path to the .prompt.yml file"
+    required: true
+  input_file:
+    description: "Path to the file containing input to inject as PRs"
+    required: true
+  output_file:
+    description: "File to write the model output to"
+    required: true
+outputs:
+  summary:
+    description: "The model output summary"
+    value: ${{ steps.run-prompt.outputs.summary }}
+
+runs:
+  using: composite
+  steps:
+    - id: run-prompt
+      run: |
+        PROMPT_CONTENT=$(yq -r '.messages[] | select(.role=="user") | .content' "${{ inputs.prompt_file }}")
+        PRS_STRING=$(cat "${{ inputs.input_file }}")
+        jq -n --arg prompt "$PROMPT_CONTENT" --arg prs "$PRS_STRING" '
+          {
+            messages: [
+              {
+                role: "user",
+                content: ($prompt + "\n\nPRs:\n" + $prs)
+              }
+            ],
+            model: "gpt-4.1"
+          }
+        ' > payload.json
+
+        curl -fsSL --connect-timeout 10 --max-time 200 https://models.inference.ai.azure.com/chat/completions \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d @payload.json \
+          | jq -r '.choices[0].message.content' > "${{ inputs.output_file }}"
+
+        echo 'summary<<EOF' >> $GITHUB_OUTPUT
+        cat "${{ inputs.output_file }}" >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+      shell: bash

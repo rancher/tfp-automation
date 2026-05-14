@@ -1,0 +1,26 @@
+---
+name: "Weekly PR Summarizer"
+description: "Summarizes pull requests opened in the past week for team"
+model: "gpt-4.1"
+modelParameters:
+  temperature: 0.5
+messages:
+  - role: user
+    content: |
+      Weekly PR Summary - rancher/tfp-automation
+
+      Summarize the following pull requests opened in the past week.
+
+      Requirements:
+      - Group PRs into:
+        - Open PRs
+        - Closed PRs
+      - Encourage the team to review open PRs.
+      - Use Slack mrkdwn formatting.
+      - Use *single asterisks* for bold text.
+      - Format links as <url|human readable text>.
+      - Do NOT use Markdown links like [text](url).
+      - Keep the response concise and readable.
+      - Add some fun and relevant emojis to the summary to make it more engaging.
+
+      {{input}}

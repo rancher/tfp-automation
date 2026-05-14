@@ -57,13 +57,13 @@ jobs:
 
       - name: Generate weekly summary chart
         run: |
-          go run weeklyReports/generate_weekly_chart.go
+          go run weeklyTestsReports/generate_weekly_chart.go
 
       - name: Copy required assets to results
         run: |
-          cp weeklyReports/assets/style.css results/
-          cp weeklyReports/assets/toggle.js results/
-          cp weeklyReports/assets/rancher.png results/
+          cp weeklyTestsReports/assets/style.css results/
+          cp weeklyTestsReports/assets/toggle.js results/
+          cp weeklyTestsReports/assets/rancher.png results/
 
       - name: Upload summary chart artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
