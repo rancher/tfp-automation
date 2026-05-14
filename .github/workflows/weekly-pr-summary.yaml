@@ -1,0 +1,71 @@
+name: Weekly PR Summary
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * 3'
+
+permissions:
+  id-token: write
+  contents: read
+  models: read
+
+jobs:
+  create_weekly_pr_summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        with:
+          persist-credentials: true
+
+      - name: Fetch and Set Secrets from Vault
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 #v3
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/github/workflow-dispatcher/app-credentials appId | APP_ID;
+            secret/data/github/repo/${{ github.repository }}/github/workflow-dispatcher/app-credentials privateKey | PRIVATE_KEY
+
+      - name: Create App Token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.10.1
+        id: app-token
+        with:
+          app-id: ${{ env.APP_ID }}
+          private-key: ${{ env.PRIVATE_KEY }}
+
+      - name: Get PRs from the past week
+        run: |
+          LAST_WEEK=$(date -u -d "7 days ago" +"%Y-%m-%d")
+          gh pr list --state all --search "updated:>=$LAST_WEEK" --json title,url,state --repo ${{ github.repository }} > prs.json
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        shell: bash
+
+      - name: Set up Go environment
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 #v6
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Prepare PR input
+        run: |
+          jq -r '.[] | "- <" + .url + "|" + .title + "> (" + .state + ")"' prs.json > prs_input.txt
+
+      - name: Run GitHub Model prompt
+        id: run-prompt
+        uses: ./.github/actions/gh-model-prompt
+        with:
+          prompt_file: ./.github/models/weekly-pr-summary.prompt.yml
+          input_file: prs_input.txt
+          output_file: summary.txt
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Report to Slack
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ${{ toJson(steps.run-prompt.outputs.summary) }}
+            }
