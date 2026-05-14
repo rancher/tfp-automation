@@ -18,6 +18,7 @@ func main() {
 		http.HandleFunc("/selection", handlers.ClusterOrRancherHandler)
 		http.HandleFunc("/clustertype", handlers.ClusterTypeHandler)
 		http.HandleFunc("/ranchertype", handlers.RancherTypeHandler)
+		http.HandleFunc("/registrytype", handlers.RegistryTypeHandler)
 		http.HandleFunc("/installtype", handlers.InstallTypeHandler)
 		http.HandleFunc("/provider", handlers.ProviderHandler)
 		http.HandleFunc("/providerversion", handlers.ProviderVersionHandler)

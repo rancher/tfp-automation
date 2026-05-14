@@ -37,15 +37,18 @@
                     <input type="hidden" name="selection" value="{{.Selection}}" />
                     {{if .ClusterType}}
                         <input type="hidden" name="clustertype" value="{{.ClusterType}}">
-                    {{else}}
+                    {{else if .RancherType}}
                         <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                         <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{else if .RegistryType}}
+                        <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                     {{end}}
                     <input type="hidden" id="provider-input" name="provider" required />
                     <div class="provider-select-grid">
                         {{if or (eq .RancherType "airgap") (eq .RancherType "dual") (eq .RancherType "ipv6") (eq .RancherType "registry") (eq .RancherType "proxy")
                             (eq .ClusterType "airgap-rke2") (eq .ClusterType "dual-rke2") (eq .ClusterType "dual-k3s") (eq .ClusterType "ipv6-rke2") 
-                            (eq .ClusterType "ipv6-k3s")}}
+                            (eq .ClusterType "ipv6-k3s") (eq .RegistryType "registries-all") (eq .RegistryType "registries-auth") 
+                            (eq .RegistryType "registries-nonauth") (eq .RegistryType "registries-ecr") }}
                             <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
                                 <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
                                 <div>AWS</div>
@@ -85,6 +88,12 @@
                     <input type="hidden" name="selection" value="{{.Selection}}" />
                     <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                     <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
+                </form>
+                {{else if eq .Selection "registry"}}
+                <form action="/registrytype" method="post" style="margin-top:1rem;">
+                    <input type="hidden" name="selection" value="{{.Selection}}" />
+                    <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                     <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
                 </form>
                 {{end}}

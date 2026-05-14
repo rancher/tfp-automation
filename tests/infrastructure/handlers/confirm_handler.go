@@ -22,11 +22,12 @@ func ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 	selection := retrieve.GetFormOrCookie(r, "selection")
 	clustertype := retrieve.GetFormOrCookie(r, "clustertype")
 	ranchertype := retrieve.GetFormOrCookie(r, "ranchertype")
+	registrytype := retrieve.GetFormOrCookie(r, "registrytype")
 	installtype := retrieve.GetFormOrCookie(r, "installtype")
 	provider := retrieve.GetFormOrCookie(r, "provider")
 	providerversion := retrieve.GetFormOrCookie(r, "providerversion")
 
-	if clustertype == "" && ranchertype == "" {
+	if clustertype == "" && ranchertype == "" && registrytype == "" {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -46,11 +47,11 @@ func ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	editMode := false
-	if r.Method == "POST" && r.FormValue("action") == "edit" {
+	if r.Method == post && r.FormValue("action") == "edit" {
 		editMode = true
 	}
 
-	if r.Method == "POST" && r.FormValue("action") == "save" {
+	if r.Method == post && r.FormValue("action") == "save" {
 		webConfig.UpdateConfigFromForm(r.PostForm, rancherConfig)
 		webConfig.UpdateConfigFromForm(r.PostForm, terraformConfig)
 		webConfig.UpdateConfigFromForm(r.PostForm, terratestConfig)
@@ -64,11 +65,12 @@ func ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 	terratestConfigStr, _ := json.MarshalIndent(terratestConfig, "", "  ")
 	standaloneConfigStr, _ := json.MarshalIndent(standaloneConfig, "", "  ")
 
-	if r.Method == "POST" && r.FormValue("action") == "confirm" {
+	if r.Method == post && r.FormValue("action") == "confirm" {
 		selection := r.FormValue("selection")
 		clustertype := r.FormValue("clustertype")
 		ranchertype := r.FormValue("ranchertype")
 		installtype := r.FormValue("installtype")
+		registrytype := r.FormValue("registrytype")
 		provider := r.FormValue("provider")
 		providerversion := r.FormValue("providerversion")
 		confirm := r.FormValue("confirm")
@@ -89,6 +91,8 @@ func ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 			share.State.StageMsg = strings.Join(share.ClusterStageMessage, "\n")
 		} else if ranchertype != "" {
 			share.State.StageMsg = strings.Join(share.RancherStageMessage, "\n")
+		} else if registrytype != "" {
+			share.State.StageMsg = strings.Join(share.RegistryStageMessage, "\n")
 		}
 
 		share.State.ErrorMsg = ""
@@ -98,6 +102,8 @@ func ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 			go web.RunClusterSetupWeb(provider, providerversion, clustertype)
 		} else if ranchertype != "" {
 			go web.RunRancherSetupWeb(provider, providerversion, ranchertype, installtype)
+		} else if registrytype != "" {
+			go web.RunRegistrySetupWeb(provider, providerversion, registrytype)
 		}
 
 		http.Redirect(w, r, "/status", http.StatusSeeOther)
@@ -137,6 +143,7 @@ func ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 		Selection           string
 		ClusterType         string
 		RancherType         string
+		RegistryType        string
 		InstallType         string
 		Provider            string
 		ProviderVersion     string
@@ -157,6 +164,7 @@ func ConfirmHandler(w http.ResponseWriter, r *http.Request) {
 		Selection:           selection,
 		ClusterType:         clustertype,
 		RancherType:         ranchertype,
+		RegistryType:        registrytype,
 		InstallType:         installtype,
 		Provider:            provider,
 		ProviderVersion:     providerversion,

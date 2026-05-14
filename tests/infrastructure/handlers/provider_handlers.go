@@ -6,10 +6,11 @@ import "net/http"
 func ProviderHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	if r.Method == "POST" {
+	if r.Method == post {
 		selection := r.FormValue("selection")
 		clustertype := r.FormValue("clustertype")
 		ranchertype := r.FormValue("ranchertype")
+		registrytype := r.FormValue("registrytype")
 		installtype := r.FormValue("installtype")
 
 		var installOptions []string
@@ -30,6 +31,13 @@ func ProviderHandler(w http.ResponseWriter, r *http.Request) {
 			default:
 				installOptions = []string{"aws", "linode", "vsphere"}
 			}
+		} else if registrytype != "" {
+			switch registrytype {
+			case "all", "auth", "nonauth", "ecr":
+				installOptions = []string{"aws"}
+			default:
+				installOptions = []string{"aws"}
+			}
 		} else {
 			installOptions = []string{}
 		}
@@ -38,12 +46,14 @@ func ProviderHandler(w http.ResponseWriter, r *http.Request) {
 			Selection      string
 			ClusterType    string
 			RancherType    string
+			RegistryType   string
 			InstallType    string
 			InstallOptions []string
 		}{
 			Selection:      selection,
 			ClusterType:    clustertype,
 			RancherType:    ranchertype,
+			RegistryType:   registrytype,
 			InstallType:    installtype,
 			InstallOptions: installOptions,
 		}
@@ -60,25 +70,28 @@ func ProviderHandler(w http.ResponseWriter, r *http.Request) {
 func ProviderVersionHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	if r.Method == "POST" {
+	if r.Method == post {
 		selection := r.FormValue("selection")
 		clustertype := r.FormValue("clustertype")
 		ranchertype := r.FormValue("ranchertype")
+		registrytype := r.FormValue("registrytype")
 		installtype := r.FormValue("installtype")
 		provider := r.FormValue("provider")
 
 		data := struct {
-			Selection   string
-			ClusterType string
-			RancherType string
-			InstallType string
-			Provider    string
+			Selection    string
+			ClusterType  string
+			RancherType  string
+			RegistryType string
+			InstallType  string
+			Provider     string
 		}{
-			Selection:   selection,
-			ClusterType: clustertype,
-			RancherType: ranchertype,
-			InstallType: installtype,
-			Provider:    provider,
+			Selection:    selection,
+			ClusterType:  clustertype,
+			RancherType:  ranchertype,
+			RegistryType: registrytype,
+			InstallType:  installtype,
+			Provider:     provider,
 		}
 
 		Templates.ExecuteTemplate(w, "providerversion", data)

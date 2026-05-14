@@ -32,7 +32,7 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 		}
 	}
 
-	if terraformConfig.Standalone.CertManagerVersion != "" && terraformConfig.Provider != providers.EKS {
+	if terraformConfig.Standalone.RancherHostname != "" && terraformConfig.Provider != providers.EKS {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
 			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port)
@@ -54,13 +54,24 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 		rootBody.AppendNewline()
 	}
 
-	CreateAWSLocalBlock(rootBody, terraformConfig)
-	rootBody.AppendNewline()
+	var err error
 
-	_, err := file.Write(newFile.Bytes())
-	if err != nil {
-		logrus.Infof("Failed to write configurations to main.tf file. Error: %v", err)
-		return nil, err
+	// This is for the case where you are standing up a standalone private registry.
+	if terraformConfig.StandaloneRegistry != nil && terraformConfig.StandaloneRegistry.Enabled {
+		_, err = file.Write(newFile.Bytes())
+		if err != nil {
+			logrus.Infof("Failed to write configurations to main.tf file. Error: %v", err)
+			return nil, err
+		}
+	} else {
+		CreateAWSLocalBlock(rootBody, terraformConfig)
+		rootBody.AppendNewline()
+
+		_, err = file.Write(newFile.Bytes())
+		if err != nil {
+			logrus.Infof("Failed to write configurations to main.tf file. Error: %v", err)
+			return nil, err
+		}
 	}
 
 	return file, err
@@ -89,7 +100,7 @@ func CreateAirgappedAWSResources(file *os.File, newFile *hclwrite.File, tfBlockB
 	CreateAWSLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	if terraformConfig.Standalone.CertManagerVersion != "" {
+	if terraformConfig.Standalone.RancherHostname != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
 			CreateInternalTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, true), port)

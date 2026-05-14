@@ -8,7 +8,7 @@ import (
 
 // RunHandler is a function that handles the run action
 func RunHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
+	if r.Method == post {
 		selection := retrieve.GetFormOrCookie(r, "selection")
 		clustertype := retrieve.GetFormOrCookie(r, "clustertype")
 		ranchertype := retrieve.GetFormOrCookie(r, "ranchertype")

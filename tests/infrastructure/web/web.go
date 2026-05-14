@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/tests/infrastructure/clusters"
 	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+	"github.com/rancher/tfp-automation/tests/infrastructure/registries"
 	share "github.com/rancher/tfp-automation/tests/infrastructure/state"
 )
 
@@ -45,6 +46,13 @@ var setupRancherFuncs = map[string]map[string]func(*testing.T, string) error{
 	"registry": {
 		"fresh": ranchers.CreateRegistryRancher,
 	},
+}
+
+var setupRegistryFuncs = map[string]func(*testing.T, string) error{
+	"registries-all":     registries.SetupAllRegistries,
+	"registries-auth":    registries.SetupAuthenticatedRegistry,
+	"registries-nonauth": registries.SetupNonAuthenticatedRegistry,
+	"registries-ecr":     registries.SetupECR,
 }
 
 // RunClusterSetupWeb is a function that runs the standalone cluster web application setup
@@ -131,6 +139,51 @@ func RunRancherSetupWeb(provider, providerversion, ranchertype, installtype stri
 
 	url := "https://" + terraformConfig.Standalone.RancherHostname
 	share.State.StageMsg = strings.TrimSpace(url)
+
+	go func() {
+		time.Sleep(30 * time.Second)
+		os.Exit(0)
+	}()
+
+	return nil
+}
+
+// RunRegistrySetupWeb is a function that runs the standalone registry web application setup
+func RunRegistrySetupWeb(provider, providerversion, registrytype string) error {
+	configPath := os.Getenv("CATTLE_TEST_CONFIG")
+	cattleConfig := shepherdConfig.LoadConfigFromFile(configPath)
+	_, terraformConfig, _, _ := config.LoadTFPConfigs(cattleConfig)
+
+	os.Setenv("CLOUD_PROVIDER_VERSION", providerversion)
+
+	t := &testing.T{}
+
+	share.State.Mutex.Lock()
+
+	share.State.StageMsg = strings.Join(share.RegistryStageMessage, "\n")
+	share.State.ErrorMsg = ""
+	share.State.Mutex.Unlock()
+
+	var setupErr error
+	if setupFunc, ok := setupRegistryFuncs[registrytype]; ok {
+		setupErr = setupFunc(t, provider)
+	}
+
+	if setupErr != nil {
+		share.State.Mutex.Lock()
+		share.State.ErrorMsg = setupErr.Error()
+		share.State.StageMsg = "Unable to create registry. See error below:"
+		share.State.Mutex.Unlock()
+
+		go func() {
+			time.Sleep(30 * time.Second)
+			os.Exit(1)
+		}()
+
+		return setupErr
+	}
+
+	share.State.StageMsg = "Registry is ready! Please go to AWS Management Console and find it with prefix " + terraformConfig.ResourcePrefix
 
 	go func() {
 		time.Sleep(30 * time.Second)

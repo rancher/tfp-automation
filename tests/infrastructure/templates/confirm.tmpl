@@ -29,12 +29,16 @@
                     {{else if eq .Selection "rancher"}}
                         <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                         <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{else if eq .Selection "registry"}}
+                        <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                     {{else}}
                         {{if .ClusterType}}
                             <input type="hidden" name="clustertype" value="{{.ClusterType}}">
                         {{else if .RancherType}}
                             <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                             <input type="hidden" name="installtype" value="{{.InstallType}}">
+                        {{else if .RegistryType}}
+                            <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                         {{end}}
                     {{end}}
                     <input type="hidden" name="provider" value="{{.Provider}}" />
@@ -81,12 +85,16 @@
                     {{else if eq .Selection "rancher"}}
                         <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                         <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{else if eq .Selection "registry"}}
+                        <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                     {{else}}
                         {{if .ClusterType}}
                             <input type="hidden" name="clustertype" value="{{.ClusterType}}">
                         {{else if .RancherType}}
                             <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                             <input type="hidden" name="installtype" value="{{.InstallType}}">
+                        {{else if .RegistryType}}
+                            <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                         {{end}}
                     {{end}}
                     <input type="hidden" name="provider" value="{{.Provider}}" />

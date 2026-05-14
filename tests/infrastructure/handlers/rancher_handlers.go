@@ -6,7 +6,7 @@ import "net/http"
 func RancherTypeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	if r.Method == "POST" {
+	if r.Method == post {
 		selection := r.FormValue("selection")
 
 		data := struct {
@@ -27,7 +27,7 @@ func RancherTypeHandler(w http.ResponseWriter, r *http.Request) {
 func InstallTypeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	if r.Method == "POST" {
+	if r.Method == post {
 		selection := r.FormValue("selection")
 		ranchertype := r.FormValue("ranchertype")
 

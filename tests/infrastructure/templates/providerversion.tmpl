@@ -35,9 +35,11 @@
                     <input type="hidden" name="selection" value="{{.Selection}}" />
                     {{if .ClusterType}}
                         <input type="hidden" name="clustertype" value="{{.ClusterType}}">
-                    {{else}}
+                    {{else if .RancherType}}
                         <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                         <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{else if .RegistryType}}
+                        <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                     {{end}}
                     <input type="hidden" name="provider" value="{{.Provider}}" />
                     <label class="form-label" for="providerversion">Cloud Provider Version:</label>
@@ -55,6 +57,8 @@
                    {{else if eq .Selection "rancher"}}
                         <input type="hidden" name="ranchertype" value="{{.RancherType}}">
                         <input type="hidden" name="installtype" value="{{.InstallType}}">
+                    {{else if eq .Selection "registry"}}
+                        <input type="hidden" name="registrytype" value="{{.RegistryType}}">
                     {{end}}
                     <input type="hidden" name="provider" value="{{.Provider}}" />
                     <button type="submit" class="form-button" style="background:#ccc;color:#333;">&#8592; Back</button>
