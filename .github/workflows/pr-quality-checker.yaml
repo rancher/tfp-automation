@@ -1,0 +1,151 @@
+---
+name: PR Quality Checker
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  id-token: write
+  contents: read
+  pull-requests: write
+  models: read
+
+jobs:
+  pr-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        with:
+          persist-credentials: true
+
+      - name: Get PR title
+        run: |
+          echo "${{ github.event.pull_request.title }}" > pr_title.txt
+
+      - name: Get PR description
+        run: |
+          echo "${{ github.event.pull_request.body }}" > pr_description.txt
+
+      - name: Get latest non-merge commit message
+        run: |
+          git fetch origin ${{ github.event.pull_request.head.ref }}
+          git log --no-merges --pretty=%B origin/${{ github.event.pull_request.head.ref }} | head -n 1 > commit_message.txt
+
+      - name: Prepare AI input
+        run: |
+          echo "PR Title:" > ai_input.txt
+          cat pr_title.txt >> ai_input.txt
+          echo "" >> ai_input.txt
+          echo "PR Description:" >> ai_input.txt
+          cat pr_description.txt >> ai_input.txt
+          echo "" >> ai_input.txt
+
+          if [[ "${{ github.event.action }}" == "edited" ]]; then
+            echo "Note: The commit message below is unchanged from the previous run because only the PR title or description was edited." >> ai_input.txt
+          fi
+
+          echo "Commit Message:" >> ai_input.txt
+          cat commit_message.txt >> ai_input.txt
+
+      - name: Run PR Quality AI Check
+        id: pr-check
+        uses: ./.github/actions/gh-model-prompt
+        with:
+          prompt_file: ./.github/models/pr-quality-checker.prompt.yml
+          input_file: ai_input.txt
+          output_file: pr_quality.txt
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Retry workflow if rate limited
+        if: contains(steps.pr-check.outputs.summary, 'RATE_LIMITED')
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 #v9
+        with:
+          script: |
+            const workflowFile = 'pr-quality-checker.yaml';
+            const refName = context.ref.replace('refs/heads/', '');
+            core.info(`Triggering workflow_dispatch for workflow_id: ${workflowFile} on ref: ${refName}`);
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: workflowFile,
+              ref: refName,
+            });
+            core.info('Rate limited. Triggered workflow_dispatch to retry.');
+
+      - name: Leave blocking review or clear previous block
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 #v9
+        with:
+          script: |
+            const fs = require('fs');
+            async function handleRateLimitError(err) {
+              if (err.status === 403 && err.message && err.message.includes('rate limit')) {
+                try {
+                  await github.rest.actions.createWorkflowDispatch({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    workflow_id: process.env.GITHUB_WORKFLOW,
+                    ref: context.ref.replace('refs/heads/', ''),
+                  });
+                  core.info('Rate limited. Triggered workflow_dispatch to retry.');
+                  return true;
+                } catch (rerunErr) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: 'The PR Quality Checker workflow was rate limited and the automatic re-run failed. Please re-run the workflow manually.'
+                  });
+                  return true;
+                }
+              }
+              return false;
+            }
+
+            const feedback = fs.readFileSync('pr_quality.txt', 'utf8');
+            const isBlocking = feedback.trim().startsWith('BLOCKING:');
+            try {
+              if (isBlocking) {
+                await github.rest.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number,
+                  body: feedback,
+                  event: 'REQUEST_CHANGES'
+                });
+              } else if (feedback.trim().startsWith('PASS:')) {
+                // Dismiss previous REQUEST_CHANGES reviews by the bot
+                const reviews = await github.rest.pulls.listReviews({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number
+                });
+                for (const review of reviews.data) {
+                  if (
+                    review.user.login === 'github-actions[bot]' &&
+                    review.state === 'CHANGES_REQUESTED'
+                  ) {
+                    await github.rest.pulls.dismissReview({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      pull_number: context.issue.number,
+                      review_id: review.id,
+                      message: 'PR now meets quality requirements. Dismissing previous request for changes.'
+                    });
+                  }
+                }
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: feedback
+                });
+              }
+            } catch (err) {
+              const handled = await handleRateLimitError(err);
+              if (!handled) throw err;
+            }

@@ -35,11 +35,20 @@ runs:
           }
         ' > payload.json
 
-        curl -fsSL --connect-timeout 10 --max-time 200 https://models.inference.ai.azure.com/chat/completions \
+        HTTP_RESPONSE=$(mktemp)
+        HTTP_STATUS=$(curl -fsSL -w "%{http_code}" --connect-timeout 10 --max-time 200 https://models.inference.ai.azure.com/chat/completions \
           -H "Authorization: Bearer $GITHUB_TOKEN" \
           -H "Content-Type: application/json" \
           -d @payload.json \
-          | jq -r '.choices[0].message.content' > "${{ inputs.output_file }}"
+          -o "$HTTP_RESPONSE")
+
+        if [ "$HTTP_STATUS" = "403" ]; then
+          echo "Rate limit detected (HTTP 403)."
+          echo "RATE_LIMITED" > "${{ inputs.output_file }}"
+          exit 22  # Use a special exit code for rate limit
+        fi
+
+        cat "$HTTP_RESPONSE" | jq -r '.choices[0].message.content' > "${{ inputs.output_file }}"
 
         echo 'summary<<EOF' >> $GITHUB_OUTPUT
         cat "${{ inputs.output_file }}" >> $GITHUB_OUTPUT

@@ -1,0 +1,28 @@
+---
+name: PR Quality Checker
+description: Reviews PR titles, descriptions, and commit messages for clarity and consistency.
+model: gpt-4.1
+modelParameters:
+  temperature: 0.3
+messages:
+  - role: user
+    content: |
+
+      Review the following pull request title, description, and commit message:
+      - Is the title clear and descriptive?
+      - Is the description clear and complete? The description does not need to be overly technical; an honest effort to provide a high-level overview is sufficient.
+      - Does the commit message accurately summarize the change? The commit message should be clear and concise, but does not need to be overly technical or lengthy—a brief, honest summary is sufficient.
+      - Suggest improvements if needed.
+
+      If any of these do not meet the criteria, start your response with "BLOCKING:" and explain what must be improved.
+      If all criteria are met, start your response with "PASS:" followed by a single, clear, and descriptive sentence explaining 
+      that the PR title, description, and commit message all meet the quality standards and no changes are required.
+
+      PR Title:
+      {{pr_title}}
+
+      PR Description:
+      {{pr_description}}
+
+      Commit Message:
+      {{commit_message}}
