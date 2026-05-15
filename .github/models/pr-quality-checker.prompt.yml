@@ -8,21 +8,22 @@ messages:
   - role: user
     content: |
 
-      Review the following pull request title, description, and commit message:
+      Given the following pull request title and commit message, generate a clear and concise PR description that summarizes the work being done. Then, review the title, your generated description, and the commit message for clarity and consistency:
       - Is the title clear and descriptive?
-      - Is the description clear and complete? The description does not need to be overly technical; an honest effort to provide a high-level overview is sufficient.
-      - Does the commit message accurately summarize the change? The commit message should be clear and concise, but does not need to be overly technical or lengthy—a brief, honest summary is sufficient.
+      - Is the generated description clear, complete, and does it accurately reflect the title and commit message?
+      - Does the commit message accurately summarize the change?
       - Suggest improvements if needed.
 
       If any of these do not meet the criteria, start your response with "BLOCKING:" and explain what must be improved.
-      If all criteria are met, start your response with "PASS:" followed by a single, clear, and descriptive sentence explaining 
-      that the PR title, description, and commit message all meet the quality standards and no changes are required.
+      If all criteria are met, start your response with "PASS:" followed by a single, clear, and descriptive sentence explaining that the PR title, generated description, and commit message all meet the quality standards and no changes are required.
 
       PR Title:
       {{pr_title}}
 
-      PR Description:
-      {{pr_description}}
-
       Commit Message:
       {{commit_message}}
+
+      After your review, output your generated PR description between the following markers on separate lines:
+      ===BEGIN DESCRIPTION===
+      <your description here>
+      ===END DESCRIPTION===

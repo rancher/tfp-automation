@@ -26,9 +26,6 @@ jobs:
         run: |
           echo "${{ github.event.pull_request.title }}" > pr_title.txt
 
-      - name: Get PR description
-        run: |
-          echo "${{ github.event.pull_request.body }}" > pr_description.txt
 
       - name: Get latest non-merge commit message
         run: |
@@ -40,14 +37,6 @@ jobs:
           echo "PR Title:" > ai_input.txt
           cat pr_title.txt >> ai_input.txt
           echo "" >> ai_input.txt
-          echo "PR Description:" >> ai_input.txt
-          cat pr_description.txt >> ai_input.txt
-          echo "" >> ai_input.txt
-
-          if [[ "${{ github.event.action }}" == "edited" ]]; then
-            echo "Note: The commit message below is unchanged from the previous run because only the PR title or description was edited." >> ai_input.txt
-          fi
-
           echo "Commit Message:" >> ai_input.txt
           cat commit_message.txt >> ai_input.txt
 
@@ -60,6 +49,42 @@ jobs:
           output_file: pr_quality.txt
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Extract AI review and description
+        id: extract-review-description
+        run: |
+          awk '/===BEGIN DESCRIPTION===/ {exit} {print}' pr_quality.txt > review.txt
+          DESCRIPTION=$(awk '/===BEGIN DESCRIPTION===/{flag=1;next}/===END DESCRIPTION===/{flag=0}flag' pr_quality.txt | sed '/^$/d')
+          echo "description<<EOF" >> $GITHUB_OUTPUT
+          echo "$DESCRIPTION" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Update PR description
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 #v9
+        with:
+          script: |
+            const description = process.env.DESCRIPTION;
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              body: description
+            });
+        env:
+          DESCRIPTION: ${{ steps.extract-review-description.outputs.description }}
+
+      - name: Leave review as comment
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 #v9
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('review.txt', 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: review
+            });
 
       - name: Retry workflow if rate limited
         if: contains(steps.pr-check.outputs.summary, 'RATE_LIMITED')
@@ -138,12 +163,6 @@ jobs:
                     });
                   }
                 }
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.issue.number,
-                  body: feedback
-                });
               }
             } catch (err) {
               const handled = await handleRateLimitError(err);
