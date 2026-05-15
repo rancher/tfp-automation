@@ -1,6 +1,9 @@
 name: Weekly PR Summary
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
   schedule:
     - cron: '0 8 * * 3'
@@ -48,7 +51,11 @@ jobs:
 
       - name: Prepare PR input
         run: |
-          jq -r '.[] | "- <" + .url + "|" + .title + "> (" + .state + ")"' prs.json > prs_input.txt
+          {
+            echo "<!subteam^${{ secrets.SLACK_GROUP_ID }}|${{ secrets.SLACK_GROUP_HANDLE }}>"
+            echo ""
+            jq -r '.[] | "- <" + .url + "|" + .title + "> (" + .state + ")"' prs.json
+          } > prs_input.txt
 
       - name: Run GitHub Model prompt
         id: run-prompt
