@@ -1,0 +1,8 @@
+post-release-sanity.yaml
+post-release-sanity-upgrade.yaml
+rancher2-recurring-test.yaml
+sanity-test.yaml
+sanity-turtles-off-test.yaml
+sanity-upgrade-test.yaml
+community-prime-upgrade-test.yaml
+prime-community-upgrade-test.yaml

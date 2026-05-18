@@ -15,6 +15,12 @@ outputs:
   latest_tag_v213:
     description: "Latest tag for v2.13"
     value: ${{ steps.set-outputs.outputs.latest_tag_v213 }}
+  previous_tag_v214:
+    description: "Previous tag for v2.14"
+    value: ${{ steps.set-outputs.outputs.previous_tag_v214 }}
+  previous_tag_v213:
+    description: "Previous tag for v2.13"
+    value: ${{ steps.set-outputs.outputs.previous_tag_v213 }}
 runs:
   using: composite
   steps:
@@ -24,19 +30,25 @@ runs:
         TAGS=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name')
 
         for RELEASE_LINE in $RELEASE_LINES; do
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name' | grep -E "^$RELEASE_LINE" | head -n 1 || true)
+          TAG_LIST=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name' | grep -E "^$RELEASE_LINE" | sort -V -r)
+          LATEST_VERSION=$(echo "$TAG_LIST" | head -n 1)
+          PREVIOUS_VERSION=$(echo "$TAG_LIST" | sed -n '2p')
 
           SUFFIX=$(echo "$RELEASE_LINE" | tr -d '.')
 
           if [[ -z "$LATEST_VERSION" ]]; then
             echo "No tag found for $RELEASE_LINE, skipping..."
             eval "LATEST_TAG_${SUFFIX}=''"
+            eval "PREVIOUS_TAG_${SUFFIX}=''"
             echo "LATEST_TAG_${SUFFIX}=" >> $GITHUB_ENV
+            echo "PREVIOUS_TAG_${SUFFIX}=" >> $GITHUB_ENV
             continue
           fi
 
           echo "Latest tag for $RELEASE_LINE: $LATEST_VERSION"
+          echo "Previous tag for $RELEASE_LINE: $PREVIOUS_VERSION"
 
+          # (Optional) Keep the asset/prime artifact checks for the latest version only
           if [[ "$RELEASE_LINE" == "v2.14" ]]; then
             RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST_VERSION")
             ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
@@ -64,11 +76,15 @@ runs:
           fi
 
           eval "LATEST_TAG_${SUFFIX}=$LATEST_VERSION"
+          eval "PREVIOUS_TAG_${SUFFIX}=$PREVIOUS_VERSION"
           echo "LATEST_TAG_${SUFFIX}=$LATEST_VERSION" >> $GITHUB_ENV
+          echo "PREVIOUS_TAG_${SUFFIX}=$PREVIOUS_VERSION" >> $GITHUB_ENV
         done
       shell: bash
     - id: set-outputs
       run: |
         echo "latest_tag_v214=${LATEST_TAG_v214}" >> $GITHUB_OUTPUT
         echo "latest_tag_v213=${LATEST_TAG_v213}" >> $GITHUB_OUTPUT
+        echo "previous_tag_v214=${PREVIOUS_TAG_v214}" >> $GITHUB_OUTPUT
+        echo "previous_tag_v213=${PREVIOUS_TAG_v213}" >> $GITHUB_OUTPUT
       shell: bash

@@ -6,6 +6,12 @@ on:
     - cron: "0 16,20 * * 1-5"
     - cron: "0 0 * * 2-6"
   workflow_dispatch:
+    inputs:
+      override:
+        description: "Run all tests for the selected alpha, even if some have already passed"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -13,8 +19,21 @@ permissions:
   actions: write
 
 jobs:
+  get-dispatch-workflow-list:
+    runs-on: ubuntu-latest
+    outputs:
+      workflow_list: ${{ steps.get-list.outputs.workflow_list }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+
+      - name: Get workflow list from dispatch-workflows.yaml
+        id: get-list
+        uses: ./.github/actions/get-dispatch-workflow-list
+
   check-latest-rancher-tag:
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    needs: get-dispatch-workflow-list
     runs-on: ubuntu-latest
     env:
       RANCHER_RELEASE_LINES: "v2.14 v2.13"
@@ -22,8 +41,11 @@ jobs:
     outputs:
       latest_tag_v214: ${{ steps.get-latest-tag.outputs.latest_tag_v214 }}
       latest_tag_v213: ${{ steps.get-latest-tag.outputs.latest_tag_v213 }}
+      previous_tag_v214: ${{ steps.get-latest-tag.outputs.previous_tag_v214 }}
+      previous_tag_v213: ${{ steps.get-latest-tag.outputs.previous_tag_v213 }}
       is_tag_new_v214: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v214 }}
       is_tag_new_v213: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v213 }}
+      dispatch_workflow_list: ${{ needs.get-dispatch-workflow-list.outputs.workflow_list }}
 
     steps:
       - name: Checkout repository
@@ -34,6 +56,10 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get dispatch workflow list
+        id: get-dispatch-workflow-list
+        uses: ./.github/actions/get-dispatch-workflow-list
 
       - name: Fetch Rancher tags from S3
         run: |
@@ -105,18 +131,56 @@ jobs:
           echo "chart_version_v214=${CHART_V214#v}" >> $GITHUB_OUTPUT
           echo "chart_version_v213=${CHART_V213#v}" >> $GITHUB_OUTPUT
 
+  check-individual-tests-v214:
+    needs: [check-latest-rancher-tag, set-latest-chart-version, get-dispatch-workflow-list]
+    runs-on: ubuntu-latest
+    outputs:
+      failed_workflows_v214: ${{ steps.check.outputs.failed_workflows_v214 }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+
+      - name: Check test results for v2.14
+        id: check
+        uses: ./.github/actions/check-rancher-tag-result
+        with:
+          rancher_tag: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v214 }}
+          previous_rancher_tag: ${{ needs.check-latest-rancher-tag.outputs.previous_tag_v214 }}
+          dispatch_workflow_list: ${{ needs.get-dispatch-workflow-list.outputs.workflow_list }}
+          github_token: ${{ github.token }}
+
+  check-individual-tests-v213:
+    needs: [check-latest-rancher-tag, set-latest-chart-version, get-dispatch-workflow-list]
+    runs-on: ubuntu-latest
+    outputs:
+      failed_workflows_v213: ${{ steps.check.outputs.failed_workflows_v213 }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+
+      - name: Check test results for v2.13
+        id: check
+        uses: ./.github/actions/check-rancher-tag-result
+        with:
+          rancher_tag: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v213 }}
+          previous_rancher_tag: ${{ needs.check-latest-rancher-tag.outputs.previous_tag_v213 }}
+          dispatch_workflow_list: ${{ needs.get-dispatch-workflow-list.outputs.workflow_list }}
+          github_token: ${{ github.token }}
+  
   trigger-tests-v214:
-    needs: [check-latest-rancher-tag, set-latest-chart-version]
-    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v214 == 'true' }}
+    needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v214, get-dispatch-workflow-list]
+    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v214 == 'true' && (needs.check-individual-tests-v214.outputs.failed_workflows_v214 != '' || github.event.inputs.override == 'true') }}
     uses: ./.github/workflows/dispatch-workflows.yaml
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v214 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v214 }}
-  
+      workflow_list: ${{ needs.check-individual-tests-v214.outputs.failed_workflows_v214 }}
+
   trigger-tests-v213:
-    needs: [check-latest-rancher-tag, set-latest-chart-version]
-    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v213 == 'true' }}
+    needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v213, get-dispatch-workflow-list]
+    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v213 == 'true' && (needs.check-individual-tests-v213.outputs.failed_workflows_v213 != '' || github.event.inputs.override == 'true') }}
     uses: ./.github/workflows/dispatch-workflows.yaml
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v213 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v213 }}
+      workflow_list: ${{ needs.check-individual-tests-v213.outputs.failed_workflows_v213 }}
