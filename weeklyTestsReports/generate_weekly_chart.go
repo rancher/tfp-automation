@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,10 +22,7 @@ const (
 	headerPath   = "weeklyTestsReports/assets/workflow_header.html"
 	templatePath = "weeklyTestsReports/assets/template.html"
 
-	assetsSrcDir = "weeklyTestsReports/assets"
-	assetsDstDir = "results/assets"
-	resultsDir   = "results"
-
+	resultsDir    = "results"
 	weeklySummary = "weekly_summary.html"
 )
 
@@ -36,12 +34,6 @@ type TestResult struct {
 }
 
 func main() {
-	err := copyAssets(assetsSrcDir, assetsDstDir)
-	if err != nil {
-		logrus.Error("Error copying assets:", err)
-		os.Exit(1)
-	}
-
 	htmlPath := filepath.Join(resultsDir, weeklySummary)
 	workflowMap := loadTestResults(resultsDir)
 
@@ -53,14 +45,34 @@ func main() {
 		renderScatterPlotChart(&chartsHTML, workflow, trs)
 	}
 
+	cssBytes, err := os.ReadFile("weeklyTestsReports/assets/style.css")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	jsBytes, err := os.ReadFile("weeklyTestsReports/assets/toggle.js")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	pngBytes, err := os.ReadFile("weeklyTestsReports/assets/rancher.png")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	pngBase64 := base64.StdEncoding.EncodeToString(pngBytes)
+
 	templateBytes, err := os.ReadFile(templatePath)
 	if err != nil {
 		logrus.Error("Error reading template.html:", err)
 		os.Exit(1)
 	}
 
-	templateStr := string(templateBytes)
-	finalHTML := strings.Replace(templateStr, "<!--CHARTS_PLACEHOLDER-->", chartsHTML.String(), 1)
+	finalHTML := string(templateBytes)
+	finalHTML = strings.ReplaceAll(finalHTML, "__INLINE_CSS__", string(cssBytes))
+	finalHTML = strings.ReplaceAll(finalHTML, "__INLINE_JS__", string(jsBytes))
+	finalHTML = strings.ReplaceAll(finalHTML, "__RANCHER_LOGO__", pngBase64)
+	finalHTML = strings.Replace(finalHTML, "<!--CHARTS_PLACEHOLDER-->", chartsHTML.String(), 1)
 
 	f, err := os.Create(htmlPath)
 	if err != nil {
@@ -71,30 +83,6 @@ func main() {
 	defer f.Close()
 
 	f.WriteString(finalHTML)
-}
-
-// copyAssets copies all files from srcDir to dstDir (non-recursive, for style.css, toggle.js, rancher.png)
-func copyAssets(srcDir, dstDir string) error {
-	if err := os.MkdirAll(dstDir, 0755); err != nil {
-		return err
-	}
-
-	files := []string{"style.css", "toggle.js", "rancher.png"}
-	for _, f := range files {
-		src := filepath.Join(srcDir, f)
-		dst := filepath.Join(dstDir, f)
-
-		data, err := os.ReadFile(src)
-		if err != nil {
-			return err
-		}
-
-		if err := os.WriteFile(dst, data, 0644); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // loadTestResults is a helper function that reads all JSON test result files from the given directory and
