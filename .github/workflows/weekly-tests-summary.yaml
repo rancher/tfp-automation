@@ -59,30 +59,25 @@ jobs:
         run: |
           go run weeklyTestsReports/generate_weekly_chart.go
 
-      - name: Copy required assets to results
-        run: |
-          cp weeklyTestsReports/assets/style.css results/
-          cp weeklyTestsReports/assets/toggle.js results/
-          cp weeklyTestsReports/assets/rancher.png results/
-
       - name: Upload summary chart artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
-          path: |
-            results/weekly_summary.html
-            results/style.css
-            results/toggle.js
-            results/rancher.png
+          path: results/weekly_summary.html
 
-      - name: Report to Slack
+      - name: Zip weekly report
+        run: |
+          cd results
+          zip weekly_summary.zip weekly_summary.html
+
+      - name: Upload report to Slack
         uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3
         with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
+          method: files.uploadV2
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            text: "*GitHub Action Weekly Test Summary* for ${{ github.repository }}\nWorkflow: ${{ github.workflow }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-            blocks:
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "*${{ github.repository }} - ${{ github.workflow }}*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Action Run>"
+            {
+              "channel_id": "${{ secrets.SLACK_CHANNEL_ID }}",
+              "initial_comment": "*Weekly Test Summary - rancher/tfp-automation*",
+              "file": "./results/weekly_summary.zip",
+              "filename": "weekly_summary.zip",
+            }
