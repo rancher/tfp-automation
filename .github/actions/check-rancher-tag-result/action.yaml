@@ -1,0 +1,81 @@
+---
+name: Check Rancher Tag Result
+description: Checks if the latest Rancher tag tests have passed or not
+inputs:
+  rancher_tag:
+    description: "The Rancher tag to check"
+    required: true
+  previous_rancher_tag:
+    description: "The previous Rancher tag to check against"
+    required: true
+  dispatch_workflow_list:
+    description: "Comma-separated list of workflows to check against the Rancher tag"
+    required: true
+  github_token:
+    description: "GitHub token for API access"
+    required: true
+outputs:
+  failed_workflows_v214:
+    description: "Comma-separated list of workflows that did not pass for the given Rancher tag for v2.14"
+    value: ${{ steps.check.outputs.failed_workflows_v214 }}
+  failed_workflows_v213:
+    description: "Comma-separated list of workflows that did not pass for the given Rancher tag for v2.13"
+    value: ${{ steps.check.outputs.failed_workflows_v213 }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      run: |
+        TAG="${{ inputs.rancher_tag }}"
+        if [[ -z "$TAG" ]]; then
+          echo "No Rancher tag provided, skipping check."
+          echo "failed_workflows=" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        PREV_TAG="${{ inputs.previous_rancher_tag }}"
+        if [[ -z "$PREV_TAG" ]]; then
+          echo "No previous tag provided, running all workflows."
+          workflows=(${DISPATCH_WORKFLOW_LIST//,/ })
+          failed_workflows=("${workflows[@]}")
+        else
+          echo "Previous tag is: $PREV_TAG"
+          workflows=(${DISPATCH_WORKFLOW_LIST//,/ })
+          failed_workflows=()
+
+          for wf in "${workflows[@]}"; do
+            run_ids=$(gh run list --workflow "$wf" --branch main --json databaseId -L 30 | jq -r '.[].databaseId')
+            found_success=""
+
+            for run_id in $run_ids; do
+              jobs_json=$(gh run view "$run_id" --json jobs)
+              if echo "$jobs_json" | jq -e --arg tag "$PREV_TAG" '.jobs[]? | select(.name == $tag and .conclusion == "success")' > /dev/null; then
+                echo "Found successful job for workflow $wf with previous tag $PREV_TAG in run $run_id."
+                found_success=1
+                break
+              fi
+            done
+            if [[ -z "$found_success" ]]; then
+              echo "No successful job found for workflow $wf with previous tag $PREV_TAG, will re-run for tag $TAG"
+              failed_workflows+=("$wf")
+            fi
+          done
+        fi
+
+        cleaned_failed_workflows=()
+
+        for wf in "${failed_workflows[@]}"; do
+          wf_trimmed=$(echo "$wf" | xargs)
+          if [[ -n "$wf_trimmed" ]]; then
+            cleaned_failed_workflows+=("$wf_trimmed")
+          fi
+        done
+
+        failed_workflows_str=$(IFS=,; echo "${cleaned_failed_workflows[*]}")
+        echo "failed_workflows_v214=$failed_workflows_str" >> $GITHUB_OUTPUT
+        echo "failed_workflows_v213=$failed_workflows_str" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        DISPATCH_WORKFLOW_LIST: ${{ inputs.dispatch_workflow_list }}
+        GH_TOKEN: ${{ inputs.github_token }}

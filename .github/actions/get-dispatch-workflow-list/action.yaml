@@ -1,0 +1,17 @@
+---
+name: Get Dispatch Workflow List
+description: Outputs a comma-separated list of workflows from dispatch-workflows.yaml
+
+outputs:
+  workflow_list:
+    description: "Comma-separated list of workflow YAMLs from dispatch-workflows.yaml"
+    value: ${{ steps.get-list.outputs.workflow_list }}
+
+runs:
+  using: composite
+  steps:
+    - id: get-list
+      run: |
+        workflow_list=$(paste -sd, .github/config/dispatch-workflows.txt)
+        echo "workflow_list=$workflow_list" >> $GITHUB_OUTPUT
+      shell: bash
