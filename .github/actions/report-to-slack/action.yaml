@@ -8,9 +8,6 @@ inputs:
   job-status:
     description: "The status of the job"
     required: true
-  slack-channel:
-    description: "Slack channel"
-    required: true
   slack-webhook-url:
     description: "Slack webhook URL"
     required: true
