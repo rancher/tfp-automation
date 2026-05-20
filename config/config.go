@@ -149,6 +149,7 @@ type Standalone struct {
 	UpgradeAirgapRancher           bool          `json:"upgradeAirgapRancher,omitempty" yaml:"upgradeAirgapRancher,omitempty"`
 	UpgradeDualStackRancher        bool          `json:"upgradeDualStackRancher,omitempty" yaml:"upgradeDualStackRancher,omitempty"`
 	UpgradeIPv6Rancher             bool          `json:"upgradeIPv6Rancher,omitempty" yaml:"upgradeIPv6Rancher,omitempty"`
+	UpgradeLocalCluster            bool          `json:"upgradeLocalCluster,omitempty" yaml:"upgradeLocalCluster,omitempty"`
 	UpgradeProxyRancher            bool          `json:"upgradeProxyRancher,omitempty" yaml:"upgradeProxyRancher,omitempty"`
 	UpgradeRancher                 bool          `json:"upgradeRancher,omitempty" yaml:"upgradeRancher,omitempty"`
 	UpgradedRancherChartRepository string        `json:"upgradedRancherChartRepository,omitempty" yaml:"upgradedRancherChartRepository,omitempty"`

@@ -50,14 +50,26 @@ runs:
 
             for run_id in $run_ids; do
               jobs_json=$(gh run view "$run_id" --json jobs)
-              if echo "$jobs_json" | jq -e --arg tag "$PREV_TAG" '.jobs[]? | select(.name == $tag and .conclusion == "success")' > /dev/null; then
-                echo "Found successful job for workflow $wf with previous tag $PREV_TAG in run $run_id."
-                found_success=1
-                break
+              if [[ "$wf" == *upgrade* ]]; then
+                if echo "$jobs_json" | jq -e --arg tag "$TAG" '.jobs[]? | select((.name | endswith(" -> " + $tag)) and .conclusion == "success")' > /dev/null; then
+                  echo "Found successful upgrade job for workflow $wf with job name ending in '-> $TAG' in run $run_id."
+                  found_success=1
+                  break
+                fi
+              else
+                if echo "$jobs_json" | jq -e --arg tag "$PREV_TAG" '.jobs[]? | select(.name == $tag and .conclusion == "success")' > /dev/null; then
+                  echo "Found successful job for workflow $wf with previous tag $PREV_TAG in run $run_id."
+                  found_success=1
+                  break
+                fi
               fi
             done
             if [[ -z "$found_success" ]]; then
-              echo "No successful job found for workflow $wf with previous tag $PREV_TAG, will re-run for tag $TAG"
+              if [[ "$wf" == *upgrade* ]]; then
+                echo "No successful upgrade job found for workflow $wf with job name '$PREV_TAG -> $TAG', will re-run for tag $TAG"
+              else
+                echo "No successful job found for workflow $wf with previous tag $PREV_TAG, will re-run for tag $TAG"
+              fi
               failed_workflows+=("$wf")
             fi
           done

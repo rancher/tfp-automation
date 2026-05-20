@@ -14,6 +14,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
+	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,6 +59,7 @@ func UpgradingRancher(t *testing.T, provider string) error {
 
 	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, upgradeKeyPath, rancherConfig, terraformConfig, terratestConfig, serverNodeOne, "", "", "")
 	require.NoError(t, err)
+
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.SanityKeyPath)
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedMCM == "" {
@@ -65,6 +67,11 @@ func UpgradingRancher(t *testing.T, provider string) error {
 		require.NoError(t, err)
 	} else if standaloneConfig.FeatureFlags == nil {
 		client, err = PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, true)
+		require.NoError(t, err)
+	}
+
+	if standaloneConfig.UpgradeLocalCluster {
+		err = provisioning.UpgradeLocalCluster(client, terraformConfig)
 		require.NoError(t, err)
 	}
 
