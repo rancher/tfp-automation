@@ -16,6 +16,11 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+func isIPv6CIDRFirst(clusterCIDR string) bool {
+	firstCIDR := strings.TrimSpace(strings.Split(clusterCIDR, ",")[0])
+	return strings.Contains(firstCIDR, ":")
+}
+
 // SetRancher2ClusterV2 is a function that will set the rancher2_cluster_v2 configurations in the main.tf file.
 func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) error {
 	rancher2ClusterV2Block := rootBody.AppendNewBlock(general.Resource, []string{rancher2.ClusterV2, terraformConfig.ResourcePrefix})
@@ -41,6 +46,11 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 			cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{
 				hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " +
 					terraformConfig.AWSConfig.ServiceCIDR + "\nflannel-ipv6-masq: true" + "\ningress-controller: \"traefik\"\nEOF"},
+			})
+		} else if terraformConfig.AWSConfig.IPv6AddressOnly || (strings.Contains(terraformConfig.Module, clustertypes.RKE2) && isIPv6CIDRFirst(terraformConfig.AWSConfig.ClusterCIDR)) {
+			cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{
+				hcl.TraverseRoot{Name: "<<EOF\ncluster-cidr: " + terraformConfig.AWSConfig.ClusterCIDR + "\nservice-cidr: " +
+					terraformConfig.AWSConfig.ServiceCIDR + "\ningress-controller: \"traefik\"\nkube-apiserver-arg:\n  - \"bind-address=::\"\nkube-controller-manager-arg:\n  - \"bind-address=::\"\nkube-scheduler-arg:\n  - \"bind-address=::\"\nEOF"},
 			})
 		} else {
 			cidrValues = hclwrite.TokensForTraversal(hcl.Traversal{

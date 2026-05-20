@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   pr-quality:
+    if: ${{ github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
