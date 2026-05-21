@@ -1,6 +1,8 @@
 package nullresource
 
 import (
+	"strings"
+
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
@@ -10,14 +12,9 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-const (
-	serverOne   = "server1"
-	serverTwo   = "server2"
-	serverThree = "server3"
-)
-
 // CreateImportedNullResource is a helper function that will create the null_resource for the cluster.
-func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, publicIP, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
+func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, publicIP, resourceName string,
+	linuxNodeNames []string) (*hclwrite.Body, *hclwrite.Body) {
 	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, resourceName})
 	nullResourceBlockBody := nullResourceBlock.Body()
 
@@ -51,17 +48,23 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 
 	connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
 
-	serverOneName := terraformConfig.ResourcePrefix + `_` + serverOne
-	serverTwoName := terraformConfig.ResourcePrefix + `_` + serverTwo
-	serverThreeName := terraformConfig.ResourcePrefix + `_` + serverThree
-
-	var dependsOnServer string
+	dependsOnResources := make([]string, 0, len(linuxNodeNames))
 	switch terraformConfig.Provider {
 	case aws.Aws:
-		dependsOnServer = `[` + aws.AwsInstance + `.` + serverOneName + `, ` + aws.AwsInstance + `.` + serverTwoName + `, ` + aws.AwsInstance + `.` + serverThreeName + `]`
+		for _, nodeName := range linuxNodeNames {
+			dependsOnResources = append(dependsOnResources, aws.AwsInstance+"."+nodeName)
+		}
 	case vsphere.Vsphere:
-		dependsOnServer = `[` + vsphere.VsphereVirtualMachine + `.` + serverOneName + `, ` + vsphere.VsphereVirtualMachine + `.` + serverTwoName + `, ` + vsphere.VsphereVirtualMachine + `.` + serverThreeName + `]`
+		for _, nodeName := range linuxNodeNames {
+			dependsOnResources = append(dependsOnResources, vsphere.VsphereVirtualMachine+"."+nodeName)
+		}
 	}
+
+	dependsOnServer := `[`
+	if len(dependsOnResources) > 0 {
+		dependsOnServer += strings.Join(dependsOnResources, ", ")
+	}
+	dependsOnServer += `]`
 
 	server := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},

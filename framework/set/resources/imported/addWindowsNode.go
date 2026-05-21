@@ -16,6 +16,11 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+const (
+	addWindowsNode = "add_windows_node"
+	windowsServer  = "windows_server"
+)
+
 // AddWindowsNodeToImportedCluster is a helper function that will add an additional Windows node to the initial server.
 func AddWindowsNodeToImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	serverOnePrivateIP, windowsNodePublicDNS, token string) error {
@@ -39,7 +44,7 @@ func addImportedWindowsNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	token string, script []byte) {
 	copyScriptName := terraformConfig.ResourcePrefix + copyScript + windowsServer
 
-	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedWindowsNullResource(rootBody, terraformConfig, terratestConfig, windowsNodePublicDNS, copyScriptName)
+	nullResourceBlockBody, provisionerBlockBody := nullresource.CreateImportedWindowsNullResource(rootBody, terraformConfig, terratestConfig, copyScriptName)
 	rootBody.AppendNewline()
 
 	dependsOnServer := `[` + aws.AwsInstance + `.` + terraformConfig.ResourcePrefix + `-windows` + `]`
@@ -72,7 +77,7 @@ func addImportedWindowsNode(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal(inlineCommands))
-	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedWindowsNullResource(rootBody, terraformConfig, terratestConfig, windowsNodePublicDNS, addWindowsNode)
+	nullResourceBlockBody, provisionerBlockBody = nullresource.CreateImportedWindowsNullResource(rootBody, terraformConfig, terratestConfig, addWindowsNode)
 
 	version := terraformConfig.Standalone.RKE2Version
 	version += "+rke2r1"
