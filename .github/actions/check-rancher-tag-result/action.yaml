@@ -34,46 +34,86 @@ runs:
           exit 0
         fi
 
-        PREV_TAG="${{ inputs.previous_rancher_tag }}"
-        if [[ -z "$PREV_TAG" ]]; then
-          echo "No previous tag provided, running all workflows."
-          workflows=(${DISPATCH_WORKFLOW_LIST//,/ })
-          failed_workflows=("${workflows[@]}")
-        else
-          echo "Previous tag is: $PREV_TAG"
-          workflows=(${DISPATCH_WORKFLOW_LIST//,/ })
-          failed_workflows=()
+        # Extract major.minor.patch (e.g., v2.14.1) from the tag. This is important because we do not want to skip the first
+        # alpha of a new minor release.
+        PATCH_LINE=$(echo "$TAG" | grep -oE '^v[0-9]+\.[0-9]+\.[0-9]+')
+        TAG_LIST=$(curl -s https://api.github.com/repos/rancher/rancher/releases | jq -r '.[].tag_name' | grep -E "^$PATCH_LINE" | sort -V)
+        TAGS_TO_CHECK=()
 
-          for wf in "${workflows[@]}"; do
-            run_ids=$(gh run list --workflow "$wf" --branch main --json databaseId -L 30 | jq -r '.[].databaseId')
-            found_success=""
+        for t in $TAG_LIST; do
+          TAGS_TO_CHECK+=("$t")
+          [[ "$t" == "$TAG" ]] && break
+        done
 
+        workflows=(${DISPATCH_WORKFLOW_LIST//,/ })
+        failed_workflows=()
+
+        # For the post-release workflows, skip for alphas or RCs.
+        for wf in "${workflows[@]}"; do
+          if [[ "$wf" == post-release* ]]; then
+            if [[ "$TAG" == *-alpha* || "$TAG" == *-rc* ]]; then
+              continue
+            fi
+          fi
+
+          most_recent_passed_tag=""
+          found_skipped=""
+
+          # Fetch all runs for this workflow once, then filter in-memory for tags/jobs
+          runs_json=$(gh run list --workflow "$wf" --branch main --json databaseId,headBranch,headSha,conclusion,status,name,displayTitle -L 50)
+          run_ids=$(echo "$runs_json" | jq -r '.[].databaseId')
+
+          declare -A run_json_cache
+          for run_id in $run_ids; do
+            run_json_cache[$run_id]="$(gh run view "$run_id" --json status,conclusion,jobs,headSha,headBranch,displayTitle)"
+          done
+
+          for (( idx=${#TAGS_TO_CHECK[@]}-1 ; idx>=0 ; idx-- )); do
+            prev_tag="${TAGS_TO_CHECK[$idx]}"
             for run_id in $run_ids; do
-              jobs_json=$(gh run view "$run_id" --json jobs)
-              if [[ "$wf" == *upgrade* ]]; then
-                if echo "$jobs_json" | jq -e --arg tag "$TAG" '.jobs[]? | select((.name | endswith(" -> " + $tag)) and .conclusion == "success")' > /dev/null; then
-                  echo "Found successful upgrade job for workflow $wf with job name ending in '-> $TAG' in run $run_id."
-                  found_success=1
-                  break
-                fi
-              else
-                if echo "$jobs_json" | jq -e --arg tag "$PREV_TAG" '.jobs[]? | select(.name == $tag and .conclusion == "success")' > /dev/null; then
-                  echo "Found successful job for workflow $wf with previous tag $PREV_TAG in run $run_id."
-                  found_success=1
-                  break
+              run_json="${run_json_cache[$run_id]}"
+              run_status=$(echo "$run_json" | jq -r '.status // empty')
+              run_conclusion=$(echo "$run_json" | jq -r '.conclusion // empty')
+              jobs_json=$(echo "$run_json" | jq -c '.jobs // []')
+
+              # If the workflow run itself is skipped for this tag, count as skipped
+              if [[ "$run_conclusion" == "skipped" ]]; then
+                found_skipped=1
+                continue
+              fi
+
+              # If there are jobs, check them as before
+              if [[ "$jobs_json" != "[]" ]]; then
+                if [[ "$wf" == *upgrade* ]]; then
+                  if echo "$jobs_json" | jq -e --arg tag "$prev_tag" '.[]? | select((.name | endswith(" -> " + $tag)) and .conclusion == "success")' > /dev/null; then
+                    most_recent_passed_tag="$prev_tag"
+                    break 2
+                  fi
+                  if echo "$jobs_json" | jq -e --arg tag "$prev_tag" '.[]? | select((.name | endswith(" -> " + $tag)) and .conclusion == "skipped")' > /dev/null; then
+                    found_skipped=1
+                  fi
+                else
+                  if echo "$jobs_json" | jq -e --arg tag "$prev_tag" '.[]? | select(.name == $tag and .conclusion == "success")' > /dev/null; then
+                    most_recent_passed_tag="$prev_tag"
+                    break 2
+                  fi
+                  if echo "$jobs_json" | jq -e --arg tag "$prev_tag" '.[]? | select(.name == $tag and .conclusion == "skipped")' > /dev/null; then
+                    found_skipped=1
+                  fi
                 fi
               fi
             done
-            if [[ -z "$found_success" ]]; then
-              if [[ "$wf" == *upgrade* ]]; then
-                echo "No successful upgrade job found for workflow $wf with job name '$PREV_TAG -> $TAG', will re-run for tag $TAG"
-              else
-                echo "No successful job found for workflow $wf with previous tag $PREV_TAG, will re-run for tag $TAG"
-              fi
-              failed_workflows+=("$wf")
-            fi
           done
-        fi
+
+          if [[ -n "$most_recent_passed_tag" ]]; then
+            echo "Most recent successful tag for workflow $wf is: $most_recent_passed_tag."
+          elif [[ -n "$found_skipped" ]]; then
+            echo "Workflow $wf was skipped for all tags, ignoring."
+          else
+            echo "No successful job found for workflow $wf for any previous tag, will re-run for tag $TAG"
+            failed_workflows+=("$wf")
+          fi
+        done
 
         cleaned_failed_workflows=()
 
