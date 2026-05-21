@@ -30,6 +30,11 @@ fi
 
 set -ex
 
+delete_ingress() {
+  echo "Deleting Rancher Ingress to avoid conflicts with new chart"
+  kubectl -n cattle-system delete ingress rancher
+}
+
 setup_helm_repo() {
   echo "Adding Helm chart repo"
   helm repo add upgraded-rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
@@ -158,6 +163,7 @@ wait_for_rancher() {
   sleep 15
 }
 
+delete_ingress
 setup_helm_repo
 
 # Needed to get the latest chart version if RANCHER_TAG_VERSION contains "head"
