@@ -100,9 +100,17 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	configBlockBody.AppendNewline()
 
 	if terraformConfig.Module == modules.ImportedAWSRKE2Windows2019 || terraformConfig.Module == modules.ImportedAWSRKE2Windows2022 {
-		serverTwoName := terraformConfig.ResourcePrefix + `_server2`
-		serverThreeName := terraformConfig.ResourcePrefix + `_server3`
-		dependsOnServer := `[` + general.NullResource + `.` + serverTwoName + `, ` + general.NullResource + `.` + serverThreeName + `]`
+		nonWindowsNodeCount := customnodepools.TotalNodeCount(terratestConfig)
+		dependsOnResources := make([]string, 0, nonWindowsNodeCount)
+
+		for i := int64(2); i <= nonWindowsNodeCount; i++ {
+			dependsOnResources = append(dependsOnResources, fmt.Sprintf("%s.%s_server%d", general.NullResource, terraformConfig.ResourcePrefix, i))
+		}
+
+		dependsOnServer := "[]"
+		if len(dependsOnResources) > 0 {
+			dependsOnServer = `[` + strings.Join(dependsOnResources, ", ") + `]`
+		}
 
 		server := hclwrite.Tokens{
 			{Type: hclsyntax.TokenIdent, Bytes: []byte(dependsOnServer)},

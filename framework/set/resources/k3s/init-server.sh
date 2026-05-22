@@ -31,7 +31,7 @@ configs:
 
 curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
 chmod +x install.sh
-sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} sh install.sh - server --cluster-init
+sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="server --cluster-init" sh install.sh
 
 sudo mkdir -p /home/${USER}/.kube
 sudo chown ${USER}:${GROUP} /etc/rancher/k3s/k3s.yaml

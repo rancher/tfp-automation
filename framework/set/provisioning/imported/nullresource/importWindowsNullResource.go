@@ -15,7 +15,7 @@ import (
 
 // CreateImportedWindowsNullResource is a helper function that will create the null_resource for the Windows node.
 func CreateImportedWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
-	publicDNS, resourceName string) (*hclwrite.Body, *hclwrite.Body) {
+	resourceName string) (*hclwrite.Body, *hclwrite.Body) {
 	nullResourceBlock := rootBody.AppendNewBlock(general.Resource, []string{general.NullResource, resourceName})
 	nullResourceBlockBody := nullResourceBlock.Body()
 

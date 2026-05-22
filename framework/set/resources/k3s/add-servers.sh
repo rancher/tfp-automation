@@ -32,4 +32,4 @@ configs:
 
 curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
 chmod +x install.sh
-sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} sh install.sh - server --server https://${K3S_SERVER_IP}:6443
+sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="server --server https://${K3S_SERVER_IP}:6443" sh install.sh
