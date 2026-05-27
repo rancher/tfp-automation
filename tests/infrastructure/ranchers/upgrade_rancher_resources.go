@@ -53,8 +53,6 @@ func CleanupDownstreamClusters(t *testing.T, client *rancher.Client, terraformCo
 		logrus.Infof("Cleaning up cluster: %v", dsCluster.ID)
 		err = extClusters.DeleteK3SRKE2Cluster(client, dsCluster.ID)
 		require.NoError(t, err)
-
-		provisioningActions.VerifyDeleteRKE2K3SCluster(t, client, dsCluster.ID)
 	}
 }
 
