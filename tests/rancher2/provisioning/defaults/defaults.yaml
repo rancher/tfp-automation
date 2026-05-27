@@ -1,0 +1,70 @@
+rancher:
+  host: "<required>"
+  adminToken: ""
+  adminPassword: "<HB_RANCHER_ADMIN_PASSWORD>"
+  insecure: true
+  cleanup: true
+
+terraform:
+  provider: "<HB_PROVIDER_AMAZON>"
+  cni: "<CNI>"
+  downstreamClusterProvider: "<HB_PROVIDER_AMAZON>"
+  defaultClusterRoleForProjectMembers: "true"
+  enableNetworkPolicy: false
+  resourcePrefix: "<required>"
+  privateKeyPath: "<HB_SSH_PRIVATE_KEY_PATH>"
+  privateRegistries:
+    url: "<HB_PRIVATE_REGISTRY_URL>"
+    username: "<HB_PRIVATE_REGISTRY_USERNAME>"
+    password: "<HB_PRIVATE_REGISTRY_PASSWORD>"
+    insecure: true
+    authConfigSecretName: "<HB_AUTH_CONFIG_SECRET_NAME>"
+    mirrorHostname: "<HB_PRIVATE_REGISTRY_MIRROR_HOSTNAME>"
+    mirrorEndpoint: "<HB_PRIVATE_REGISTRY_MIRROR_ENDPOINT>"
+
+  awsCredentials:
+    awsAccessKey: "<required>"
+    awsSecretKey: "<required>"
+
+  awsConfig:
+    ami: "<HB_AWS_AMI>"
+    awsKeyName: "<HB_SSH_PRIVATE_KEY_NAME>"
+    awsVolumeType: "<HB_AWS_VOLUME_TYPE>"
+    region: "<HB_AWS_REGION>"
+    awsSecurityGroups: ["<HB_AWS_SECURITY_GROUPS>"]
+    awsSecurityGroupNames: ["<HB_AWS_SECURITY_GROUP_NAMES>"]
+    awsSubnetID: "<HB_AWS_SUBNET_ID>"
+    awsVpcID: "<HB_AWS_VPC_ID>"
+    awsInstanceType: "<HB_AWS_INSTANCE_TYPE>"
+    awsZoneLetter: "<HB_AWS_ZONE_LETTER>"
+    awsRootSize: "<HB_AWS_ROOT_SIZE>"
+    awsRoute53Zone: "<HB_AWS_ROUTE_53_ZONE>"
+    awsUser: "<HB_AWS_USER>"
+    ipAddressType: "<HB_IP_ADDRESS_TYPE>"
+    loadBalancerType: "<HB_LOAD_BALANCER_TYPE>"
+    targetType: "instance"
+    sshConnectionType: "ssh"
+    timeout: "5m"
+
+  standalone:
+    osUser: "<HB_OS_USER>"
+    osGroup: "<HB_OS_GROUP>"
+    rke2Version: "<required>"
+    k3sVersion: "<required>"
+
+terratest:
+  nodepools:
+    - quantity: 1
+      etcd: true
+      controlplane: false
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: true
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: false
+      worker: true
+  pathToRepo: "<HB_PATH_TO_REPO>"
+  tfLogging: true
