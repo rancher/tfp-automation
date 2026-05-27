@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
@@ -44,7 +45,13 @@ type RBACTestSuite struct {
 }
 
 func (r *RBACTestSuite) SetupSuite() {
+	var err error
+
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	r.cattleConfig, err = configDefaults.LoadPackageDefaults(r.cattleConfig, "")
+	require.NoError(r.T(), err)
+
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
 
 	testSession := session.NewSession()

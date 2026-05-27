@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
@@ -40,7 +41,13 @@ type AuthConfigTestSuite struct {
 }
 
 func (r *AuthConfigTestSuite) SetupSuite() {
+	var err error
+
 	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	r.cattleConfig, err = configDefaults.LoadPackageDefaults(r.cattleConfig, "")
+	require.NoError(r.T(), err)
+
 	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
 
 	testSession := session.NewSession()
