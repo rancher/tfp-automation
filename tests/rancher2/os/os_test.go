@@ -13,6 +13,7 @@ import (
 	"github.com/rancher/shepherd/pkg/config/operations/permutations"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	"github.com/rancher/tests/actions/nodes/ec2"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
@@ -57,7 +58,7 @@ func (o *OSValidationTestSuite) SetupSuite() {
 
 	o.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
-	o.cattleConfig, err = config.LoadPackageDefaults(o.cattleConfig, "")
+	o.cattleConfig, err = configDefaults.LoadPackageDefaults(o.cattleConfig, "")
 	require.NoError(o.T(), err)
 
 	modulePermutation, err := permutationsdata.CreateModulePermutation(o.cattleConfig)
