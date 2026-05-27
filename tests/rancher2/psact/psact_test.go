@@ -9,6 +9,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
+        configDefaults "github.com/rancher/tests/actions/config/defaults"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
@@ -44,7 +45,13 @@ type PSACTTestSuite struct {
 }
 
 func (p *PSACTTestSuite) SetupSuite() {
-	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+        var err error
+
+        p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+        p.cattleConfig, err = configDefaults.LoadPackageDefaults(p.cattleConfig, "")
+        require.NoError(p.T(), err)
+
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 
 	testSession := session.NewSession()

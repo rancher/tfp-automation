@@ -10,6 +10,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	"github.com/rancher/tests/actions/features"
 	reg "github.com/rancher/tests/actions/registries"
 	"github.com/rancher/tests/actions/workloads/deployment"
@@ -39,12 +40,17 @@ const (
 	configEnvironmentKey = "CATTLE_TEST_CONFIG"
 	head                 = "head"
 	local                = "local"
+	defaultsFilePath     = "tests/infrastructure/ranchers/defaults/defaults.yaml"
 )
 
 // SetupAirgapRancher sets up an airgapped Rancher server and returns the client, configuration, and Terraform options.
 func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, string, *terraform.Options,
 	*terraform.Options, map[string]any, *ssh.BastionSSHTunnel) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	cattleConfig, err := configDefaults.LoadPackageDefaults(cattleConfig, defaultsFilePath)
+	require.NoError(t, err)
+
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
@@ -90,6 +96,10 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 func SetupDualStackRancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, *terraform.Options,
 	*terraform.Options, map[string]any) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	cattleConfig, err := configDefaults.LoadPackageDefaults(cattleConfig, defaultsFilePath)
+	require.NoError(t, err)
+
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
@@ -126,6 +136,10 @@ func SetupDualStackRancher(t *testing.T, session *session.Session, moduleKeyPath
 func SetupIPv6Rancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, *terraform.Options,
 	*terraform.Options, map[string]any) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	cattleConfig, err := configDefaults.LoadPackageDefaults(cattleConfig, defaultsFilePath)
+	require.NoError(t, err)
+
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
@@ -162,6 +176,10 @@ func SetupIPv6Rancher(t *testing.T, session *session.Session, moduleKeyPath stri
 func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, string,
 	*terraform.Options, *terraform.Options, map[string]any) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	cattleConfig, err := configDefaults.LoadPackageDefaults(cattleConfig, defaultsFilePath)
+	require.NoError(t, err)
+
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
@@ -207,13 +225,17 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, *terraform.Options,
 	*terraform.Options, map[string]any) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	var err error
+	cattleConfig, err = configDefaults.LoadPackageDefaults(cattleConfig, defaultsFilePath)
+	require.NoError(t, err)
+
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	var serverNodeOne string
-	var err error
 
 	if terraformConfig.LocalHostedCluster {
 		serverNodeOne, err = hosted.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
@@ -272,6 +294,10 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string) 
 // SetupRegistryRancher sets up a registry-enabled Rancher server and returns the client, configuration, and Terraform options.
 func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath string) (*rancher.Client, string, string, string, *terraform.Options, *terraform.Options, map[string]any) {
 	cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	cattleConfig, err := configDefaults.LoadPackageDefaults(cattleConfig, defaultsFilePath)
+	require.NoError(t, err)
+
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
