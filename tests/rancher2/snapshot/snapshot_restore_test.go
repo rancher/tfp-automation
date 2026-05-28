@@ -26,7 +26,8 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -62,7 +63,7 @@ func (s *SnapshotRestoreTestSuite) SetupSuite() {
 
 	s.terraformOptions = terraformOptions
 
-	client, err := ranchers.PostRancherSetup(s.T(), s.terraformOptions, s.rancherConfig, s.session, s.rancherConfig.Host, keyPath, false)
+	client, err := ranchersetup.PostRancherSetup(s.T(), s.terraformOptions, s.rancherConfig, s.session, s.rancherConfig.Host, keyPath, false)
 	require.NoError(s.T(), err)
 
 	s.client = client
@@ -75,7 +76,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
 	require.NoError(s.T(), err)
 
-	standardUserToken, err := ranchers.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchersetup.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
 	require.NoError(s.T(), err)
 
 	standardToken := standardUserToken.Token

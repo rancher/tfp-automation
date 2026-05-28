@@ -7,6 +7,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
@@ -23,7 +24,10 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	setupstandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/standard"
+	upgradebase "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade"
+	upgradestandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/standard"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -55,29 +59,30 @@ func (s *TfpSanityUpgradeRancherTestSuite) TearDownSuite() {
 func (s *TfpSanityUpgradeRancherTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
+	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
-	s.client, s.serverNodeOne, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = ranchers.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
+	s.client, s.serverNodeOne, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = setupstandard.SetupRancher(s.T(), s.session, keypath.SanityKeyPath, s.cattleConfig)
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
 }
 
 func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
-	standardUserClient, standardToken, testUser, testPassword := ranchers.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
+	standardUserClient, standardToken, testUser, testPassword := upgradebase.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 	nestedRancherModuleDir := s.provisionAndVerifyCluster("Sanity_Pre_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
 	os.RemoveAll(nestedRancherModuleDir)
 
-	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = ranchers.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
-
-	ranchers.CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
+	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = upgradestandard.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
+	upgradebase.
+		CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
 	os.RemoveAll(nestedRancherModuleDir)
 
-	standardUserClient, standardToken, testUser, testPassword = ranchers.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
+	standardUserClient, standardToken, testUser, testPassword = upgradebase.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 	nestedRancherModuleDir = s.provisionAndVerifyCluster("Sanity_Post_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
-
-	ranchers.CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
+	upgradebase.
+		CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
 	os.RemoveAll(nestedRancherModuleDir)
 
 	if s.terratestConfig.LocalQaseReporting {

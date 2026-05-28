@@ -6,6 +6,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
@@ -22,7 +23,9 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
+	setupdualstack "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/dualstack"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -50,8 +53,9 @@ func (s *TfpSanityDualStackProvisioningTestSuite) TearDownSuite() {
 func (s *TfpSanityDualStackProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
+	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
-	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = ranchers.SetupDualStackRancher(s.T(), s.session, keypath.DualStackKeyPath)
+	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = setupdualstack.SetupDualStackRancher(s.T(), s.session, keypath.DualStackKeyPath, s.cattleConfig)
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
 }
 
@@ -62,7 +66,7 @@ func (s *TfpSanityDualStackProvisioningTestSuite) TestTfpProvisioningSanityDualS
 	s.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(s.client)
 	require.NoError(s.T(), err)
 
-	standardUserToken, err := ranchers.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchersetup.CreateStandardUserToken(s.T(), s.terraformOptions, s.rancherConfig, testUser, testPassword)
 	require.NoError(s.T(), err)
 
 	standardToken := standardUserToken.Token

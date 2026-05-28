@@ -4,8 +4,21 @@ import (
 	"os"
 	"testing"
 
+	"github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/tests/infrastructure/clusters"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	setupairgap "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/airgap"
+	setupdualstack "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/dualstack"
+	setuphosted "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/hosted"
+	setupipv6 "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/ipv6"
+	setupproxy "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/proxy"
+	setupregistry "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/registry"
+	setupstandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/standard"
+	upgradeairgap "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/airgap"
+	upgradedualstack "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/dualstack"
+	upgradeipv6 "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/ipv6"
+	upgradeproxy "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/proxy"
+	upgradestandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/standard"
 	"github.com/rancher/tfp-automation/tests/infrastructure/registries"
 	"github.com/stretchr/testify/require"
 )
@@ -20,19 +33,19 @@ var setupClusterFuncs = map[string]func(*testing.T, string) error{
 	"--normal-k3s":  clusters.CreateK3SCluster,
 }
 
-var setupRancherFuncs = map[string]func(*testing.T, string) error{
-	"--airgap:fresh":   ranchers.CreateAirgapRancher,
-	"--airgap:upgrade": ranchers.UpgradingAirgapRancher,
-	"--dual:fresh":     ranchers.CreateDualStackRancher,
-	"--dual:upgrade":   ranchers.UpgradingDualStackRancher,
-	"--hosted:fresh":   ranchers.CreateHostedClusterRancher,
-	"--ipv6:fresh":     ranchers.CreateIPv6Rancher,
-	"--ipv6:upgrade":   ranchers.UpgradingIPv6Rancher,
-	"--normal:fresh":   ranchers.CreateRancher,
-	"--normal:upgrade": ranchers.UpgradingRancher,
-	"--proxy:fresh":    ranchers.CreateProxyRancher,
-	"--proxy:upgrade":  ranchers.UpgradingProxyRancher,
-	"--registry:fresh": ranchers.CreateRegistryRancher,
+var setupRancherFuncs = map[string]func(*testing.T, string, map[string]any) error{
+	"--airgap:fresh":   setupairgap.CreateAirgapRancher,
+	"--airgap:upgrade": upgradeairgap.UpgradingAirgapRancher,
+	"--dual:fresh":     setupdualstack.CreateDualStackRancher,
+	"--dual:upgrade":   upgradedualstack.UpgradingDualStackRancher,
+	"--hosted:fresh":   setuphosted.CreateHostedClusterRancher,
+	"--ipv6:fresh":     setupipv6.CreateIPv6Rancher,
+	"--ipv6:upgrade":   upgradeipv6.UpgradingIPv6Rancher,
+	"--normal:fresh":   setupstandard.CreateRancher,
+	"--normal:upgrade": upgradestandard.UpgradingRancher,
+	"--proxy:fresh":    setupproxy.CreateProxyRancher,
+	"--proxy:upgrade":  upgradeproxy.UpgradingProxyRancher,
+	"--registry:fresh": setupregistry.CreateRegistryRancher,
 }
 
 var setupRegistryFuncs = map[string]func(*testing.T, string) error{
@@ -52,7 +65,8 @@ func RunCLI() int {
 		key += ":" + os.Args[2]
 
 		if setupFunc, ok := setupRancherFuncs[key]; ok {
-			err := setupFunc(t, "")
+			cattleConfig := config.LoadConfigFromFile(os.Getenv(config.ConfigEnvironmentKey))
+			err := setupFunc(t, "", cattleConfig)
 			require.NoError(t, err)
 
 			return 0

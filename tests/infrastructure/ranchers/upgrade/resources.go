@@ -1,4 +1,4 @@
-package ranchers
+package upgrade
 
 import (
 	"testing"
@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +27,7 @@ func SetupResources(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	standardUserClient, testUser, testPassword, err := standarduser.CreateStandardUser(client)
 	require.NoError(t, err)
 
-	standardUserToken, err := CreateStandardUserToken(t, terraformOptions, rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchersetup.CreateStandardUserToken(t, terraformOptions, rancherConfig, testUser, testPassword)
 	require.NoError(t, err)
 
 	standardToken := standardUserToken.Token

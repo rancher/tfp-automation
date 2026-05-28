@@ -10,8 +10,8 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
-	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	clusterActions "github.com/rancher/tests/actions/clusters"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
@@ -26,7 +26,8 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -62,7 +63,7 @@ func (p *ProvisionTestSuite) SetupSuite() {
 
 	p.terraformOptions = terraformOptions
 
-	client, err := ranchers.PostRancherSetup(p.T(), p.terraformOptions, p.rancherConfig, p.session, p.rancherConfig.Host, keyPath, false)
+	client, err := ranchersetup.PostRancherSetup(p.T(), p.terraformOptions, p.rancherConfig, p.session, p.rancherConfig.Host, keyPath, false)
 	require.NoError(p.T(), err)
 
 	p.client = client
@@ -75,7 +76,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
 	require.NoError(p.T(), err)
 
-	standardUserToken, err := ranchers.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchersetup.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
 	require.NoError(p.T(), err)
 
 	standardToken := standardUserToken.Token

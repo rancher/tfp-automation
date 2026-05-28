@@ -1,16 +1,19 @@
 package postrelease
 
 import (
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
+	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	setupstandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/standard"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 )
@@ -38,8 +41,9 @@ func (s *TfpPostReleaseTestSuite) TestTfpPostRelease() {
 		s.T().Run(tt.name, func(t *testing.T) {
 			testSession := session.NewSession()
 			s.session = testSession
+			s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
-			s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = ranchers.SetupRancher(s.T(), s.session, keypath.SanityKeyPath)
+			s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = setupstandard.SetupRancher(s.T(), s.session, keypath.SanityKeyPath, s.cattleConfig)
 			_, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 
 			params := tfpQase.GetProvisioningSchemaParams(s.terraformConfig, s.terratestConfig)

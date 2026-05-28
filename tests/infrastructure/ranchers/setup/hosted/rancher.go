@@ -1,10 +1,9 @@
-package ranchers
+package hosted
 
 import (
 	"os"
 	"testing"
 
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	infraConfig "github.com/rancher/tests/validation/recurring/infrastructure/config"
@@ -14,15 +13,15 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/hosted"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
+	rancherinternal "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/internal"
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/stretchr/testify/require"
 )
 
-// CreateHostedClusterRancher is a function that creates a Rancher setup, either via CLI or web application
-func CreateHostedClusterRancher(t *testing.T, provider string) error {
+// CreateHostedClusterRancher is a function that creates a hosted-cluster Rancher setup, either via CLI or web application
+func CreateHostedClusterRancher(t *testing.T, provider string, cattleConfig map[string]any) error {
 	os.Getenv("CLOUD_PROVIDER_VERSION")
 
-	configPath := os.Getenv("CATTLE_TEST_CONFIG")
-	cattleConfig := shepherdConfig.LoadConfigFromFile(configPath)
 	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
 	if provider != "" {
@@ -44,11 +43,11 @@ func CreateHostedClusterRancher(t *testing.T, provider string) error {
 	}
 
 	rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
-	infraConfig.WriteConfigToFile(os.Getenv(configEnvironmentKey), cattleConfig)
+	infraConfig.WriteConfigToFile(os.Getenv(rancherinternal.ConfigEnvironmentKey), cattleConfig)
 
 	testSession := session.NewSession()
 
-	_, err = PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
+	_, err = ranchersetup.PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	if err != nil {
 		return err
 	}

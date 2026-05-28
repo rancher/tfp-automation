@@ -26,7 +26,8 @@ import (
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -62,7 +63,7 @@ func (r *RBACTestSuite) SetupSuite() {
 
 	r.terraformOptions = terraformOptions
 
-	client, err := ranchers.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
+	client, err := ranchersetup.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
 	require.NoError(r.T(), err)
 
 	r.client = client
@@ -75,7 +76,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
 	require.NoError(r.T(), err)
 
-	standardUserToken, err := ranchers.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
+	standardUserToken, err := ranchersetup.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
 	require.NoError(r.T(), err)
 
 	standardToken := standardUserToken.Token

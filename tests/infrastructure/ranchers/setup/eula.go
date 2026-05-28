@@ -1,4 +1,4 @@
-package ranchers
+package setup
 
 import (
 	"context"
@@ -21,6 +21,7 @@ func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancher
 	keyPath string, isUpgrade bool) (*rancher.Client, error) {
 	adminToken, err := CreateAdminToken(t, terraformOptions, rancherConfig)
 	if err != nil && *rancherConfig.Cleanup {
+		logrus.Warnf("Failed to create admin token: %v. Attempting to clean up infrastructure...", err)
 		cleanup.Cleanup(t, terraformOptions, keyPath)
 	}
 
