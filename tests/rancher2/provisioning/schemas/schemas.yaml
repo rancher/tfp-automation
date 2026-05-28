@@ -51,39 +51,14 @@
     customfield:
       "14": Validation
       "18": Hostbusters
-  - description: Provisions downstream RKE2 Windows 2019 custom cluster
-    title: Custom_TFP_RKE2_Windows_2019
+  - description: Provisions downstream RKE2 Windows custom cluster
+    title: Custom_TFP_RKE2_Windows
     priority: 4
     type: 8
     automation: 2
     attachments: []
     steps:
-    - action: Provision downstream RKE2 Windows 2019 custom cluster
-      expectedresult: ""
-      data: ""
-      position: 1
-      attachments: []
-      steps: []
-    - action: Post cluster creation checks
-      expectedresult: ""
-      data: ""
-      position: 2
-      attachments: []
-      steps: []
-    tags: []
-    params: {}
-    parameters: []
-    customfield:
-      "14": Validation
-      "18": Hostbusters
-  - description: Provisions downstream RKE2 Windows 2022 custom cluster
-    title: Custom_TFP_RKE2_Windows_2022
-    priority: 4
-    type: 8
-    automation: 2
-    attachments: []
-    steps:
-    - action: Provision downstream RKE2 Windows 2022 custom cluster
+    - action: Provision downstream RKE2 Windows custom cluster
       expectedresult: ""
       data: ""
       position: 1
@@ -147,31 +122,8 @@
     customfield:
       "14": Validation
       "18": Hostbusters
-  - description: Import RKE2 Windows 2019 cluster
-    title: Imported_RKE2_Windows_2019
-    priority: 4
-    type: 8
-    automation: 2
-    attachments: []
-    steps:
-    - action: Import RKE2 Windows 2019 cluster
-      expectedresult: ""
-      data: ""
-      position: 1
-      attachments: []
-      steps: []
-    - action: Post imported cluster checks
-      expectedresult: ""
-      data: ""
-      position: 2
-      attachments: []
-      steps: []
-    tags: []
-    customfield:
-      "14": Validation
-      "18": Hostbusters
-  - description: Import RKE2 Windows 2022 cluster
-    title: Imported_RKE2_Windows_2022
+  - description: Import RKE2 Windows cluster
+    title: Imported_RKE2_Windows
     priority: 4
     type: 8
     automation: 2

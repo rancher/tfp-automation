@@ -90,15 +90,14 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	var nestedRancherModuleDir string
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
-	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
+	rke2Module, rke2Windows, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
 	tests := []struct {
 		name      string
 		nodeRoles []config.Nodepool
 		module    string
 	}{
 		{name + "_RKE2", nodeRolesDedicated, rke2Module},
-		{name + "_RKE2_Windows_2019", nodeRolesWindows, rke2Windows2019},
-		{name + "_RKE2_Windows_2022", nodeRolesWindows, rke2Windows2022},
+		{name + "_RKE2_Windows", nodeRolesWindows, rke2Windows},
 		{name + "_K3S", nodeRolesDedicated, k3sModule},
 	}
 

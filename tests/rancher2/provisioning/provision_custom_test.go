@@ -88,8 +88,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 		module string
 	}{
 		{"Custom_TFP_RKE2", modules.CustomAWSRKE2},
-		{"Custom_TFP_RKE2_Windows_2019", modules.CustomAWSRKE2Windows2019},
-		{"Custom_TFP_RKE2_Windows_2022", modules.CustomAWSRKE2Windows2022},
+		{"Custom_TFP_RKE2_Windows", modules.CustomAWSRKE2Windows2022},
 		{"Custom_TFP_K3S", modules.CustomAWSK3S},
 	}
 

@@ -24,35 +24,14 @@
       "14": Validation
       "18": Hostbusters
 
-  - description: Provisions downstream RKE2 Windows 2019 custom cluster
-    title: Sanity_RKE2_Windows_2019
+  - description: Provisions downstream RKE2 Windows custom cluster
+    title: Sanity_RKE2_Windows
     priority: 4
     type: 8
     is_flaky: 0
     automation: 2
     steps:
-    - action: Provision downstream RKE2 Windows 2019 custom cluster
-      expectedresult: ""
-      data: ""
-      position: 1
-      attachments: []
-    - action: Post cluster creation checks
-      expectedresult: ""
-      data: ""
-      position: 2
-      attachments: []
-    custom_field:
-      "14": Validation
-      "18": Hostbusters
-
-  - description: Provisions downstream RKE2 Windows 2022 custom cluster
-    title: Sanity_RKE2_Windows_2022
-    priority: 4
-    type: 8
-    is_flaky: 0
-    automation: 2
-    steps:
-    - action: Provision downstream RKE2 Windows 2022 custom cluster
+    - action: Provision downstream RKE2 Windows custom cluster
       expectedresult: ""
       data: ""
       position: 1
@@ -150,35 +129,14 @@
       "14": Validation
       "18": Hostbusters
 
-  - description: Provisions downstream RKE2 Windows 2019 custom cluster prior to Rancher upgrade
-    title: Sanity_Pre_Rancher_Upgrade_RKE2_Windows_2019
+  - description: Provisions downstream RKE2 Windows custom cluster prior to Rancher upgrade
+    title: Sanity_Pre_Rancher_Upgrade_RKE2_Windows
     priority: 4
     type: 8
     is_flaky: 0
     automation: 2
     steps:
-    - action: Provision downstream RKE2 Windows 2019 custom cluster
-      expectedresult: ""
-      data: ""
-      position: 1
-      attachments: []
-    - action: Post cluster creation checks
-      expectedresult: ""
-      data: ""
-      position: 2
-      attachments: []
-    custom_field:
-      "14": Validation
-      "18": Hostbusters
-
-  - description: Provisions downstream RKE2 Windows 2022 custom cluster prior to Rancher upgrade
-    title: Sanity_Pre_Rancher_Upgrade_RKE2_Windows_2022
-    priority: 4
-    type: 8
-    is_flaky: 0
-    automation: 2
-    steps:
-    - action: Provision downstream RKE2 Windows 2022 custom cluster
+    - action: Provision downstream RKE2 Windows custom cluster
       expectedresult: ""
       data: ""
       position: 1
@@ -234,35 +192,14 @@
       "14": Validation
       "18": Hostbusters
 
-  - description: Provisions downstream RKE2 Windows 2019 custom cluster post Rancher upgrade
-    title: Sanity_Post_Rancher_Upgrade_RKE2_Windows_2019
+  - description: Provisions downstream RKE2 Windows custom cluster post Rancher upgrade
+    title: Sanity_Post_Rancher_Upgrade_RKE2_Windows
     priority: 4
     type: 8
     is_flaky: 0
     automation: 2
     steps:
-    - action: Provision downstream RKE2 Windows 2019 custom cluster
-      expectedresult: ""
-      data: ""
-      position: 1
-      attachments: []
-    - action: Post cluster creation checks
-      expectedresult: ""
-      data: ""
-      position: 2
-      attachments: []
-    custom_field:
-      "14": Validation
-      "18": Hostbusters
-
-  - description: Provisions downstream RKE2 Windows 2022 custom cluster post Rancher upgrade
-    title: Sanity_Post_Rancher_Upgrade_RKE2_Windows_2022
-    priority: 4
-    type: 8
-    is_flaky: 0
-    automation: 2
-    steps:
-    - action: Provision downstream RKE2 Windows 2022 custom cluster
+    - action: Provision downstream RKE2 Windows custom cluster
       expectedresult: ""
       data: ""
       position: 1

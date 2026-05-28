@@ -71,7 +71,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
-	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
+	rke2Module, rke2Windows, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
 
 	tests := []struct {
 		name      string
@@ -79,8 +79,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 		module    string
 	}{
 		{"Sanity_RKE2", nodeRolesDedicated, rke2Module},
-		{"Sanity_RKE2_Windows_2019", nodeRolesWindows, rke2Windows2019},
-		{"Sanity_RKE2_Windows_2022", nodeRolesWindows, rke2Windows2022},
+		{"Sanity_RKE2_Windows", nodeRolesWindows, rke2Windows},
 		{"Sanity_K3S", nodeRolesDedicated, k3sModule},
 	}
 
@@ -169,7 +168,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
 
 	standardToken := standardUserToken.Token
 
-	rke2ImportedModule, _, _, k3sImportedModule := provisioning.ImportedClusterModules(s.terraformConfig)
+	rke2ImportedModule, _, k3sImportedModule := provisioning.ImportedClusterModules(s.terraformConfig)
 
 	tests := []struct {
 		name   string

@@ -121,6 +121,7 @@ func (k *KDMTestSuite) TestKDM() {
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
+
 			terratest, err = provisioning.GetK8sVersion(k.standardUserClient, terraform, terratest)
 			require.NoError(k.T(), err)
 

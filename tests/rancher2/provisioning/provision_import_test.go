@@ -82,15 +82,14 @@ func (p *ImportedClusterTestSuite) TestTfpImportedCluster() {
 
 	standardToken := standardUserToken.Token
 
-	rke2Module, rke2Windows2019, rke2Windows2022, k3sModule := provisioning.ImportedClusterModules(p.terraformConfig)
+	rke2Module, rke2Windows, k3sModule := provisioning.ImportedClusterModules(p.terraformConfig)
 
 	tests := []struct {
 		name   string
 		module string
 	}{
 		{"Imported_RKE2", rke2Module},
-		{"Imported_RKE2_Windows_2019", rke2Windows2019},
-		{"Imported_RKE2_Windows_2022", rke2Windows2022},
+		{"Imported_RKE2_Windows", rke2Windows},
 		{"Imported_K3S", k3sModule},
 	}
 
