@@ -1,0 +1,59 @@
+rancher:
+  host: "<required>"
+  adminToken: ""
+  insecure: true
+  cleanup: true
+
+# TERRAFORM CONFIG - PERMUTATIONS SETUP
+terraform:
+  module: [aws_rke2_nodedriver, aws_k3s_nodedriver, aws_rke2_custom, aws_k3s_custom, aws_rke2_imported, aws_k3s_imported]
+  cni: ["<HB_CNI>"]
+  resourcePrefix: "<required>"
+  privateKeyPath: "<HB_SSH_PRIVATE_KEY_PATH>"
+  provider: "<HB_PROVIDER_AMAZON>"
+  downstreamClusterProvider: "<HB_PROVIDER_AMAZON>"
+
+  awsCredentials:
+    awsAccessKey: "<required>"
+    awsSecretKey: "<required>"
+
+  awsConfig:
+    awsUser: "<HB_AWS_USER>"
+    ami: ["<HB_AWS_AMI>"]
+    awsInstanceType: "<HB_AWS_INSTANCE_TYPE>"
+    region: "<HB_AWS_REGION>"
+    awsVolumeType: "<HB_AWS_VOLUME_TYPE>"
+    awsSecurityGroupNames: ["<HB_AWS_SECURITY_GROUP_NAMES>"]
+    awsSecurityGroups: ["<HB_AWS_SECURITY_GROUPS>"]
+    awsVpcID: "<HB_AWS_VPC_ID>"
+    awsZoneLetter: "<HB_AWS_ZONE_LETTER>"
+    awsRootSize: "<HB_AWS_ROOT_SIZE>"
+    awsKeyName: "<HB_SSH_PRIVATE_KEY_NAME>"
+    sshConnectionType: "ssh"
+    timeout: "10m"
+
+# STANDALONE CONFIG - IMPORTED CLUSTERS 
+  standalone:
+    rke2Version: "<required>"
+    k3sVersion: "<required>"
+    osGroup: "<HB_OS_GROUP>"
+    osUser: "<HB_OS_USER>"
+
+# TERRATEST CONFIG - PERMUTATIONS SETUP
+terratest:
+  nodepools:
+    - quantity: 1
+      etcd: true
+      controlplane: false
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: true
+      worker: false
+    - quantity: 1
+      etcd: false
+      controlplane: false
+      worker: true
+  kubernetesVersion: ["<required>"]
+  standaloneLogging: false
+  tfLogging: false

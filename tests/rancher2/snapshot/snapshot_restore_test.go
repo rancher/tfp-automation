@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	clusterActions "github.com/rancher/tests/actions/clusters"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
@@ -44,7 +45,13 @@ type SnapshotRestoreTestSuite struct {
 }
 
 func (s *SnapshotRestoreTestSuite) SetupSuite() {
+	var err error
+
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	s.cattleConfig, err = configDefaults.LoadPackageDefaults(s.cattleConfig, "")
+	require.NoError(s.T(), err)
+
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 
 	testSession := session.NewSession()

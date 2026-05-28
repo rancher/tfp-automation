@@ -11,6 +11,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
@@ -44,7 +45,13 @@ type ProvisionACETestSuite struct {
 }
 
 func (p *ProvisionACETestSuite) SetupSuite() {
+	var err error
+
 	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+
+	p.cattleConfig, err = configDefaults.LoadPackageDefaults(p.cattleConfig, "")
+	require.NoError(p.T(), err)
+
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 
 	testSession := session.NewSession()
