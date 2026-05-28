@@ -21,7 +21,6 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
-	"github.com/rancher/tfp-automation/framework/set/provisioning/imported"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
@@ -121,9 +120,6 @@ func (p *DynamicImportedClusterTestSuite) TestTfpImportedClusterDynamicInput() {
 
 			logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
 			err = pods.VerifyClusterPods(p.client, clusters[0])
-			require.NoError(p.T(), err)
-
-			err = imported.SetUpgradeImportedCluster(p.client, terraform)
 			require.NoError(p.T(), err)
 
 			params := tfpQase.GetProvisioningSchemaParams(p.terraformConfig, p.terratestConfig)

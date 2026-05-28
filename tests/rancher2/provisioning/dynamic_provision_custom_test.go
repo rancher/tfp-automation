@@ -101,6 +101,7 @@ func (p *DynamicProvisionCustomTestSuite) TestTfpProvisionCustomDynamicInput() {
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
+
 			terratest, err = provisioning.GetK8sVersion(p.client, terraform, terratest)
 			require.NoError(p.T(), err)
 

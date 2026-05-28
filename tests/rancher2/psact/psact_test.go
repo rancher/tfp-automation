@@ -9,9 +9,9 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-        configDefaults "github.com/rancher/tests/actions/config/defaults"
 	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
@@ -45,12 +45,12 @@ type PSACTTestSuite struct {
 }
 
 func (p *PSACTTestSuite) SetupSuite() {
-        var err error
+	var err error
 
-        p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
-        p.cattleConfig, err = configDefaults.LoadPackageDefaults(p.cattleConfig, "")
-        require.NoError(p.T(), err)
+	p.cattleConfig, err = configDefaults.LoadPackageDefaults(p.cattleConfig, "")
+	require.NoError(p.T(), err)
 
 	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
 
@@ -113,6 +113,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
+
 			terratest, err = provisioning.GetK8sVersion(p.client, terraform, terratest)
 			require.NoError(t, err)
 

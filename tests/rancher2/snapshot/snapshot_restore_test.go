@@ -10,8 +10,8 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/shepherd/pkg/session"
-	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	clusterActions "github.com/rancher/tests/actions/clusters"
+	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
@@ -115,6 +115,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
+
 			terratest, err = provisioning.GetK8sVersion(s.client, terraform, terratest)
 			require.NoError(s.T(), err)
 

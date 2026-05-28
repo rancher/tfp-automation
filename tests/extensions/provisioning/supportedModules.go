@@ -15,13 +15,12 @@ import (
 )
 
 // DownstreamClusterModules is a function that will return the correct module names based on the provider.
-func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, string, string, string) {
-	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
+func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, string, string) {
+	var rke2Module, rke2Windows, k3sModule string
 	switch terraformConfig.DownstreamClusterProvider {
 	case aws.Aws:
 		rke2Module = modules.NodeDriverAWSRKE2
-		rke2Windows2019 = modules.CustomAWSRKE2Windows2019
-		rke2Windows2022 = modules.CustomAWSRKE2Windows2022
+		rke2Windows = modules.CustomAWSRKE2Windows2022
 		k3sModule = modules.NodeDriverAWSK3S
 	case azure.Azure:
 		rke2Module = modules.NodeDriverAzureRKE2
@@ -42,17 +41,16 @@ func DownstreamClusterModules(terraformConfig *config.TerraformConfig) (string, 
 		panic("Unsupported provider: " + terraformConfig.DownstreamClusterProvider)
 	}
 
-	return rke2Module, rke2Windows2019, rke2Windows2022, k3sModule
+	return rke2Module, rke2Windows, k3sModule
 }
 
 // ImportedClusterModules is a function that will return the correct module names based on the provider.
-func ImportedClusterModules(terraformConfig *config.TerraformConfig) (string, string, string, string) {
-	var rke2Module, rke2Windows2019, rke2Windows2022, k3sModule string
+func ImportedClusterModules(terraformConfig *config.TerraformConfig) (string, string, string) {
+	var rke2Module, rke2Windows, k3sModule string
 	switch terraformConfig.DownstreamClusterProvider {
 	case aws.Aws:
 		rke2Module = modules.ImportedAWSRKE2
-		rke2Windows2019 = modules.ImportedAWSRKE2Windows2019
-		rke2Windows2022 = modules.ImportedAWSRKE2Windows2022
+		rke2Windows = modules.ImportedAWSRKE2Windows2022
 		k3sModule = modules.ImportedAWSK3S
 	case vsphere.Vsphere:
 		rke2Module = modules.ImportedVsphereRKE2
@@ -61,7 +59,7 @@ func ImportedClusterModules(terraformConfig *config.TerraformConfig) (string, st
 		panic("Unsupported provider: " + terraformConfig.DownstreamClusterProvider)
 	}
 
-	return rke2Module, rke2Windows2019, rke2Windows2022, k3sModule
+	return rke2Module, rke2Windows, k3sModule
 }
 
 func IsImportedModule(module string) bool {

@@ -86,7 +86,7 @@ func (s *TfpSanityDualStackUpgradeRancherTestSuite) provisionAndVerifyCluster(na
 	var nestedRancherModuleDir string
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
+	rke2Module, _, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
 
 	tests := []struct {
 		name      string

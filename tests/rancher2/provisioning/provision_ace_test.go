@@ -81,7 +81,7 @@ func (p *ProvisionACETestSuite) TestTfpProvisionACE() {
 	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
+	rke2Module, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
 
 	localAuthEndpoint := config.TerraformConfig{
 		LocalAuthEndpoint: true,
@@ -113,6 +113,7 @@ func (p *ProvisionACETestSuite) TestTfpProvisionACE() {
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
+
 			terratest, err = provisioning.GetK8sVersion(p.client, terraform, terratest)
 			require.NoError(p.T(), err)
 
