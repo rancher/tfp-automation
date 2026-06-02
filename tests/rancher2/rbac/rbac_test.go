@@ -81,7 +81,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(r.terraformConfig)
+	rke2Module, _, k3sModule := provisioning.DownstreamClusterModules(r.terraformConfig)
 
 	tests := []struct {
 		name     string
