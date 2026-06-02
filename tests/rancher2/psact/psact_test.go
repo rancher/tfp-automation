@@ -81,7 +81,7 @@ func (p *PSACTTestSuite) TestTfpPSACT() {
 	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-	rke2Module, _, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
+	rke2Module, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
 
 	tests := []struct {
 		name      string
