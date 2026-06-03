@@ -21,6 +21,16 @@ const (
 	rke2ServerTwo   = "server2"
 	rke2ServerThree = "server3"
 	token           = "token"
+
+	scpCertsFromRegistry = "scp_certs_from_registry"
+	scpCertsServer1      = "scp_certs_server1"
+	scpCertsServer2      = "scp_certs_server2"
+	scpCertsServer3      = "scp_certs_server3"
+	globalRegistry       = "global_registry"
+
+	localTempCertsPath = "/tmp/registry-certs"
+	scpOptions         = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+	ubuntuUser         = "ubuntu"
 )
 
 // CreateRKE2Cluster is a helper function that will create the RKE2 cluster.
@@ -61,16 +71,22 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 	rke2Token, registryPublicDNS string, script []byte) {
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, rke2ServerOne)
 
-	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
-		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
+
+	if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+		command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+	} else {
+		command += " \"\"" + " \"\"" + " \"\"" + " \"\""
+	}
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
+	} else {
+		command += " \"\""
 	}
-
-	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -89,16 +105,22 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		host := hosts[i]
 		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, instance, host)
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
-			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
+
+		if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+			command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
+				terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+		} else {
+			command += " \"\"" + " \"\"" + " \"\"" + " \"\""
+		}
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage
+		} else {
+			command += " \"\""
 		}
-
-		command += "'"
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

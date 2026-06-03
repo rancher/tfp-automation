@@ -18,9 +18,16 @@ const (
 )
 
 // CreateLoadBalancer is a function that will set the load balancer configurations in the main.tf file.
-func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	loadBalancerBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancer, aws.LoadBalancer})
-	loadBalancerBlockBody := loadBalancerBlock.Body()
+func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, authGlobalRegistry bool) {
+	var loadBalancerBlockBody *hclwrite.Body
+
+	if authGlobalRegistry {
+		loadBalancerBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancer, terraformConfig.ResourcePrefix})
+		loadBalancerBlockBody = loadBalancerBlock.Body()
+	} else {
+		loadBalancerBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancer, aws.LoadBalancer})
+		loadBalancerBlockBody = loadBalancerBlock.Body()
+	}
 
 	loadBalancerBlockBody.SetAttributeValue(internal, cty.BoolVal(false))
 	loadBalancerBlockBody.SetAttributeValue(aws.LoadBalancerType, cty.StringVal(network))

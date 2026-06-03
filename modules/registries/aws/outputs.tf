@@ -10,6 +10,10 @@ output "global_registry_public_dns" {
   value = aws_instance.global_registry.public_dns
 }
 
+output "global_registry_route_53_fqdn" {
+  value = aws_route53_record.global-mew-tfp-registry.fqdn
+}
+
 output "ecr_registry_public_dns" {
   value = aws_instance.ecr_registry.public_dns
 }

@@ -38,8 +38,17 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.ChartVersion + " " +
 		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " + registryPublicDNS
 
+	if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+		command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+	} else {
+		command += " \"\"" + " \"\"" + " \"\"" + " \"\""
+	}
+
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
+	} else {
+		command += " \"\""
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{

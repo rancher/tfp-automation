@@ -19,9 +19,16 @@ const (
 
 // CreateTargetGroupAttachments is a function that will set the target group attachments configurations in the main.tf file.
 func CreateTargetGroupAttachments(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, lbTargetGroupAttachment,
-	targetGroupAttachmentServer string, port int64) {
-	targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{lbTargetGroupAttachment, targetGroupAttachmentServer})
-	targetGroupBlockBody := targetGroupBlock.Body()
+	targetGroupAttachmentServer string, port int64, authGlobalRegistry bool) {
+	var targetGroupBlockBody *hclwrite.Body
+
+	if authGlobalRegistry {
+		targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{lbTargetGroupAttachment, terraformConfig.ResourcePrefix + "-" + targetGroupAttachmentServer})
+		targetGroupBlockBody = targetGroupBlock.Body()
+	} else {
+		targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{lbTargetGroupAttachment, targetGroupAttachmentServer})
+		targetGroupBlockBody = targetGroupBlock.Body()
+	}
 
 	instanceValueExpression := general.Local + "." + instanceIDs
 	values := hclwrite.Tokens{
@@ -30,15 +37,31 @@ func CreateTargetGroupAttachments(rootBody *hclwrite.Body, terraformConfig *conf
 
 	targetGroupBlockBody.SetAttributeRaw(forEach, values)
 
-	targetGroupExpression := aws.LoadBalancerTargetGroup + "." + aws.TargetGroupPrefix + fmt.Sprint(port) + ".arn"
-	values = hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(targetGroupExpression)},
+	var targetGroupExpression string
+
+	if authGlobalRegistry {
+		targetGroupExpression = aws.LoadBalancerTargetGroup + "." + terraformConfig.ResourcePrefix + "-" + aws.TargetGroupPrefix + fmt.Sprint(port) + ".arn"
+		values = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(targetGroupExpression)},
+		}
+	} else {
+		targetGroupExpression = aws.LoadBalancerTargetGroup + "." + aws.TargetGroupPrefix + fmt.Sprint(port) + ".arn"
+		values = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(targetGroupExpression)},
+		}
 	}
 
 	targetGroupBlockBody.SetAttributeRaw(aws.TargetGroupARN, values)
 
-	values = hclwrite.Tokens{
-		{Type: hclsyntax.TokenIdent, Bytes: []byte(eachValue)},
+	if authGlobalRegistry {
+		globalRegistryExpression := aws.AwsInstance + `.global_registry.id`
+		values = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(globalRegistryExpression)},
+		}
+	} else {
+		values = hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(eachValue)},
+		}
 	}
 
 	targetGroupBlockBody.SetAttributeRaw(aws.TargetID, values)

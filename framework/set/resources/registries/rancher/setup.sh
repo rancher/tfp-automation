@@ -10,7 +10,11 @@ CHART_VERSION=$7
 BOOTSTRAP_PASSWORD=$8
 RANCHER_IMAGE=$9
 REGISTRY=${10}
-RANCHER_AGENT_IMAGE=${11}
+REGISTRY_USERNAME=${11}
+REGISTRY_PASSWORD=${12}
+DOCKERHUB_USER=${13}
+DOCKERHUB_PASS=${14}
+RANCHER_AGENT_IMAGE=${15}
 
 if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
@@ -45,6 +49,8 @@ install_kubectl() {
     sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
     mkdir -p ~/.kube
     rm kubectl
+
+    kubectl create ns cattle-system
 }
 
 check_cluster_status() {
@@ -87,9 +93,20 @@ setup_helm_repo() {
     helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
 }
 
+docker_login() {
+    printf '%s\n' \
+'{' \
+'  "insecure-registries" : [ "'"${REGISTRY}"'" ]' \
+'}' |
+sudo tee /etc/docker/daemon.json >/dev/null
+    
+    sudo systemctl restart docker && sudo systemctl daemon-reload
+    sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
+    sudo docker login https://${REGISTRY} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
+}
+
 install_cert_manager() {
     echo "Installing cert manager"
-    kubectl create ns cattle-system
     kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.crds.yaml
     helm repo add jetstack https://charts.jetstack.io
     helm repo update
@@ -114,8 +131,9 @@ install_self_signed_rancher() {
                                                                                          ${VERSION} \
                                                                                          ${RANCHER_TAG} \
                                                                                          ${IMAGE} \
+                                                                                         ${IMAGE_PULL_SECRET} \
                                                                                          --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                         --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                          --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
                                                                                          --set 'extraEnv[1].value=prime' \
                                                                                          --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
@@ -131,6 +149,7 @@ install_self_signed_rancher() {
                                                                                          ${VERSION} \
                                                                                          ${RANCHER_TAG} \
                                                                                          ${IMAGE} \
+                                                                                         ${IMAGE_PULL_SECRET} \
                                                                                          --set systemDefaultRegistry=${REGISTRY} \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
@@ -146,11 +165,12 @@ install_lets_encrypt_rancher() {
                                                                                      ${VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
+                                                                                     ${IMAGE_PULL_SECRET} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                      --set letsEncrypt.ingress.class=traefik \
                                                                                      --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                     --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
+                                                                                     --set "extraEnv[0].value=${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
                                                                                      --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
                                                                                      --set 'extraEnv[1].value=prime' \
                                                                                      --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
@@ -165,6 +185,7 @@ install_lets_encrypt_rancher() {
                                                                                      ${VERSION} \
                                                                                      ${RANCHER_TAG} \
                                                                                      ${IMAGE} \
+                                                                                     ${IMAGE_PULL_SECRET} \
                                                                                      --set ingress.tls.source=letsEncrypt \
                                                                                      --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
                                                                                      --set letsEncrypt.ingress.class=traefik \
@@ -195,6 +216,15 @@ setup_helm_repo
 if [[ $RANCHER_TAG_VERSION == *head* ]]; then
     LATEST_CHART_VERSION=$(helm search repo rancher-${REPO} --devel | tail -n +2 | head -n 1 | cut -f2)
     VERSION="--version ${LATEST_CHART_VERSION}"
+fi
+
+if [ -z "$REGISTRY_USERNAME" ] || [ -z "$REGISTRY_PASSWORD" ]; then
+    IMAGE_PULL_SECRET=""
+else
+    docker_login
+
+    kubectl create secret docker-registry tfp-reg-cred -n cattle-system --docker-server=${REGISTRY} --docker-username=${REGISTRY_USERNAME} --docker-password=${REGISTRY_PASSWORD}
+    IMAGE_PULL_SECRET="--set imagePullSecrets[0].name=tfp-reg-cred --set systemRegistryInheritsPullSecrets=true"
 fi
 
 install_cert_manager
