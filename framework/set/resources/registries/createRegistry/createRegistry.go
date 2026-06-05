@@ -1,6 +1,7 @@
 package createRegistry
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 
@@ -16,13 +17,14 @@ import (
 
 const (
 	authRegistry    = "auth_registry"
+	globalRegistry  = "global_registry"
 	nonAuthRegistry = "non_auth_registry"
 	ecrRegistry     = "ecr_registry"
 )
 
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
 func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, rke2AuthRegistryPublicDNS string) (*os.File, error) {
+	terratestConfig *config.TerratestConfig, rke2AuthRegistryPublicDNS, rke2AuthRegistryRoute53FQDN string) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/auth-registry.sh")
@@ -32,18 +34,37 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 		return nil, err
 	}
 
+	privateFullChain, err := os.ReadFile(terraformConfig.PrivateFullChainPath)
+	if err != nil {
+		return nil, err
+	}
+
+	privateCertKey, err := os.ReadFile(terraformConfig.PrivateCertKeyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedFullChain := base64.StdEncoding.EncodeToString((privateFullChain))
+	encodedCertKey := base64.StdEncoding.EncodeToString((privateCertKey))
+
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2AuthRegistryPublicDNS, authRegistry)
 
-	command := "bash -c '/tmp/auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
+	command := "/tmp/auth-registry.sh " + terraformConfig.Standalone.CertManagerVersion + " " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
 		terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
-		rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
-		terraformConfig.Standalone.RancherImage
+		rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " +
+		terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey
+
+	if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+		command += " " + rke2AuthRegistryRoute53FQDN
+	} else {
+		command += " \"\""
+	}
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
+	} else {
+		command += " \"\""
 	}
-
-	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/auth-registry.sh"),
@@ -77,13 +98,15 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 	var command string
 
 	if terraformConfig.Standalone.UpgradeAirgapRancher {
-		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
+		command = "/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " +
 			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage
 
-		if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
-			command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
+		if terraformConfig.Standalone.RancherAgentImage != "" {
+			command += " " + terraformConfig.Standalone.RancherAgentImage
+		} else {
+			command += " \"\""
 		}
 	} else {
 		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
@@ -93,10 +116,10 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage
+		} else {
+			command += " \"\""
 		}
 	}
-
-	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/non-auth-registry.sh"),
@@ -127,16 +150,16 @@ func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2EcrRegistryPublicDNS, ecrRegistry)
 
-	command := "bash -c '/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " + terraformConfig.Standalone.RegistryUsername + " " +
+	command := "/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " + terraformConfig.Standalone.RegistryUsername + " " +
 		terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.RancherImage + " " +
 		terraformConfig.Standalone.OSUser + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.AWSCredentials.AWSAccessKey + " " +
 		terraformConfig.AWSCredentials.AWSSecretKey + " " + terraformConfig.AWSConfig.Region
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
+	} else {
+		command += " \"\""
 	}
-
-	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/ecr-registry.sh"),

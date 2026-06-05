@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/zclconf/go-cty/cty"
@@ -17,11 +18,22 @@ const (
 )
 
 // CreateLoadBalancerListeners is a function that will set the load balancer listeners configurations in the main.tf file.
-func CreateLoadBalancerListeners(rootBody *hclwrite.Body, port int64) {
-	listenersGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerListener, aws.LoadBalancerListener + "_" + strconv.FormatInt(port, 10)})
-	listenersGroupBlockBody := listenersGroupBlock.Body()
+func CreateLoadBalancerListeners(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64, authGlobalRegistry bool) {
+	var listenersGroupBlockBody *hclwrite.Body
+	var loadBalancerExpression string
 
-	loadBalancerExpression := aws.LoadBalancer + "." + aws.LoadBalancer + ".arn"
+	if authGlobalRegistry {
+		listenersGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerListener, terraformConfig.ResourcePrefix + "_" + strconv.FormatInt(port, 10)})
+		listenersGroupBlockBody = listenersGroupBlock.Body()
+
+		loadBalancerExpression = aws.LoadBalancer + "." + terraformConfig.ResourcePrefix + ".arn"
+	} else {
+		listenersGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerListener, aws.LoadBalancerListener + "_" + strconv.FormatInt(port, 10)})
+		listenersGroupBlockBody = listenersGroupBlock.Body()
+
+		loadBalancerExpression = aws.LoadBalancer + "." + aws.LoadBalancer + ".arn"
+	}
+
 	values := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(loadBalancerExpression)},
 	}
@@ -35,7 +47,12 @@ func CreateLoadBalancerListeners(rootBody *hclwrite.Body, port int64) {
 
 	defaultActionBlockBody.SetAttributeValue(general.Type, cty.StringVal(forward))
 
-	targetGroupExpression := aws.LoadBalancerTargetGroup + "." + aws.TargetGroupPrefix + strconv.FormatInt(port, 10) + ".arn"
+	var targetGroupExpression string
+	if authGlobalRegistry {
+		targetGroupExpression = aws.LoadBalancerTargetGroup + "." + terraformConfig.ResourcePrefix + "-" + aws.TargetGroupPrefix + strconv.FormatInt(port, 10) + ".arn"
+	} else {
+		targetGroupExpression = aws.LoadBalancerTargetGroup + "." + aws.TargetGroupPrefix + strconv.FormatInt(port, 10) + ".arn"
+	}
 	values = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(targetGroupExpression)},
 	}

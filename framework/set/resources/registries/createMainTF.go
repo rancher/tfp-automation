@@ -23,6 +23,8 @@ const (
 	globalRegistryPublicDNS  = "global_registry_public_dns"
 	ecrRegistryPublicDNS     = "ecr_registry_public_dns"
 
+	globalRegistryRoute53FQDN = "global_registry_route_53_fqdn"
+
 	authRegistry    = "auth_registry"
 	nonAuthRegistry = "non_auth_registry"
 	globalRegistry  = "global_registry"
@@ -70,6 +72,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
 	nonAuthRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthRegistryPublicDNS)
 	globalRegistryPublicDNS := terraform.Output(t, terraformOptions, globalRegistryPublicDNS)
+	globalRegistryRoute53FQDN := terraform.Output(t, terraformOptions, globalRegistryRoute53FQDN)
 	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
 	serverOnePublicDNS := terraform.Output(t, terraformOptions, serverOnePublicDNS)
 	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
@@ -92,9 +95,16 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating global registry...")
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry)
-	if err != nil {
-		logrus.Fatalf("Error creating global registry: %v", err)
+	if terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry)
+		if err != nil {
+			logrus.Fatalf("Error creating global registry: %v", err)
+		}
+	} else {
+		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistryRoute53FQDN)
+		if err != nil {
+			logrus.Fatalf("Error creating global registry: %v", err)
+		}
 	}
 
 	_, err = terraform.InitAndApplyE(t, terraformOptions)
@@ -106,7 +116,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")
-	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS)
+	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, globalRegistryRoute53FQDN)
 	if err != nil {
 		logrus.Fatalf("Error creating authenticated registry: %v", err)
 	}
@@ -130,6 +140,12 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		logrus.Infof("Error while creating registries. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
 		return "", "", "", err
+	}
+
+	// Needed so that when building the local cluster and setting up Rancher, we use the correct registry images based on
+	// whether the global registry is authenticated or not.
+	if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+		globalRegistryPublicDNS = globalRegistryRoute53FQDN
 	}
 
 	file = sanity.OpenFile(file, keyPath)

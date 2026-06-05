@@ -8,9 +8,11 @@ RKE2_TOKEN=$5
 RANCHER_IMAGE=$6
 RANCHER_TAG_VERSION=$7
 REGISTRY=$8
-REGISTRY_USERNAME=$9
+REGISTRY_USERNAME=${9}
 REGISTRY_PASSWORD=${10}
-RANCHER_AGENT_IMAGE=${11}
+DOCKERHUB_USER=${11}
+DOCKERHUB_PASS=${12}
+RANCHER_AGENT_IMAGE=${13}
 
 set -e
 
@@ -22,7 +24,8 @@ system-default-registry: ${REGISTRY}
 tls-san:
   - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
 
-sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+if [ -z "${REGISTRY_USERNAME}" ] || [ -z "${REGISTRY_PASSWORD}" ]; then
+  sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   "docker.io":
     endpoint:
@@ -34,6 +37,21 @@ configs:
     tls:
       insecure_skip_verify: true
 EOF
+else
+  sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+mirrors:
+  "docker.io":
+    endpoint:
+      - "https://${REGISTRY}"
+    rewrite:
+      "^rancher/(.*)": "${REGISTRY}/rancher/\$1"
+configs:
+  "${REGISTRY}":
+    auth:
+      username: "${REGISTRY_USERNAME}"
+      password: "${REGISTRY_PASSWORD}"
+EOF
+fi
 
 ARCH=$(uname -m)
 if [[ $ARCH == "x86_64" ]]; then
@@ -72,6 +90,11 @@ sudo tee /etc/docker/daemon.json > /dev/null << EOF
 EOF
 
 sudo systemctl restart docker && sudo systemctl daemon-reload
+
+if [ -n "${REGISTRY_USERNAME}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
+  sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
+  sudo docker login https://${REGISTRY} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
+fi
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
   sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}

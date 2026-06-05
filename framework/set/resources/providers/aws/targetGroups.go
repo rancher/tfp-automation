@@ -25,9 +25,16 @@ const (
 )
 
 // CreateTargetGroups is a function that will set the target group configurations in the main.tf file.
-func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64) {
-	targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerTargetGroup, aws.TargetGroupPrefix + strconv.FormatInt(port, 10)})
-	targetGroupBlockBody := targetGroupBlock.Body()
+func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64, authGlobalRegistry bool) {
+	var targetGroupBlockBody *hclwrite.Body
+
+	if authGlobalRegistry {
+		targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerTargetGroup, terraformConfig.ResourcePrefix + "-" + aws.TargetGroupPrefix + strconv.FormatInt(port, 10)})
+		targetGroupBlockBody = targetGroupBlock.Body()
+	} else {
+		targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerTargetGroup, aws.TargetGroupPrefix + strconv.FormatInt(port, 10)})
+		targetGroupBlockBody = targetGroupBlock.Body()
+	}
 
 	targetGroupBlockBody.SetAttributeValue(general.Port, cty.NumberIntVal(port))
 	targetGroupBlockBody.SetAttributeValue(protocol, cty.StringVal(TCP))

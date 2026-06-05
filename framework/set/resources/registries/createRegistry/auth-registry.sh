@@ -1,21 +1,44 @@
 #!/usr/bin/bash
 
-REGISTRY_NAME=$1
-REGISTRY_USER=$2
-REGISTRY_PASS=$3
-DOCKERHUB_USER=$4
-DOCKERHUB_PASS=$5
-HOST=$6
-RANCHER_VERSION=$7
-ASSET_DIR=$8
-USER=$9
-RANCHER_IMAGE=${10}
-RANCHER_AGENT_IMAGE=${11}
+CERT_MANAGER_VERSION=$1
+REGISTRY_NAME=$2
+REGISTRY_USER=$3
+REGISTRY_PASS=$4
+DOCKERHUB_USER=$5
+DOCKERHUB_PASS=$6
+HOST=$7
+RANCHER_VERSION=$8
+ASSET_DIR=$9
+USER=${10}
+RANCHER_IMAGE=${11}
+FULL_CHAIN_FILE=${12}
+CERT_KEY_FILE=${13}
+ROUTE53_FQDN=${14}
+RANCHER_AGENT_IMAGE=${15}
 
 set -e
 
+if [ ! -d "/home/$USER/certs" ]; then
+    echo "Decoding certificate files..."
+    base64 -d <<< "$FULL_CHAIN_FILE" > /home/$USER/fullchain.pem
+    base64 -d <<< "$CERT_KEY_FILE" > /home/$USER/privkey.pem
+
+    chmod 600 /home/$USER/fullchain.pem
+    chmod 600 /home/$USER/privkey.pem
+else
+    echo "Certificate files already exist. Skipping decoding..."
+fi
+
+FULL_CHAIN_PATH=/home/$USER/fullchain.pem
+CERT_KEY_PATH=/home/$USER/privkey.pem
+
+REGISTRY_ENDPOINT="${HOST}"
+if [ -n "${ROUTE53_FQDN}" ]; then
+    REGISTRY_ENDPOINT="${ROUTE53_FQDN}"
+fi
+
 docker_login() {
-    echo "Logging into private registry ${HOST}..."
+    echo "Logging into Docker Hub..."
     sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
 }
 
@@ -26,17 +49,15 @@ create_registry() {
         sudo mkdir -p /home/${USER}/auth
         sudo htpasswd -Bbn ${REGISTRY_USER} ${REGISTRY_PASS} | sudo tee /home/${USER}/auth/htpasswd
 
-        echo "Creating a self-signed certificate..."
         sudo mkdir -p /home/${USER}/certs
-        sudo openssl req -newkey rsa:4096 -nodes -sha256 \
-            -keyout /home/${USER}/certs/domain.key \
-            -addext "subjectAltName = DNS:${HOST}" \
-            -x509 -days 365 -out /home/${USER}/certs/domain.crt \
-            -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
+        sudo mv $FULL_CHAIN_PATH /home/${USER}/certs/domain.crt
+        sudo mv $CERT_KEY_PATH /home/${USER}/certs/domain.key
+        sudo chmod 644 /home/${USER}/certs/domain.crt
+        sudo chmod 600 /home/${USER}/certs/domain.key
 
-        echo "Copying the certificate to the /etc/docker/certs.d/${HOST} directory..."
-        sudo mkdir -p /etc/docker/certs.d/${HOST}
-        sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
+        echo "Copying the certificate to the /etc/docker/certs.d/${REGISTRY_ENDPOINT} directory..."
+        sudo mkdir -p /etc/docker/certs.d/${REGISTRY_ENDPOINT}
+        sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${REGISTRY_ENDPOINT}/ca.crt
 
         echo "Creating a private registry..."
         sudo docker run -d --restart=always --name "${REGISTRY_NAME}" \
@@ -51,8 +72,8 @@ create_registry() {
             -p 443:443 registry:2
     fi
 
-    echo "Logging into private registry ${HOST}..."
-    sudo docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} https://${HOST}
+    echo "Logging into private registry ${REGISTRY_ENDPOINT}..."
+    sudo docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} https://${REGISTRY_ENDPOINT}
 }
 
 fetch_images() {
@@ -86,6 +107,22 @@ fetch_images() {
     fi
 }
 
+cert_manager_images() {
+    echo "Adding cert-manager images to the list..."
+    CERT_MANAGER_IMAGES=(
+        "quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}"
+        "quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION}"
+        "quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION}"
+        "quay.io/jetstack/cert-manager-startupapicheck:${CERT_MANAGER_VERSION}"
+    )
+
+    for IMAGE in "${CERT_MANAGER_IMAGES[@]}"; do
+        sudo docker pull ${IMAGE}
+        sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE}
+        sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE}
+    done
+}
+
 manage_images() {
     ACTION=$1
     mapfile -t IMAGES < /home/${USER}/rancher-images.txt
@@ -109,9 +146,9 @@ action() {
     IMAGE=$2
     
     if [ "$ACTION" == "pull" ]; then
-        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${HOST}/${IMAGE} &
+        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE} &
     elif [ "$ACTION" == "push" ]; then
-        sudo docker push ${HOST}/${IMAGE} &
+        sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE} &
     fi
 }
 
@@ -124,7 +161,7 @@ verify_images() {
 
     for IMAGE in "${IMAGES[@]}"; do
         {
-            TARGET_IMAGE=${HOST}/${IMAGE}
+            TARGET_IMAGE=${REGISTRY_ENDPOINT}/${IMAGE}
             if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else
@@ -149,6 +186,7 @@ verify_images() {
 docker_login
 create_registry
 fetch_images
+cert_manager_images
 manage_images "pull"
 manage_images "push"
 verify_images
