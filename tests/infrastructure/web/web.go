@@ -9,7 +9,16 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/tests/infrastructure/clusters"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	setupairgap "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/airgap"
+	setupdualstack "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/dualstack"
+	setupipv6 "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/ipv6"
+	setupproxy "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/proxy"
+	setupregistry "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/registry"
+	setupstandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/standard"
+	upgradeairgap "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/airgap"
+	upgradeproxy "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/proxy"
+	upgradestandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/standard"
 	"github.com/rancher/tfp-automation/tests/infrastructure/registries"
 	share "github.com/rancher/tfp-automation/tests/infrastructure/state"
 )
@@ -26,25 +35,52 @@ var setupClusterFuncs = map[string]func(*testing.T, string) error{
 
 var setupRancherFuncs = map[string]map[string]func(*testing.T, string) error{
 	"airgap": {
-		"fresh":   ranchers.CreateAirgapRancher,
-		"upgrade": ranchers.UpgradingAirgapRancher,
+		"fresh": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return setupairgap.CreateAirgapRancher(t, provider, cattleConfig)
+		},
+		"upgrade": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return upgradeairgap.UpgradingAirgapRancher(t, provider, cattleConfig)
+		},
 	},
 	"dual": {
-		"fresh": ranchers.CreateDualStackRancher,
+		"fresh": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return setupdualstack.CreateDualStackRancher(t, provider, cattleConfig)
+		},
 	},
 	"ipv6": {
-		"fresh": ranchers.CreateIPv6Rancher,
+		"fresh": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return setupipv6.CreateIPv6Rancher(t, provider, cattleConfig)
+		},
 	},
 	"normal": {
-		"fresh":   ranchers.CreateRancher,
-		"upgrade": ranchers.UpgradingRancher,
+		"fresh": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return setupstandard.CreateRancher(t, provider, cattleConfig)
+		},
+		"upgrade": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return upgradestandard.UpgradingRancher(t, provider, cattleConfig)
+		},
 	},
 	"proxy": {
-		"fresh":   ranchers.CreateProxyRancher,
-		"upgrade": ranchers.UpgradingProxyRancher,
+		"fresh": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return setupproxy.CreateProxyRancher(t, provider, cattleConfig)
+		},
+		"upgrade": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return upgradeproxy.UpgradingProxyRancher(t, provider, cattleConfig)
+		},
 	},
 	"registry": {
-		"fresh": ranchers.CreateRegistryRancher,
+		"fresh": func(t *testing.T, provider string) error {
+			cattleConfig := shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
+			return setupregistry.CreateRegistryRancher(t, provider, cattleConfig)
+		},
 	},
 }
 

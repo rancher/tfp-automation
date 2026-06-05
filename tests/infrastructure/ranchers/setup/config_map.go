@@ -1,4 +1,4 @@
-package ranchers
+package setup
 
 import "github.com/rancher/shepherd/clients/rancher"
 

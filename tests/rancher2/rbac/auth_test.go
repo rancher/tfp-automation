@@ -23,7 +23,8 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/rbac"
-	"github.com/rancher/tfp-automation/tests/infrastructure/ranchers"
+
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -58,7 +59,7 @@ func (r *AuthConfigTestSuite) SetupSuite() {
 
 	r.terraformOptions = terraformOptions
 
-	client, err := ranchers.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
+	client, err := ranchersetup.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
 	require.NoError(r.T(), err)
 
 	r.client = client
