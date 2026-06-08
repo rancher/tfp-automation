@@ -1,6 +1,8 @@
 package aws
 
 import (
+	"strings"
+
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
@@ -20,15 +22,17 @@ const (
 )
 
 // CreateRoute53Record is a function that will set the AWS Route 53 record configuration in the main.tf file.
-func CreateRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, authGlobalRegistry bool) {
+func CreateRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, prefix string, globalRegistry bool) {
 	var routeRecordBlockBody *hclwrite.Body
 	var zoneIDExpression string
 
-	if authGlobalRegistry {
-		routeRecordBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.Route53Record, terraformConfig.ResourcePrefix})
+	if globalRegistry {
+		route53ResourceName := strings.ReplaceAll(prefix, "-", "_")
+
+		routeRecordBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.Route53Record, route53ResourceName})
 		routeRecordBlockBody = routeRecordBlock.Body()
 
-		zoneIDExpression = general.Data + "." + aws.Route53Zone + "." + terraformConfig.ResourcePrefix + "." + zoneID
+		zoneIDExpression = general.Data + "." + aws.Route53Zone + "." + prefix + "." + zoneID
 	} else {
 		routeRecordBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.Route53Record, aws.Route53Record})
 		routeRecordBlockBody = routeRecordBlock.Body()
@@ -41,17 +45,24 @@ func CreateRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	}
 
 	routeRecordBlockBody.SetAttributeRaw(zoneID, values)
-	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
+
+	if globalRegistry {
+		routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(prefix+"-"+terraformConfig.ResourcePrefix))
+	} else {
+		routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
+	}
+
 	routeRecordBlockBody.SetAttributeValue(general.Type, cty.StringVal(CNAME))
 	routeRecordBlockBody.SetAttributeValue(ttl, cty.NumberIntVal(300))
 
 	var loadBalancerExpression string
 
-	if authGlobalRegistry {
-		loadBalancerExpression = "[" + aws.LoadBalancer + "." + terraformConfig.ResourcePrefix + "." + dnsName + "]"
+	if globalRegistry {
+		loadBalancerExpression = "[" + aws.LoadBalancer + "." + prefix + "." + dnsName + "]"
 	} else {
 		loadBalancerExpression = "[" + aws.LoadBalancer + "." + aws.LoadBalancer + "." + dnsName + "]"
 	}
+
 	values = hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(loadBalancerExpression)},
 	}
@@ -62,8 +73,8 @@ func CreateRoute53Record(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 
 	var zoneBlock *hclwrite.Block
 	var zoneBlockBody *hclwrite.Body
-	if authGlobalRegistry {
-		zoneBlock = rootBody.AppendNewBlock(general.Data, []string{aws.Route53Zone, terraformConfig.ResourcePrefix})
+	if globalRegistry {
+		zoneBlock = rootBody.AppendNewBlock(general.Data, []string{aws.Route53Zone, prefix})
 		zoneBlockBody = zoneBlock.Body()
 	} else {
 		zoneBlock = rootBody.AppendNewBlock(general.Data, []string{aws.Route53Zone, selected})

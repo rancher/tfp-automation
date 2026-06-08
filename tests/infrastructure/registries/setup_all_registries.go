@@ -25,7 +25,8 @@ const (
 	globalRegistryPublicDNS  = "global_registry_public_dns"
 	ecrRegistryPublicDNS     = "ecr_registry_public_dns"
 
-	globalRegistryRoute53FQDN = "global_registry_route_53_fqdn"
+	authGlobalRegistryRoute53FQDN    = "auth_global_registry_route_53_fqdn"
+	nonAuthGlobalRegistryRoute53FQDN = "nauth_global_registry_route_53_fqdn"
 
 	authRegistry    = "auth_registry"
 	nonAuthRegistry = "non_auth_registry"
@@ -78,26 +79,25 @@ func SetupAllRegistries(t *testing.T, provider string) error {
 	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
 	nonAuthRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthRegistryPublicDNS)
 	globalRegistryPublicDNS := terraform.Output(t, terraformOptions, globalRegistryPublicDNS)
-	globalRegistryRoute53FQDN := terraform.Output(t, terraformOptions, globalRegistryRoute53FQDN)
 	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating non-authenticated registry...")
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, nonAuthRegistryPublicDNS, nonAuthRegistry)
+	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, nonAuthRegistryPublicDNS, nonAuthRegistry, "", false)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating global registry...")
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry)
+	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry, "", false)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")
-	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, globalRegistryRoute53FQDN)
+	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, authRegistry, authRegistryPublicDNS, false)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)

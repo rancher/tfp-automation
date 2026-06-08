@@ -18,17 +18,21 @@ import (
 )
 
 const (
-	authRegistryPublicDNS    = "auth_registry_public_dns"
-	nonAuthRegistryPublicDNS = "non_auth_registry_public_dns"
-	globalRegistryPublicDNS  = "global_registry_public_dns"
-	ecrRegistryPublicDNS     = "ecr_registry_public_dns"
+	authRegistryPublicDNS          = "auth_registry_public_dns"
+	nonAuthRegistryPublicDNS       = "non_auth_registry_public_dns"
+	authGlobalRegistryPublicDNS    = "auth_global_registry_public_dns"
+	nonAuthGlobalRegistryPublicDNS = "nauth_global_registry_public_dns"
+	ecrRegistryPublicDNS           = "ecr_registry_public_dns"
 
-	globalRegistryRoute53FQDN = "global_registry_route_53_fqdn"
+	authRegistryRoute53FQDN          = "auth_registry_route_53_fqdn"
+	authGlobalRegistryRoute53FQDN    = "auth_global_registry_route_53_fqdn"
+	nonAuthGlobalRegistryRoute53FQDN = "nauth_global_registry_route_53_fqdn"
 
-	authRegistry    = "auth_registry"
-	nonAuthRegistry = "non_auth_registry"
-	globalRegistry  = "global_registry"
-	ecrRegistry     = "ecr_registry"
+	authRegistry          = "auth"
+	nonAuthRegistry       = "non_auth"
+	authGlobalRegistry    = "auth-global"
+	nonAuthGlobalRegistry = "nauth-global"
+	ecrRegistry           = "ecr"
 
 	serverOne            = "server1"
 	serverTwo            = "server2"
@@ -54,7 +58,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{serverOne, serverTwo, serverThree, authRegistry, nonAuthRegistry, globalRegistry, ecrRegistry}
+	instances := []string{serverOne, serverTwo, serverThree, authRegistry, nonAuthRegistry, authGlobalRegistry, nonAuthGlobalRegistry, ecrRegistry}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -71,8 +75,11 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
 	nonAuthRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthRegistryPublicDNS)
-	globalRegistryPublicDNS := terraform.Output(t, terraformOptions, globalRegistryPublicDNS)
-	globalRegistryRoute53FQDN := terraform.Output(t, terraformOptions, globalRegistryRoute53FQDN)
+	authGlobalRegistryPublicDNS := terraform.Output(t, terraformOptions, authGlobalRegistryPublicDNS)
+	nonAuthGlobalRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthGlobalRegistryPublicDNS)
+	authRegistryRoute53FQDN := terraform.Output(t, terraformOptions, authRegistryRoute53FQDN)
+	nonAuthGlobalRegistryRoute53FQDN := terraform.Output(t, terraformOptions, nonAuthGlobalRegistryRoute53FQDN)
+	authGlobalRegistryRoute53FQDN := terraform.Output(t, terraformOptions, authGlobalRegistryRoute53FQDN)
 	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
 	serverOnePublicDNS := terraform.Output(t, terraformOptions, serverOnePublicDNS)
 	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
@@ -81,7 +88,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating non-authenticated registry...")
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, nonAuthRegistryPublicDNS, nonAuthRegistry)
+	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, nonAuthRegistryPublicDNS, nonAuthRegistry, nonAuthGlobalRegistryRoute53FQDN, false)
 	if err != nil {
 		logrus.Fatalf("Error creating unauthenticated registry: %v", err)
 	}
@@ -95,13 +102,13 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating global registry...")
-	if terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
-		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry)
+	if !terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
+		file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, nonAuthGlobalRegistryPublicDNS, nonAuthGlobalRegistry, nonAuthGlobalRegistryRoute53FQDN, true)
 		if err != nil {
 			logrus.Fatalf("Error creating global registry: %v", err)
 		}
 	} else {
-		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistryRoute53FQDN)
+		file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authGlobalRegistryPublicDNS, authGlobalRegistry, authGlobalRegistryRoute53FQDN, true)
 		if err != nil {
 			logrus.Fatalf("Error creating global registry: %v", err)
 		}
@@ -116,7 +123,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")
-	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, globalRegistryRoute53FQDN)
+	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, authRegistry, authRegistryRoute53FQDN, true)
 	if err != nil {
 		logrus.Fatalf("Error creating authenticated registry: %v", err)
 	}
@@ -144,8 +151,11 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	// Needed so that when building the local cluster and setting up Rancher, we use the correct registry images based on
 	// whether the global registry is authenticated or not.
-	if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
-		globalRegistryPublicDNS = globalRegistryRoute53FQDN
+	var globalRegistryPublicDNS string
+	if !terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
+		globalRegistryPublicDNS = nonAuthGlobalRegistryRoute53FQDN
+	} else {
+		globalRegistryPublicDNS = authGlobalRegistryRoute53FQDN
 	}
 
 	file = sanity.OpenFile(file, keyPath)
@@ -177,5 +187,5 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	return authRegistryPublicDNS, nonAuthRegistryPublicDNS, globalRegistryPublicDNS, nil
+	return authRegistryRoute53FQDN, nonAuthRegistryPublicDNS, globalRegistryPublicDNS, nil
 }

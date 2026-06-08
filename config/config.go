@@ -161,21 +161,23 @@ type Standalone struct {
 }
 
 type StandaloneRegistry struct {
-	AssetsPath            string `json:"assetsPath,omitempty" yaml:"assetsPath,omitempty"`
-	Authenticated         bool   `json:"authenticated,omitempty" yaml:"authenticated,omitempty"`
-	AuthRegistryFQDN      string `json:"authRegistryFQDN,omitempty" yaml:"authRegistryFQDN,omitempty"`
-	ECRFQDN               string `json:"ecrFQDN,omitempty" yaml:"ecrFQDN,omitempty"`
-	ECRURI                string `json:"ecrURI,omitempty" yaml:"ecrURI,omitempty"`
-	ECRUsername           string `json:"ecrUsername,omitempty" yaml:"ecrUsername,omitempty"`
-	ECRPassword           string `json:"ecrPassword,omitempty" yaml:"ecrPassword,omitempty"`
-	Enabled               bool   `json:"enabled,omitempty" yaml:"enabled,omitempty" default:"false"`
-	GlobalRegistryFQDN    string `json:"globalRegistryFQDN,omitempty" yaml:"globalRegistryFQDN,omitempty"`
-	NonAuthRegistryFQDN   string `json:"nonAuthRegistryFQDN,omitempty" yaml:"nonAuthRegistryFQDN,omitempty"`
-	NonAuthGlobalRegistry bool   `json:"nonAuthGlobalRegistry,omitempty" yaml:"nonAuthGlobalRegistry,omitempty" default:"true"`
-	RegistryName          string `json:"registryName,omitempty" yaml:"registryName,omitempty"`
-	RegistryPassword      string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
-	RegistryUsername      string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
-	UpgradedAssetsPath    string `json:"upgradedAssetsPath,omitempty" yaml:"upgradedAssetsPath,omitempty"`
+	AssetsPath                  string `json:"assetsPath,omitempty" yaml:"assetsPath,omitempty"`
+	Authenticated               bool   `json:"authenticated,omitempty" yaml:"authenticated,omitempty"`
+	AuthRegistryFQDN            string `json:"authRegistryFQDN,omitempty" yaml:"authRegistryFQDN,omitempty"`
+	CreateAuthGlobalRegistry    bool   `json:"createAuthGlobalRegistry,omitempty" yaml:"createAuthGlobalRegistry,omitempty" default:"false"`
+	CreateNonAuthGlobalRegistry bool   `json:"createNonAuthGlobalRegistry,omitempty" yaml:"createNonAuthGlobalRegistry,omitempty" default:"false"`
+	ECRFQDN                     string `json:"ecrFQDN,omitempty" yaml:"ecrFQDN,omitempty"`
+	ECRURI                      string `json:"ecrURI,omitempty" yaml:"ecrURI,omitempty"`
+	ECRUsername                 string `json:"ecrUsername,omitempty" yaml:"ecrUsername,omitempty"`
+	ECRPassword                 string `json:"ecrPassword,omitempty" yaml:"ecrPassword,omitempty"`
+	Enabled                     bool   `json:"enabled,omitempty" yaml:"enabled,omitempty" default:"false"`
+	GlobalRegistryFQDN          string `json:"globalRegistryFQDN,omitempty" yaml:"globalRegistryFQDN,omitempty"`
+	NonAuthRegistryFQDN         string `json:"nonAuthRegistryFQDN,omitempty" yaml:"nonAuthRegistryFQDN,omitempty"`
+	RegistryName                string `json:"registryName,omitempty" yaml:"registryName,omitempty"`
+	RegistryPassword            string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
+	RegistryUsername            string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
+	UpgradedAssetsPath          string `json:"upgradedAssetsPath,omitempty" yaml:"upgradedAssetsPath,omitempty"`
+	UseAuthGlobalRegistry       bool   `json:"useAuthGlobalRegistry,omitempty" yaml:"useAuthGlobalRegistry,omitempty" default:"true"`
 }
 
 type TerraformConfig struct {

@@ -18,11 +18,11 @@ const (
 )
 
 // CreateLoadBalancer is a function that will set the load balancer configurations in the main.tf file.
-func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, authGlobalRegistry bool) {
+func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, prefix string, globalRegistry bool) {
 	var loadBalancerBlockBody *hclwrite.Body
 
-	if authGlobalRegistry {
-		loadBalancerBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancer, terraformConfig.ResourcePrefix})
+	if globalRegistry {
+		loadBalancerBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancer, prefix})
 		loadBalancerBlockBody = loadBalancerBlock.Body()
 	} else {
 		loadBalancerBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancer, aws.LoadBalancer})
@@ -38,7 +38,12 @@ func CreateLoadBalancer(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 	subnetList := format.ListOfStrings([]string{terraformConfig.AWSConfig.AWSSubnetID})
 	loadBalancerBlockBody.SetAttributeRaw(aws.Subnets, subnetList)
-	loadBalancerBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
+
+	if globalRegistry {
+		loadBalancerBlockBody.SetAttributeValue(name, cty.StringVal(prefix+"-"+terraformConfig.ResourcePrefix))
+	} else {
+		loadBalancerBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
+	}
 }
 
 // CreateInternalLoadBalancer is a function that will set the internal load balancer configurations in the main.tf file.
