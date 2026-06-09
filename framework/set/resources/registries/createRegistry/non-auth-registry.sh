@@ -9,9 +9,15 @@ RANCHER_VERSION=$6
 ASSET_DIR=$7
 USER=$8
 RANCHER_IMAGE=$9
-RANCHER_AGENT_IMAGE=${10}
+ROUTE53_FQDN=${10}
+RANCHER_AGENT_IMAGE=${11}
 
 set -e
+
+REGISTRY_ENDPOINT="${HOST}"
+if [ -n "${ROUTE53_FQDN}" ]; then
+    REGISTRY_ENDPOINT="${ROUTE53_FQDN}"
+fi
 
 docker_login() {
     echo "Logging into Docker Hub..."
@@ -27,13 +33,13 @@ create_registry() {
         sudo mkdir -p /home/${USER}/certs
         sudo openssl req -newkey rsa:4096 -nodes -sha256 \
             -keyout /home/${USER}/certs/domain.key \
-            -addext "subjectAltName = DNS:${HOST}" \
+            -addext "subjectAltName = DNS:${REGISTRY_ENDPOINT}" \
             -x509 -days 365 -out /home/${USER}/certs/domain.crt \
-            -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${HOST}"
+            -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${REGISTRY_ENDPOINT}"
 
-        echo "Copying the certificate to the /etc/docker/certs.d/${HOST} directory..."
-        sudo mkdir -p /etc/docker/certs.d/${HOST}
-        sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${HOST}/ca.crt
+        echo "Copying the certificate to the /etc/docker/certs.d/${REGISTRY_ENDPOINT} directory..."
+        sudo mkdir -p /etc/docker/certs.d/${REGISTRY_ENDPOINT}
+        sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${REGISTRY_ENDPOINT}/ca.crt
 
         echo "Creating a private registry..."
         sudo docker run -d --restart=always --name "${REGISTRY_NAME}" \
@@ -42,6 +48,18 @@ create_registry() {
             -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
             -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
             -p 443:443 registry:2
+    fi
+
+    if [ -n "${ROUTE53_FQDN}" ]; then
+        echo "Waiting for registry ${REGISTRY_ENDPOINT} to become available..."
+        for i in $(seq 1 30); do
+            if curl -sk --max-time 5 https://${REGISTRY_ENDPOINT}/v2/ | grep -q '{}'; then
+                echo "Registry is up!"
+                break
+            fi
+            echo "Attempt $i: registry is not ready, retrying in 10s..."
+            sleep 10
+        done
     fi
 }
 
@@ -91,8 +109,8 @@ cert_manager_images() {
 
     for IMAGE in "${CERT_MANAGER_IMAGES[@]}"; do
         sudo docker pull ${IMAGE}
-        sudo docker tag ${IMAGE} ${HOST}/${IMAGE}
-        sudo docker push ${HOST}/${IMAGE}
+        sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE}
+        sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE}
     done
 }
 
@@ -113,8 +131,8 @@ copy_images() {
     # So we need to omit that from the source.
     if [[ -n "${RANCHER_AGENT_IMAGE}" ]]; then
         IMAGE_TAG=$(grep -m1 'rancher/rancher-agent:' /home/${USER}/rancher-images.txt | rev | cut -d: -f1 | rev)
-        crane copy "${RANCHER_IMAGE}:${IMAGE_TAG}" "${HOST}/${RANCHER_IMAGE}:${IMAGE_TAG}" --insecure &
-        crane copy "${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" "${HOST}/${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" --insecure &
+        crane copy "${RANCHER_IMAGE}:${IMAGE_TAG}" "${REGISTRY_ENDPOINT}/${RANCHER_IMAGE}:${IMAGE_TAG}" --insecure &
+        crane copy "${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" "${REGISTRY_ENDPOINT}/${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" --insecure &
     fi
 
     PARALLEL_ACTIONS=10
@@ -122,7 +140,7 @@ copy_images() {
 
     while read -r IMAGE; do
         [[ -z "$IMAGE" ]] && continue
-        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
+        crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure &
 
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
@@ -135,7 +153,7 @@ copy_images() {
     COUNTER=0
     while read -r IMAGE; do
         [[ -z "$IMAGE" ]] && continue
-        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
+        crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure &
 
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
@@ -160,7 +178,7 @@ copy_windows_images() {
         mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\\K[^ ]+" /home/${USER}/rancher-images.txt | tail -n 30)
         for VERSION in "${VERSIONS[@]}"; do
             SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-            DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+            DEST_IMAGE="${REGISTRY_ENDPOINT}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
 
             crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all &
             COUNTER=$((COUNTER+1))
@@ -171,7 +189,7 @@ copy_windows_images() {
             if [ "${PATTERN}" == "rke2-runtime" ]; then
                 WINS_SUFFIX="-windows-amd64"
                 SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
-                DEST_IMAGE="${HOST}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
+                DEST_IMAGE="${REGISTRY_ENDPOINT}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
 
                 crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all &
 
@@ -188,7 +206,7 @@ copy_windows_images() {
     COUNTER=0
     mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
     for IMAGE in "${WINDOWS_IMAGES[@]}"; do
-        crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure --platform all &
+        crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure --platform all &
 
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
@@ -208,7 +226,7 @@ verify_images() {
     mapfile -t IMAGES < /home/${USER}/rancher-images.txt
     for IMAGE in "${IMAGES[@]}"; do
         {
-            TARGET_IMAGE=${HOST}/${IMAGE}
+            TARGET_IMAGE=${REGISTRY_ENDPOINT}/${IMAGE}
             if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else
@@ -238,12 +256,12 @@ verify_windows_images() {
     mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
     for IMAGE in "${WINDOWS_IMAGES[@]}"; do
         {
-            TARGET_IMAGE=${HOST}/${IMAGE}
+            TARGET_IMAGE=${REGISTRY_ENDPOINT}/${IMAGE}
             if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else
                 echo "${IMAGE} is missing, fixing..."
-                crane copy "docker.io/${IMAGE}" "${HOST}/${IMAGE}" --insecure &
+                crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure &
                 echo "${IMAGE} pushed successfully."
             fi
         } &

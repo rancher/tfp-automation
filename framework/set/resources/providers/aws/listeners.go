@@ -18,15 +18,15 @@ const (
 )
 
 // CreateLoadBalancerListeners is a function that will set the load balancer listeners configurations in the main.tf file.
-func CreateLoadBalancerListeners(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64, authGlobalRegistry bool) {
+func CreateLoadBalancerListeners(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64, prefix string, globalRegistry bool) {
 	var listenersGroupBlockBody *hclwrite.Body
 	var loadBalancerExpression string
 
-	if authGlobalRegistry {
-		listenersGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerListener, terraformConfig.ResourcePrefix + "_" + strconv.FormatInt(port, 10)})
+	if globalRegistry {
+		listenersGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerListener, prefix + "_" + strconv.FormatInt(port, 10)})
 		listenersGroupBlockBody = listenersGroupBlock.Body()
 
-		loadBalancerExpression = aws.LoadBalancer + "." + terraformConfig.ResourcePrefix + ".arn"
+		loadBalancerExpression = aws.LoadBalancer + "." + prefix + ".arn"
 	} else {
 		listenersGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerListener, aws.LoadBalancerListener + "_" + strconv.FormatInt(port, 10)})
 		listenersGroupBlockBody = listenersGroupBlock.Body()
@@ -48,8 +48,8 @@ func CreateLoadBalancerListeners(rootBody *hclwrite.Body, terraformConfig *confi
 	defaultActionBlockBody.SetAttributeValue(general.Type, cty.StringVal(forward))
 
 	var targetGroupExpression string
-	if authGlobalRegistry {
-		targetGroupExpression = aws.LoadBalancerTargetGroup + "." + terraformConfig.ResourcePrefix + "-" + aws.TargetGroupPrefix + strconv.FormatInt(port, 10) + ".arn"
+	if globalRegistry {
+		targetGroupExpression = aws.LoadBalancerTargetGroup + "." + prefix + "-" + aws.TargetGroupPrefix + strconv.FormatInt(port, 10) + ".arn"
 	} else {
 		targetGroupExpression = aws.LoadBalancerTargetGroup + "." + aws.TargetGroupPrefix + strconv.FormatInt(port, 10) + ".arn"
 	}

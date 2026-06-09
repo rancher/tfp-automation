@@ -35,28 +35,36 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 	if terraformConfig.Standalone.RancherHostname != "" && terraformConfig.Provider != providers.EKS {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
-			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port, false)
+			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port, terraformConfig.ResourcePrefix, false)
 			rootBody.AppendNewline()
 		}
 
-		CreateLoadBalancer(rootBody, terraformConfig, false)
+		CreateLoadBalancer(rootBody, terraformConfig, terraformConfig.ResourcePrefix, false)
 		rootBody.AppendNewline()
 
 		for _, port := range ports {
-			CreateTargetGroups(rootBody, terraformConfig, port, false)
+			CreateTargetGroups(rootBody, terraformConfig, port, terraformConfig.ResourcePrefix, false)
 			rootBody.AppendNewline()
 
-			CreateLoadBalancerListeners(rootBody, terraformConfig, port, false)
+			CreateLoadBalancerListeners(rootBody, terraformConfig, port, terraformConfig.ResourcePrefix, false)
 			rootBody.AppendNewline()
 		}
 
-		CreateRoute53Record(rootBody, terraformConfig, false)
+		CreateRoute53Record(rootBody, terraformConfig, terraformConfig.ResourcePrefix, false)
 		rootBody.AppendNewline()
 	}
 
-	// Create a second pair of networking so that the authenticated global registry can reference it for certificates later.
-	if terraformConfig.StandaloneRegistry != nil && !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
-		globalRegistryResources(rootBody, terraformConfig)
+	// Create a second pair of networking so that the global registry can reference it for certificates later.
+	if terraformConfig.StandaloneRegistry != nil && !terraformConfig.StandaloneRegistry.Enabled {
+		globalRegistryResources(rootBody, terraformConfig, "auth")
+
+		if terraformConfig.StandaloneRegistry.CreateAuthGlobalRegistry {
+			globalRegistryResources(rootBody, terraformConfig, "auth-global")
+		}
+
+		if terraformConfig.StandaloneRegistry.CreateNonAuthGlobalRegistry {
+			globalRegistryResources(rootBody, terraformConfig, "nauth-global")
+		}
 	}
 
 	var err error
@@ -162,22 +170,22 @@ func CreateIPv6AWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 	if terraformConfig.Standalone.CertManagerVersion != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
-			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port, false)
+			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port, terraformConfig.ResourcePrefix, false)
 			rootBody.AppendNewline()
 		}
 
-		CreateLoadBalancer(rootBody, terraformConfig, false)
+		CreateLoadBalancer(rootBody, terraformConfig, terraformConfig.ResourcePrefix, false)
 		rootBody.AppendNewline()
 
 		for _, port := range ports {
-			CreateTargetGroups(rootBody, terraformConfig, port, false)
+			CreateTargetGroups(rootBody, terraformConfig, port, terraformConfig.ResourcePrefix, false)
 			rootBody.AppendNewline()
 
-			CreateLoadBalancerListeners(rootBody, terraformConfig, port, false)
+			CreateLoadBalancerListeners(rootBody, terraformConfig, port, terraformConfig.ResourcePrefix, false)
 			rootBody.AppendNewline()
 		}
 
-		CreateRoute53Record(rootBody, terraformConfig, false)
+		CreateRoute53Record(rootBody, terraformConfig, terraformConfig.ResourcePrefix, false)
 		rootBody.AppendNewline()
 	}
 
@@ -218,26 +226,24 @@ func getTargetGroupAttachment(port int64, internal bool) string {
 	}
 }
 
-func globalRegistryResources(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig) {
-	terraformConfig.ResourcePrefix = "global-" + terraformConfig.ResourcePrefix
-
-	ports := []int64{80, 443, 6443, 9345}
+func globalRegistryResources(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, prefix string) {
+	ports := []int64{80, 443}
 	for _, port := range ports {
-		CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port, true)
+		CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port, prefix, true)
 		rootBody.AppendNewline()
 	}
 
-	CreateLoadBalancer(rootBody, terraformConfig, true)
+	CreateLoadBalancer(rootBody, terraformConfig, prefix, true)
 	rootBody.AppendNewline()
 
 	for _, port := range ports {
-		CreateTargetGroups(rootBody, terraformConfig, port, true)
+		CreateTargetGroups(rootBody, terraformConfig, port, prefix, true)
 		rootBody.AppendNewline()
 
-		CreateLoadBalancerListeners(rootBody, terraformConfig, port, true)
+		CreateLoadBalancerListeners(rootBody, terraformConfig, port, prefix, true)
 		rootBody.AppendNewline()
 	}
 
-	CreateRoute53Record(rootBody, terraformConfig, true)
+	CreateRoute53Record(rootBody, terraformConfig, prefix, true)
 	rootBody.AppendNewline()
 }

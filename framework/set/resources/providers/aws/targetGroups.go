@@ -25,11 +25,11 @@ const (
 )
 
 // CreateTargetGroups is a function that will set the target group configurations in the main.tf file.
-func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64, authGlobalRegistry bool) {
+func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, port int64, prefix string, globalRegistry bool) {
 	var targetGroupBlockBody *hclwrite.Body
 
-	if authGlobalRegistry {
-		targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerTargetGroup, terraformConfig.ResourcePrefix + "-" + aws.TargetGroupPrefix + strconv.FormatInt(port, 10)})
+	if globalRegistry {
+		targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerTargetGroup, prefix + "-" + aws.TargetGroupPrefix + strconv.FormatInt(port, 10)})
 		targetGroupBlockBody = targetGroupBlock.Body()
 	} else {
 		targetGroupBlock := rootBody.AppendNewBlock(general.Resource, []string{aws.LoadBalancerTargetGroup, aws.TargetGroupPrefix + strconv.FormatInt(port, 10)})
@@ -41,7 +41,12 @@ func CreateTargetGroups(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	targetGroupBlockBody.SetAttributeValue(aws.VpcId, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
 	targetGroupBlockBody.SetAttributeValue(aws.TargetType, cty.StringVal(terraformConfig.AWSConfig.TargetType))
 	targetGroupBlockBody.SetAttributeValue(aws.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.IPAddressType))
-	targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-tg-"+strconv.FormatInt(port, 10)))
+
+	if globalRegistry {
+		targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(prefix+"-"+terraformConfig.ResourcePrefix+"-"+strconv.FormatInt(port, 10)))
+	} else {
+		targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-tg-"+strconv.FormatInt(port, 10)))
+	}
 
 	healthCheckGroupBlock := targetGroupBlockBody.AppendNewBlock(aws.HealthCheck, nil)
 	healthCheckGroupBlockBody := healthCheckGroupBlock.Body()

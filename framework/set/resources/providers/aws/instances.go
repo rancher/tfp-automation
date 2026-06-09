@@ -14,7 +14,9 @@ import (
 )
 
 const (
-	ecrRegistry = "ecr_registry"
+	auth     = "auth"
+	ecr      = "ecr"
+	registry = "registry"
 )
 
 // CreateAWSInstances is a function that will set the AWS instances configurations in the main.tf file.
@@ -58,7 +60,7 @@ func CreateAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 	rootBlockDevice := configBlockBody.AppendNewBlock(aws.RootBlockDevice, nil)
 	rootBlockDeviceBody := rootBlockDevice.Body()
 
-	if strings.Contains(hostnamePrefix, general.Registry) {
+	if strings.Contains(hostnamePrefix, general.Registry) || strings.Contains(hostnamePrefix, auth) || strings.Contains(hostnamePrefix, ecr) {
 		rootBlockDeviceBody.SetAttributeValue(aws.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.RegistryRootSize))
 	} else {
 		rootBlockDeviceBody.SetAttributeValue(aws.VolumeSize, cty.NumberIntVal(terraformConfig.AWSConfig.AWSRootSize))

@@ -24,7 +24,8 @@ const (
 
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
 func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, rke2AuthRegistryPublicDNS, rke2AuthRegistryRoute53FQDN string) (*os.File, error) {
+	terratestConfig *config.TerratestConfig, rke2AuthRegistryPublicDNS, registryType, rke2AuthRegistryRoute53FQDN string,
+	useSecureFQDN bool) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/auth-registry.sh")
@@ -47,14 +48,14 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 	encodedFullChain := base64.StdEncoding.EncodeToString((privateFullChain))
 	encodedCertKey := base64.StdEncoding.EncodeToString((privateCertKey))
 
-	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2AuthRegistryPublicDNS, authRegistry)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2AuthRegistryPublicDNS, registryType)
 
 	command := "/tmp/auth-registry.sh " + terraformConfig.Standalone.CertManagerVersion + " " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
 		terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 		rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " +
 		terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey
 
-	if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+	if useSecureFQDN {
 		command += " " + rke2AuthRegistryRoute53FQDN
 	} else {
 		command += " \"\""
@@ -83,7 +84,8 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 
 // CreateNonAuthenticatedRegistry is a helper function that will create a non-authenticated registry.
 func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, rke2NonAuthRegistryPublicDNS, registryType string) (*os.File, error) {
+	terratestConfig *config.TerratestConfig, rke2NonAuthRegistryPublicDNS, registryType, rke2NonAuthRegistryRoute53FQDN string,
+	globalRegistry bool) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/non-auth-registry.sh")
@@ -103,16 +105,28 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 			terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " +
 			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage
 
+		if globalRegistry {
+			command += " " + rke2NonAuthRegistryRoute53FQDN
+		} else {
+			command += " \"\""
+		}
+
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage
 		} else {
 			command += " \"\""
 		}
 	} else {
-		command = "bash -c '/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
+		command = "/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
 			terraformConfig.Standalone.RancherImage
+
+		if globalRegistry {
+			command += " " + rke2NonAuthRegistryRoute53FQDN
+		} else {
+			command += " \"\""
+		}
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage

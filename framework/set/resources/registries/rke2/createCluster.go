@@ -75,7 +75,7 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
 		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
 
-	if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+	if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 		command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 	} else {
@@ -109,7 +109,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
 			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
 
-		if !terraformConfig.StandaloneRegistry.NonAuthGlobalRegistry {
+		if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 			command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
 				terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 		} else {

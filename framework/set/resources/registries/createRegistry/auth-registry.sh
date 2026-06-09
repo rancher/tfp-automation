@@ -49,11 +49,21 @@ create_registry() {
         sudo mkdir -p /home/${USER}/auth
         sudo htpasswd -Bbn ${REGISTRY_USER} ${REGISTRY_PASS} | sudo tee /home/${USER}/auth/htpasswd
 
-        sudo mkdir -p /home/${USER}/certs
-        sudo mv $FULL_CHAIN_PATH /home/${USER}/certs/domain.crt
-        sudo mv $CERT_KEY_PATH /home/${USER}/certs/domain.key
-        sudo chmod 644 /home/${USER}/certs/domain.crt
-        sudo chmod 600 /home/${USER}/certs/domain.key
+        if [ -n "${ROUTE53_FQDN}" ]; then
+            sudo mkdir -p /home/${USER}/certs
+            sudo mv $FULL_CHAIN_PATH /home/${USER}/certs/domain.crt
+            sudo mv $CERT_KEY_PATH /home/${USER}/certs/domain.key
+            sudo chmod 644 /home/${USER}/certs/domain.crt
+            sudo chmod 600 /home/${USER}/certs/domain.key
+        else
+            echo "Creating a self-signed certificate..."
+            sudo mkdir -p /home/${USER}/certs
+            sudo openssl req -newkey rsa:4096 -nodes -sha256 \
+                -keyout /home/${USER}/certs/domain.key \
+                -addext "subjectAltName = DNS:${REGISTRY_ENDPOINT}" \
+                -x509 -days 365 -out /home/${USER}/certs/domain.crt \
+                -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${REGISTRY_ENDPOINT}"
+        fi
 
         echo "Copying the certificate to the /etc/docker/certs.d/${REGISTRY_ENDPOINT} directory..."
         sudo mkdir -p /etc/docker/certs.d/${REGISTRY_ENDPOINT}
@@ -70,6 +80,18 @@ create_registry() {
             -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
             -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
             -p 443:443 registry:2
+    fi
+
+    if [ -n "${ROUTE53_FQDN}" ]; then
+        echo "Waiting for registry ${REGISTRY_ENDPOINT} to become available..."
+        for i in $(seq 1 30); do
+            if curl -sk --max-time 5 -u "${REGISTRY_USER}:${REGISTRY_PASS}" https://${REGISTRY_ENDPOINT}/v2/ | grep -q '{}'; then
+                echo "Registry is up!"
+                break
+            fi
+            echo "Attempt $i: registry is not ready, retrying in 10s..."
+            sleep 10
+        done
     fi
 
     echo "Logging into private registry ${REGISTRY_ENDPOINT}..."
