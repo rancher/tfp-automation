@@ -62,7 +62,7 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	authRegistry, nonAuthRegistry, globalRegistry, err := registries.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	authRegistry, unauthRegistry, globalRegistry, err := registries.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
 	require.NoError(t, err)
 
 	client, err := ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
@@ -93,5 +93,5 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	err = pods.VerifyClusterPods(client, cluster)
 	require.NoError(t, err)
 
-	return client, authRegistry, nonAuthRegistry, globalRegistry, standaloneTerraformOptions, terraformOptions, cattleConfig
+	return client, authRegistry, unauthRegistry, globalRegistry, standaloneTerraformOptions, terraformOptions, cattleConfig
 }

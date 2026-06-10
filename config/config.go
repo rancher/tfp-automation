@@ -172,7 +172,7 @@ type StandaloneRegistry struct {
 	ECRPassword                string `json:"ecrPassword,omitempty" yaml:"ecrPassword,omitempty"`
 	Enabled                    bool   `json:"enabled,omitempty" yaml:"enabled,omitempty" default:"false"`
 	GlobalRegistryFQDN         string `json:"globalRegistryFQDN,omitempty" yaml:"globalRegistryFQDN,omitempty"`
-	NonAuthRegistryFQDN        string `json:"nonAuthRegistryFQDN,omitempty" yaml:"nonAuthRegistryFQDN,omitempty"`
+	UnauthRegistryFQDN         string `json:"unauthRegistryFQDN,omitempty" yaml:"unauthRegistryFQDN,omitempty"`
 	RegistryName               string `json:"registryName,omitempty" yaml:"registryName,omitempty"`
 	RegistryPassword           string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
 	RegistryUsername           string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
