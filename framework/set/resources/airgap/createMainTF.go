@@ -24,7 +24,7 @@ const (
 	serverTwo       = "server2"
 	serverThree     = "server3"
 
-	nonAuthRegistry = "non_auth_registry"
+	unauthRegistry = "unauth_registry"
 
 	registryPublicDNS    = "registry_public_dns"
 	bastionPublicDNS     = "bastion_public_dns"
@@ -76,7 +76,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	logrus.Infof("Creating registry...")
 	file = sanity.OpenFile(file, keyPath)
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicDNS, nonAuthRegistry, registryPublicDNS, true)
+	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicDNS, unauthRegistry, registryPublicDNS, true)
 	if err != nil {
 		return "", "", err
 	}

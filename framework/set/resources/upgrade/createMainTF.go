@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	nonAuthRegistry = "non_auth_registry"
-	terraformConst  = "terraform"
+	unauthRegistry = "unauth_registry"
+	terraformConst = "terraform"
 )
 
 // CreateMainTF is a helper function that will create the main.tf file for creating a Rancher server behind a proxy.
@@ -47,7 +47,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	switch {
 	case terraformConfig.Standalone.UpgradeAirgapRancher:
 		logrus.Infof("Updating private registry...")
-		_, err := registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryNode, nonAuthRegistry, registryNode, true)
+		_, err := registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryNode, unauthRegistry, registryNode, true)
 		if err != nil {
 			return err
 		}

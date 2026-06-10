@@ -27,8 +27,8 @@ const (
 	serverOnePublicIP = "server1_public_ip"
 	registryPublicIP  = "registry_public_ip"
 
-	nonAuthRegistry                  = "non_auth_registry"
-	nonAuthGlobalRegistryRoute53FQDN = "nauth_global_registry_route_53_fqdn"
+	unauthRegistry                  = "unauth_registry"
+	unauthGlobalRegistryRoute53FQDN = "unauth_global_registry_route_53_fqdn"
 
 	serverOnePrivateIP   = "server1_private_ip"
 	serverTwoPublicIP    = "server2_public_ip"

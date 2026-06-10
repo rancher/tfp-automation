@@ -49,10 +49,10 @@ var setupRancherFuncs = map[string]func(*testing.T, string, map[string]any) erro
 }
 
 var setupRegistryFuncs = map[string]func(*testing.T, string) error{
-	"--registries-all":     registries.SetupAllRegistries,
-	"--registries-auth":    registries.SetupAuthenticatedRegistry,
-	"--registries-nonauth": registries.SetupNonAuthenticatedRegistry,
-	"--registries-ecr":     registries.SetupECR,
+	"--registries-all":    registries.SetupAllRegistries,
+	"--registries-auth":   registries.SetupAuthenticatedRegistry,
+	"--registries-unauth": registries.SetupUnauthenticatedRegistry,
+	"--registries-ecr":    registries.SetupECR,
 }
 
 // RunCLI is a function that runs the CLI setup based on command-line arguments

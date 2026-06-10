@@ -60,7 +60,7 @@ func CreateAirgappedRKE2Cluster(t *testing.T, provider string) error {
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating registry...")
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicIP, nonAuthRegistry, registryPublicIP, false)
+	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicIP, unauthRegistry, unauthGlobalRegistryRoute53FQDN, false)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)

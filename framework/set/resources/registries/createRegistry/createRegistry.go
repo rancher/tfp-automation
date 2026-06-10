@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	authRegistry    = "auth_registry"
-	globalRegistry  = "global_registry"
-	nonAuthRegistry = "non_auth_registry"
-	ecrRegistry     = "ecr_registry"
+	authRegistry   = "auth_registry"
+	globalRegistry = "global_registry"
+	unauthRegistry = "unauth_registry"
+	ecrRegistry    = "ecr_registry"
 )
 
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
@@ -82,31 +82,31 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 	return file, nil
 }
 
-// CreateNonAuthenticatedRegistry is a helper function that will create a non-authenticated registry.
-func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, rke2NonAuthRegistryPublicDNS, registryType, rke2NonAuthRegistryRoute53FQDN string,
+// CreateUnauthenticatedRegistry is a helper function that will create an unauthenticated registry.
+func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig, rke2UnauthRegistryPublicDNS, registryType, rke2UnauthRegistryRoute53FQDN string,
 	globalRegistry bool) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/non-auth-registry.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/unauth-registry.sh")
 
 	registryScriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
 		return nil, err
 	}
 
-	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2NonAuthRegistryPublicDNS, registryType)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2UnauthRegistryPublicDNS, registryType)
 
 	var command string
 
 	if terraformConfig.Standalone.UpgradeAirgapRancher {
-		command = "/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
-			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " +
+		command = "/tmp/unauth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2UnauthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " +
 			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage
 
 		if globalRegistry {
-			command += " " + rke2NonAuthRegistryRoute53FQDN
+			command += " " + rke2UnauthRegistryRoute53FQDN
 		} else {
 			command += " \"\""
 		}
@@ -117,13 +117,13 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 			command += " \"\""
 		}
 	} else {
-		command = "/tmp/non-auth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
-			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2NonAuthRegistryPublicDNS + " " +
+		command = "/tmp/unauth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2UnauthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
 			terraformConfig.Standalone.RancherImage
 
 		if globalRegistry {
-			command += " " + rke2NonAuthRegistryRoute53FQDN
+			command += " " + rke2UnauthRegistryRoute53FQDN
 		} else {
 			command += " \"\""
 		}
@@ -136,8 +136,8 @@ func CreateNonAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootB
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/non-auth-registry.sh"),
-		cty.StringVal("chmod +x /tmp/non-auth-registry.sh"),
+		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/unauth-registry.sh"),
+		cty.StringVal("chmod +x /tmp/unauth-registry.sh"),
 		cty.StringVal(command),
 	}))
 
