@@ -18,8 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// SetupNonAuthenticatedRegistry is a function that creates a non-authenticated registry in a Rancher setup, either via CLI or web application
-func SetupNonAuthenticatedRegistry(t *testing.T, provider string) error {
+// SetupUnauthenticatedRegistry is a function that creates an unauthenticated registry in a Rancher setup, either via CLI or web application
+func SetupUnauthenticatedRegistry(t *testing.T, provider string) error {
 	os.Getenv("CLOUD_PROVIDER_VERSION")
 
 	configPath := os.Getenv("CATTLE_TEST_CONFIG")
@@ -30,7 +30,7 @@ func SetupNonAuthenticatedRegistry(t *testing.T, provider string) error {
 		terraformConfig.Provider = provider
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, "nonauth")
+	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, "unauth")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	terraformConfig.StandaloneRegistry.Enabled = true
@@ -45,7 +45,7 @@ func SetupNonAuthenticatedRegistry(t *testing.T, provider string) error {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{nonAuthRegistry}
+	instances := []string{unauthRegistry}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -53,11 +53,11 @@ func SetupNonAuthenticatedRegistry(t *testing.T, provider string) error {
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	nonAuthRegistryPublicDNS := terraform.Output(t, terraformOptions, nonAuthRegistryPublicDNS)
+	unauthRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthRegistryPublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
-	logrus.Infof("Creating non-authenticated registry...")
-	file, err = registry.CreateNonAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, nonAuthRegistryPublicDNS, nonAuthRegistry, "", false)
+	logrus.Infof("Creating unauthenticated registry...")
+	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, unauthRegistryPublicDNS, unauthRegistry, "", false)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)

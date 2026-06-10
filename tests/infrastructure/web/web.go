@@ -85,10 +85,10 @@ var setupRancherFuncs = map[string]map[string]func(*testing.T, string) error{
 }
 
 var setupRegistryFuncs = map[string]func(*testing.T, string) error{
-	"registries-all":     registries.SetupAllRegistries,
-	"registries-auth":    registries.SetupAuthenticatedRegistry,
-	"registries-nonauth": registries.SetupNonAuthenticatedRegistry,
-	"registries-ecr":     registries.SetupECR,
+	"registries-all":    registries.SetupAllRegistries,
+	"registries-auth":   registries.SetupAuthenticatedRegistry,
+	"registries-unauth": registries.SetupUnauthenticatedRegistry,
+	"registries-ecr":    registries.SetupECR,
 }
 
 // RunClusterSetupWeb is a function that runs the standalone cluster web application setup

@@ -62,8 +62,8 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 			globalRegistryResources(rootBody, terraformConfig, "auth-global")
 		}
 
-		if terraformConfig.StandaloneRegistry.CreateNonAuthGlobalRegistry {
-			globalRegistryResources(rootBody, terraformConfig, "nauth-global")
+		if terraformConfig.StandaloneRegistry.CreateUnauthGlobalRegistry {
+			globalRegistryResources(rootBody, terraformConfig, "unauth-global")
 		}
 	}
 
