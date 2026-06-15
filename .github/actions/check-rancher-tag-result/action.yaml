@@ -76,13 +76,7 @@ runs:
               run_conclusion=$(echo "$run_json" | jq -r '.conclusion // empty')
               jobs_json=$(echo "$run_json" | jq -c '.jobs // []')
 
-              # If the workflow run itself is skipped for this tag, count as skipped
-              if [[ "$run_conclusion" == "skipped" ]]; then
-                found_skipped=1
-                continue
-              fi
-
-              # If there are jobs, check them as before
+              # If there are jobs, check them for the current release line.
               if [[ "$jobs_json" != "[]" ]]; then
                 if [[ "$wf" == *upgrade* ]]; then
                   if echo "$jobs_json" | jq -e --arg tag "$prev_tag" '.[]? | select((.name | endswith(" -> " + $tag)) and .conclusion == "success")' > /dev/null; then
@@ -101,6 +95,9 @@ runs:
                     found_skipped=1
                   fi
                 fi
+              elif [[ "$run_conclusion" == "skipped" ]]; then
+                # Only count workflow-level skipped if there are no jobs and run itself is skipped.
+                found_skipped=1
               fi
             done
           done
