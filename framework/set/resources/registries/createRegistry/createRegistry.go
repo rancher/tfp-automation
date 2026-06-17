@@ -85,7 +85,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 // CreateUnauthenticatedRegistry is a helper function that will create an unauthenticated registry.
 func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, rke2UnauthRegistryPublicDNS, registryType, rke2UnauthRegistryRoute53FQDN string,
-	globalRegistry bool) (*os.File, error) {
+	useSecureFQDN bool) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/registries/createRegistry/unauth-registry.sh")
@@ -95,6 +95,19 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		return nil, err
 	}
 
+	privateFullChain, err := os.ReadFile(terraformConfig.PrivateFullChainPath)
+	if err != nil {
+		return nil, err
+	}
+
+	privateCertKey, err := os.ReadFile(terraformConfig.PrivateCertKeyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedFullChain := base64.StdEncoding.EncodeToString((privateFullChain))
+	encodedCertKey := base64.StdEncoding.EncodeToString((privateCertKey))
+
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2UnauthRegistryPublicDNS, registryType)
 
 	var command string
@@ -103,9 +116,9 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		command = "/tmp/unauth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2UnauthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " +
-			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage
+			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage + " " + encodedFullChain + " " + encodedCertKey
 
-		if globalRegistry {
+		if useSecureFQDN {
 			command += " " + rke2UnauthRegistryRoute53FQDN
 		} else {
 			command += " \"\""
@@ -120,9 +133,9 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		command = "/tmp/unauth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2UnauthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
-			terraformConfig.Standalone.RancherImage
+			terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey
 
-		if globalRegistry {
+		if useSecureFQDN {
 			command += " " + rke2UnauthRegistryRoute53FQDN
 		} else {
 			command += " \"\""

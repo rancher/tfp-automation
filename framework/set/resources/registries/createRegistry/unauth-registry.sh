@@ -9,10 +9,26 @@ RANCHER_VERSION=$6
 ASSET_DIR=$7
 USER=$8
 RANCHER_IMAGE=$9
-ROUTE53_FQDN=${10}
-RANCHER_AGENT_IMAGE=${11}
+FULL_CHAIN_FILE=${10}
+CERT_KEY_FILE=${11}
+ROUTE53_FQDN=${12}
+RANCHER_AGENT_IMAGE=${13}
 
 set -e
+
+if [ ! -d "/home/$USER/certs" ]; then
+    echo "Decoding certificate files..."
+    base64 -d <<< "$FULL_CHAIN_FILE" > /home/$USER/fullchain.pem
+    base64 -d <<< "$CERT_KEY_FILE" > /home/$USER/privkey.pem
+
+    chmod 600 /home/$USER/fullchain.pem
+    chmod 600 /home/$USER/privkey.pem
+else
+    echo "Certificate files already exist. Skipping decoding..."
+fi
+
+FULL_CHAIN_PATH=/home/$USER/fullchain.pem
+CERT_KEY_PATH=/home/$USER/privkey.pem
 
 REGISTRY_ENDPOINT="${HOST}"
 if [ -n "${ROUTE53_FQDN}" ]; then
@@ -29,13 +45,22 @@ create_registry() {
     if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
         echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
     else
-        echo "Creating a self-signed certificate..."
-        sudo mkdir -p /home/${USER}/certs
-        sudo openssl req -newkey rsa:4096 -nodes -sha256 \
-            -keyout /home/${USER}/certs/domain.key \
-            -addext "subjectAltName = DNS:${REGISTRY_ENDPOINT}" \
-            -x509 -days 365 -out /home/${USER}/certs/domain.crt \
-            -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${REGISTRY_ENDPOINT}"
+        if [ -n "${ROUTE53_FQDN}" ]; then
+            echo "Using provided certificates for the registry..."
+            sudo mkdir -p /home/${USER}/certs
+            sudo mv $FULL_CHAIN_PATH /home/${USER}/certs/domain.crt
+            sudo mv $CERT_KEY_PATH /home/${USER}/certs/domain.key
+            sudo chmod 644 /home/${USER}/certs/domain.crt
+            sudo chmod 600 /home/${USER}/certs/domain.key
+        else
+            echo "Creating a self-signed certificate..."
+            sudo mkdir -p /home/${USER}/certs
+            sudo openssl req -newkey rsa:4096 -nodes -sha256 \
+                -keyout /home/${USER}/certs/domain.key \
+                -addext "subjectAltName = DNS:${REGISTRY_ENDPOINT}" \
+                -x509 -days 365 -out /home/${USER}/certs/domain.crt \
+                -subj "/C=US/ST=CA/L=SUSE/O=Dis/CN=${REGISTRY_ENDPOINT}"
+        fi
 
         echo "Copying the certificate to the /etc/docker/certs.d/${REGISTRY_ENDPOINT} directory..."
         sudo mkdir -p /etc/docker/certs.d/${REGISTRY_ENDPOINT}
