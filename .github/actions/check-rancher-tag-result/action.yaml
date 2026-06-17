@@ -48,12 +48,58 @@ runs:
         workflows=(${DISPATCH_WORKFLOW_LIST//,/ })
         failed_workflows=()
 
-        # For the post-release workflows, skip for alphas or RCs.
+        workflow_contains() {
+          local workflow_path="$1"
+          local needle="$2"
+
+          grep -qF "$needle" "$workflow_path"
+        }
+
+        workflow_should_run_for_tag() {
+          local workflow_name="$1"
+          local workflow_path=".github/workflows/$workflow_name"
+          local release_line=""
+
+          case "$TAG" in
+            v2.13*)
+              release_line="v2.13"
+              ;;
+            v2.14*)
+              release_line="v2.14"
+              ;;
+            *)
+              return 0
+              ;;
+          esac
+
+          if [[ ! -f "$workflow_path" ]]; then
+            return 0
+          fi
+
+          if ! (workflow_contains "$workflow_path" "startsWith(github.event.inputs.rancher_version, '$release_line')" || workflow_contains "$workflow_path" "startsWith(inputs.rancher_version, '$release_line')"); then
+            return 1
+          fi
+
+          if [[ "$TAG" == *-alpha* ]]; then
+            workflow_contains "$workflow_path" "&& contains(github.event.inputs.rancher_version, '-alpha')" || workflow_contains "$workflow_path" "&& (contains(github.event.inputs.rancher_version, '-alpha')" || workflow_contains "$workflow_path" "&& contains(inputs.rancher_version, '-alpha')" || workflow_contains "$workflow_path" "&& (contains(inputs.rancher_version, '-alpha')"
+            return $?
+          fi
+
+          if [[ "$TAG" == *-rc* ]]; then
+            workflow_contains "$workflow_path" "&& contains(github.event.inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& (contains(github.event.inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& contains(inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& (contains(inputs.rancher_version, '-rc')"
+            return $?
+          fi
+
+          workflow_contains "$workflow_path" "!contains(github.event.inputs.rancher_version, '-alpha')" && \
+          workflow_contains "$workflow_path" "!contains(github.event.inputs.rancher_version, '-rc')" && \
+          workflow_contains "$workflow_path" "!contains(inputs.rancher_version, '-alpha')" && \
+          workflow_contains "$workflow_path" "!contains(inputs.rancher_version, '-rc')"
+        }
+
         for wf in "${workflows[@]}"; do
-          if [[ "$wf" == post-release* ]]; then
-            if [[ "$TAG" == *-alpha* || "$TAG" == *-rc* ]]; then
-              continue
-            fi
+          if ! workflow_should_run_for_tag "$wf"; then
+            echo "Workflow $wf does not run for $TAG, skipping."
+            continue
           fi
 
           most_recent_passed_tag=""
@@ -83,6 +129,7 @@ runs:
                     most_recent_passed_tag="$prev_tag"
                     break 2
                   fi
+
                   if echo "$jobs_json" | jq -e --arg tag "$prev_tag" '.[]? | select((.name | endswith(" -> " + $tag)) and .conclusion == "skipped")' > /dev/null; then
                     found_skipped=1
                   fi
@@ -91,6 +138,7 @@ runs:
                     most_recent_passed_tag="$prev_tag"
                     break 2
                   fi
+
                   if echo "$jobs_json" | jq -e --arg tag "$prev_tag" '.[]? | select(.name == $tag and .conclusion == "skipped")' > /dev/null; then
                     found_skipped=1
                   fi
