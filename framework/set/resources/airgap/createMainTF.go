@@ -76,7 +76,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	logrus.Infof("Creating registry...")
 	file = sanity.OpenFile(file, keyPath)
-	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicDNS, unauthRegistry, registryPublicDNS, true)
+	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicDNS, unauthRegistry, registryPublicDNS, false)
 	if err != nil {
 		return "", "", err
 	}

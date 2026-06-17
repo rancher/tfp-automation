@@ -47,7 +47,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	switch {
 	case terraformConfig.Standalone.UpgradeAirgapRancher:
 		logrus.Infof("Updating private registry...")
-		_, err := registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryNode, unauthRegistry, registryNode, true)
+		_, err := registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryNode, unauthRegistry, registryNode, false)
 		if err != nil {
 			return err
 		}

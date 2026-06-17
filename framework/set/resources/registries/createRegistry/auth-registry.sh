@@ -50,6 +50,7 @@ create_registry() {
         sudo htpasswd -Bbn ${REGISTRY_USER} ${REGISTRY_PASS} | sudo tee /home/${USER}/auth/htpasswd
 
         if [ -n "${ROUTE53_FQDN}" ]; then
+            echo "Using provided certificates for the registry..."
             sudo mkdir -p /home/${USER}/certs
             sudo mv $FULL_CHAIN_PATH /home/${USER}/certs/domain.crt
             sudo mv $CERT_KEY_PATH /home/${USER}/certs/domain.key
