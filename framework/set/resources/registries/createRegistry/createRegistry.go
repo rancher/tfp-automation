@@ -125,7 +125,7 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		}
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
-			command += " " + terraformConfig.Standalone.RancherAgentImage
+			command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 		} else {
 			command += " \"\""
 		}
