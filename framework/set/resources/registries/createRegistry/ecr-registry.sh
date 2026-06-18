@@ -14,6 +14,8 @@ RANCHER_AGENT_IMAGE=${11}
 
 set -e
 
+PARALLEL_ACTIONS=10
+
 configure_aws() {
     echo "Configuring AWS CLI..."
     aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
@@ -57,19 +59,11 @@ fetch_images() {
     echo "$CHECKSUM  /home/${USER}/rancher-images.txt" | sha256sum -c -
 
     echo "Cutting the tags from the image names..."
-    while read LINE; do
+    while read -r LINE; do
         echo ${LINE} | cut -d: -f1
     done < /home/${USER}/rancher-images.txt > /home/${USER}/rancher-images-no-tags.txt
 
-    echo "Creating ECR repositories..."
-    for IMAGE in $(cat /home/${USER}/rancher-images-no-tags.txt); do
-        if aws ecr describe-repositories --repository-names ${IMAGE} >/dev/null 2>&1; then
-            echo "Repository ${IMAGE} already exists. Skipping."
-        else
-            echo "Creating repository ${IMAGE}..."
-            aws ecr create-repository --repository-name ${IMAGE}
-        fi
-    done
+    create_ecr_repositories
 
     if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
         sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
@@ -77,14 +71,36 @@ fetch_images() {
     fi
 }
 
-manage_images() {
-    ACTION=$1
-    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
-    PARALLEL_ACTIONS=10
+create_ecr_repositories() {
+    echo "Creating ECR repositories..."
+    mapfile -t IMAGES < <(sort -u /home/${USER}/rancher-images-no-tags.txt)
 
     COUNTER=0
     for IMAGE in "${IMAGES[@]}"; do
-        action "${ACTION}" "${IMAGE}"
+        {
+            if aws ecr describe-repositories --repository-names ${IMAGE} >/dev/null 2>&1; then
+                echo "Repository ${IMAGE} already exists. Skipping."
+            else
+                echo "Creating repository ${IMAGE}..."
+                aws ecr create-repository --repository-name ${IMAGE}
+            fi
+        } &
+
+        COUNTER=$((COUNTER+1))
+        if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
+            wait
+        fi
+    done
+
+    wait
+}
+
+manage_images() {
+    mapfile -t IMAGES < /home/${USER}/rancher-images.txt
+
+    COUNTER=0
+    for IMAGE in "${IMAGES[@]}"; do
+        docker pull ${IMAGE} && docker tag ${IMAGE} ${ECR}/${IMAGE} && docker push ${ECR}/${IMAGE} &
         COUNTER=$((COUNTER+1))
         
         if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
@@ -95,22 +111,10 @@ manage_images() {
     wait
 }
 
-action() {
-    ACTION=$1
-    IMAGE=$2
-    
-    if [ "$ACTION" == "pull" ]; then
-        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${ECR}/${IMAGE} &
-    elif [ "$ACTION" == "push" ]; then
-        sudo docker push ${ECR}/${IMAGE} &
-    fi
-}
-
 verify_images() {
     echo "Verifying images in ECR registry..."
 
     mapfile -t IMAGES < /home/${USER}/rancher-images.txt
-    PARALLEL_ACTIONS=10
     COUNTER=0
 
     for IMAGE in "${IMAGES[@]}"; do
@@ -141,6 +145,5 @@ configure_aws
 docker_login
 copy_certs
 fetch_images
-manage_images "pull"
-manage_images "push"
+manage_images
 verify_images

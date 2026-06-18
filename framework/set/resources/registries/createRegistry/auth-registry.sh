@@ -147,13 +147,12 @@ cert_manager_images() {
 }
 
 manage_images() {
-    ACTION=$1
     mapfile -t IMAGES < /home/${USER}/rancher-images.txt
     PARALLEL_ACTIONS=10
 
     COUNTER=0
     for IMAGE in "${IMAGES[@]}"; do
-        action "${ACTION}" "${IMAGE}"
+        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE} && sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE} &
         COUNTER=$((COUNTER+1))
         
         if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
@@ -162,17 +161,6 @@ manage_images() {
     done
 
     wait
-}
-
-action() {
-    ACTION=$1
-    IMAGE=$2
-    
-    if [ "$ACTION" == "pull" ]; then
-        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE} &
-    elif [ "$ACTION" == "push" ]; then
-        sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE} &
-    fi
 }
 
 verify_images() {
@@ -210,6 +198,5 @@ docker_login
 create_registry
 fetch_images
 cert_manager_images
-manage_images "pull"
-manage_images "push"
+manage_images
 verify_images
