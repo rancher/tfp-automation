@@ -15,7 +15,6 @@ RUN go mod download && \
 
 ARG QASE_TEST_RUN_ID
 ARG TERRAFORM_VERSION
-ARG RKE_PROVIDER_VERSION
 ARG RANCHER2_PROVIDER_VERSION
 ARG LOCALS_PROVIDER_VERSION
 ARG CLOUD_PROVIDER_VERSION
@@ -26,7 +25,6 @@ ARG GOOGLE_TFP_SERVICE_ACCOUNT
 
 ENV QASE_TEST_RUN_ID=${QASE_TEST_RUN_ID}
 ENV TERRAFORM_VERSION=${TERRAFORM_VERSION}
-ENV RKE_PROVIDER_VERSION=${RKE_PROVIDER_VERSION}
 ENV RANCHER2_PROVIDER_VERSION=${RANCHER2_PROVIDER_VERSION}
 ENV LOCALS_PROVIDER_VERSION=${LOCALS_PROVIDER_VERSION}
 ENV CLOUD_PROVIDER_VERSION=${CLOUD_PROVIDER_VERSION}
@@ -57,7 +55,7 @@ RUN ($CURL -o terraform_${TERRAFORM_VERSION}_linux_amd64.zip https://releases.ha
 ARG CONFIG_FILE
 COPY $CONFIG_FILE /config.yml
 
-RUN mkdir /root/.ssh && chmod 600 .ssh/jenkins-*
+RUN mkdir /root/.ssh && chmod 600 .ssh/jenkins-* && chmod 600 .ssh/full* && chmod 600 .ssh/priv*
 RUN for pem_file in .ssh/jenkins-*; do \
         base_name="$(basename "$pem_file" .pem)"; \
         ssh-keygen -f "$pem_file" -y > ".ssh/${base_name}.pub"; \
@@ -65,8 +63,4 @@ RUN for pem_file in .ssh/jenkins-*; do \
 
 RUN if [[ "$RANCHER2_PROVIDER_VERSION" == *"-rc"* ]]; then \
       chmod +x ./scripts/setup-provider.sh && ./scripts/setup-provider.sh rancher2 v${RANCHER2_PROVIDER_VERSION} ; \
-    fi;
-
-RUN if [[ "$RKE_PROVIDER_VERSION" == *"-rc"* ]]; then \
-      chmod +x ./scripts/setup-provider.sh && ./scripts/setup-provider.sh rke v${RKE_PROVIDER_VERSION} ; \
     fi;

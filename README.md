@@ -74,6 +74,8 @@ terraform:
   enableNetworkPolicy: false
   provider: ""                              # The following providers are supported: aws | linode | harvester
   privateKeyPath: ""
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   windowsPrivateKeyPath: ""
 

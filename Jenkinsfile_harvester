@@ -34,6 +34,10 @@ node("harvester-vpn-1") {
                     string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
                     string(credentialsId: 'AWS_SSH_KEY_NAME', variable: 'AWS_SSH_KEY_NAME'),
                     string(credentialsId: 'AWS_SSH_RSA_KEY', variable: 'AWS_SSH_RSA_KEY'),
+                    string(credentialsId: 'RANCHER_VALID_TLS_CERT', variable: 'RANCHER_VALID_TLS_CERT'),
+                    string(credentialsId: 'RANCHER_VALID_TLS_KEY', variable: 'RANCHER_VALID_TLS_KEY'),
+                    string(credentialsId: 'RANCHER_VALID_TLS_CERT_NAME', variable: 'RANCHER_VALID_TLS_CERT_NAME'),
+                    string(credentialsId: 'RANCHER_VALID_TLS_KEY_NAME', variable: 'RANCHER_VALID_TLS_KEY_NAME'),
                     string(credentialsId: 'QASE_AUTOMATION_TOKEN', variable: 'QASE_AUTOMATION_TOKEN')]) {
   stage('Checkout') {
           deleteDir()
@@ -48,6 +52,10 @@ node("harvester-vpn-1") {
       config = config.replace('${AWS_SECRET_ACCESS_KEY}', env.AWS_SECRET_ACCESS_KEY)
       config = config.replace('${AWS_ACCESS_KEY_ID}', env.AWS_ACCESS_KEY_ID)
       config = config.replace('${RANCHER_LINODE_ACCESSKEY}', env.RANCHER_LINODE_ACCESSKEY)
+      config = config.replace('${RANCHER_VALID_TLS_CERT}', env.RANCHER_VALID_TLS_CERT)
+      config = config.replace('${RANCHER_VALID_TLS_KEY}', env.RANCHER_VALID_TLS_KEY)
+      config = config.replace('${RANCHER_VALID_TLS_CERT_NAME}', env.RANCHER_VALID_TLS_CERT_NAME)
+      config = config.replace('${RANCHER_VALID_TLS_KEY_NAME}', env.RANCHER_VALID_TLS_KEY_NAME)
 
       writeFile file: 'config.yml', text: config
 
@@ -57,6 +65,12 @@ node("harvester-vpn-1") {
 
         def decodedRsa = new String(env.AWS_SSH_RSA_KEY.decodeBase64())
         writeFile file: JENKINS_RKE_VALIDATION, text: decodedRsa
+
+        def decodedTLSCert = new String(RANCHER_VALID_TLS_CERT.decodeBase64())
+        writeFile file: RANCHER_VALID_TLS_CERT_NAME, text: decodedTLSCert
+
+        def decodedTLSKey = new String(RANCHER_VALID_TLS_KEY.decodeBase64())
+        writeFile file: RANCHER_VALID_TLS_KEY_NAME, text: decodedTLSKey
       }
       
       env.CATTLE_TEST_CONFIG=rootPath+'config.yml'

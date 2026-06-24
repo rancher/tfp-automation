@@ -40,6 +40,8 @@ terraform:
   mixedArchitecture:                              # OPTIONAL - set to true if you want mixed architecture
   provider: "aws"
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""                              # REQUIRED - fill with desired value
   windowsPrivateKeyPath: ""                       # REQUIRED - specify Windows private key that will be used to access created instances
   privateRegistries:                              # This is an optional block. You must already have a private registry stood up
@@ -99,7 +101,6 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using Rancher Prime or staging registry
     rancherChartVersion: ""                       # REQUIRED - fill with desired value

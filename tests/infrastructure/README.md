@@ -37,6 +37,8 @@ terraform:
   cni: ""
   provider: ""                                    # REQUIRED - supported values are aws | linode | harvester | vsphere
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   ##########################################
   # STANDALONE CONFIG - INFRASTRUCTURE SETUP
@@ -82,7 +84,6 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
@@ -141,6 +142,8 @@ terraform:
   cni: ""
   provider: ""                                    # REQUIRED - supported values are aws
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   ##########################################
   # STANDALONE CONFIG - INFRASTRUCTURE SETUP
@@ -174,7 +177,6 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
@@ -216,6 +218,8 @@ terraform:
   cni: ""
   provider: ""                                    # REQUIRED - supported values are aws
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   ##########################################
   # STANDALONE CONFIG - INFRASTRUCTURE SETUP
@@ -251,7 +255,6 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     rancherChartVersion: ""                       # REQUIRED - fill with desired value
     rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
@@ -282,6 +285,8 @@ See below an example config on setting up an air-gapped Rancher server powered b
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
@@ -308,7 +313,6 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
@@ -364,6 +368,8 @@ See below an example config on setting up a Rancher server behind a proxy, power
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
@@ -388,7 +394,6 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     osGroup: ""                                   # REQUIRED - fill with desired value
     osUser: ""                                    # REQUIRED - fill with desired value
@@ -439,6 +444,8 @@ See below an example config on setting up a Rancher server with registries confi
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
@@ -463,7 +470,6 @@ terraform:
   standalone:
     bootstrapPassword: ""                         # REQUIRED - this is the same as the adminPassword above, make sure they match
     certManagerVersion: ""                        # REQUIRED - (e.g. v1.15.3)
-    certType: ""                                  # REQUIRED - "self-signed" or "lets-encrypt"
     chartVersion: ""                              # REQUIRED - fill with desired value (leave out the leading 'v')
     osGroup: ""                                   # REQUIRED - fill with desired value
     osUser: ""                                    # REQUIRED - fill with desired value
@@ -515,6 +521,8 @@ See below an example config on setting up a standalone RKE2 cluster:
 terraform:
   cni: ""
   provider: ""                                # REQUIRED - supported values are aws | linode | harvester
+  privateKeyPath: ""
+  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -587,6 +595,8 @@ terraform:
   cni: ""
   provider: ""                                # REQUIRED - supported values are aws | linode | harvester
   privateKeyPath: ""
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
@@ -648,6 +658,8 @@ See below an example config on setting up a standalone airgapped RKE2 cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
@@ -703,6 +715,8 @@ See below an example config on setting up a standalone dual-stack RKE2 cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
+  privateFullChainPath: ""
+  privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
     awsAccessKey: ""
@@ -754,6 +768,8 @@ See below an example config on setting up a standalone dual-stack K3S cluster:
 
 ```yaml
 terraform:
+  privateKeyPath: ""
+  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -807,6 +823,8 @@ See below an example config on setting up a standalone IPv6 RKE2 cluster:
 
 ```yaml
 terraform:
+  privateKeyPath: ""
+  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -865,6 +883,8 @@ See below an example config on setting up a standalone IPv6 K3S cluster:
 
 ```yaml
 terraform:
+  privateKeyPath: ""
+  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:

@@ -99,6 +99,15 @@ jobs:
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
           windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
 
+      - name: Set up certificates
+        id: setup-certs
+        uses: ./.github/actions/setup-certs
+        with:
+          private-full-chain: ${{ secrets.PRIVATE_FULL_CHAIN }}
+          private-full-chain-name: ${{ vars.PRIVATE_FULL_CHAIN_NAME}}
+          private-cert-key: ${{ secrets.PRIVATE_CERT_KEY }}
+          private-cert-key-name: ${{ vars.PRIVATE_CERT_KEY_NAME }}
+
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
@@ -165,6 +174,8 @@ jobs:
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
+            privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
+            privateCertKeyPath: "${{ steps.setup-certs.outputs.private-cert-key-path }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
             privateRegistries:
@@ -371,6 +382,15 @@ jobs:
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
           windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
 
+      - name: Set up certificates
+        id: setup-certs
+        uses: ./.github/actions/setup-certs
+        with:
+          private-full-chain: ${{ secrets.PRIVATE_FULL_CHAIN }}
+          private-full-chain-name: ${{ vars.PRIVATE_FULL_CHAIN_NAME}}
+          private-cert-key: ${{ secrets.PRIVATE_CERT_KEY }}
+          private-cert-key-name: ${{ vars.PRIVATE_CERT_KEY_NAME }}
+
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
@@ -437,6 +457,8 @@ jobs:
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
+            privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
+            privateCertKeyPath: "${{ steps.setup-certs.outputs.private-cert-key-path }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
             privateRegistries:
@@ -643,6 +665,15 @@ jobs:
           windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
           windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
 
+      - name: Set up certificates
+        id: setup-certs
+        uses: ./.github/actions/setup-certs
+        with:
+          private-full-chain: ${{ secrets.PRIVATE_FULL_CHAIN }}
+          private-full-chain-name: ${{ vars.PRIVATE_FULL_CHAIN_NAME}}
+          private-cert-key: ${{ secrets.PRIVATE_CERT_KEY }}
+          private-cert-key-name: ${{ vars.PRIVATE_CERT_KEY_NAME }}
+
       - name: Uniquify hostname prefix
         uses: ./.github/actions/uniquify-hostname
 
@@ -710,6 +741,8 @@ jobs:
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
+            privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
+            privateCertKeyPath: "${{ steps.setup-certs.outputs.private-cert-key-path }}"
             resourcePrefix: "${{ env.HOSTNAME_PREFIX }}"
             windowsPrivateKeyPath: "${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}"
             privateRegistries:
