@@ -234,9 +234,9 @@ patch_rancher_fqdn() {
   kubectl -n cattle-system get deploy rancher
 }
 
-# check_cluster_status
-# install_helm
-# setup_helm_repo
+check_cluster_status
+install_helm
+setup_helm_repo
 
 # Needed to get the latest chart version if RANCHER_TAG_VERSION contains "head"
 if [[ $RANCHER_TAG_VERSION == *head* ]]; then
@@ -244,7 +244,7 @@ if [[ $RANCHER_TAG_VERSION == *head* ]]; then
     VERSION="--version ${LATEST_CHART_VERSION}"
 fi
 
-# install_cert_manager
+install_cert_manager
 install_rancher
 wait_for_rollout
 wait_for_rancher
