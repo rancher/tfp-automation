@@ -10,9 +10,25 @@ RANCHER_TAG_VERSION=$7
 CHART_VERSION=$8
 BOOTSTRAP_PASSWORD=$9
 RANCHER_IMAGE=${10}
-RANCHER_AGENT_IMAGE=${11}
+FULL_CHAIN_FILE=${11}
+CERT_KEY_FILE=${12}
+RANCHER_AGENT_IMAGE=${13}
 
 RESOURCE_GROUP_NAME="${RESOURCE_PREFIX}-rg"
+USER=$(whoami)
+
+echo "Decoding certificate files..."
+base64 -d <<< "$FULL_CHAIN_FILE" > /home/$USER/fullchain.pem
+base64 -d <<< "$CERT_KEY_FILE" > /home/$USER/privkey.pem
+
+chmod 600 /home/$USER/fullchain.pem
+chmod 600 /home/$USER/privkey.pem
+
+FULL_CHAIN_PATH=/home/$USER/fullchain.pem
+CERT_KEY_PATH=/home/$USER/privkey.pem
+
+mv $FULL_CHAIN_PATH /home/$USER/tls.crt
+mv $CERT_KEY_PATH /home/$USER/tls.key
 
 if [[ $PROVIDER == "gke" ]]; then
     export PATH="$PWD/google-cloud-sdk/bin:$PATH"
@@ -241,7 +257,9 @@ install_gke_traefik() {
     done
 }
 
-install_default_rancher() {
+install_rancher() {
+    kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/home/$USER/tls.crt --key=/home/$USER/tls.key
+
     echo "Installing Rancher"
     if [ -n "$RANCHER_AGENT_IMAGE" ]; then
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -258,6 +276,7 @@ install_default_rancher() {
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                          --set ingress.ingressClassName=traefik \
+                                                                                         --set ingress.tls.source=secret \
                                                                                          --devel
     else
         helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -268,6 +287,7 @@ install_default_rancher() {
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                          --set ingress.ingressClassName=traefik \
+                                                                                         --set ingress.tls.source=secret \
                                                                                          --devel
         fi
 }
@@ -348,7 +368,7 @@ elif [[ $PROVIDER == "gke" ]]; then
     install_gke_traefik
 fi
 
-install_default_rancher
+install_rancher
 wait_for_rollout
 wait_for_rancher
 

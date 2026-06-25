@@ -2,13 +2,12 @@
 
 RANCHER_CHART_REPO=$1
 REPO=$2
-CERT_TYPE=$3
-HOSTNAME=$4
-RANCHER_TAG_VERSION=$5
-CHART_VERSION=$6
-RANCHER_IMAGE=$7
-RANCHER_AGENT_IMAGE=${8}
-UPGRADED_MCM=${9}
+HOSTNAME=$3
+RANCHER_TAG_VERSION=$4
+CHART_VERSION=$5
+RANCHER_IMAGE=$6
+RANCHER_AGENT_IMAGE=${7}
+UPGRADED_MCM=${8}
 
 if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
@@ -37,9 +36,8 @@ setup_helm_repo() {
 
 upgrade_mcm_off() {
     echo "Upgrading Rancher with MCM off"
-    if [ "$CERT_TYPE" == "self-signed" ]; then
-        if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+    if [ -n "$RANCHER_AGENT_IMAGE" ]; then
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${VERSION} \
                                                                                         ${RANCHER_TAG} \
@@ -53,64 +51,27 @@ upgrade_mcm_off() {
                                                                                         --set 'extraEnv[3].name=CATTLE_FEATURES' \
                                                                                         --set 'extraEnv[3].value=multi-cluster-management=false' \
                                                                                         --set agentTLSMode=system-store \
+                                                                                        --set ingress.tls.source=secret \
                                                                                         --devel
 
-        else
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_FEATURES' \
-                                                                                        --set 'extraEnv[0].value=multi-cluster-management=false' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --devel
-        fi
-    elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-        if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=traefik \
-                                                                                        --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                        --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                        --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                        --set 'extraEnv[1].value=prime' \
-                                                                                        --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                        --set 'extraEnv[2].value=suse' \
-                                                                                        --set 'extraEnv[3].name=CATTLE_FEATURES' \
-                                                                                        --set 'extraEnv[3].value=multi-cluster-management=false' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --devel
-        else
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=traefik \
-                                                                                        --set 'extraEnv[0].name=CATTLE_FEATURES' \
-                                                                                        --set 'extraEnv[0].value=multi-cluster-management=false' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --devel
-        fi
     else
-        echo "Unsupported CERT_TYPE: $CERT_TYPE"
-        exit 1
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                        --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
+                                                                                        ${RANCHER_TAG} \
+                                                                                        ${IMAGE} \
+                                                                                        --set 'extraEnv[0].name=CATTLE_FEATURES' \
+                                                                                        --set 'extraEnv[0].value=multi-cluster-management=false' \
+                                                                                        --set agentTLSMode=system-store \
+                                                                                        --set ingress.tls.source=secret \
+                                                                                        --devel
     fi
 }
 
 upgrade_default_rancher() {
     echo "Upgrading Rancher"
-    if [ "$CERT_TYPE" == "self-signed" ]; then
-        if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+    if [ -n "$RANCHER_AGENT_IMAGE" ]; then
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                         --set hostname=${HOSTNAME} \
                                                                                         ${VERSION} \
                                                                                         ${RANCHER_TAG} \
@@ -124,52 +85,16 @@ upgrade_default_rancher() {
                                                                                         --set agentTLSMode=system-store \
                                                                                         --devel
 
-        else
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
-                                                                                        --set 'extraEnv[0].value=""' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --devel
-        fi
-    elif [ "$CERT_TYPE" == "lets-encrypt" ]; then
-        if [ -n "$RANCHER_AGENT_IMAGE" ]; then
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=traefik \
-                                                                                        --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
-                                                                                        --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}" \
-                                                                                        --set 'extraEnv[1].name=RANCHER_VERSION_TYPE' \
-                                                                                        --set 'extraEnv[1].value=prime' \
-                                                                                        --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
-                                                                                        --set 'extraEnv[2].value=suse' \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --devel
-        else
-            helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                        --set hostname=${HOSTNAME} \
-                                                                                        ${VERSION} \
-                                                                                        ${RANCHER_TAG} \
-                                                                                        ${IMAGE} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
-                                                                                        --set 'extraEnv[0].value=""' \
-                                                                                        --set ingress.tls.source=letsEncrypt \
-                                                                                        --set letsEncrypt.email=${LETS_ENCRYPT_EMAIL} \
-                                                                                        --set letsEncrypt.ingress.class=traefik \
-                                                                                        --set agentTLSMode=system-store \
-                                                                                        --devel
-        fi
     else
-        echo "Unsupported CERT_TYPE: $CERT_TYPE"
-        exit 1
+        helm upgrade --install rancher upgraded-rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                        --set hostname=${HOSTNAME} \
+                                                                                        ${VERSION} \
+                                                                                        ${RANCHER_TAG} \
+                                                                                        ${IMAGE} \
+                                                                                        --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
+                                                                                        --set 'extraEnv[0].value=""' \
+                                                                                        --set agentTLSMode=system-store \
+                                                                                        --devel
     fi
 }
 

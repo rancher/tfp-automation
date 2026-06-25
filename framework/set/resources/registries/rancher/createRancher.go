@@ -1,6 +1,7 @@
 package rancher
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 
@@ -30,13 +31,26 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		return nil, err
 	}
 
+	privateFullChain, err := os.ReadFile(terraformConfig.PrivateFullChainPath)
+	if err != nil {
+		return nil, err
+	}
+
+	privateCertKey, err := os.ReadFile(terraformConfig.PrivateCertKeyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedFullChain := base64.StdEncoding.EncodeToString((privateFullChain))
+	encodedCertKey := base64.StdEncoding.EncodeToString((privateCertKey))
+
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, installRancher)
 
 	command := "/tmp/setup.sh " + terraformConfig.Standalone.RancherChartRepository + " " +
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
-		terraformConfig.Standalone.CertType + " " + terraformConfig.Standalone.RancherHostname + " " +
-		terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.ChartVersion + " " +
-		terraformConfig.Standalone.BootstrapPassword + " " + terraformConfig.Standalone.RancherImage + " " + registryPublicDNS
+		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+		terraformConfig.Standalone.ChartVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
+		terraformConfig.Standalone.RancherImage + " " + registryPublicDNS + " " + encodedFullChain + " " + encodedCertKey
 
 	if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 		command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +

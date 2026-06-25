@@ -1,0 +1,42 @@
+---
+name: Setup Certificates
+description: "Sets up certificates, mainly for private registry testing"
+inputs:
+  private-full-chain:
+    description: "Private Full Chain"
+    required: true
+  private-full-chain-name:
+    description: "Private Full Chain Name"
+    required: true
+  private-cert-key:
+    description: "Private Certificate Private Key"
+    required: true
+  private-cert-key-name:
+    description: "Private Certificate Key Name"
+    required: true
+
+outputs:
+  private-full-chain-path:
+    description: "Path to private full chain PEM in workspace .ssh"
+    value: ${{ steps.write-certs.outputs.private-full-chain-path }}
+  private-cert-key-path:
+    description: "Path to private cert key PEM in workspace .ssh"
+    value: ${{ steps.write-certs.outputs.private-cert-key-path }}
+
+runs:
+  using: composite
+  steps:
+    - id: write-certs
+      run: |
+        full_chain_path="${GITHUB_WORKSPACE}/.ssh/${{ inputs.private-full-chain-name }}.pem"
+        cert_key_path="${GITHUB_WORKSPACE}/.ssh/${{ inputs.private-cert-key-name }}.pem"
+
+        echo "${{ inputs.private-full-chain }}" > "$full_chain_path"
+        chmod 600 "$full_chain_path"
+
+        echo "${{ inputs.private-cert-key }}" > "$cert_key_path"
+        chmod 600 "$cert_key_path"
+
+        echo "private-full-chain-path=$full_chain_path" >> "$GITHUB_OUTPUT"
+        echo "private-cert-key-path=$cert_key_path" >> "$GITHUB_OUTPUT"
+      shell: bash

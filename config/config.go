@@ -131,7 +131,6 @@ type PrivateRegistries struct {
 type Standalone struct {
 	BootstrapPassword              string        `json:"bootstrapPassword,omitempty" yaml:"bootstrapPassword,omitempty"`
 	CertManagerVersion             string        `json:"certManagerVersion,omitempty" yaml:"certManagerVersion,omitempty"`
-	CertType                       string        `json:"certType,omitempty" yaml:"certType,omitempty"`
 	ChartVersion                   string        `json:"chartVersion,omitempty" yaml:"chartVersion,omitempty"`
 	FeatureFlags                   *FeatureFlags `json:"featureFlags,omitempty" yaml:"featureFlags,omitempty"`
 	K3SVersion                     string        `json:"k3sVersion,omitempty" yaml:"k3sVersion,omitempty"`
