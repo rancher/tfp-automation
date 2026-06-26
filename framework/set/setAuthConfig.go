@@ -18,12 +18,12 @@ import (
 )
 
 // AuthConfig is a function that will set the main.tf file based on the auth provider.
-func AuthConfig(rancherConfig *rancher.Config, testUser, testPassword string, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
+func AuthConfig(rancherConfig *rancher.Config, configMap []map[string]any, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File) error {
 	var err error
 
 	_, terraform, _, _ := config.LoadTFPConfigs(configMap[0])
 
-	newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, true, newFile, rootBody, terraform, false)
+	newFile, rootBody = resources.SetProvidersAndUsersTF(rancherConfig, true, newFile, rootBody, terraform, false)
 
 	rancherConfig, terraform, _, _ = config.LoadTFPConfigs(configMap[0])
 	authProvider := terraform.AuthProvider

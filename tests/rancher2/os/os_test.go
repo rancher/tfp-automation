@@ -28,6 +28,7 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/permutationsdata"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
+	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -122,6 +123,11 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 		o.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(o.client)
 		require.NoError(o.T(), err)
 
+		standardUserToken, err := ranchersetup.CreateStandardUserToken(o.T(), o.terraformOptions, o.rancherConfig, testUser, testPassword)
+		require.NoError(o.T(), err)
+
+		standardToken := standardUserToken.Token
+
 		amiInfo, err := ec2.GetAMI(o.client, &o.awsCredentials, ami)
 		require.NoError(o.T(), err)
 
@@ -131,13 +137,15 @@ func (o *OSValidationTestSuite) TestDynamicOSValidation() {
 				cattleConfig, err = operations.ReplaceValue([]string{"terraform", "awsConfig", "awsVolumeType"}, *amiInfo.Images[0].BlockDeviceMappings[0].Ebs.VolumeType, cattleConfig)
 				require.NoError(o.T(), err)
 
-				_, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
+				rancher, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(o.cattleConfig)
+				rancher.AdminToken = standardToken
+				terraformConfig.AWSConfig.AMI = *amiInfo.Images[0].ImageId
 
 				logrus.Infof("Provisioning Cluster Type: %s, "+"K8s Version: %s, "+"CNI: %s", terraformConfig.Module, terratestConfig.KubernetesVersion, terraformConfig.CNI)
 			}
 
 			logrus.Infof("Provisioning cluster (%s)", o.terraformConfig.ResourcePrefix)
-			clusters, _ := provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, testUser, testPassword, o.terraformOptions, newFile, rootBody, file, false, false, true, "", "")
+			clusters, _ := provisioning.Provision(o.T(), o.client, o.standardUserClient, o.rancherConfig, o.terraformConfig, o.terratestConfig, o.terraformOptions, newFile, rootBody, file, false, false, true, "", "")
 			time.Sleep(2 * time.Minute)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)

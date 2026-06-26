@@ -26,7 +26,6 @@ import (
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-
 	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -124,7 +123,7 @@ func (p *ProvisionACETestSuite) TestTfpProvisionACE() {
 			defer cleanup.Cleanup(p.T(), perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 			err = provisioningActions.VerifyClusterReady(p.client, clusters[0])

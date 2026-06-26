@@ -120,7 +120,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 			err = provisioningActions.VerifyClusterReady(r.client, clusters[0])
@@ -134,7 +134,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 			err = pods.VerifyClusterPods(r.client, clusters[0])
 			require.NoError(r.T(), err)
 
-			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, []map[string]any{r.cattleConfig}, tt.rbacRole, newFile, rootBody, file, nestedRancherModuleDir)
+			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, perTestTerraformOptions, []map[string]any{r.cattleConfig}, tt.rbacRole, newFile, rootBody, file, nestedRancherModuleDir)
 
 			params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
