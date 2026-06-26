@@ -126,7 +126,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
@@ -140,7 +140,7 @@ func (s *SnapshotRestoreTestSuite) TestTfpSnapshotRestore() {
 			err = pods.VerifyClusterPods(s.client, clusters[0])
 			require.NoError(s.T(), err)
 
-			RestoreSnapshot(s.T(), s.client, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
+			RestoreSnapshot(s.T(), s.client, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
 
 			params := tfpQase.GetProvisioningSchemaParams(s.terraformConfig, s.terratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)

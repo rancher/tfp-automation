@@ -40,7 +40,6 @@ const (
 	rc                      = "-rc"
 	requiredProviders       = "required_providers"
 	terraform               = "terraform"
-	testPassword            = "password"
 	tokenKey                = "token_key"
 	ttl                     = "ttl"
 	version                 = "version"
@@ -55,8 +54,8 @@ const (
 )
 
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
-func SetProvidersAndUsersTF(rancherConfig *rancher.Config, testUser, testPassword string, authProvider bool,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customModule bool) (*hclwrite.File, *hclwrite.Body) {
+func SetProvidersAndUsersTF(rancherConfig *rancher.Config, authProvider bool, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	terraformConfig *config.TerraformConfig, customModule bool) (*hclwrite.File, *hclwrite.Body) {
 	createRequiredProviders(rootBody, terraformConfig, customModule)
 	createProvider(rancherConfig, rootBody, terraformConfig, customModule)
 	createProviderAlias(rancherConfig, rootBody)

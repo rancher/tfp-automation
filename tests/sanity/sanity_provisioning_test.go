@@ -116,7 +116,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, customClusterName := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
+			clusters, customClusterName := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
@@ -132,7 +132,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanity() {
 
 			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
 				logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-				clusters, _ = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, true, true, true, customClusterName, nestedRancherModuleDir)
+				clusters, _ = provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, true, true, true, customClusterName, nestedRancherModuleDir)
 
 				logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
@@ -211,7 +211,7 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
 			defer cleanup.Cleanup(s.T(), perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])

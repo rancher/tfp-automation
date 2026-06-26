@@ -18,7 +18,7 @@ import (
 
 // Provision is a function that will run terraform init and apply Terraform resources to provision a cluster.
 func Provision(t *testing.T, client, standardUserClient *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options,
+	terratestConfig *config.TerratestConfig, terraformOptions *terraform.Options,
 	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters,
 	containsCustomModule bool, customClusterName string, nestedRancherModuleDir string) ([]*steveV1.SteveAPIObject, string) {
 	var err error
@@ -27,7 +27,7 @@ func Provision(t *testing.T, client, standardUserClient *rancher.Client, rancher
 	isSupported := SupportedModules(terraformConfig)
 	require.True(t, isSupported)
 
-	clusterNames, customClusterName, err = framework.ConfigTF(standardUserClient, rancherConfig, terratestConfig, testUser, testPassword, "", terraformConfig, newFile, rootBody, file, isWindows, persistClusters, containsCustomModule, customClusterName, nestedRancherModuleDir)
+	clusterNames, customClusterName, err = framework.ConfigTF(standardUserClient, rancherConfig, terratestConfig, "", terraformConfig, newFile, rootBody, file, isWindows, persistClusters, containsCustomModule, customClusterName, nestedRancherModuleDir)
 	require.NoError(t, err)
 
 	// If the provisioner is GKE, we need to run terraform import for the Google driver before applying the Terraform configuration.

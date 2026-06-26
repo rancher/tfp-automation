@@ -124,7 +124,7 @@ func (s *TfpSanityDualStackUpgradeRancherTestSuite) provisionAndVerifyCluster(na
 				terraform = provisioning.UniquifyTerraform(terraform)
 
 				logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-				clusters, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, testUser, testPassword, perTestTerraformOptions, newFile, rootBody, file, false, true, true, "", nestedRancherModuleDir)
+				clusters, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, true, true, "", nestedRancherModuleDir)
 
 				logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])

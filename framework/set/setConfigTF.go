@@ -17,10 +17,9 @@ import (
 )
 
 // ConfigTF sets the main.tf file based on the module type.
-func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestConfig *config.TerratestConfig, testUser, testPassword string,
-	rbacRole config.Role, terraformConfig *config.TerraformConfig,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows, persistClusters,
-	customModule bool, customClusterName string, nestedRancherModuleDir string) ([]string, string, error) {
+func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestConfig *config.TerratestConfig, rbacRole config.Role,
+	terraformConfig *config.TerraformConfig, newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, isWindows,
+	persistClusters, customModule bool, customClusterName string, nestedRancherModuleDir string) ([]string, string, error) {
 	var err error
 
 	clusterNames := []string{}
@@ -31,7 +30,7 @@ func ConfigTF(client *rancher.Client, rancherConfig *rancher.Config, terratestCo
 	}
 
 	if !strings.Contains(string(newFile.Bytes()), general.RequiredProviders) {
-		newFile, rootBody = rancher2.SetProvidersAndUsersTF(rancherConfig, testUser, testPassword, false, newFile, rootBody, terraformConfig, customModule)
+		newFile, rootBody = rancher2.SetProvidersAndUsersTF(rancherConfig, false, newFile, rootBody, terraformConfig, customModule)
 	}
 
 	if strings.Contains(terraformConfig.Module, clustertypes.CUSTOM) {

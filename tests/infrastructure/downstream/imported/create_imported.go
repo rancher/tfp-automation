@@ -1,4 +1,4 @@
-package custom
+package imported
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	v1 "github.com/rancher/shepherd/clients/rancher/v1"
-	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -16,11 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// CreateCustomCluster is a function that will create a custom cluster using the provided terraform configuration and return the cluster object and the terraform options used to create the cluster.
-func CreateCustomCluster(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, clusterType, dataDir string, isWindows bool) (string, *terraform.Options, string, *v1.SteveAPIObject) {
+// CreateImportedCluster is a function that will create an imported cluster using the provided Terraform configuration and return
+// the cluster object and the terraform options used to create the cluster.
+func CreateImportedCluster(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig, clusterType, dataDir string) (string, *terraform.Options, string, *v1.SteveAPIObject) {
 	terraformConfig = provisioning.UniquifyTerraform(terraformConfig)
-	terraformConfig.Module = fmt.Sprintf("%s_%s_custom", terraformConfig.DownstreamClusterProvider, clusterType)
+	terraformConfig.Module = fmt.Sprintf("%s_%s_imported", terraformConfig.DownstreamClusterProvider, clusterType)
 
 	_, keyPath := rancher2.SetKeyPath(dataDir, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
@@ -34,21 +34,9 @@ func CreateCustomCluster(t *testing.T, client *rancher.Client, rancherConfig *ra
 	adminClient, err := rancher.NewClient("", client.Session)
 	require.NoError(t, err)
 
-	terratestConfig, err = provisioning.GetK8sVersion(adminClient, terraformConfig, terratestConfig)
-	require.NoError(t, err)
-
-	clusters, customClusterName := provisioning.Provision(t, adminClient, client, rancherConfig, terraformConfig, terratestConfig, perTestTerraformOptions,
+	clusters, _ := provisioning.Provision(t, adminClient, client, rancherConfig, terraformConfig, terratestConfig, perTestTerraformOptions,
 		newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
 	require.NotEmpty(t, clusters)
-
-	if isWindows {
-		err = provisioningActions.VerifyClusterReady(adminClient, clusters[0])
-		require.NoError(t, err)
-
-		clusters, _ = provisioning.Provision(t, adminClient, client, rancherConfig, terraformConfig, terratestConfig, perTestTerraformOptions,
-			newFile, rootBody, file, isWindows, true, true, customClusterName, nestedRancherModuleDir)
-		require.NotEmpty(t, clusters)
-	}
 
 	return nestedRancherModuleDir, perTestTerraformOptions, keyPath, clusters[0]
 }

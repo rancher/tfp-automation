@@ -57,8 +57,8 @@ const (
 // RestoreSnapshot creates workloads, takes a snapshot of the cluster, restores the cluster and verifies the workloads created after
 // a snapshot no longer are present in the cluster
 func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, testUser, testPassword string, terraformOptions *terraform.Options,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) {
+	terratestConfig *config.TerratestConfig, terraformOptions *terraform.Options, newFile *hclwrite.File, rootBody *hclwrite.Body,
+	file *os.File, nestedRancherModuleDir string) {
 	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
 
 	clusterID, err := clusters.GetClusterIDByName(client, terraformConfig.ResourcePrefix)
@@ -72,10 +72,10 @@ func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *ranche
 
 	deploymentResp, serviceResp := createWorkloads(t, client, clusterID, podTemplate, initialWorkloadName, isCattleLabeled, DeploymentSteveType)
 
-	snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, testUser, testPassword, clusterID, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
+	snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, clusterID, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
 	require.NoError(t, err)
 
-	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, testUser, testPassword, clusterID, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
+	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, clusterID, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
 
 	_, err = steveclient.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
 	require.Error(t, err)
@@ -93,12 +93,11 @@ func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *ranche
 
 // snapshotV2Prov takes a snapshot of the cluster and creates a deployment and service in the cluster.
 func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, podTemplate corev1.PodTemplateSpec, testUser, testPassword, clusterID string,
-	terraformOptions *terraform.Options, newFile *hclwrite.File, rootBody *hclwrite.Body,
-	file *os.File, nestedRancherModuleDir string) (string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
+	terratestConfig *config.TerratestConfig, podTemplate corev1.PodTemplateSpec, clusterID string, terraformOptions *terraform.Options,
+	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) (string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
 	terratestConfig.SnapshotInput.CreateSnapshot = true
 
-	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
+	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, "", terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
@@ -120,13 +119,13 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 
 // restoreV2Prov restores the cluster to the previous state after a snapshot is taken.
 func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, snapshotName, testUser, testPassword string, clusterID string, terraformOptions *terraform.Options,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) {
+	terratestConfig *config.TerratestConfig, snapshotName, clusterID string, terraformOptions *terraform.Options, newFile *hclwrite.File,
+	rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) {
 	terratestConfig.SnapshotInput.CreateSnapshot = false
 	terratestConfig.SnapshotInput.RestoreSnapshot = true
 	terratestConfig.SnapshotInput.SnapshotName = snapshotName
 
-	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, testUser, testPassword, "", terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
+	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, "", terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 	require.NoError(t, err)
 
 	terraform.Apply(t, terraformOptions)
