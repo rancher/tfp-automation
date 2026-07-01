@@ -2,18 +2,16 @@
 
 USER=$1
 GROUP=$2
-RKE2_SERVER_ONE_IP=$3
-RKE2_NEW_SERVER_IP=$4
-RKE2_NEW_SERVER_PRIVATE_IP=$5
-HOSTNAME=$6
+RKE2_SERVER_ONE_PUBLIC_IP=$3
+RKE2_SERVER_ONE_PRIVATE_IP=$4
+RKE2_NEW_SERVER_PUBLIC_IP=$5
+RKE2_NEW_SERVER_PRIVATE_IP=$6
 CNI=$7
 REGISTRY_USERNAME=$8
 REGISTRY_PASSWORD=$9
 RKE2_TOKEN=${10}
-RANCHER_IMAGE=${11}
-RANCHER_TAG_VERSION=${12}
-CLUSTER_CIDR=${13}
-SERVICE_CIDR=${14}
+CLUSTER_CIDR=${11}
+SERVICE_CIDR=${12}
 PEM_FILE=/home/$USER/airgap.pem
 
 set -e
@@ -25,9 +23,10 @@ runSSH() {
   ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$PEM_FILE" "$USER@$server" \
   "export USER=${USER}; \
    export GROUP=${GROUP}; \
-   export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
-   export RKE2_NEW_SERVER_IP=${RKE2_NEW_SERVER_IP}; \
-   export HOSTNAME=${HOSTNAME}; \
+   export RKE2_SERVER_ONE_PUBLIC_IP=${RKE2_SERVER_ONE_PUBLIC_IP}; \
+   export RKE2_SERVER_ONE_PRIVATE_IP=${RKE2_SERVER_ONE_PRIVATE_IP}; \
+   export RKE2_NEW_SERVER_PUBLIC_IP=${RKE2_NEW_SERVER_PUBLIC_IP}; \
+   export RKE2_NEW_SERVER_PRIVATE_IP=${RKE2_NEW_SERVER_PRIVATE_IP}; \
    export CNI=${CNI}; \
    export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
    export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; \
@@ -39,16 +38,16 @@ runSSH() {
 setupConfig() {
     sudo mkdir -p /etc/rancher/rke2
     sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
-server: https://[$RKE2_SERVER_ONE_IP]:9345
+server: https://[${RKE2_SERVER_ONE_PUBLIC_IP}]:9345
 write-kubeconfig-mode: 644
-node-ip: ${RKE2_NEW_SERVER_IP}
-node-external-ip: ${RKE2_NEW_SERVER_IP}
+node-ip: ${RKE2_NEW_SERVER_PUBLIC_IP}
+node-external-ip: ${RKE2_NEW_SERVER_PUBLIC_IP}
 cni: ${CNI}
 token: ${RKE2_TOKEN}
 cluster-cidr: ${CLUSTER_CIDR}
 service-cidr: ${SERVICE_CIDR}
 tls-san:
-  - ${HOSTNAME}
+  - ${RKE2_SERVER_ONE_PRIVATE_IP}
 EOF
 }
 

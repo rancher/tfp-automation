@@ -30,7 +30,7 @@ func CreateIPv6RKE2Cluster(t *testing.T, provider string) error {
 		terraformConfig.Provider = provider
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.IPv6RKE2K3SKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.IPv6RKE2KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	var file *os.File

@@ -167,7 +167,7 @@ func CreateIPv6AWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 	CreateAWSLocalBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	if terraformConfig.Standalone.CertManagerVersion != "" {
+	if terraformConfig.Standalone.RancherHostname != "" {
 		ports := []int64{80, 443, 6443, 9345}
 		for _, port := range ports {
 			CreateTargetGroupAttachments(rootBody, terraformConfig, aws.LoadBalancerTargetGroupAttachment, getTargetGroupAttachment(port, false), port, terraformConfig.ResourcePrefix, false)

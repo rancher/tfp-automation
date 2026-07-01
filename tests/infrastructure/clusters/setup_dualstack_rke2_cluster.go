@@ -30,7 +30,7 @@ func CreateDualStackRKE2Cluster(t *testing.T, provider string) error {
 		terraformConfig.Provider = provider
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.DualStackRKE2K3SKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.DualStackRKE2KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	var file *os.File

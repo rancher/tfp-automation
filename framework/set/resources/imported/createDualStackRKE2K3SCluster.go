@@ -16,15 +16,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-const (
-	addServer     = "add_server"
-	addAgent      = "add_agent"
-	copyScript    = "_copy_script_"
-	createCluster = "create_cluster"
-)
-
-// CreateRKE2K3SImportedCluster is a helper function that will create the RKE2/K3S cluster to be imported into Rancher.
-func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
+// CreateDualStackRKE2K3SImportedCluster is a helper function that will create the RKE2/K3S cluster to be imported into Rancher.
+func CreateDualStackRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig,
 	linuxNodeNames, serverNodeNames, agentNodeNames []string, nodePublicIPs, nodePrivateIPs map[string]string, token string) error {
 	if len(serverNodeNames) == 0 {
 		return nil
@@ -35,13 +28,13 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 	userDir, _ := rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, general.Import) {
-		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/init-server.sh")
-		addServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-servers.sh")
-		addAgentsScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/k3s/add-agents.sh")
+		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/k3s/init-server.sh")
+		addServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/k3s/add-servers.sh")
+		addAgentsScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/k3s/add-agents.sh")
 	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
-		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/init-server.sh")
-		addServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-servers.sh")
-		addAgentsScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/rke2/add-agents.sh")
+		serverScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/rke2/init-server.sh")
+		addServersScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/rke2/add-servers.sh")
+		addAgentsScriptPath = filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/dualstack/rke2/add-agents.sh")
 	}
 
 	serverOneScriptContent, err := os.ReadFile(serverScriptPath)
@@ -63,14 +56,15 @@ func CreateRKE2K3SImportedCluster(rootBody *hclwrite.Body, terraformConfig *conf
 	serverOnePublicIP := nodePublicIPs[bootstrapNodeName]
 	serverOnePrivateIP := nodePrivateIPs[bootstrapNodeName]
 
-	createImportedRKE2K3SServer(rootBody, terraformConfig, linuxNodeNames, bootstrapNodeName, serverOnePublicIP, serverOnePrivateIP, token, serverOneScriptContent)
-	addImportedRKE2K3SServerNodes(rootBody, terraformConfig, linuxNodeNames, serverNodeNames[1:], serverOnePrivateIP, nodePublicIPs, token, newServersScriptContent)
-	addImportedRKE2K3SAgentNodes(rootBody, terraformConfig, linuxNodeNames, agentNodeNames, serverOnePrivateIP, nodePublicIPs, token, agentsScriptContent)
+	createImportedDualStackRKE2K3SServer(rootBody, terraformConfig, linuxNodeNames, bootstrapNodeName, serverOnePublicIP, serverOnePrivateIP, token, serverOneScriptContent)
+	addImportedDualStackRKE2K3SServerNodes(rootBody, terraformConfig, linuxNodeNames, serverNodeNames[1:], serverOnePrivateIP, nodePublicIPs, token, newServersScriptContent)
+	addImportedDualStackRKE2K3SAgentNodes(rootBody, terraformConfig, linuxNodeNames, agentNodeNames, serverOnePrivateIP, nodePublicIPs, token, agentsScriptContent)
 
 	return nil
 }
 
-func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, linuxNodeNames []string,
+// createImportedDualStackRKE2K3SServer is a helper function that will create the server to be imported into Rancher.
+func createImportedDualStackRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, linuxNodeNames []string,
 	bootstrapNodeName, serverOnePublicIP, serverOnePrivateIP, token string, script []byte) {
 	copyScriptName := terraformConfig.ResourcePrefix + copyScript + bootstrapNodeName
 	_, provisionerBlockBody := nullresource.CreateImportedNullResource(rootBody, terraformConfig, serverOnePublicIP, copyScriptName, linuxNodeNames)
@@ -82,13 +76,15 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 
 		command = "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			version + " " + serverOnePrivateIP + " " + token + " " + terraformConfig.Standalone.RegistryUsername + " " +
-			terraformConfig.Standalone.RegistryPassword
+			terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.AWSConfig.ClusterCIDR + " " +
+			terraformConfig.AWSConfig.ServiceCIDR
 	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
 		version = terraformConfig.Standalone.RKE2Version
 
 		command = "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			version + " " + serverOnePrivateIP + " " + token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
-			terraformConfig.Standalone.RegistryPassword
+			version + " " + serverOnePrivateIP + " " + token + " " + terraformConfig.CNI + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 	}
 
 	// For imported clusters, need to first put the script on the machine before running it.
@@ -115,7 +111,8 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 }
 
-func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, linuxNodeNames, serverNodeNames []string,
+// addImportedDualStackRKE2K3SServerNodes is a helper function that will add additional server nodes to the initial server.
+func addImportedDualStackRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, linuxNodeNames, serverNodeNames []string,
 	serverOnePrivateIP string, nodePublicIPs map[string]string, token string, script []byte) {
 	createClusterName := terraformConfig.ResourcePrefix + `_` + createCluster
 
@@ -130,14 +127,15 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 			version = terraformConfig.Standalone.K3SVersion
 
 			command = "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-				version + " " + serverOnePrivateIP + " " + instance + " " + token + " " + terraformConfig.Standalone.RegistryUsername + " " +
-				terraformConfig.Standalone.RegistryPassword
+				version + " " + serverOnePrivateIP + " " + instance + " " + token + " " +
+				terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+				terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
 			version = terraformConfig.Standalone.RKE2Version
 
-			command = "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + version + " " + serverOnePrivateIP + " " +
-				instance + " " + token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
-				terraformConfig.Standalone.RegistryPassword
+			command = "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + version + " " +
+				serverOnePrivateIP + " " + instance + " " + token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
+				terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
@@ -172,7 +170,7 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 
 }
 
-func addImportedRKE2K3SAgentNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, linuxNodeNames, agentNodeNames []string,
+func addImportedDualStackRKE2K3SAgentNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, linuxNodeNames, agentNodeNames []string,
 	serverOnePrivateIP string, nodePublicIPs map[string]string, token string, script []byte) {
 	createClusterName := terraformConfig.ResourcePrefix + `_` + createCluster
 
@@ -187,14 +185,14 @@ func addImportedRKE2K3SAgentNodes(rootBody *hclwrite.Body, terraformConfig *conf
 			version = terraformConfig.Standalone.K3SVersion
 
 			command = "/tmp/add-agents.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-				version + " " + serverOnePrivateIP + " " + instance + " " + token + " " + terraformConfig.Standalone.RegistryUsername + " " +
-				terraformConfig.Standalone.RegistryPassword
+				version + " " + serverOnePrivateIP + " " + instance + " " + token + " " +
+				terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 		} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
 			version = terraformConfig.Standalone.RKE2Version
 
-			command = "/tmp/add-agents.sh " + terraformConfig.Standalone.OSUser + " " + version + " " + serverOnePrivateIP + " " +
-				instance + " " + token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
-				terraformConfig.Standalone.RegistryPassword
+			command = "/tmp/add-agents.sh " + terraformConfig.Standalone.OSUser + " " + version + " " +
+				serverOnePrivateIP + " " + instance + " " + token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
+				terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
