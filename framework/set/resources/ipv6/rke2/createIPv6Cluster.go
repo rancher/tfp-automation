@@ -59,17 +59,19 @@ func CreateIPv6RKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclw
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicIP, rke2Bastion)
 
+	command := "/tmp/bastion.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
+		rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile
+
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
-		cty.StringVal("bash -c '/tmp/bastion.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
-			rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile + "'"),
+		cty.StringVal(command),
 	}))
 
 	rke2Token := namegen.AppendRandomString(token)
 
 	createIPv6RKE2Server(rootBody, terraformConfig, rke2BastionPublicIP, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2Token, serverOneScriptContent)
-	addIPv6RKE2ServerNodes(rootBody, terraformConfig, rke2BastionPublicIP, rke2ServerOnePublicIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP,
+	addIPv6RKE2ServerNodes(rootBody, terraformConfig, rke2BastionPublicIP, rke2ServerOnePublicIP, rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP,
 		rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP, rke2Token, newServersScriptContent)
 
 	_, err = file.Write(newFile.Bytes())
@@ -86,11 +88,10 @@ func createIPv6RKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terra
 	rke2ServerOnePrivateIP, rke2Token string, script []byte) {
 	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicIP, rke2ServerOne)
 
-	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-		rke2ServerOnePublicIP + " " + rke2ServerOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " +
-		terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
-		rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
+	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		rke2ServerOnePublicIP + " " + rke2ServerOnePrivateIP + " " + terraformConfig.CNI + " " +
+		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2Token + " " +
+		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -108,22 +109,22 @@ func createIPv6RKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terra
 
 // addIPv6RKE2ServerNodes is a helper function that will add additional RKE2 server nodes to the initial RKE2 IPv6 server.
 func addIPv6RKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, rke2BastionPublicIP, rke2ServerOnePublicIP,
-	rke2ServerTwoPublicIP, rke2ServerThreePublicIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP, rke2Token string, script []byte) {
+	rke2ServerOnePrivateIP, rke2ServerTwoPublicIP, rke2ServerThreePublicIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP, rke2Token string,
+	script []byte) {
 	privateIPInstances := []string{rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP}
 	publicIPInstances := []string{rke2ServerTwoPublicIP, rke2ServerThreePublicIP}
 	hosts := []string{rke2ServerTwo, rke2ServerThree}
 
 	for i, privateInstance := range privateIPInstances {
-		publicIPInstance := publicIPInstances[i]
+		publicInstance := publicIPInstances[i]
 		host := hosts[i]
 
 		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicIP, host)
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			rke2ServerOnePublicIP + " " + publicIPInstance + " " + privateInstance + " " + terraformConfig.Standalone.RancherHostname + " " +
-			terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
-			rke2Token + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
+		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+			rke2ServerOnePublicIP + " " + rke2ServerOnePrivateIP + " " + publicInstance + " " + privateInstance + " " + terraformConfig.CNI + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2Token + " " +
+			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

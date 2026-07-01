@@ -2,14 +2,16 @@
 
 K8S_VERSION=$1
 K3S_SERVER_ONE_IP=$2
-K3S_SERVER_TWO_IP=$3
-K3S_SERVER_THREE_IP=$4
-USER=$5
-PEM_FILE=$6
+
+ARGS=("$@")
+ARG_COUNT=$#
+USER=${ARGS[$((ARG_COUNT - 2))]}
+PEM_FILE=${ARGS[$((ARG_COUNT - 1))]}
+K3S_SERVER_ADDITIONAL_IPS=("${ARGS[@]:2:$((ARG_COUNT - 4))}")
 
 set -e
 
-base64 -d <<< $PEM_FILE > /home/$USER/airgap.pem
+base64 -d <<< "$PEM_FILE" > /home/$USER/airgap.pem
 PEM=/home/$USER/airgap.pem
 chmod 600 $PEM
 
@@ -59,22 +61,13 @@ sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-amd64.txt ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 
-echo "Copying files to K3S server two"
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s ${USER}@${K3S_SERVER_TWO_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-amd64.tar.gz ${USER}@${K3S_SERVER_TWO_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-arm64.tar.gz ${USER}@${K3S_SERVER_TWO_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${K3S_SERVER_TWO_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-amd64.txt ${USER}@${K3S_SERVER_TWO_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${K3S_SERVER_TWO_IP}:/home/${USER}/
-
-echo "Copying files to K3S server three"
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-amd64.tar.gz ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-arm64.tar.gz ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-amd64.txt ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
-
-mkdir -p ~/.kube
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-rm kubectl
+for ip in "${K3S_SERVER_ADDITIONAL_IPS[@]}"; do
+    echo "Copying files to K3S server at $ip"
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null airgap.pem ${USER}@${ip}:/home/${USER}/
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s ${USER}@${ip}:/home/${USER}/
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-amd64.tar.gz ${USER}@${ip}:/home/${USER}/
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-arm64.tar.gz ${USER}@${ip}:/home/${USER}/
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${ip}:/home/${USER}/
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-amd64.txt ${USER}@${ip}:/home/${USER}/
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${ip}:/home/${USER}/
+done

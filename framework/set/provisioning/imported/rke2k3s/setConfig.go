@@ -43,13 +43,21 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 	serverOneName := serverNodeNames[0]
 	windowsNodeName := terraformConfig.ResourcePrefix + `-` + windows
 
-	nodePublicIPs, nodePrivateIPs := getProviderIPAddresses(terraformConfig, terratestConfig, rootBody, linuxNodeNames)
+	nodePublicIPs, nodePublicIPv6s, nodePrivateIPs := getProviderIPAddresses(terraformConfig, terratestConfig, rootBody, linuxNodeNames)
 
 	token := namegen.AppendRandomString(general.Import)
 
-	if err := resources.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePrivateIPs, token); err != nil {
+	if terraformConfig.AWSConfig.ClusterCIDR != "" && !terraformConfig.AWSConfig.IPv6AddressOnly {
+		err = resources.CreateDualStackRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePrivateIPs, token)
+	} else if terraformConfig.AWSConfig.ClusterCIDR != "" && terraformConfig.AWSConfig.IPv6AddressOnly {
+		err = resources.CreateIPv6RKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePublicIPv6s, nodePrivateIPs, token)
+	} else if terraformConfig.AWSConfig.ClusterCIDR == "" {
+		err = resources.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePrivateIPs, token)
+	}
+	if err != nil {
 		return nil, nil, err
 	}
+
 	rootBody.AppendNewline()
 
 	if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) {

@@ -69,16 +69,14 @@ func (s *TfpSanityDualStackUpgradeRancherTestSuite) TestTfpUpgradeDualStackRanch
 	nestedRancherModuleDir := s.provisionAndVerifyCluster("Sanity_DualStack_Pre_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = upgradedualstack.UpgradeDualStackRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
-	upgradebase.
-		CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
+	upgradebase.CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
 	os.RemoveAll(nestedRancherModuleDir)
 
 	standardUserClient, standardToken, testUser, testPassword = upgradebase.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 	nestedRancherModuleDir = s.provisionAndVerifyCluster("Sanity_DualStack_Post_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
-	upgradebase.
-		CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
+	upgradebase.CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
 	os.RemoveAll(nestedRancherModuleDir)
 
 	if s.terratestConfig.LocalQaseReporting {

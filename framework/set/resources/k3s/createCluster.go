@@ -60,9 +60,9 @@ func CreateK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	k3sToken string, script []byte) {
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sServerOnePublicDNS, k3sServerOne)
 
-	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + k3sToken + " " +
-		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + "'"
+		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -81,9 +81,9 @@ func AddK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 		host := hosts[i]
 		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, instance, host)
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + instance + " " + k3sToken + " " +
-			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + "'"
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

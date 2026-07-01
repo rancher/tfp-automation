@@ -15,9 +15,10 @@ import (
 
 // getProviderIPAddresses is a helper function that returns the IP addresses of the nodes
 func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, rootBody *hclwrite.Body,
-	linuxNodeNames []string) (map[string]string, map[string]string) {
+	linuxNodeNames []string) (map[string]string, map[string]string, map[string]string) {
 	nodePublicIPs := make(map[string]string, len(linuxNodeNames))
 	nodePrivateIPs := make(map[string]string, len(linuxNodeNames))
+	nodePublicIPv6s := make(map[string]string, len(linuxNodeNames))
 
 	if terraformConfig.Provider == vsphereDefaults.Vsphere {
 		dataCenterExpression := fmt.Sprintf(general.Data + `.` + vsphereDefaults.VsphereDatacenter + `.` + vsphereDefaults.VsphereDatacenter + `.id`)
@@ -49,6 +50,7 @@ func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestCo
 
 			nodePrivateIPs[instance] = fmt.Sprintf("${%s.%s.private_ip}", awsDefaults.AwsInstance, instance)
 			nodePublicIPs[instance] = fmt.Sprintf("${%s.%s.public_ip}", awsDefaults.AwsInstance, instance)
+			nodePublicIPv6s[instance] = fmt.Sprintf("${%s.%s.ipv6_addresses[0]}", awsDefaults.AwsInstance, instance)
 		case vsphereDefaults.Vsphere:
 			vsphere.CreateVsphereVirtualMachine(rootBody, terraformConfig, terratestConfig, instance)
 			rootBody.AppendNewline()
@@ -58,5 +60,5 @@ func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestCo
 		}
 	}
 
-	return nodePublicIPs, nodePrivateIPs
+	return nodePublicIPs, nodePublicIPv6s, nodePrivateIPs
 }

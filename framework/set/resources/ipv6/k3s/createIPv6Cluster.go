@@ -59,18 +59,19 @@ func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, k3sBastion)
 
+	command := "/tmp/bastion.sh " + terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " +
+		k3sServerTwoPrivateIP + " " + k3sServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile
+
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
-		cty.StringVal("bash -c '/tmp/bastion.sh " + terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " +
-			k3sServerTwoPrivateIP + " " + k3sServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile + "'"),
+		cty.StringVal(command),
 	}))
 
 	k3sToken := namegen.AppendRandomString(token)
 
-	createIPv6K3SServer(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOnePublicIP, k3sServerOnePrivateIP, k3sToken, serverOneScriptContent)
-	addIPv6K3SServerNodes(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOnePublicIP, k3sServerTwoPrivateIP, k3sServerThreePrivateIP, k3sToken,
-		newServersScriptContent)
+	createIPv6K3SServer(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOnePrivateIP, k3sServerOnePublicIP, k3sToken, serverOneScriptContent)
+	addIPv6K3SServerNodes(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOnePublicIP, k3sServerOnePrivateIP, k3sServerTwoPrivateIP, k3sServerThreePrivateIP, k3sToken, newServersScriptContent)
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
@@ -82,15 +83,14 @@ func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 }
 
 // createIPv6K3SServer is a helper function that will create the K3S server.
-func createIPv6K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicIP, k3sServerOnePublicIP,
-	k3sServerOnePrivateIP, k3sToken string, script []byte) {
+func createIPv6K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicIP, k3sServerOnePrivateIP,
+	k3sServerOnePublicIP, k3sToken string, script []byte) {
 	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOne)
 
-	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-		k3sServerOnePublicIP + " " + k3sServerOnePrivateIP + " " + terraformConfig.Standalone.RancherHostname + " " +
-		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
-		k3sToken + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
+	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		k3sServerOnePublicIP + " " + k3sServerOnePrivateIP + " " + terraformConfig.Standalone.RegistryUsername + " " +
+		terraformConfig.Standalone.RegistryPassword + " " + k3sToken + " " + terraformConfig.AWSConfig.ClusterCIDR + " " +
+		terraformConfig.AWSConfig.ServiceCIDR
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -108,7 +108,7 @@ func createIPv6K3SServer(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 
 // addIPv6K3SServerNodes is a helper function that will add additional K3S server nodes to the initial K3S IPv6 server.
 func addIPv6K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicIP, k3sServerOnePublicIP,
-	k3sServerTwoPrivateIP, k3sServerThreePrivateIP, k3sToken string, script []byte) {
+	k3sServerOnePrivateIP, k3sServerTwoPrivateIP, k3sServerThreePrivateIP, k3sToken string, script []byte) {
 	privateIPInstances := []string{k3sServerTwoPrivateIP, k3sServerThreePrivateIP}
 	hosts := []string{k3sServerTwo, k3sServerThree}
 
@@ -117,11 +117,10 @@ func addIPv6K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terr
 
 		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, host)
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			k3sServerOnePublicIP + " " + privateInstance + " " + terraformConfig.Standalone.RancherHostname + " " +
-			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
-			k3sToken + " " + terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR + "'"
+		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+			terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePublicIP + " " + k3sServerOnePrivateIP + " " + privateInstance + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + k3sToken + " " +
+			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
