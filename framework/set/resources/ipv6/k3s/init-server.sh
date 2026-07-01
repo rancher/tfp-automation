@@ -71,8 +71,6 @@ registryFunction=$(declare -f setupRegistry)
 runSSH "${K3S_SERVER_PRIVATE_IP}" "${registryFunction}; setupRegistry"
 
 runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
-# runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo systemctl enable k3s"
-# runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo systemctl start k3s"
 
 runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo mkdir -p /home/${USER}/.kube"
 runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USER}/.kube/config"
