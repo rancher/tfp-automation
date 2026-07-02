@@ -1,5 +1,5 @@
 ---
-name: Rancher2 Recurring Runs Testing
+name: Day 2 Operations - Rancher2
 
 on:
   schedule:
@@ -340,15 +340,15 @@ jobs:
       - name: Save test result as artifact for weekly summary
         if: always() && github.event_name == 'schedule'
         run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"rancher2-recurring-test\", \"job\": \"v2-15\" }" > test-result-rancher2-recurring-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
+          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"day2-ops-rancher2\", \"job\": \"v2-15\" }" > test-result-day2-ops-rancher2-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
         if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
-          name: test-result-rancher2-recurring-test-v2-15-${{ github.run_id }}
-          path: test-result-rancher2-recurring-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
+          name: test-result-day2-ops-rancher2-v2-15-${{ github.run_id }}
+          path: test-result-day2-ops-rancher2-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
   
   v2-14:
     if: |
@@ -658,15 +658,15 @@ jobs:
       - name: Save test result as artifact for weekly summary
         if: always() && github.event_name == 'schedule'
         run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"rancher2-recurring-test\", \"job\": \"v2-14\" }" > test-result-rancher2-recurring-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
+          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"day2-ops-rancher2\", \"job\": \"v2-14\" }" > test-result-day2-ops-rancher2-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
         if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
-          name: test-result-rancher2-recurring-test-v2-14-${{ github.run_id }}
-          path: test-result-rancher2-recurring-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
+          name: test-result-day2-ops-rancher2-v2-14-${{ github.run_id }}
+          path: test-result-day2-ops-rancher2-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
   
   v2-13:
     if: |
@@ -969,12 +969,12 @@ jobs:
       - name: Save test result as artifact for weekly summary
         if: always() && github.event_name == 'schedule'
         run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"rancher2-recurring-test\", \"job\": \"v2-13\" }" > test-result-rancher2-recurring-test-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
+          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"day2-ops-rancher2\", \"job\": \"v2-13\" }" > test-result-day2-ops-rancher2-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
         if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
-          name: test-result-rancher2-recurring-test-v2-13-${{ github.run_id }}
-          path: test-result-rancher2-recurring-test-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
+          name: test-result-day2-ops-rancher2-v2-13-${{ github.run_id }}
+          path: test-result-day2-ops-rancher2-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
