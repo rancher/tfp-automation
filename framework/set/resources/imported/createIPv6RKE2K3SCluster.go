@@ -145,9 +145,9 @@ func createImportedIPv6RKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *c
 
 	if strings.Contains(terraformConfig.Module, clustertypes.K3S) && strings.Contains(terraformConfig.Module, general.Import) {
 		command = "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			serverOnePublicIPv6 + " " + serverOnePrivateIP + " " + terraformConfig.Standalone.RegistryUsername + " " +
-			terraformConfig.Standalone.RegistryPassword + " " + token + " " + terraformConfig.AWSConfig.ClusterCIDR + " " +
-			terraformConfig.AWSConfig.ServiceCIDR
+			terraformConfig.Standalone.K3SVersion + " " + serverOnePublicIPv6 + " " + serverOnePrivateIP + " " +
+			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + token + " " +
+			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
 	} else if strings.Contains(terraformConfig.Module, clustertypes.RKE2) && strings.Contains(terraformConfig.Module, general.Import) {
 		command = "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			serverOnePublicIPv6 + " " + serverOnePrivateIP + " " + terraformConfig.CNI + " " +
