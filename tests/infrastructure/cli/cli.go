@@ -31,6 +31,8 @@ var setupClusterFuncs = map[string]func(*testing.T, string) error{
 	"--ipv6-k3s":    clusters.CreateIPv6K3SCluster,
 	"--normal-rke2": clusters.CreateRKE2Cluster,
 	"--normal-k3s":  clusters.CreateK3SCluster,
+	"--proxy-rke2":  clusters.CreateProxyRKE2Cluster,
+	"--proxy-k3s":   clusters.CreateProxyK3SCluster,
 }
 
 var setupRancherFuncs = map[string]func(*testing.T, string, map[string]any) error{

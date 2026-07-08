@@ -12,16 +12,17 @@ var State = &appState{}
 
 var ClusterStageMessage = []string{
 	"Please do not close this window while the setup is in progress.",
-	"\n\nAirgap RKE2/K3S Cluster : ~2 hours",
+	"\n\nAirgap RKE2/K3S Cluster : ~45 minutes",
 	"\nDualstack RKE2/K3S Cluster : ~5 minutes",
 	"\nIPv6 RKE2/K3S Cluster : ~5 minutes",
 	"\nNormal RKE2/K3S Cluster : ~5 minutes",
+	"\nProxy RKE2/K3S Cluster : ~5 minutes",
 	"\n\nThe cluster access information will be displayed once the setup successfully finishes.",
 }
 
 var RancherStageMessage = []string{
 	"Please do not close this window while the setup is in progress.",
-	"\n\nAirgap Rancher : ~2.5 hours",
+	"\n\nAirgap Rancher : ~1 hour",
 	"\nDualstack Rancher : ~20 minutes",
 	"\nIPv6 Rancher : ~20 minutes",
 	"\nNormal Rancher : ~20 minutes",

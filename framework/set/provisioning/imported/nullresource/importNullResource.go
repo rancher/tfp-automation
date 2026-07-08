@@ -47,6 +47,7 @@ func CreateImportedNullResource(rootBody *hclwrite.Body, terraformConfig *config
 	}
 
 	connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
+	connectionBlockBody.SetAttributeValue(general.Timeout, cty.StringVal("10m"))
 
 	dependsOnResources := make([]string, 0, len(linuxNodeNames))
 	switch terraformConfig.Provider {

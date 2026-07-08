@@ -7,22 +7,47 @@ RKE2_SERVER_ONE_IP=$4
 RKE2_NEW_SERVER_IP=$5
 RKE2_TOKEN=$6
 BASTION=$7
+REGISTRY_USERNAME=$8
+REGISTRY_PASSWORD=$9
 PORT="3228"
 PEM_FILE=/home/$USER/keyfile.pem
+MAX_SSH_RETRIES=20
+SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
 runSSH() {
   local server="$1"
   local cmd="$2"
-  
-  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$PEM_FILE" "$USER@$server" \
-  "export USER=${USER}; \
-   export GROUP=${GROUP}; \
-   export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
-   export RKE2_TOKEN=${RKE2_TOKEN}; \
-   export BASTION=${BASTION}; \
-   export PORT=${PORT}; ${cmd}"
+  local attempt=1
+  local rc=0
+
+  while [ "$attempt" -le "$MAX_SSH_RETRIES" ]; do
+    if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -i "$PEM_FILE" "$USER@$server" \
+      "export USER=${USER}; \
+       export GROUP=${GROUP}; \
+       export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
+       export RKE2_TOKEN=${RKE2_TOKEN}; \
+       export BASTION=${BASTION}; \
+       export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
+       export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; \
+       export PORT=${PORT}; ${cmd}"; then
+      return 0
+    else
+      rc=$?
+    fi
+
+    if [ "$attempt" -eq "$MAX_SSH_RETRIES" ]; then
+      echo "SSH command failed after ${MAX_SSH_RETRIES} attempts (exit ${rc})" >&2
+      return "$rc"
+    fi
+
+    echo "SSH command failed on attempt ${attempt}/${MAX_SSH_RETRIES} (exit ${rc}), retrying in ${SSH_RETRY_INTERVAL_SECONDS}s..." >&2
+    sleep "$SSH_RETRY_INTERVAL_SECONDS"
+    attempt=$((attempt + 1))
+  done
+
+  return "$rc"
 }
 
 setupConfig() {
@@ -72,7 +97,7 @@ configFunction=$(declare -f setupConfig)
 runSSH "${RKE2_NEW_SERVER_IP}" "${configFunction}; setupConfig"
 
 registryFunction=$(declare -f setupRegistry)
-runSSH "${RKE2_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
+runSSH "${RKE2_NEW_SERVER_IP}" "${registryFunction}; setupRegistry"
 
 setupProxyFunction=$(declare -f setupProxy)
 runSSH "${RKE2_NEW_SERVER_IP}" "${setupProxyFunction}; setupProxy"

@@ -10,23 +10,44 @@ K3S_TOKEN=$7
 CLUSTER_CIDR=$8
 SERVICE_CIDR=$9
 PEM_FILE=/home/$USER/airgap.pem
+MAX_SSH_RETRIES=20
+SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
 runSSH() {
   local server="$1"
   local cmd="$2"
-  
-  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$PEM_FILE" "$USER@$server" \
-  "export USER=${USER}; \
-   export GROUP=${GROUP}; \
-   export K3S_SERVER_PUBLIC_IP=${K3S_SERVER_PUBLIC_IP}; \
-   export K3S_SERVER_PRIVATE_IP=${K3S_SERVER_PRIVATE_IP}; \
-   export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
-   export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; \
-   export K3S_TOKEN=${K3S_TOKEN}; \
-   export CLUSTER_CIDR=${CLUSTER_CIDR}; \
-   export SERVICE_CIDR=${SERVICE_CIDR}; $cmd"
+  local attempt=1
+  local rc=0
+
+  while [ "$attempt" -le "$MAX_SSH_RETRIES" ]; do
+    if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -i "$PEM_FILE" "$USER@$server" \
+      "export USER=${USER}; \
+       export GROUP=${GROUP}; \
+       export K3S_SERVER_PUBLIC_IP=${K3S_SERVER_PUBLIC_IP}; \
+       export K3S_SERVER_PRIVATE_IP=${K3S_SERVER_PRIVATE_IP}; \
+       export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
+       export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; \
+       export K3S_TOKEN=${K3S_TOKEN}; \
+       export CLUSTER_CIDR=${CLUSTER_CIDR}; \
+       export SERVICE_CIDR=${SERVICE_CIDR}; $cmd"; then
+      return 0
+    else
+      rc=$?
+    fi
+
+    if [ "$attempt" -eq "$MAX_SSH_RETRIES" ]; then
+      echo "SSH command failed after ${MAX_SSH_RETRIES} attempts (exit ${rc})" >&2
+      return "$rc"
+    fi
+
+    echo "SSH command failed on attempt ${attempt}/${MAX_SSH_RETRIES} (exit ${rc}), retrying in ${SSH_RETRY_INTERVAL_SECONDS}s..." >&2
+    sleep "$SSH_RETRY_INTERVAL_SECONDS"
+    attempt=$((attempt + 1))
+  done
+
+  return "$rc"
 }
 
 setupConfig() {
@@ -77,7 +98,7 @@ runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USE
 runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
 
 if [ ! -s ~/.kube/config ]; then
-  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${PEM_FILE} ${USER}@${K3S_SERVER_PRIVATE_IP} "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
+  runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
 fi
 
 sed -i "s|\[::1\]|[${K3S_SERVER_PUBLIC_IP}]|g" ~/.kube/config

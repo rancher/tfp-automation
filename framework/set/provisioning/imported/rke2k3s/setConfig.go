@@ -51,6 +51,8 @@ func SetImportedRKE2K3s(terraformConfig *config.TerraformConfig, terratestConfig
 		err = resources.CreateDualStackRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePrivateIPs, token)
 	} else if terraformConfig.AWSConfig.ClusterCIDR != "" && terraformConfig.AWSConfig.IPv6AddressOnly {
 		err = resources.CreateIPv6RKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePublicIPv6s, nodePrivateIPs, token)
+	} else if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
+		err = resources.CreateProxyRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePrivateIPs, token)
 	} else if terraformConfig.AWSConfig.ClusterCIDR == "" {
 		err = resources.CreateRKE2K3SImportedCluster(rootBody, terraformConfig, terratestConfig, linuxNodeNames, serverNodeNames, agentNodeNames, nodePublicIPs, nodePrivateIPs, token)
 	}

@@ -2,17 +2,15 @@
 
 USER=$1
 GROUP=$2
-RKE2_SERVER_ONE_PUBLIC_IP=$3
-RKE2_SERVER_ONE_PRIVATE_IP=$4
-RKE2_NEW_SERVER_PUBLIC_IP=$5
-RKE2_NEW_SERVER_PRIVATE_IP=$6
-CNI=$7
+K8S_VERSION=$3
+RKE2_SERVER_ONE_IP=$4
+RKE2_NEW_SERVER_IP=$5
+RKE2_TOKEN=$6
+BASTION=$7
 REGISTRY_USERNAME=$8
 REGISTRY_PASSWORD=$9
-RKE2_TOKEN=${10}
-CLUSTER_CIDR=${11}
-SERVICE_CIDR=${12}
-PEM_FILE=/home/$USER/airgap.pem
+PORT="3228"
+PEM_FILE=/home/$USER/keyfile.pem
 MAX_SSH_RETRIES=20
 SSH_RETRY_INTERVAL_SECONDS=10
 
@@ -28,21 +26,16 @@ runSSH() {
     if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -i "$PEM_FILE" "$USER@$server" \
       "export USER=${USER}; \
        export GROUP=${GROUP}; \
-       export RKE2_SERVER_ONE_PUBLIC_IP=${RKE2_SERVER_ONE_PUBLIC_IP}; \
-       export RKE2_SERVER_ONE_PRIVATE_IP=${RKE2_SERVER_ONE_PRIVATE_IP}; \
-       export RKE2_NEW_SERVER_PUBLIC_IP=${RKE2_NEW_SERVER_PUBLIC_IP}; \
-       export RKE2_NEW_SERVER_PRIVATE_IP=${RKE2_NEW_SERVER_PRIVATE_IP}; \
-       export CNI=${CNI}; \
+       export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
+       export RKE2_TOKEN=${RKE2_TOKEN}; \
+       export BASTION=${BASTION}; \
        export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
        export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; \
-       export RKE2_TOKEN=${RKE2_TOKEN}; \
-       export CLUSTER_CIDR=${CLUSTER_CIDR}; \
-       export SERVICE_CIDR=${SERVICE_CIDR}; $cmd"; then
+       export PORT=${PORT}; ${cmd}"; then
       return 0
     else
       rc=$?
     fi
-
     if [ "$attempt" -eq "$MAX_SSH_RETRIES" ]; then
       echo "SSH command failed after ${MAX_SSH_RETRIES} attempts (exit ${rc})" >&2
       return "$rc"
@@ -59,16 +52,10 @@ runSSH() {
 setupConfig() {
     sudo mkdir -p /etc/rancher/rke2
     sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
-server: https://[${RKE2_SERVER_ONE_PUBLIC_IP}]:9345
-write-kubeconfig-mode: 644
-node-ip: ${RKE2_NEW_SERVER_PUBLIC_IP}
-node-external-ip: ${RKE2_NEW_SERVER_PUBLIC_IP}
-cni: ${CNI}
+server: https://${RKE2_SERVER_ONE_IP}:9345
 token: ${RKE2_TOKEN}
-cluster-cidr: ${CLUSTER_CIDR}
-service-cidr: ${SERVICE_CIDR}
 tls-san:
-  - ${RKE2_SERVER_ONE_PRIVATE_IP}
+  - ${RKE2_SERVER_ONE_IP}
 EOF
 }
 
@@ -90,12 +77,30 @@ configs:
 EOF
 }
 
+setupProxy() {
+  cat <<EOF | sudo tee /etc/default/rke2-server > /dev/null
+HTTP_PROXY=http://${BASTION}:${PORT}
+HTTPS_PROXY=http://${BASTION}:${PORT}
+NO_PROXY=localhost,127.0.0.0/8,10.0.0/8,cattle-system.svc,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local
+CONTAINERD_HTTP_PROXY=http://${BASTION}:${PORT}
+CONTAINERD_HTTPS_PROXY=http://${BASTION}:${PORT}
+CONTAINERD_NO_PROXY=localhost,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.169.254,.svc,.cluster.local,cattle-system.svc
+http_proxy=http://${BASTION}:${PORT}
+https_proxy=http://${BASTION}:${PORT}
+EOF
+}
+
+runSSH "${RKE2_NEW_SERVER_IP}" "sudo hostnamectl set-hostname ${RKE2_NEW_SERVER_IP}"
+
 configFunction=$(declare -f setupConfig)
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "${configFunction}; setupConfig"
+runSSH "${RKE2_NEW_SERVER_IP}" "${configFunction}; setupConfig"
 
 registryFunction=$(declare -f setupRegistry)
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "${registryFunction}; setupRegistry"
+runSSH "${RKE2_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
 
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh"
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo systemctl enable rke2-server"
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo systemctl start rke2-server"
+setupProxyFunction=$(declare -f setupProxy)
+runSSH "${RKE2_NEW_SERVER_IP}" "${setupProxyFunction}; setupProxy"
+
+runSSH "${RKE2_NEW_SERVER_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} INSTALL_RKE2_TYPE=\"agent\" sh install.sh"
+runSSH "${RKE2_NEW_SERVER_IP}" "sudo systemctl enable rke2-agent"
+runSSH "${RKE2_NEW_SERVER_IP}" "sudo systemctl start rke2-agent"

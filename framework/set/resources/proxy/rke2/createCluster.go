@@ -60,9 +60,9 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 	rke2BastionPrivateIP, rke2ServerOnePrivateIP, rke2Token string, script []byte) {
 	_, provisionerBlockBody := sanity.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
-	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-		rke2BastionPrivateIP + "'"
+		rke2BastionPrivateIP
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -81,9 +81,9 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		host := hosts[i]
 		nullResourceBlockBody, provisionerBlockBody := sanity.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " +
-			rke2BastionPrivateIP + "'"
+			rke2BastionPrivateIP
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

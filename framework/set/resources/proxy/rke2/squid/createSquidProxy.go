@@ -23,8 +23,8 @@ func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 	terratestConfig *config.TerratestConfig, rke2BastionPublicDNS, rke2ServerOnePrivateIP, rke2ServerTwoPrivateIP, rke2ServerThreePrivateIP string) (*os.File, error) {
 	userDir, _ := rancher2.SetKeyPath(keypath.ProxyKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/proxy/squid/setup.sh")
-	squidConf := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/proxy/squid/squid.conf")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/proxy/rke2/squid/setup.sh")
+	squidConf := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/proxy/rke2/squid/squid.conf")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
@@ -43,10 +43,10 @@ func CreateSquidProxy(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, installSquidProxy)
 
-	command := "bash -c '/tmp/setup.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+	command := "/tmp/setup.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2ServerTwoPrivateIP + " " +
-		rke2ServerThreePrivateIP + "'"
+		rke2ServerThreePrivateIP
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(scriptContent) + "' > /tmp/setup.sh"),
