@@ -10,8 +10,34 @@ REGISTRY_USERNAME=$7
 REGISTRY_PASSWORD=$8
 CLUSTER_CIDR=$9
 SERVICE_CIDR=${10}
+MAX_CMD_RETRIES=20
+CMD_RETRY_INTERVAL_SECONDS=10
 
 set -e
+
+retryCmd() {
+  local attempt=1
+  local rc=0
+
+  while [ "$attempt" -le "$MAX_CMD_RETRIES" ]; do
+    if "$@"; then
+      return 0
+    else
+      rc=$?
+    fi
+
+    if [ "$attempt" -eq "$MAX_CMD_RETRIES" ]; then
+      echo "Command failed after ${MAX_CMD_RETRIES} attempts (exit ${rc}): $*" >&2
+      return "$rc"
+    fi
+
+    echo "Command failed on attempt ${attempt}/${MAX_CMD_RETRIES} (exit ${rc}), retrying in ${CMD_RETRY_INTERVAL_SECONDS}s: $*" >&2
+    sleep "$CMD_RETRY_INTERVAL_SECONDS"
+    attempt=$((attempt + 1))
+  done
+
+  return "$rc"
+}
 
 sudo hostnamectl set-hostname ${RKE2_NEW_SERVER_IP}
 
@@ -22,9 +48,9 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+retryCmd curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 
 echo "Validating checksum for rke2-images.linux-${ARCH}.tar.zst"
 ZIP_NAME="rke2-images.linux-${ARCH}.tar.zst"
@@ -63,9 +89,9 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null
 
-curl -sfL https://get.rke2.io --output /home/${USER}/install.sh
+retryCmd curl -sfL https://get.rke2.io --output /home/${USER}/install.sh
 chmod +x /home/${USER}/install.sh
 
-sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} INSTALL_RKE2_TYPE=\"agent\" sh /home/${USER}/install.sh
-sudo systemctl enable rke2-agent
-sudo systemctl start rke2-agent
+retryCmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} INSTALL_RKE2_TYPE=\"agent\" sh /home/${USER}/install.sh
+retryCmd sudo systemctl enable rke2-agent
+retryCmd sudo systemctl start rke2-agent

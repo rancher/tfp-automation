@@ -17,7 +17,7 @@ func ProviderHandler(w http.ResponseWriter, r *http.Request) {
 
 		if clustertype != "" {
 			switch clustertype {
-			case "airgap-rke2", "dual-rke2", "dual-k3s", "ipv6-rke2", "ipv6-k3s":
+			case "airgap-rke2", "dual-rke2", "dual-k3s", "ipv6-rke2", "ipv6-k3s", "proxy-rke2", "proxy-k3s":
 				installOptions = []string{"aws"}
 			default:
 				installOptions = []string{"aws", "linode", "vsphere"}

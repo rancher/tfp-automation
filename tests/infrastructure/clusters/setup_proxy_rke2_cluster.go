@@ -11,39 +11,16 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
+	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2"
+	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2/squid"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	bastion     = "bastion"
-	serverOne   = "server1"
-	serverTwo   = "server2"
-	serverThree = "server3"
-
-	serverOnePublicIP = "server1_public_ip"
-	registryPublicIP  = "registry_public_ip"
-
-	unauthRegistry                  = "unauth_registry"
-	unauthGlobalRegistryRoute53FQDN = "unauth_global_registry_route_53_fqdn"
-
-	bastionPublicDNS     = "bastion_public_dns"
-	bastionPrivateIP     = "bastion_private_ip"
-	serverOnePrivateIP   = "server1_private_ip"
-	serverTwoPublicIP    = "server2_public_ip"
-	serverThreePublicIP  = "server3_public_ip"
-	bastionPublicIP      = "bastion_public_ip"
-	serverTwoPrivateIP   = "server2_private_ip"
-	serverThreePrivateIP = "server3_private_ip"
-
-	terraformConst = "terraform"
-)
-
-// CreateRKE2Cluster is a function that creates a RKE2 cluster either via CLI or web application
-func CreateRKE2Cluster(t *testing.T, provider string) error {
+// CreateProxyRKE2Cluster is a function that creates a RKE2 cluster with a proxy either via CLI or web application
+func CreateProxyRKE2Cluster(t *testing.T, provider string) error {
 	os.Getenv("CLOUD_PROVIDER_VERSION")
 
 	configPath := os.Getenv("CATTLE_TEST_CONFIG")
@@ -54,7 +31,7 @@ func CreateRKE2Cluster(t *testing.T, provider string) error {
 		terraformConfig.Provider = provider
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RKE2KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.ProxyRKE2KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	var file *os.File
@@ -67,7 +44,7 @@ func CreateRKE2Cluster(t *testing.T, provider string) error {
 	tfBlock := rootBody.AppendNewBlock(terraformConst, nil)
 	tfBlockBody := tfBlock.Body()
 
-	instances := []string{serverOne, serverTwo, serverThree}
+	instances := []string{bastion}
 
 	providerTunnel := providers.TunnelToProvider(terraformConfig.Provider)
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
@@ -75,14 +52,22 @@ func CreateRKE2Cluster(t *testing.T, provider string) error {
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
+	bastionPublicDNS := terraform.Output(t, terraformOptions, bastionPublicDNS)
+	bastionPrivateIP := terraform.Output(t, terraformOptions, bastionPrivateIP)
 	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverTwoPublicIP := terraform.Output(t, terraformOptions, serverTwoPublicIP)
-	serverThreePublicIP := terraform.Output(t, terraformOptions, serverThreePublicIP)
+	serverTwoPrivateIP := terraform.Output(t, terraformOptions, serverTwoPrivateIP)
+	serverThreePrivateIP := terraform.Output(t, terraformOptions, serverThreePrivateIP)
+
+	file = sanity.OpenFile(file, keyPath)
+	logrus.Infof("Creating squid proxy...")
+	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
+	require.NoError(t, err)
+
+	terraform.InitAndApply(t, terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
+	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)

@@ -3,8 +3,8 @@
 USER=$1
 GROUP=$2
 K8S_VERSION=$3
-RKE2_SERVER_ONE_IP=$4
-RKE2_TOKEN=$5
+K3S_SERVER_ONE_IP=$4
+K3S_TOKEN=$5
 BASTION=$6
 REGISTRY_USERNAME=$7
 REGISTRY_PASSWORD=$8
@@ -25,8 +25,8 @@ runSSH() {
     if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -i "$PEM_FILE" "$USER@$server" \
       "export USER=${USER}; \
        export GROUP=${GROUP}; \
-       export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
-       export RKE2_TOKEN=${RKE2_TOKEN}; \
+       export K3S_SERVER_ONE_IP=${K3S_SERVER_ONE_IP}; \
+       export K3S_TOKEN=${K3S_TOKEN}; \
        export BASTION=${BASTION}; \
        export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
        export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; \
@@ -50,16 +50,17 @@ runSSH() {
 }
 
 setupConfig() {
-    sudo mkdir -p /etc/rancher/rke2
-    sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
-token: ${RKE2_TOKEN}
+    sudo mkdir -p /etc/rancher/k3s
+    sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
+token: ${K3S_TOKEN}
+cluster-init: true
 tls-san:
-  - ${RKE2_SERVER_ONE_IP}
+  - ${K3S_SERVER_ONE_IP}
 EOF
 }
 
 setupRegistry() {
-  sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
+  sudo tee /etc/rancher/k3s/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
     endpoint:
@@ -77,7 +78,7 @@ EOF
 }
 
 setupProxy() {
-  cat <<EOF | sudo tee /etc/default/rke2-server > /dev/null
+  cat <<EOF | sudo tee /etc/default/k3s > /dev/null
 HTTP_PROXY=http://${BASTION}:${PORT}
 HTTPS_PROXY=http://${BASTION}:${PORT}
 NO_PROXY=localhost,127.0.0.0/8,10.0.0/8,cattle-system.svc,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local
@@ -89,29 +90,28 @@ https_proxy=http://${BASTION}:${PORT}
 EOF
 }
 
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo hostnamectl set-hostname ${RKE2_SERVER_ONE_IP}"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo hostnamectl set-hostname ${K3S_SERVER_ONE_IP}"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
 
 configFunction=$(declare -f setupConfig)
-runSSH "${RKE2_SERVER_ONE_IP}" "${configFunction}; setupConfig"
+runSSH "${K3S_SERVER_ONE_IP}" "${configFunction}; setupConfig"
 
 registryFunction=$(declare -f setupRegistry)
-runSSH "${RKE2_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
+runSSH "${K3S_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
 
 setupProxyFunction=$(declare -f setupProxy)
-runSSH "${RKE2_SERVER_ONE_IP}" "${setupProxyFunction}; setupProxy"
+runSSH "${K3S_SERVER_ONE_IP}" "${setupProxyFunction}; setupProxy"
 
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl enable rke2-server"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl start rke2-server"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
 
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo mkdir -p /home/${USER}/.kube"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo cp /etc/rancher/rke2/rke2.yaml /home/${USER}/.kube/config"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo mkdir -p /home/${USER}/.kube"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USER}/.kube/config"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
 
 if [ ! -s ~/.kube/config ]; then
-  runSSH "${RKE2_SERVER_ONE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
+  runSSH "${K3S_SERVER_ONE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
 fi
 
-sed -i "s|server: https://127.0.0.1:6443|server: https://${RKE2_SERVER_ONE_IP}:6443|" ~/.kube/config
+sed -i "s|server: https://127.0.0.1:6443|server: https://${K3S_SERVER_ONE_IP}:6443|" ~/.kube/config
 kubectl get nodes

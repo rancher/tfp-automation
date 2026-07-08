@@ -12,6 +12,8 @@ const (
 	IPv6K3SKeyPath       = "/modules/ipv6K3S"
 	K3sKeyPath           = "/modules/k3s"
 	ProxyKeyPath         = "/modules/proxy"
+	ProxyRKE2KeyPath     = "/modules/proxyRKE2"
+	ProxyK3SKeyPath      = "/modules/proxyK3S"
 	RegistryKeyPath      = "/modules/registries"
 	RKEKeyPath           = "/modules/rke"
 	RKE2KeyPath          = "/modules/rke2"

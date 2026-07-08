@@ -47,8 +47,8 @@
                     <div class="provider-select-grid">
                         {{if or (eq .RancherType "airgap") (eq .RancherType "dual") (eq .RancherType "ipv6") (eq .RancherType "registry") (eq .RancherType "proxy")
                             (eq .ClusterType "airgap-rke2") (eq .ClusterType "dual-rke2") (eq .ClusterType "dual-k3s") (eq .ClusterType "ipv6-rke2") 
-                            (eq .ClusterType "ipv6-k3s") (eq .RegistryType "registries-all") (eq .RegistryType "registries-auth") 
-                            (eq .RegistryType "registries-nonauth") (eq .RegistryType "registries-ecr") }}
+                            (eq .ClusterType "ipv6-k3s") (eq .ClusterType "proxy-rke2") (eq .ClusterType "proxy-k3s") (eq .RegistryType "registries-all")
+                            (eq .RegistryType "registries-auth") (eq .RegistryType "registries-nonauth") (eq .RegistryType "registries-ecr") }}
                             <label id="label-aws" class="provider-img-label" onclick="selectProvider('aws')">
                                 <img src="/static/images/aws.png" alt="AWS" class="provider-img" />
                                 <div>AWS</div>

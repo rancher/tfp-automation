@@ -12,7 +12,7 @@ import (
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2"
-	"github.com/rancher/tfp-automation/framework/set/resources/proxy/squid"
+	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2/squid"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
 	"github.com/sirupsen/logrus"
 )
