@@ -58,4 +58,4 @@ configs:
 
 retryCmd curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
 chmod +x install.sh
-retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="agent --server https://[${K3S_SERVER_IP}]:6443" --cluster-cidr=${CLUSTER_CIDR} --service-cidr=${SERVICE_CIDR} sh install.sh
+retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="agent --server https://[${K3S_SERVER_IP}]:6443" sh install.sh

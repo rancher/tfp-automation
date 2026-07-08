@@ -94,7 +94,7 @@ configs:
   "docker.io":
     auth:
       username: "${REGISTRY_USERNAME}"
-      password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/rke2/registries.yaml > /dev/null
+      password: "${REGISTRY_PASSWORD}"" | sudo tee /etc/rancher/rke2/registries.yaml > /dev/null
 
 retryCmd curl -sfL https://get.rke2.io --output /home/${USER}/install.sh
 chmod +x /home/${USER}/install.sh

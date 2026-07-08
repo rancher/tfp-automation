@@ -47,8 +47,8 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 
 	importCommand = `\"` + importCommand + `\"`
 
-	command := "bash -c '/tmp/import-nodes.sh " + encodedPEMFile + " " + terraformConfig.Standalone.OSUser + " " +
-		terraformConfig.Standalone.OSGroup + " " + importCommand + "'"
+	command := "/tmp/import-nodes.sh " + encodedPEMFile + " " + terraformConfig.Standalone.OSUser + " " +
+		terraformConfig.Standalone.OSGroup + " " + importCommand
 
 	linuxNodeNames := make([]string, 0, len(additionalServerNodeNames)+len(additionalAgentNodeNames)+1)
 	linuxNodeNames = append(linuxNodeNames, terraformConfig.ResourcePrefix+"_server1")
