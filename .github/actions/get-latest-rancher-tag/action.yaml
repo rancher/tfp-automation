@@ -9,12 +9,18 @@ inputs:
     description: "Path to prime artifacts"
     required: true
 outputs:
+  latest_tag_v215:
+    description: "Latest tag for v2.15"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v215 }}
   latest_tag_v214:
     description: "Latest tag for v2.14"
     value: ${{ steps.set-outputs.outputs.latest_tag_v214 }}
   latest_tag_v213:
     description: "Latest tag for v2.13"
     value: ${{ steps.set-outputs.outputs.latest_tag_v213 }}
+  previous_tag_v215:
+    description: "Previous tag for v2.15"
+    value: ${{ steps.set-outputs.outputs.previous_tag_v215 }}
   previous_tag_v214:
     description: "Previous tag for v2.14"
     value: ${{ steps.set-outputs.outputs.previous_tag_v214 }}
@@ -48,8 +54,7 @@ runs:
           echo "Latest tag for $RELEASE_LINE: $LATEST_VERSION"
           echo "Previous tag for $RELEASE_LINE: $PREVIOUS_VERSION"
 
-          # (Optional) Keep the asset/prime artifact checks for the latest version only
-          if [[ "$RELEASE_LINE" == "v2.14" ]]; then
+          if [[ "$RELEASE_LINE" == "v2.14" || "$RELEASE_LINE" == "v2.15" ]]; then
             RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST_VERSION")
             ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
 
@@ -83,8 +88,10 @@ runs:
       shell: bash
     - id: set-outputs
       run: |
+        echo "latest_tag_v215=${LATEST_TAG_v215}" >> $GITHUB_OUTPUT
         echo "latest_tag_v214=${LATEST_TAG_v214}" >> $GITHUB_OUTPUT
         echo "latest_tag_v213=${LATEST_TAG_v213}" >> $GITHUB_OUTPUT
+        echo "previous_tag_v215=${PREVIOUS_TAG_v215}" >> $GITHUB_OUTPUT
         echo "previous_tag_v214=${PREVIOUS_TAG_v214}" >> $GITHUB_OUTPUT
         echo "previous_tag_v213=${PREVIOUS_TAG_v213}" >> $GITHUB_OUTPUT
       shell: bash

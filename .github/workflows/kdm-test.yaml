@@ -29,7 +29,7 @@ permissions:
   contents: read
 
 env:
-  CLOUD_PROVIDER_VERSION: "6.34.0"
+  CLOUD_PROVIDER_VERSION: "6.50.0"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "kdm"
   TEST_SUITE: "^TestKDMTestSuite$"

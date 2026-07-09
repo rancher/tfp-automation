@@ -36,13 +36,16 @@ jobs:
     needs: get-dispatch-workflow-list
     runs-on: ubuntu-latest
     env:
-      RANCHER_RELEASE_LINES: "v2.14 v2.13"
-      SANITIZED_RELEASES: "v214 v213"
+      RANCHER_RELEASE_LINES: "v2.15 v2.14 v2.13"
+      SANITIZED_RELEASES: "v215 v214 v213"
     outputs:
+      latest_tag_V215: ${{ steps.get-latest-tag.outputs.latest_tag_v215 }}
       latest_tag_v214: ${{ steps.get-latest-tag.outputs.latest_tag_v214 }}
       latest_tag_v213: ${{ steps.get-latest-tag.outputs.latest_tag_v213 }}
+      previous_tag_v215: ${{ steps.get-latest-tag.outputs.previous_tag_v215 }}
       previous_tag_v214: ${{ steps.get-latest-tag.outputs.previous_tag_v214 }}
       previous_tag_v213: ${{ steps.get-latest-tag.outputs.previous_tag_v213 }}
+      is_tag_new_v215: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v215 }}
       is_tag_new_v214: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v214 }}
       is_tag_new_v213: ${{ steps.compare-rancher-tag.outputs.is_tag_new_v213 }}
       dispatch_workflow_list: ${{ needs.get-dispatch-workflow-list.outputs.workflow_list }}
@@ -92,13 +95,16 @@ jobs:
         id: compare-rancher-tag
         uses: ./.github/actions/compare-rancher-tag
         with:
+          cached-tag-v215: ${{ env.CACHED_TAG_v215 }}
           cached-tag-v214: ${{ env.CACHED_TAG_v214 }}
           cached-tag-v213: ${{ env.CACHED_TAG_v213 }}
+          latest-tag-v215: ${{ steps.get-latest-tag.outputs.latest_tag_v215 }}
           latest-tag-v214: ${{ steps.get-latest-tag.outputs.latest_tag_v214 }}
           latest-tag-v213: ${{ steps.get-latest-tag.outputs.latest_tag_v213 }}
 
       - name: Write latest tags to files
         env:
+          LATEST_TAG_V215: ${{ steps.get-latest-tag.outputs.latest_tag_v215 }}
           LATEST_TAG_V214: ${{ steps.get-latest-tag.outputs.latest_tag_v214 }}
           LATEST_TAG_V213: ${{ steps.get-latest-tag.outputs.latest_tag_v213 }}
         run: |
@@ -118,6 +124,7 @@ jobs:
     needs: check-latest-rancher-tag
     runs-on: ubuntu-latest
     outputs:
+      chart_version_v215: ${{ steps.set-latest-chart-version.outputs.chart_version_v215 }}
       chart_version_v214: ${{ steps.set-latest-chart-version.outputs.chart_version_v214 }}
       chart_version_v213: ${{ steps.set-latest-chart-version.outputs.chart_version_v213 }}
 
@@ -125,12 +132,32 @@ jobs:
       - name: Chart versions
         id: set-latest-chart-version
         run: |
+          CHART_V215="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v215 }}"
           CHART_V214="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v214 }}"
           CHART_V213="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v213 }}"
 
+          echo "chart_version_v215=${CHART_V215#v}" >> $GITHUB_OUTPUT
           echo "chart_version_v214=${CHART_V214#v}" >> $GITHUB_OUTPUT
           echo "chart_version_v213=${CHART_V213#v}" >> $GITHUB_OUTPUT
 
+  check-individual-tests-v215:
+    needs: [check-latest-rancher-tag, set-latest-chart-version, get-dispatch-workflow-list]
+    runs-on: ubuntu-latest
+    outputs:
+      failed_workflows_v215: ${{ steps.check.outputs.failed_workflows_v215 }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+
+      - name: Check test results for v2.15
+        id: check
+        uses: ./.github/actions/check-rancher-tag-result
+        with:
+          rancher_tag: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v215 }}
+          previous_rancher_tag: ${{ needs.check-latest-rancher-tag.outputs.previous_tag_v215 }}
+          dispatch_workflow_list: ${{ needs.get-dispatch-workflow-list.outputs.workflow_list }}
+          github_token: ${{ github.token }}
+  
   check-individual-tests-v214:
     needs: [check-latest-rancher-tag, set-latest-chart-version, get-dispatch-workflow-list]
     runs-on: ubuntu-latest
@@ -167,6 +194,15 @@ jobs:
           dispatch_workflow_list: ${{ needs.get-dispatch-workflow-list.outputs.workflow_list }}
           github_token: ${{ github.token }}
   
+  trigger-tests-v215:
+    needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v215, get-dispatch-workflow-list]
+    if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v215 == 'true' && (needs.check-individual-tests-v215.outputs.failed_workflows_v215 != '' || github.event.inputs.override == 'true') }}
+    uses: ./.github/workflows/dispatch-workflows.yaml
+    with:
+      rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v215 }}
+      rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v215 }}
+      workflow_list: ${{ (github.event.inputs.override == 'true' && needs.get-dispatch-workflow-list.outputs.workflow_list) || needs.check-individual-tests-v215.outputs.failed_workflows_v215 }}
+  
   trigger-tests-v214:
     needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v214, get-dispatch-workflow-list]
     if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v214 == 'true' && (needs.check-individual-tests-v214.outputs.failed_workflows_v214 != '' || github.event.inputs.override == 'true') }}
@@ -185,6 +221,58 @@ jobs:
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v213 }}
       workflow_list: ${{ (github.event.inputs.override == 'true' && needs.get-dispatch-workflow-list.outputs.workflow_list) || needs.check-individual-tests-v213.outputs.failed_workflows_v213 }}
 
+  notify-slack-v215:
+    needs: [check-individual-tests-v215, check-latest-rancher-tag]
+    runs-on: ubuntu-latest
+    if: ${{ needs.check-individual-tests-v215.outputs.failed_workflows_v215 == '' && needs.check-latest-rancher-tag.outputs.latest_tag_v215 != '' }}
+    steps:
+       - name: Configure AWS credentials
+         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+         with:
+           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+           aws-region: ${{ secrets.AWS_REGION }}
+
+       - name: Check if Slack notification already sent
+         id: check_marker
+         run: |
+          TAG="${{ needs.check-latest-rancher-tag.outputs.latest_tag_v215 }}"
+          BASE_TAG=$(echo "$TAG" | grep -oE '^v[0-9]+\.[0-9]+\.[0-9]+')
+          MARKER_FILE="slack_notified_${BASE_TAG}.txt"
+
+          echo "BASE_TAG=$BASE_TAG" >> $GITHUB_ENV
+
+          if aws s3 ls "s3://${{ secrets.RANCHER_TAG_BUCKET }}/$MARKER_FILE" > /dev/null 2>&1; then
+            echo "Notification already sent for $BASE_TAG. Skipping."
+            echo "skip_slack=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_slack=false" >> $GITHUB_OUTPUT
+          fi
+      
+       - name: Send Slack notification for v2.15
+         if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
+         uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3
+         with:
+          webhook: ${{ secrets.TEAM_SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "*[rancher/tfp-automation]* :alert:\n`${{ env.BASE_TAG }}` Release Testing Completed :white_check_mark:"
+            }
+      
+       - name: Configure AWS credentials
+         if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
+         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+         with:
+           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+           aws-region: ${{ secrets.AWS_REGION }}
+
+       - name: Write Slack notification marker to S3
+         if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
+         run: |
+          MARKER_FILE="slack_notified_${BASE_TAG}.txt"
+          echo "notified" > $MARKER_FILE
+          aws s3 cp "$MARKER_FILE" "s3://${{ secrets.RANCHER_TAG_BUCKET }}/$MARKER_FILE"
+  
   notify-slack-v214:
     needs: [check-individual-tests-v214, check-latest-rancher-tag]
     runs-on: ubuntu-latest

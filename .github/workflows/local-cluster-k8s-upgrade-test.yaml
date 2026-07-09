@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 env:
-  CLOUD_PROVIDER_VERSION: "6.34.0"
+  CLOUD_PROVIDER_VERSION: "6.50.0"
 
 jobs:
   v2-15:
