@@ -70,18 +70,23 @@ func (s *TfpSanityUpgradeRancherTestSuite) TestTfpUpgradeRancher() {
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 	nestedRancherModuleDir := s.provisionAndVerifyCluster("Sanity_Pre_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
-	os.RemoveAll(nestedRancherModuleDir)
+	nestedRancherImportedModuleDir := s.provisionAndVerifyImportedCluster("Sanity_Pre_Rancher_Upgrade_Imported", standardUserClient, standardToken, testUser, testPassword)
 
 	s.client, s.cattleConfig, s.terraformOptions, s.upgradeTerraformOptions = upgradestandard.UpgradeRancher(s.T(), s.client, s.serverNodeOne, s.session, s.cattleConfig)
+
 	upgradebase.CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
 	os.RemoveAll(nestedRancherModuleDir)
+	os.RemoveAll(nestedRancherImportedModuleDir)
 
 	standardUserClient, standardToken, testUser, testPassword = upgradebase.SetupResources(s.T(), s.client, s.rancherConfig, s.terratestConfig, s.terraformOptions)
 
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, _ = config.LoadTFPConfigs(s.cattleConfig)
 	nestedRancherModuleDir = s.provisionAndVerifyCluster("Sanity_Post_Rancher_Upgrade", standardUserClient, standardToken, testUser, testPassword)
+	nestedRancherImportedModuleDir = s.provisionAndVerifyImportedCluster("Sanity_Post_Rancher_Upgrade_Imported", standardUserClient, standardToken, testUser, testPassword)
+
 	upgradebase.CleanupDownstreamClusters(s.T(), s.client, s.terraformConfig)
 	os.RemoveAll(nestedRancherModuleDir)
+	os.RemoveAll(nestedRancherImportedModuleDir)
 
 	if s.terratestConfig.LocalQaseReporting {
 		results.ReportTest(s.terratestConfig)
@@ -94,6 +99,7 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
 	nodeRolesWindows := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool, config.WindowsNodePool}
 	rke2Module, rke2Windows, k3sModule := provisioning.DownstreamClusterModules(s.terraformConfig)
+
 	tests := []struct {
 		name      string
 		nodeRoles []config.Nodepool
@@ -171,6 +177,65 @@ func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyCluster(name string
 	})
 
 	return nestedRancherModuleDir
+}
+
+func (s *TfpSanityUpgradeRancherTestSuite) provisionAndVerifyImportedCluster(name string, standardUserClient *rancher.Client, standardToken,
+	testUser, testPassword string) string {
+	var nestedRancherImportedModuleDir string
+	rke2ImportedModule, _, k3sImportedModule := provisioning.ImportedClusterModules(s.terraformConfig)
+
+	tests := []struct {
+		name   string
+		module string
+	}{
+		{name + "_RKE2", rke2ImportedModule},
+		{name + "_K3S", k3sImportedModule},
+	}
+
+	s.T().Run(name, func(t *testing.T) {
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+
+				rancher, terraform, terratest, _ := config.LoadTFPConfigs(s.cattleConfig)
+
+				nestedRancherImportedModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(s.terraformConfig, s.terratestConfig, s.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+				require.NoError(t, err)
+				defer os.RemoveAll(nestedRancherImportedModuleDir)
+
+				newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherImportedModuleDir)
+				defer file.Close()
+
+				rancher.AdminToken = standardToken
+				terraform.Module = tt.module
+
+				terraform = provisioning.UniquifyTerraform(terraform)
+
+				logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
+				clusters, _ := provisioning.Provision(t, s.client, standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, true, true, "", nestedRancherImportedModuleDir)
+
+				logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
+				err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
+				require.NoError(t, err)
+
+				logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
+				err = clusterActions.VerifyServiceAccountTokenSecret(s.client, clusters[0].Name)
+				require.NoError(t, err)
+
+				logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
+				err = pods.VerifyClusterPods(s.client, clusters[0])
+				require.NoError(t, err)
+
+				params := tfpQase.GetProvisioningSchemaParams(s.terraformConfig, s.terratestConfig)
+				err = qase.UpdateSchemaParameters(tt.name, params)
+				if err != nil {
+					logrus.Warningf("Failed to upload schema parameters %s", err)
+				}
+			})
+		}
+	})
+
+	return nestedRancherImportedModuleDir
 }
 
 func TestTfpSanityUpgradeRancherTestSuite(t *testing.T) {

@@ -202,9 +202,6 @@ func (s *TfpSanityProvisioningTestSuite) TestTfpProvisioningSanityImported() {
 			rancher.AdminToken = standardToken
 			terraform.Module = tt.module
 
-			terratest, err = provisioning.GetK8sVersion(s.standardUserClient, terraform, terratest)
-			require.NoError(t, err)
-
 			terraform = provisioning.UniquifyTerraform(terraform)
 
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, s.terratestConfig.PathToRepo, "")

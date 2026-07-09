@@ -6,7 +6,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
 	extClusters "github.com/rancher/shepherd/extensions/clusters"
-	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
@@ -48,7 +47,7 @@ func CleanupDownstreamClusters(t *testing.T, client *rancher.Client, terraformCo
 		err = provisioningActions.VerifyClusterReady(client, &cluster)
 		require.NoError(t, err)
 
-		dsCluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + cluster.Name)
+		dsCluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(cluster.ID)
 		require.NoError(t, err)
 
 		logrus.Infof("Cleaning up cluster: %v", dsCluster.ID)
