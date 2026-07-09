@@ -15,6 +15,9 @@ inputs:
     description: "GitHub token for API access"
     required: true
 outputs:
+  failed_workflows_v215:
+    description: "Comma-separated list of workflows that did not pass for the given Rancher tag for v2.15"
+    value: ${{ steps.check.outputs.failed_workflows_v215 }}
   failed_workflows_v214:
     description: "Comma-separated list of workflows that did not pass for the given Rancher tag for v2.14"
     value: ${{ steps.check.outputs.failed_workflows_v214 }}
@@ -66,6 +69,9 @@ runs:
               ;;
             v2.14*)
               release_line="v2.14"
+              ;;
+            v2.15*)
+              release_line="v2.15"
               ;;
             *)
               return 0
@@ -170,6 +176,7 @@ runs:
         done
 
         failed_workflows_str=$(IFS=,; echo "${cleaned_failed_workflows[*]}")
+        echo "failed_workflows_v215=$failed_workflows_str" >> $GITHUB_OUTPUT
         echo "failed_workflows_v214=$failed_workflows_str" >> $GITHUB_OUTPUT
         echo "failed_workflows_v213=$failed_workflows_str" >> $GITHUB_OUTPUT
       shell: bash

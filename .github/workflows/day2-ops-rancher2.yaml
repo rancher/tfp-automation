@@ -36,7 +36,7 @@ permissions:
   contents: read
 
 env:
-  CLOUD_PROVIDER_VERSION: "6.34.0"
+  CLOUD_PROVIDER_VERSION: "6.50.0"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "rancher2"
   TIMEOUT: "7h"
@@ -46,7 +46,8 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.15')) && (contains(github.event.inputs.rancher_version, '-alpha') || contains(github.event.inputs.rancher_version, '-rc')) ||
+      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.15')) && (contains(inputs.rancher_version, '-alpha') || contains(inputs.rancher_version, '-rc'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: head
