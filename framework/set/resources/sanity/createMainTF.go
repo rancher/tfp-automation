@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/set/resources/k3s"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
@@ -82,15 +83,23 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	serverThreePublicIP := terraform.Output(t, terraformOptions, serverThreePublicIP)
 
 	file = OpenFile(file, keyPath)
-	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
-	if err != nil {
-		return "", err
+	if terraformConfig.LocalCluster == "k3s" {
+		logrus.Infof("Creating K3S cluster...")
+		file, err = k3s.CreateK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
+		if err != nil {
+			return "", err
+		}
+	} else if terraformConfig.LocalCluster == "rke2" {
+		logrus.Infof("Creating RKE2 cluster...")
+		file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	_, err = terraform.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
-		logrus.Infof("Error while creating RKE2 cluster. Cleaning up...")
+		logrus.Infof("Error while creating local cluster. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
 		return "", err
 	}

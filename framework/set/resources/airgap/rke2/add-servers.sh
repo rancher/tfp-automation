@@ -13,23 +13,44 @@ RANCHER_IMAGE=${10}
 RANCHER_TAG_VERSION=${11}
 RANCHER_AGENT_IMAGE=${12}
 PEM_FILE=/home/$USER/airgap.pem
+MAX_SSH_RETRIES=20
+SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
 run_ssh() {
   local server="$1"
   local cmd="$2"
-  
-  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$PEM_FILE" "$USER@$server" \
-  "export USER=${USER}; \
-   export GROUP=${GROUP}; \
-   export VPC_IP=${VPC_IP}; \
-   export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
-   export RKE2_NEW_SERVER_IP=${RKE2_NEW_SERVER_IP}; \
-   export RKE2_TOKEN=${RKE2_TOKEN}; \
-   export REGISTRY=${REGISTRY}; \
-   export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
-   export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; $cmd"
+  local attempt=1
+  local rc=0
+
+  while [ "$attempt" -le "$MAX_SSH_RETRIES" ]; do
+    if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -i "$PEM_FILE" "$USER@$server" \
+      "export USER=${USER}; \
+       export GROUP=${GROUP}; \
+       export VPC_IP=${VPC_IP}; \
+       export RKE2_SERVER_ONE_IP=${RKE2_SERVER_ONE_IP}; \
+       export RKE2_NEW_SERVER_IP=${RKE2_NEW_SERVER_IP}; \
+       export RKE2_TOKEN=${RKE2_TOKEN}; \
+       export REGISTRY=${REGISTRY}; \
+       export REGISTRY_USERNAME=${REGISTRY_USERNAME}; \
+       export REGISTRY_PASSWORD=${REGISTRY_PASSWORD}; $cmd"; then
+      return 0
+    else
+      rc=$?
+    fi
+
+    if [ "$attempt" -eq "$MAX_SSH_RETRIES" ]; then
+      echo "SSH command failed after ${MAX_SSH_RETRIES} attempts (exit ${rc})" >&2
+      return "$rc"
+    fi
+
+    echo "SSH command failed on attempt ${attempt}/${MAX_SSH_RETRIES} (exit ${rc}), retrying in ${SSH_RETRY_INTERVAL_SECONDS}s..." >&2
+    sleep "$SSH_RETRY_INTERVAL_SECONDS"
+    attempt=$((attempt + 1))
+  done
+
+  return "$rc"
 }
 
 setup_config() {

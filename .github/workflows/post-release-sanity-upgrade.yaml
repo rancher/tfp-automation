@@ -13,6 +13,14 @@ on:
         required: false
         default: false
         type: boolean
+      local_cluster_type:
+        description: "Local cluster type to setup Rancher"
+        required: true
+        default: "rke2"
+        type: choice
+        options:
+          - k3s
+          - rke2
   workflow_call:
     inputs:
       rancher_version:
@@ -179,6 +187,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
+            localCluster: "${{ github.event.inputs.local_cluster_type }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -227,8 +236,8 @@ jobs:
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_14 }}"
+              k3sVersion: "${{ vars.K3S_VERSION_2_15 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -238,7 +247,7 @@ jobs:
               registryUsername: "${{ secrets.PRIVATE_REGISTRY_USERNAME }}"
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
-              rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
+              rke2Version: "${{ vars.RKE2_VERSION_2_15 }}"
               upgradedRancherChartRepository: "${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
@@ -446,6 +455,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
+            localCluster: "${{ github.event.inputs.local_cluster_type }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -494,8 +504,8 @@ jobs:
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_14 }}"
+              k3sVersion: "${{ vars.K3S_VERSION_2_14 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -715,6 +725,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             generateV3Token: true
+            localCluster: "${{ github.event.inputs.local_cluster_type }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -763,8 +774,8 @@ jobs:
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_14 }}"
+              k3sVersion: "${{ vars.K3S_VERSION_2_14 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"
@@ -985,6 +996,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             generateV3Token: true
+            localCluster: "${{ github.event.inputs.local_cluster_type }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -1033,8 +1045,8 @@ jobs:
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ vars.RELEASED_RANCHER_CHART_VERSION_2_13 }}"
+              k3sVersion: "${{ vars.K3S_VERSION_2_13 }}${{ vars.K3S_VERSION_SUFFIX }}"
               osUser: "${{ secrets.OS_USER }}"
               osGroup: "${{ secrets.OS_GROUP }}"
               rancherChartRepository: "${{ secrets.RANCHER_HELM_CHART_URL }}"

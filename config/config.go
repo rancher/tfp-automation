@@ -210,6 +210,7 @@ type TerraformConfig struct {
 	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 	GenerateV3Token                     bool                         `json:"generateV3Token,omitempty" yaml:"generateV3Token,omitempty" default:"false"`
 	LocalAuthEndpoint                   bool                         `json:"localAuthEndpoint,omitempty" yaml:"localAuthEndpoint,omitempty" default:"false"`
+	LocalCluster                        string                       `json:"localCluster,omitempty" yaml:"localCluster,omitempty" default:"rke2"`
 	LocalHostedCluster                  bool                         `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`
 	ARMAchitecture                      bool                         `json:"armArchitecture,omitempty" yaml:"armArchitecture,omitempty" default:"false"`
 	MixedArchitecture                   bool                         `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`

@@ -25,15 +25,15 @@ const (
 	token          = "token"
 )
 
-// CreateIPv6K3SCluster is a helper function that will create the K3S cluster.
-func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, k3sBastionPublicIP, k3sServerOnePublicIP, k3sServerTwoPublicIP,
-	k3sServerThreePublicIP, k3sServerOnePrivateIP, k3sServerTwoPrivateIP, k3sServerThreePrivateIP string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.IPv6KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+// CreateAirgapK3SCluster is a helper function that will create the K3S cluster.
+func CreateAirgapK3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
+	terratestConfig *config.TerratestConfig, k3sBastionPublicDNS, registryPublicDNS, k3sServerOnePrivateIP, k3sServerTwoPrivateIP,
+	k3sServerThreePrivateIP string) (*os.File, error) {
+	userDir, _ := rancher2.SetKeyPath(keypath.AirgapK3SKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
 	bastionScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/airgap/k3s/bastion.sh")
-	serverScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/ipv6/k3s/init-server.sh")
-	newServersScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/ipv6/k3s/add-servers.sh")
+	serverScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/airgap/k3s/init-server.sh")
+	newServersScriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/airgap/k3s/add-servers.sh")
 
 	bastionScriptContent, err := os.ReadFile(bastionScriptPath)
 	if err != nil {
@@ -57,7 +57,7 @@ func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 
 	encodedPEMFile := base64.StdEncoding.EncodeToString([]byte(privateKey))
 
-	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, k3sBastion)
+	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicDNS, k3sBastion)
 
 	command := "/tmp/bastion.sh " + terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " +
 		k3sServerTwoPrivateIP + " " + k3sServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile
@@ -70,8 +70,8 @@ func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 
 	k3sToken := namegen.AppendRandomString(token)
 
-	createIPv6K3SServer(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOnePrivateIP, k3sServerOnePublicIP, k3sToken, serverOneScriptContent)
-	addIPv6K3SServerNodes(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOnePublicIP, k3sServerOnePrivateIP, k3sServerTwoPrivateIP, k3sServerThreePrivateIP, k3sToken, newServersScriptContent)
+	createAirgappedK3SServer(rootBody, terraformConfig, k3sBastionPublicDNS, k3sServerOnePrivateIP, k3sToken, registryPublicDNS, serverOneScriptContent)
+	addAirgappedK3SServerNodes(rootBody, terraformConfig, k3sBastionPublicDNS, k3sServerOnePrivateIP, k3sServerTwoPrivateIP, k3sServerThreePrivateIP, k3sToken, registryPublicDNS, newServersScriptContent)
 
 	_, err = file.Write(newFile.Bytes())
 	if err != nil {
@@ -82,15 +82,19 @@ func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 	return file, nil
 }
 
-// createIPv6K3SServer is a helper function that will create the K3S server.
-func createIPv6K3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicIP, k3sServerOnePrivateIP,
-	k3sServerOnePublicIP, k3sToken string, script []byte) {
-	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, k3sServerOne)
+// createAirgappedK3SServer is a helper function that will create the K3S server.
+func createAirgappedK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicDNS, k3sServerOnePrivateIP,
+	k3sToken, registryPublicDNS string, script []byte) {
+	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicDNS, k3sServerOne)
 
 	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-		terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePublicIP + " " + k3sServerOnePrivateIP + " " +
-		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + k3sToken + " " +
-		terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
+		terraformConfig.AWSConfig.AWSVpcIP + " " + terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + k3sToken + " " +
+		registryPublicDNS + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
+		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion
+
+	if terraformConfig.Standalone.RancherAgentImage != "" {
+		command += " " + terraformConfig.Standalone.RancherAgentImage
+	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -106,21 +110,25 @@ func createIPv6K3SServer(rootBody *hclwrite.Body, terraformConfig *config.Terraf
 	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, server)
 }
 
-// addIPv6K3SServerNodes is a helper function that will add additional K3S server nodes to the initial K3S IPv6 server.
-func addIPv6K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicIP, k3sServerOnePublicIP,
-	k3sServerOnePrivateIP, k3sServerTwoPrivateIP, k3sServerThreePrivateIP, k3sToken string, script []byte) {
-	privateIPInstances := []string{k3sServerTwoPrivateIP, k3sServerThreePrivateIP}
+// addAirgappedK3SServerNodes is a helper function that will add additional K3S server nodes to the initial K3S airgapped server.
+func addAirgappedK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicDNS, k3sServerOnePrivateIP, k3sServerTwoPrivateIP,
+	k3sServerThreePrivateIP, k3sToken, registryPublicDNS string, script []byte) {
+	instances := []string{k3sServerTwoPrivateIP, k3sServerThreePrivateIP}
 	hosts := []string{k3sServerTwo, k3sServerThree}
 
-	for i, privateInstance := range privateIPInstances {
+	for i, instance := range instances {
 		host := hosts[i]
-
-		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, host)
+		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicDNS, host)
 
 		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
-			terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePublicIP + " " + k3sServerOnePrivateIP + " " + privateInstance + " " +
-			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + k3sToken + " " +
-			terraformConfig.AWSConfig.ClusterCIDR + " " + terraformConfig.AWSConfig.ServiceCIDR
+			terraformConfig.AWSConfig.AWSVpcIP + " " + terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " +
+			instance + " " + k3sToken + " " + registryPublicDNS + " " + terraformConfig.Standalone.RegistryUsername + " " +
+			terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherImage + " " +
+			terraformConfig.Standalone.RancherTagVersion
+
+		if terraformConfig.Standalone.RancherAgentImage != "" {
+			command += " " + terraformConfig.Standalone.RancherAgentImage
+		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
