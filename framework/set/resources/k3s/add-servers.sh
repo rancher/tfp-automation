@@ -40,7 +40,10 @@ retryCmd() {
 sudo hostnamectl set-hostname ${K3S_NEW_SERVER_IP}
 
 sudo mkdir -p /etc/rancher/k3s
-sudo touch /etc/rancher/k3s/registries.yaml
+
+echo "token: ${K3S_TOKEN}
+tls-san:
+  - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
 
 echo "mirrors:
   docker.io:

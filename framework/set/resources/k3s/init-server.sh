@@ -39,7 +39,11 @@ retryCmd() {
 sudo hostnamectl set-hostname ${K3S_SERVER_IP}
 
 sudo mkdir -p /etc/rancher/k3s
-sudo touch /etc/rancher/k3s/registries.yaml
+
+echo "token: ${K3S_TOKEN}
+cluster-init: true
+tls-san:
+  - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
 
 echo "mirrors:
   docker.io:
@@ -57,7 +61,7 @@ configs:
 
 retryCmd curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
 chmod +x install.sh
-retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="server --cluster-init" sh install.sh
+retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server sh install.sh
 
 sudo mkdir -p /home/${USER}/.kube
 sudo chown ${USER}:${GROUP} /etc/rancher/k3s/k3s.yaml
