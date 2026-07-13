@@ -3,6 +3,7 @@ package keypath
 const (
 	AirgapKeyPath        = "/modules/airgap"
 	AirgapRKE2KeyPath    = "/modules/airgapRKE2"
+	AirgapK3SKeyPath     = "/modules/airgapK3S"
 	DualStackKeyPath     = "/modules/dualstack"
 	DualStackRKE2KeyPath = "/modules/dualstackRKE2"
 	DualStackK3SKeyPath  = "/modules/dualstackK3S"

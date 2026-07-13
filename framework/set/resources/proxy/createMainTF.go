@@ -10,6 +10,8 @@ import (
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
+	"github.com/rancher/tfp-automation/framework/set/resources/proxy/k3s"
+	k3sSquid "github.com/rancher/tfp-automation/framework/set/resources/proxy/k3s/squid"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2/squid"
@@ -72,9 +74,16 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")
-	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
-	if err != nil {
-		return "", "", err
+	if terraformConfig.LocalCluster == "k3s" {
+		file, err = k3sSquid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
+		if err != nil {
+			return "", "", err
+		}
+	} else if terraformConfig.LocalCluster == "rke2" {
+		file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
+		if err != nil {
+			return "", "", err
+		}
 	}
 
 	_, err = terraform.InitAndApplyE(t, terraformOptions)
@@ -85,15 +94,23 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	}
 
 	file = sanity.OpenFile(file, keyPath)
-	logrus.Infof("Creating RKE2 cluster...")
-	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
-	if err != nil {
-		return "", "", err
+	if terraformConfig.LocalCluster == "k3s" {
+		logrus.Infof("Creating K3S cluster...")
+		file, err = k3s.CreateK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
+		if err != nil {
+			return "", "", err
+		}
+	} else if terraformConfig.LocalCluster == "rke2" {
+		logrus.Infof("Creating RKE2 cluster...")
+		file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
+		if err != nil {
+			return "", "", err
+		}
 	}
 
 	_, err = terraform.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
-		logrus.Infof("Error while creating RKE2 cluster. Cleaning up...")
+		logrus.Infof("Error while creating local cluster. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
 		return "", "", err
 	}

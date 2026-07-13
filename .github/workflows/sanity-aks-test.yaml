@@ -228,7 +228,6 @@ jobs:
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.AZURE_SSH_USER }}"
               osGroup: "${{ secrets.AZURE_SSH_USER }}"
@@ -501,7 +500,6 @@ jobs:
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.AZURE_SSH_USER }}"
               osGroup: "${{ secrets.AZURE_SSH_USER }}"
@@ -775,7 +773,6 @@ jobs:
             standalone:
               bootstrapPassword: "${{ secrets.RANCHER_ADMIN_PASSWORD }}"
               certManagerVersion: "${{ vars.CERT_MANAGER_VERSION }}"
-              certType: "${{ vars.CERT_TYPE }}"
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.AZURE_SSH_USER }}"
               osGroup: "${{ secrets.AZURE_SSH_USER }}"

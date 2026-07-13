@@ -59,11 +59,13 @@ func CreateAirgapRKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hc
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2Bastion)
 
+	command := "/tmp/bastion.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
+		rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile
+
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
-		cty.StringVal("bash -c '/tmp/bastion.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
-			rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile + "'"),
+		cty.StringVal(command),
 	}))
 
 	rke2Token := namegen.AppendRandomString(token)
@@ -85,7 +87,7 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 	rke2Token, registryPublicDNS string, script []byte) {
 	nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, rke2ServerOne)
 
-	command := "bash -c '/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.AWSConfig.AWSVpcIP + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " + registryPublicDNS + " " +
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherImage + " " +
 		terraformConfig.Standalone.RancherTagVersion
@@ -93,8 +95,6 @@ func createAirgappedRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	}
-
-	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
@@ -120,7 +120,7 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 		host := hosts[i]
 		nullResourceBlockBody, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicDNS, host)
 
-		command := "bash -c '/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
+		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.AWSConfig.AWSVpcIP + " " + rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + registryPublicDNS + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherImage + " " +
 			terraformConfig.Standalone.RancherTagVersion
@@ -128,8 +128,6 @@ func addAirgappedRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *confi
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage
 		}
-
-		command += "'"
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

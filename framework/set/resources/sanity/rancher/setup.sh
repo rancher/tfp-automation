@@ -10,10 +10,11 @@ BOOTSTRAP_PASSWORD=$7
 RANCHER_IMAGE=$8
 FULL_CHAIN_FILE=$9
 CERT_KEY_FILE=${10}
-RANCHER_AGENT_IMAGE=${11}
-TURTLES=${12}
-MCM=${13}
-PARTNER_RC=${14}
+LOCAL_CLUSTER_TYPE=${11}
+RANCHER_AGENT_IMAGE=${12}
+TURTLES=${13}
+MCM=${14}
+PARTNER_RC=${15}
 
 USER=$(whoami)
 
@@ -279,7 +280,13 @@ ipv6_cordns_update() {
         [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y jq
 
         echo "Updating CoreDNS configmap for IPv6"
-        kubectl -n kube-system get cm rke2-coredns-rke2-coredns -o json  \
+        if [[ "$LOCAL_CLUSTER_TYPE" == "rke2" ]]; then
+            COREDNS_NAME="rke2-coredns-rke2-coredns"
+        elif [[ "$LOCAL_CLUSTER_TYPE" == "k3s" ]]; then
+            COREDNS_NAME="coredns"
+        fi
+
+        kubectl -n kube-system get cm ${COREDNS_NAME} -o json  \
         | jq '.data.Corefile |= sub("forward\\s+\\.\\s+/etc/resolv\\.conf"; "forward  . 2001:4860:4860::8888")' \
         | kubectl apply -f -
         

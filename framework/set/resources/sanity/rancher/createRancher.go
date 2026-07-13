@@ -51,7 +51,8 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 		terraformConfig.Standalone.ChartVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
-		terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey
+		terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey + " " +
+		terraformConfig.LocalCluster
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage

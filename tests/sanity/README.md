@@ -37,6 +37,7 @@ terraform:
   defaultClusterRoleForProjectMembers: "true"     # REQUIRED - leave value as true
   downstreamClusterProvider: ""                   # REQUIRED - can be aws, azure, linode, vsphere
   enableNetworkPolicy: false                      # REQUIRED - values are true or false -  can leave as false
+  localCluster: ""                                # REQUIRED - values are either rke2 or k3s
   mixedArchitecture:                              # OPTIONAL - set to true if you want mixed architecture
   provider: "aws"
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
