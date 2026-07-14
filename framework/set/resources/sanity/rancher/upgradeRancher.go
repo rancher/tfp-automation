@@ -32,7 +32,7 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicIP, upgradeRancher)
 
-	command := "bash -c '/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
+	command := "/tmp/upgrade.sh " + terraformConfig.Standalone.UpgradedRancherChartRepository + " " +
 		terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.RancherHostname + " " +
 		terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.Standalone.UpgradedRancherChartVersion + " " +
 		terraformConfig.Standalone.UpgradedRancherImage
@@ -48,8 +48,6 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 	} else {
 		command += " \"\""
 	}
-
-	command += "'"
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/upgrade.sh"),

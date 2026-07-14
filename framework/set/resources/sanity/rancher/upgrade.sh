@@ -83,6 +83,7 @@ upgrade_default_rancher() {
                                                                                         --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
                                                                                         --set 'extraEnv[2].value=suse' \
                                                                                         --set agentTLSMode=system-store \
+                                                                                        --set ingress.tls.source=secret \
                                                                                         --devel
 
     else
@@ -94,6 +95,7 @@ upgrade_default_rancher() {
                                                                                         --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
                                                                                         --set 'extraEnv[0].value=""' \
                                                                                         --set agentTLSMode=system-store \
+                                                                                        --set ingress.tls.source=secret \
                                                                                         --devel
     fi
 }
