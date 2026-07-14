@@ -66,6 +66,48 @@
       "14": Validation
       "18": Hostbusters
 
+  - description: Provisions imported RKE2 cluster
+    title: Sanity_Imported_RKE2
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision imported RKE2 cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions imported K3S cluster
+    title: Sanity_Imported_K3S
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision imported K3S cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
   - description: Provisions downstream RKE2 node driver cluster
     title: Sanity_IPv6_RKE2
     priority: 4
