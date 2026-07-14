@@ -38,6 +38,11 @@ permissions:
 
 env:
   CLOUD_PROVIDER_VERSION: "6.50.0"
+  LOCAL_CLUSTER_TYPE: >-
+    ${{ 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.local_cluster_type) || 
+      (github.event_name == 'schedule' && 'rke2') || 'rke2' 
+    }}
   PACKAGE: "postrelease"
   TEST_SUITE: "^TestTfpPostReleaseUpgradeTestSuite$"
   TIMEOUT: "5h"
@@ -187,7 +192,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -455,7 +460,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -725,7 +730,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             generateV3Token: true
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -996,7 +1001,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             generateV3Token: true
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             downstreamClusterProvider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
