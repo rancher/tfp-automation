@@ -61,6 +61,11 @@ permissions:
 
 env:
   CLOUD_PROVIDER_VERSION: "6.50.0"
+  LOCAL_CLUSTER_TYPE: >-
+    ${{ 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.local_cluster_type) || 
+      (github.event_name == 'schedule' && 'rke2') || 'rke2' 
+    }}
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "sanity"
   TEST_SUITE: "^TestTfpSanityUpgradeRancherTestSuite$"
@@ -280,7 +285,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ env.CLOUD_PROVIDER }}"
             enableNetworkPolicy: false
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
@@ -690,7 +695,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ env.CLOUD_PROVIDER }}"
             enableNetworkPolicy: false
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
@@ -1098,7 +1103,7 @@ jobs:
             defaultClusterRoleForProjectMembers: "true"
             downstreamClusterProvider: "${{ env.CLOUD_PROVIDER }}"
             enableNetworkPolicy: false
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             generateV3Token: true
             provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -1511,7 +1516,7 @@ jobs:
             downstreamClusterProvider: "${{ env.CLOUD_PROVIDER }}"
             enableNetworkPolicy: false
             generateV3Token: true
-            localCluster: "${{ github.event.inputs.local_cluster_type }}"
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ env.CLOUD_PROVIDER }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
