@@ -73,13 +73,19 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
+	var authGlobalRegistryPublicDNS, authGlobalRegistryRoute53FQDN, unauthGlobalRegistryPublicDNS, unauthGlobalRegistryRoute53FQDN string
+
+	if terraformConfig.StandaloneRegistry.CreateAuthGlobalRegistry {
+		authGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, authGlobalRegistryPublicDNS)
+		authGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, authGlobalRegistryRoute53FQDN)
+	} else if terraformConfig.StandaloneRegistry.CreateUnauthGlobalRegistry {
+		unauthGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, unauthGlobalRegistryPublicDNS)
+		unauthGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, unauthGlobalRegistryRoute53FQDN)
+	}
+
 	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
 	unauthRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthRegistryPublicDNS)
-	authGlobalRegistryPublicDNS := terraform.Output(t, terraformOptions, authGlobalRegistryPublicDNS)
-	unauthGlobalRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthGlobalRegistryPublicDNS)
 	authRegistryRoute53FQDN := terraform.Output(t, terraformOptions, authRegistryRoute53FQDN)
-	unauthGlobalRegistryRoute53FQDN := terraform.Output(t, terraformOptions, unauthGlobalRegistryRoute53FQDN)
-	authGlobalRegistryRoute53FQDN := terraform.Output(t, terraformOptions, authGlobalRegistryRoute53FQDN)
 	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
 	serverOnePublicDNS := terraform.Output(t, terraformOptions, serverOnePublicDNS)
 	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
