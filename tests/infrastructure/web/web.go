@@ -25,6 +25,7 @@ import (
 
 var setupClusterFuncs = map[string]func(*testing.T, string) error{
 	"airgap-rke2": clusters.CreateAirgappedRKE2Cluster,
+	"airgap-k3s":  clusters.CreateAirgappedK3SCluster,
 	"dual-rke2":   clusters.CreateDualStackRKE2Cluster,
 	"dual-k3s":    clusters.CreateDualStackK3SCluster,
 	"ipv6-rke2":   clusters.CreateIPv6RKE2Cluster,
