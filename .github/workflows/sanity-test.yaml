@@ -477,9 +477,7 @@ jobs:
   v2-14:
     if: |
       github.event_name == 'schedule' ||
-      github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14')) && (contains(github.event.inputs.rancher_version, '-alpha') || contains(github.event.inputs.rancher_version, '-rc')) ||
-      (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.14')) && (contains(inputs.rancher_version, '-alpha') || contains(inputs.rancher_version, '-rc'))
+      github.event.inputs.run_all_versions == 'true'
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: head
