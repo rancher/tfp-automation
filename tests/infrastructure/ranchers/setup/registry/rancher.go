@@ -30,11 +30,15 @@ func CreateRegistryRancher(t *testing.T, provider string, cattleConfig map[strin
 
 	rancherConfig, terraformConfig, terratestConfig, _ := config.LoadTFPConfigs(cattleConfig)
 
-	if provider != "" {
-		terraformConfig.Provider = provider
+	var registryType string
+
+	if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
+		registryType = "authGlobal"
+	} else {
+		registryType = "unauthGlobal"
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, registryType)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	_, _, _, err := registries.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
@@ -56,10 +60,17 @@ func CreateRegistryRancher(t *testing.T, provider string, cattleConfig map[strin
 func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath string, cattleConfig map[string]any) (*rancher.Client, string, string, string,
 	*terraform.Options, *terraform.Options, map[string]any) {
 	var err error
+	var registryType string
 
 	rancherConfig, terraformConfig, terratestConfig, standaloneConfig := config.LoadTFPConfigs(cattleConfig)
 
-	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
+		registryType = "authGlobal"
+	} else {
+		registryType = "unauthGlobal"
+	}
+
+	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, registryType)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	authRegistry, unauthRegistry, globalRegistry, err := registries.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
