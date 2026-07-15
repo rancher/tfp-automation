@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/get-dispatch-workflow-list
 
   check-latest-rancher-tag:
-    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    # if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
     needs: get-dispatch-workflow-list
     runs-on: ubuntu-latest
     env:
