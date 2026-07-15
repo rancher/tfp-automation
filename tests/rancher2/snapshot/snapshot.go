@@ -111,7 +111,13 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	postWorkloadName := namegen.AppendRandomString(postWorkload)
 	postDeploymentResp, postServiceResp := createWorkloads(t, client, clusterID, podTemplate, postWorkloadName, isCattleLabeled, DeploymentSteveType)
 
-	snapshotID, err := getSnapshots(client, terraformConfig.ResourcePrefix)
+	var snapshotID []steveV1.SteveAPIObject
+	err = kwait.PollUntilContextTimeout(context.TODO(), timeouts.FiveSecondTimeout, timeouts.FiveMinuteTimeout, true, func(ctx context.Context) (bool, error) {
+		snapshotID, err = getSnapshots(client, terraformConfig.ResourcePrefix)
+		require.NoError(t, err)
+
+		return len(snapshotID) > 0, nil
+	})
 	require.NoError(t, err)
 
 	return snapshotID[0].Name, postDeploymentResp, postServiceResp, err
