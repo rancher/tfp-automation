@@ -31,9 +31,9 @@ func UpgradeLocalCluster(client *rancher.Client, terraformConfig *config.Terrafo
 	}
 
 	var clusterType string
-	if terraformConfig.Standalone.K3SVersion != "" {
+	if terraformConfig.LocalCluster == "k3s" {
 		clusterType = extClusters.K3SClusterType.String()
-	} else if terraformConfig.Standalone.RKE2Version != "" {
+	} else if terraformConfig.LocalCluster == "rke2" {
 		clusterType = extClusters.RKE2ClusterType.String()
 	}
 
@@ -43,14 +43,14 @@ func UpgradeLocalCluster(client *rancher.Client, terraformConfig *config.Terrafo
 	}
 
 	var updatedCluster *management.Cluster
-	if terraformConfig.Standalone.K3SVersion != "" {
+	if terraformConfig.LocalCluster == "k3s" {
 		updatedCluster = &management.Cluster{
 			K3sConfig: &management.K3sConfig{
 				Version: version[0],
 			},
 			Name: clusterResp.Name,
 		}
-	} else if terraformConfig.Standalone.RKE2Version != "" {
+	} else if terraformConfig.LocalCluster == "rke2" {
 		updatedCluster = &management.Cluster{
 			Rke2Config: &management.Rke2Config{
 				Version: version[0],
@@ -85,9 +85,9 @@ func UpgradeLocalCluster(client *rancher.Client, terraformConfig *config.Terrafo
 		return err
 	}
 
-	if terraformConfig.Standalone.K3SVersion != "" {
+	if terraformConfig.LocalCluster == "k3s" {
 		logrus.Infof("Cluster has been upgraded to: %s", updatedClusterResp.K3sConfig.Version)
-	} else if terraformConfig.Standalone.RKE2Version != "" {
+	} else if terraformConfig.LocalCluster == "rke2" {
 		logrus.Infof("Cluster has been upgraded to: %s", updatedClusterResp.Rke2Config.Version)
 	}
 

@@ -845,6 +845,7 @@ jobs:
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_13 }}"
+              upgradeLocalCluster: true
               upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
               upgradedRancherChartRepository: "${{ env.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
