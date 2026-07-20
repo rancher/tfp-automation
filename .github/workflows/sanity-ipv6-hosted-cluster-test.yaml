@@ -20,6 +20,14 @@ on:
         required: false
         default: false
         type: boolean
+      local_cluster_type:
+        description: "Local cluster type to setup Rancher"
+        required: true
+        default: "rke2"
+        type: choice
+        options:
+          - k3s
+          - rke2
   workflow_call:
     inputs:
       rancher_version:
@@ -37,6 +45,11 @@ permissions:
 
 env:
   CLOUD_PROVIDER_VERSION: "6.50.0"
+  LOCAL_CLUSTER_TYPE: >-
+    ${{ 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.local_cluster_type) || 
+      (github.event_name == 'schedule' && 'rke2') || 'rke2' 
+    }}
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "sanity"
   TEST_SUITE: "^TestTfpSanityIPv6HostedProvisioningTestSuite$"
@@ -181,6 +194,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
@@ -477,6 +491,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
+            localCluster: "${{ env.LOCAL_CLUSTER_TYPE }}"
             provider: "${{ vars.PROVIDER_AMAZON }}"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
             privateFullChainPath: "${{ steps.setup-certs.outputs.private-full-chain-path }}"
