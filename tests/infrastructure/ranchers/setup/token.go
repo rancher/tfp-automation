@@ -29,7 +29,8 @@ func CreateAdminToken(t *testing.T, terraformOptions *terraform.Options, rancher
 	}
 
 	var adminToken *management.Token
-	err := kwait.PollUntilContextTimeout(context.TODO(), 5*time.Second, defaults.FiveMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
+	err := kwait.PollUntilContextTimeout(context.TODO(), 5*time.Second, defaults.TenMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
+		logrus.Info("IN")
 		if terraformConfig.GenerateV3Token {
 			adminToken, err = token.GenerateUserToken(adminUser, rancherConfig.Host)
 			if err != nil {
