@@ -1268,19 +1268,18 @@ jobs:
       - name: Save test result as artifact for weekly summary
         if: always() && github.event_name == 'schedule'
         run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-test\", \"job\": \"v2-13\" }" > test-result-sanity-test-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
+          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-test\", \"job\": \"v2-14-prime\" }" > test-result-sanity-test-v2-14-prime-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
         if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
         with:
-          name: test-result-sanity-test-v2-13-${{ github.run_id }}
-          path: test-result-sanity-test-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
+          name: test-result-sanity-test-v2-14-prime-${{ github.run_id }}
+          path: test-result-sanity-test-v2-14-prime-${{ github.run_id }}-${{ github.run_attempt }}.json
   
   v2-13:
     if: |
-      github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.13')) && (contains(github.event.inputs.rancher_version, '-alpha') || contains(github.event.inputs.rancher_version, '-rc')) ||
       (github.event_name == 'workflow_call' && startsWith(inputs.rancher_version, 'v2.13')) && (contains(inputs.rancher_version, '-alpha') || contains(inputs.rancher_version, '-rc'))
