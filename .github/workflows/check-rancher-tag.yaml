@@ -25,7 +25,7 @@ jobs:
       workflow_list: ${{ steps.get-list.outputs.workflow_list }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Get workflow list from dispatch-workflows.yaml
         id: get-list
@@ -52,10 +52,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
@@ -147,7 +147,7 @@ jobs:
       failed_workflows_v215: ${{ steps.check.outputs.failed_workflows_v215 }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Check test results for v2.15
         id: check
@@ -165,7 +165,7 @@ jobs:
       failed_workflows_v214: ${{ steps.check.outputs.failed_workflows_v214 }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Check test results for v2.14
         id: check
@@ -183,7 +183,7 @@ jobs:
       failed_workflows_v213: ${{ steps.check.outputs.failed_workflows_v213 }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Check test results for v2.13
         id: check
@@ -227,7 +227,7 @@ jobs:
     if: ${{ needs.check-individual-tests-v215.outputs.failed_workflows_v215 == '' && needs.check-latest-rancher-tag.outputs.latest_tag_v215 != '' }}
     steps:
        - name: Configure AWS credentials
-         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
          with:
            role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
            aws-region: ${{ secrets.AWS_REGION }}
@@ -250,7 +250,7 @@ jobs:
       
        - name: Send Slack notification for v2.15
          if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
-         uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3
+         uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3
          with:
           webhook: ${{ secrets.TEAM_SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
@@ -261,7 +261,7 @@ jobs:
       
        - name: Configure AWS credentials
          if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
-         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
          with:
            role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
            aws-region: ${{ secrets.AWS_REGION }}
@@ -279,7 +279,7 @@ jobs:
     if: ${{ needs.check-individual-tests-v214.outputs.failed_workflows_v214 == '' && needs.check-latest-rancher-tag.outputs.latest_tag_v214 != '' }}
     steps:
        - name: Configure AWS credentials
-         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
          with:
            role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
            aws-region: ${{ secrets.AWS_REGION }}
@@ -302,7 +302,7 @@ jobs:
       
        - name: Send Slack notification for v2.14
          if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
-         uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3
+         uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3
          with:
           webhook: ${{ secrets.TEAM_SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
@@ -313,7 +313,7 @@ jobs:
       
        - name: Configure AWS credentials
          if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
-         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
          with:
            role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
            aws-region: ${{ secrets.AWS_REGION }}
@@ -331,7 +331,7 @@ jobs:
     if: ${{ needs.check-individual-tests-v213.outputs.failed_workflows_v213 == '' && needs.check-latest-rancher-tag.outputs.latest_tag_v213 != '' }}
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
@@ -354,7 +354,7 @@ jobs:
     
       - name: Send Slack notification for v2.13
         if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
-        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 #v3
+        uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3
         with:
           webhook: ${{ secrets.TEAM_SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
@@ -365,7 +365,7 @@ jobs:
     
       - name: Configure AWS credentials
         if: ${{ steps.check_marker.outputs.skip_slack == 'false' }}
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
         with:
           role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
