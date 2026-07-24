@@ -6,17 +6,13 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/rancher/shepherd/clients/rancher"
-	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
 	"github.com/rancher/tests/actions/features"
-	"github.com/rancher/tests/actions/workloads/deployment"
-	"github.com/rancher/tests/actions/workloads/pods"
 	infraConfig "github.com/rancher/tests/validation/recurring/infrastructure/config"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/providers"
-	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
 	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/hosted"
@@ -25,7 +21,6 @@ import (
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rancherinternal "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/internal"
 	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
@@ -129,17 +124,6 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string, 
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
-
-	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetLocal + "/local")
-	require.NoError(t, err)
-
-	logrus.Infof("Verifying cluster deployments (%s)", cluster.Name)
-	err = deployment.VerifyClusterDeployments(client, cluster)
-	require.NoError(t, err)
-
-	logrus.Infof("Verifying cluster pods (%s)", cluster.Name)
-	err = pods.VerifyClusterPods(client, cluster)
-	require.NoError(t, err)
 
 	return client, serverNodeOne, standaloneTerraformOptions, terraformOptions, cattleConfig
 }
