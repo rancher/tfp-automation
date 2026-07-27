@@ -48,7 +48,7 @@ require (
 
 require (
 	github.com/go-echarts/go-echarts/v2 v2.7.2
-	github.com/gruntwork-io/terratest v0.49.0
+	github.com/gruntwork-io/terratest v0.56.0
 	github.com/imdario/mergo v0.3.16
 	github.com/qase-tms/qase-go/qase-api-client v1.2.10
 	github.com/rancher/norman v0.9.9
