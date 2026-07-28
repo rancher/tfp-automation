@@ -9,7 +9,7 @@ set -e
 
 . /etc/os-release
 
-[[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt install unzip -y > /dev/null
+[[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt install unzip -y > /dev/null
 [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install -y unzip > /dev/null
 
 ARCH=$(uname -m)
