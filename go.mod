@@ -48,7 +48,7 @@ require (
 
 require (
 	github.com/go-echarts/go-echarts/v2 v2.7.2
-	github.com/gruntwork-io/terratest v0.56.0
+	github.com/gruntwork-io/terratest v1.0.1
 	github.com/imdario/mergo v0.3.16
 	github.com/qase-tms/qase-go/qase-api-client v1.2.10
 	github.com/rancher/norman v0.10.0
@@ -186,7 +186,7 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/time v0.14.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apiextensions-apiserver v0.36.0 // indirect
