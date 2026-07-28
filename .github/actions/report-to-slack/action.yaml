@@ -27,7 +27,7 @@ runs:
           echo "emoji=:help:" >> $GITHUB_OUTPUT
         fi
 
-    - uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3
+    - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4
       with:
         webhook: ${{ inputs.slack-webhook-url }}
         webhook-type: incoming-webhook
