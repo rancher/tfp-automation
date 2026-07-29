@@ -7,6 +7,7 @@ replace (
 	github.com/docker/distribution => github.com/docker/distribution v2.8.2+incompatible // rancher-machine requires a replace is set
 	github.com/docker/docker => github.com/docker/docker v20.10.27+incompatible // rancher-machine requires a replace is set
 	github.com/docker/go-connections => github.com/docker/go-connections v0.7.0
+	github.com/imdario/mergo => dario.cat/mergo v1.0.2
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20260527150105-ae26ccbc3fed
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20260527150105-ae26ccbc3fed
 
@@ -49,7 +50,7 @@ require (
 require (
 	github.com/go-echarts/go-echarts/v2 v2.7.2
 	github.com/gruntwork-io/terratest v1.0.1
-	github.com/imdario/mergo v0.3.16
+	github.com/imdario/mergo v1.0.2
 	github.com/qase-tms/qase-go/qase-api-client v1.2.10
 	github.com/rancher/norman v0.10.0
 	github.com/rancher/rancher/pkg/apis v0.0.0
