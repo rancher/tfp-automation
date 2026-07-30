@@ -24,6 +24,12 @@ outputs:
   failed_workflows_v213:
     description: "Comma-separated list of workflows that did not pass for the given Rancher tag for v2.13"
     value: ${{ steps.check.outputs.failed_workflows_v213 }}
+  failed_workflows_v212:
+    description: "Comma-separated list of workflows that did not pass for the given Rancher tag for v2.12"
+    value: ${{ steps.check.outputs.failed_workflows_v212 }}
+  failed_workflows_v211:
+    description: "Comma-separated list of workflows that did not pass for the given Rancher tag for v2.11"
+    value: ${{ steps.check.outputs.failed_workflows_v211 }}
 
 runs:
   using: composite
@@ -64,6 +70,12 @@ runs:
           local release_line=""
 
           case "$TAG" in
+            v2.11*)
+              release_line="v2.11"
+              ;;
+            v2.12*)
+              release_line="v2.12"
+              ;;
             v2.13*)
               release_line="v2.13"
               ;;
@@ -92,7 +104,7 @@ runs:
           fi
 
           if [[ "$TAG" == *-rc* ]]; then
-            workflow_contains "$workflow_path" "&& contains(github.event.inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& (contains(github.event.inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& contains(inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& (contains(inputs.rancher_version, '-rc')"
+            workflow_contains "$workflow_path" "&& contains(github.event.inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& (contains(github.event.inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& contains(inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "&& (contains(inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "|| contains(github.event.inputs.rancher_version, '-rc')" || workflow_contains "$workflow_path" "|| contains(inputs.rancher_version, '-rc')"
             return $?
           fi
 
@@ -179,6 +191,8 @@ runs:
         echo "failed_workflows_v215=$failed_workflows_str" >> $GITHUB_OUTPUT
         echo "failed_workflows_v214=$failed_workflows_str" >> $GITHUB_OUTPUT
         echo "failed_workflows_v213=$failed_workflows_str" >> $GITHUB_OUTPUT
+        echo "failed_workflows_v212=$failed_workflows_str" >> $GITHUB_OUTPUT
+        echo "failed_workflows_v211=$failed_workflows_str" >> $GITHUB_OUTPUT
       shell: bash
       env:
         DISPATCH_WORKFLOW_LIST: ${{ inputs.dispatch_workflow_list }}

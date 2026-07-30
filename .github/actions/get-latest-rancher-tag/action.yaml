@@ -18,6 +18,12 @@ outputs:
   latest_tag_v213:
     description: "Latest tag for v2.13"
     value: ${{ steps.set-outputs.outputs.latest_tag_v213 }}
+  latest_tag_v212:
+    description: "Latest tag for v2.12"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v212 }}
+  latest_tag_v211:
+    description: "Latest tag for v2.11"
+    value: ${{ steps.set-outputs.outputs.latest_tag_v211 }}
   previous_tag_v215:
     description: "Previous tag for v2.15"
     value: ${{ steps.set-outputs.outputs.previous_tag_v215 }}
@@ -27,6 +33,12 @@ outputs:
   previous_tag_v213:
     description: "Previous tag for v2.13"
     value: ${{ steps.set-outputs.outputs.previous_tag_v213 }}
+  previous_tag_v212:
+    description: "Previous tag for v2.12"
+    value: ${{ steps.set-outputs.outputs.previous_tag_v212 }}
+  previous_tag_v211:
+    description: "Previous tag for v2.11"
+    value: ${{ steps.set-outputs.outputs.previous_tag_v211 }}
 runs:
   using: composite
   steps:
@@ -91,7 +103,11 @@ runs:
         echo "latest_tag_v215=${LATEST_TAG_v215}" >> $GITHUB_OUTPUT
         echo "latest_tag_v214=${LATEST_TAG_v214}" >> $GITHUB_OUTPUT
         echo "latest_tag_v213=${LATEST_TAG_v213}" >> $GITHUB_OUTPUT
+        echo "latest_tag_v212=${LATEST_TAG_v212}" >> $GITHUB_OUTPUT
+        echo "latest_tag_v211=${LATEST_TAG_v211}" >> $GITHUB_OUTPUT
         echo "previous_tag_v215=${PREVIOUS_TAG_v215}" >> $GITHUB_OUTPUT
         echo "previous_tag_v214=${PREVIOUS_TAG_v214}" >> $GITHUB_OUTPUT
         echo "previous_tag_v213=${PREVIOUS_TAG_v213}" >> $GITHUB_OUTPUT
+        echo "previous_tag_v212=${PREVIOUS_TAG_v212}" >> $GITHUB_OUTPUT
+        echo "previous_tag_v211=${PREVIOUS_TAG_v211}" >> $GITHUB_OUTPUT
       shell: bash
