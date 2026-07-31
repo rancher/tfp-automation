@@ -6,9 +6,9 @@ on:
     - cron: '0 8 * * 3'
 
 permissions:
+  copilot-requests: write
   id-token: write
   contents: read
-  models: read
 
 jobs:
   create_weekly_pr_summary:
