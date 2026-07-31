@@ -21,34 +21,43 @@ runs:
   steps:
     - id: run-prompt
       run: |
-        PROMPT_CONTENT=$(yq -r '.messages[] | select(.role=="user") | .content' "${{ inputs.prompt_file }}")
-        PRS_STRING=$(cat "${{ inputs.input_file }}")
-        jq -n --arg prompt "$PROMPT_CONTENT" --arg prs "$PRS_STRING" '
-          {
-            messages: [
-              {
-                role: "user",
-                content: ($prompt + "\n\nPRs:\n" + $prs)
-              }
-            ],
-            model: "gpt-4.1"
-          }
-        ' > payload.json
+        PROMPT_TEMPLATE=$(yq -r '.messages[] | select(.role=="user") | .content' "${{ inputs.prompt_file }}")
+        MODEL_NAME=$(yq -r '.model // ""' "${{ inputs.prompt_file }}")
+        INPUT_CONTENT=$(cat "${{ inputs.input_file }}")
 
-        HTTP_RESPONSE=$(mktemp)
-        HTTP_STATUS=$(curl -fsSL -w "%{http_code}" --connect-timeout 10 --max-time 200 https://models.inference.ai.azure.com/chat/completions \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d @payload.json \
-          -o "$HTTP_RESPONSE")
-
-        if [ "$HTTP_STATUS" = "403" ]; then
-          echo "Rate limit detected (HTTP 403)."
-          echo "RATE_LIMITED" > "${{ inputs.output_file }}"
-          exit 22  # Use a special exit code for rate limit
+        if [[ "$PROMPT_TEMPLATE" == *'{{input}}'* ]]; then
+          PROMPT_CONTENT=${PROMPT_TEMPLATE//'{{input}}'/$INPUT_CONTENT}
+        else
+          PROMPT_CONTENT="$PROMPT_TEMPLATE"
+          PROMPT_CONTENT+=$'\n\nInput:\n'
+          PROMPT_CONTENT+="$INPUT_CONTENT"
         fi
 
-        cat "$HTTP_RESPONSE" | jq -r '.choices[0].message.content' > "${{ inputs.output_file }}"
+        MODEL_ARGS=()
+        if [[ -n "$MODEL_NAME" ]]; then
+          MODEL_ARGS=(--model "$MODEL_NAME")
+        fi
+
+        STDOUT_FILE=$(mktemp)
+        STDERR_FILE=$(mktemp)
+
+        set +e
+        npx -y @github/copilot@latest -p "$PROMPT_CONTENT" -s --no-ask-user "${MODEL_ARGS[@]}" >"$STDOUT_FILE" 2>"$STDERR_FILE"
+        COPILOT_EXIT=$?
+        set -e
+
+        if [[ $COPILOT_EXIT -ne 0 ]]; then
+          if grep -Eiq 'rate limit|429|quota|ai credits' "$STDERR_FILE"; then
+            echo "Rate limit detected."
+            echo "RATE_LIMITED" > "${{ inputs.output_file }}"
+            exit 22
+          fi
+
+          cat "$STDERR_FILE"
+          exit "$COPILOT_EXIT"
+        fi
+
+        cat "$STDOUT_FILE" > "${{ inputs.output_file }}"
 
         echo 'summary<<EOF' >> $GITHUB_OUTPUT
         cat "${{ inputs.output_file }}" >> $GITHUB_OUTPUT

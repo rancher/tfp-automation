@@ -8,14 +8,22 @@ on:
 
 permissions:
   actions: write
+  copilot-requests: write
   id-token: write
   contents: read
   pull-requests: write
-  models: read
 
 jobs:
   pr-quality:
-    if: ${{ github.event.pull_request.head.repo.fork == false }}
+    if: >-
+      ${{
+        github.event.pull_request.head.repo.fork == false &&
+        !(
+          github.event.action == 'edited' &&
+          github.event.changes.body != null &&
+          github.event.changes.title == null
+        )
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
