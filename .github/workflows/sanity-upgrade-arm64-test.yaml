@@ -668,12 +668,11 @@ jobs:
   
   v2-14:
     if: |
-      github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14'))
     name: ${{ vars.RELEASED_RANCHER_VERSION_2_14 }} -> ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: upgrade-community-head
+    environment: upgrade-prime-staging
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "tfp-arm-up-214"
@@ -719,7 +718,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -771,8 +770,8 @@ jobs:
         with:
           rancher-version: ${{ env.UPGRADED_RANCHER_VERSION }}
           fallback-repo: ${{ secrets.UPGRADED_RANCHER_REPO }}
-          is-prime: false
-          release-community-version: "2.14"
+          is-prime: true
+          release-prime-version: "2.14"
           env-var-name: UPGRADED_RANCHER_REPO
 
       - name: Get Qase ID
@@ -787,7 +786,7 @@ jobs:
         uses: ./.github/actions/set-rancher-chart-url
         with:
           rancher-repo: ${{ env.UPGRADED_RANCHER_REPO }}
-          is-prime: false
+          is-prime: true
           community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.UPGRADED_RANCHER_HELM_CHART_URL }}
@@ -831,8 +830,8 @@ jobs:
               awsInstanceType: "${{ vars.AWS_ARM_INSTANCE_TYPE }}"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
+              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -867,6 +866,7 @@ jobs:
               registryPassword: "${{ secrets.PRIVATE_REGISTRY_PASSWORD }}"
               repo: "${{ secrets.RANCHER_REPO }}"
               rke2Version: "${{ vars.RKE2_VERSION_2_14 }}"
+              upgradedRancherAgentImage: "${{ secrets.UPGRADED_RANCHER_AGENT_IMAGE }}"
               upgradedRancherChartRepository: "${{ env.UPGRADED_RANCHER_HELM_CHART_URL }}"
               upgradedRancherChartVersion: "${{ env.UPGRADED_RANCHER_CHART_VERSION }}"
               upgradedRancherImage: "${{ secrets.UPGRADED_RANCHER_IMAGE }}"
@@ -940,7 +940,7 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set job status output
@@ -984,7 +984,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: upgrade-prime-staging
     env:
-      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_12 }}"
+      RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
       HOSTNAME_PREFIX: "tfp-arm-up-213"
       REPORTING_ENABLED: >-
         ${{

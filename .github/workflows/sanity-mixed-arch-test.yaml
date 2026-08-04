@@ -665,7 +665,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14-head'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: head
+    environment: staging-latest
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "tfp-ma-214"
@@ -711,7 +711,7 @@ jobs:
       - name: Whitelist Runner IP
         uses: ./.github/actions/whitelist-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set up SSH Keys
@@ -763,8 +763,8 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
-          is-prime: false
-          release-community-version: "2.14"
+          is-prime: true
+          release-prime-version: "2.14"
 
       - name: Get Qase ID
         if: env.REPORTING_ENABLED == 'true'
@@ -821,11 +821,10 @@ jobs:
               awsInstanceType: "${{ vars.AWS_INSTANCE_TYPE }}"
               armAMI: "${{ secrets.AWS_ARM_AMI }}"
               armInstanceType: "${{ vars.AWS_ARM_INSTANCE_TYPE }}"
-              awsKeyName: "jenkins-elliptic-validation"
               awsVolumeType: "${{ vars.AWS_VOLUME_TYPE }}"
               region: "${{ secrets.AWS_REGION }}"
-              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS }}]
-              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES }}]
+              awsSecurityGroups: [${{ secrets.AWS_SECURITY_GROUPS_PRIME }}]
+              awsSecurityGroupNames: [${{ secrets.AWS_SECURITY_GROUP_NAMES_PRIME }}]
               awsSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               rancherSubnetID: "${{ secrets.AWS_SUBNET_ID }}"
               awsVpcID: "${{ secrets.AWS_VPC_ID }}"
@@ -928,7 +927,7 @@ jobs:
         if: always()
         uses: ./.github/actions/revoke-runner-ip
         with:
-          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID_PRIME }}
           region: "${{ secrets.AWS_REGION }}"
 
       - name: Set job status output
