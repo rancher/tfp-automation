@@ -589,12 +589,11 @@ jobs:
 
   v2-14:
     if: |
-      github.event_name == 'schedule' ||
       github.event.inputs.run_all_versions == 'true' ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14-head'))
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
-    environment: head
+    environment: staging-latest
     env:
       CLOUD_PROVIDER: "azure"
       DOWNSTREAM_CLUSTER_PROVIDER: "azure"
@@ -690,8 +689,8 @@ jobs:
         with:
           rancher-version: ${{ env.RANCHER_VERSION }}
           fallback-repo: ${{ secrets.RANCHER_REPO }}
-          is-prime: false
-          release-community-version: "2.14"
+          is-prime: true
+          release-prime-version: "2.14"
 
       - name: Get Qase ID
         id: get-qase-id
@@ -705,7 +704,7 @@ jobs:
         uses: ./.github/actions/set-rancher-chart-url
         with:
           rancher-repo: ${{ env.RANCHER_REPO }}
-          is-prime: false
+          is-prime: true
           community-chart-url: ${{ vars.COMMUNITY_HELM_CHART_URL }}
           staging-chart-url: ${{ secrets.STAGING_RANCHER_HELM_CHART_URL }}
           fallback-chart-url: ${{ secrets.RANCHER_HELM_CHART_URL }}
@@ -722,6 +721,7 @@ jobs:
             cni: "${{ secrets.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
+            generateV3Token: true
             localHostedCluster: true
             provider: "aks"
             privateKeyPath: "${{ secrets.SSH_PRIVATE_KEY_PATH }}"
@@ -775,6 +775,7 @@ jobs:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               osUser: "${{ secrets.AZURE_SSH_USER }}"
               osGroup: "${{ secrets.AZURE_SSH_USER }}"
+              rancherAgentImage: "${{ secrets.RANCHER_AGENT_IMAGE }}"
               rancherChartRepository: "${{ env.RANCHER_HELM_CHART_URL }}"
               rancherHostname: "${{ env.HOSTNAME_PREFIX }}.${{ vars.AZURE_LOCATION }}.cloudapp.azure.com"
               rancherImage: "${{ secrets.RANCHER_IMAGE }}"

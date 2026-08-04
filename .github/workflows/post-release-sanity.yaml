@@ -349,7 +349,7 @@ jobs:
     environment: prime
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
-      HOSTNAME_PREFIX_PRIME: "tfp-pr-p214"
+      HOSTNAME_PREFIX_PRIME: "tfp-pr-214"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
