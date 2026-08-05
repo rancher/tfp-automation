@@ -324,12 +324,12 @@ jobs:
       - name: Save test result as artifact for weekly summary
         if: always() && github.event_name == 'schedule'
         run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.UPGRADED_RANCHER_VERSION }}\", \"workflow\": \"community-prime-upgrade\", \"job\": \"v2-14\" }" > test-result-community-prime-upgrade-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
+          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.UPGRADED_RANCHER_VERSION }}\", \"workflow\": \"community-prime-upgrade\", \"job\": \"v2-54\" }" > test-result-community-prime-upgrade-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
         shell: bash
 
       - name: Upload test result weekly summary
         if: always() && github.event_name == 'schedule'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: test-result-community-prime-upgrade-test-v2-14-${{ github.run_id }}
-          path: test-result-community-prime-upgrade-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
+          name: test-result-community-prime-upgrade-test-v2-15-${{ github.run_id }}
+          path: test-result-community-prime-upgrade-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json

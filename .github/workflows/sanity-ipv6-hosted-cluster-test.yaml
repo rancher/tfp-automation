@@ -654,6 +654,8 @@ jobs:
 
   v2-14:
     if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true' ||
       (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'v2.14-head'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
