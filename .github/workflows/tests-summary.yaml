@@ -1,0 +1,226 @@
+name: Test Summary
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  id-token: write
+  pages: write
+
+concurrency:
+  group: test-summary-pages
+  cancel-in-progress: true
+
+jobs:
+  test-summary:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          submodules: recursive
+
+      - name: Create results folders
+        run: |
+          mkdir -p results/history results/site
+
+      - name: Ensure history branch exists
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const branch = 'test-history';
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${branch}`,
+              });
+              console.log(`Branch ${branch} already exists.`);
+              return;
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+            }
+
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${branch}`,
+              sha: context.sha,
+            });
+            console.log(`Created branch ${branch}.`);
+
+      - name: Restore retained history dataset
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const fs = require('fs');
+            const branch = 'test-history';
+            const filePath = 'history/test_history.json';
+            const outPath = './results/history/test_history.json';
+
+            try {
+              const response = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: filePath,
+                ref: branch,
+              });
+
+              if (!response.data.content) {
+                console.log('No retained history content found yet.');
+                return;
+              }
+
+              fs.mkdirSync('./results/history', { recursive: true });
+              const decoded = Buffer.from(response.data.content, 'base64').toString('utf8');
+              fs.writeFileSync(outPath, decoded);
+              console.log(`Restored retained history from ${branch}/${filePath}`);
+            } catch (error) {
+              if (error.status === 404) {
+                console.log('History branch/file does not exist yet. Starting fresh.');
+                return;
+              }
+
+              throw error;
+            }
+
+      - name: Download recent test result artifacts
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const fs = require('fs');
+            const perPage = 100;
+            const now = new Date();
+            const since = new Date(now.getTime() - 48 * 60 * 60 * 1000); // 48 hours
+            let count = 0;
+
+            for (let page = 1; ; page++) {
+              const artifacts = await github.rest.actions.listArtifactsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: perPage,
+                page,
+              });
+
+              if (!artifacts.data.artifacts || artifacts.data.artifacts.length === 0) {
+                break;
+              }
+
+              for (const artifact of artifacts.data.artifacts) {
+                if (!artifact.name.startsWith('test-result-')) continue;
+                const created = new Date(artifact.created_at);
+                if (created < since) continue;
+
+                count++;
+                console.log(`Downloading artifact: ${artifact.name}`);
+                const download = await github.rest.actions.downloadArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                  archive_format: 'zip',
+                });
+
+                fs.writeFileSync(`./${artifact.name}.zip`, Buffer.from(download.data));
+              }
+            }
+
+            console.log(`Downloaded ${count} recent artifact(s).`);
+
+      - name: Unzip all artifacts
+        run: |
+          shopt -s nullglob
+          files=(test-result-*.zip)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No artifact zip files to unzip"
+            exit 0
+          fi
+
+          for f in "${files[@]}"; do
+            unzip -o "$f" -d results
+          done
+        shell: bash
+
+      - name: Set up Go environment
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Generate summary chart
+        env:
+          HISTORICAL_RETENTION_DAYS: "365"
+        run: |
+          go run testReports/generate_tests_chart.go
+
+      - name: Persist retained history dataset
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const fs = require('fs');
+            const branch = 'test-history';
+            const filePath = 'history/test_history.json';
+            const localPath = './results/history/test_history.json';
+
+            if (!fs.existsSync(localPath)) {
+              throw new Error('Expected history file was not generated');
+            }
+
+            const content = fs.readFileSync(localPath, 'utf8');
+            const encoded = Buffer.from(content).toString('base64');
+            let sha;
+
+            try {
+              const existing = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: filePath,
+                ref: branch,
+              });
+              sha = existing.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: filePath,
+              message: `Update test history from run ${context.runId}`,
+              content: encoded,
+              branch,
+              sha,
+            });
+
+      - name: Prepare GitHub Pages content
+        run: |
+          cp results/test_summary.html results/site/index.html
+          cp results/test_summary.html results/site/test_summary.html
+          mkdir -p results/site/history
+          cp results/history/test_history.json results/site/history/test_history.json
+
+      - name: Upload summary chart artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          path: |
+            results/test_summary.html
+            results/history/test_history.json
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v4
+        with:
+          path: results/site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 #v5
