@@ -1,6 +1,9 @@
 name: Test Summary
 
 on:
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
@@ -151,11 +154,11 @@ jobs:
         with:
           go-version-file: "./go.mod"
 
-      - name: Generate historical summary chart
+      - name: Generate summary chart
         env:
           HISTORICAL_RETENTION_DAYS: "365"
         run: |
-          go run weeklyTestsReports/generate_weekly_chart.go
+          go run testReports/generate_tests_chart.go
 
       - name: Persist retained history dataset
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
@@ -220,4 +223,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 #v5
