@@ -208,5 +208,33 @@
     "workflow": "sanity-upgrade-test",
     "job": "v2-16",
     "timestamp": "2026-08-04T15:54:00Z"
+  },
+  {
+    "date": "August 04, 2026 at 04:33 PM",
+    "status": "failure",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-16",
+    "timestamp": "2026-08-04T16:33:00Z"
+  },
+  {
+    "date": "August 04, 2026 at 03:33 PM",
+    "status": "failure",
+    "workflow": "sanity-mixed-arch-test",
+    "job": "v2-16",
+    "timestamp": "2026-08-04T15:33:00Z"
+  },
+  {
+    "date": "August 04, 2026 at 03:25 PM",
+    "status": "failure",
+    "workflow": "sanity-upgrade-arm64-test",
+    "job": "v2-14",
+    "timestamp": "2026-08-04T15:25:00Z"
+  },
+  {
+    "date": "August 04, 2026 at 04:32 PM",
+    "status": "failure",
+    "workflow": "sanity-upgrade-arm64-test",
+    "job": "v2-16",
+    "timestamp": "2026-08-04T16:32:00Z"
   }
 ]
