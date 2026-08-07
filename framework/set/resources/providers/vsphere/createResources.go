@@ -55,6 +55,11 @@ func CreateVsphereResources(file *os.File, newFile *hclwrite.File, tfBlockBody, 
 	CreateVsphereComputeCluster(rootBody, terraformConfig, dataCenterValue)
 	rootBody.AppendNewline()
 
+	if terraformConfig.VsphereConfig.Pool != "" {
+		CreateVsphereResourcePool(rootBody, terraformConfig, dataCenterValue)
+		rootBody.AppendNewline()
+	}
+
 	CreateVsphereNetwork(rootBody, terraformConfig, dataCenterValue)
 	rootBody.AppendNewline()
 
