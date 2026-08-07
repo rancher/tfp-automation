@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -17,36 +16,53 @@ import (
 	qaseactions "github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/qase/testresult"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 )
 
 var (
 	runIDEnvVar             = os.Getenv(qase.TestRunEnvVar)
 	projectIDEnvVar         = os.Getenv(qase.ProjectIDEnvVar)
 	testRunName             = os.Getenv(qase.TestRunNameEnvVar)
+	testRunComplete         = os.Getenv(qase.TestRunCompleteEnvVar)
+	schemaPrefixEnvVar      = os.Getenv(qase.SchemaPrefixEnvVar)
+	customFieldFilterEnvVar = os.Getenv("QASE_CUSTOM_FIELD_FILTER")
+	buildUrl                = os.Getenv(qase.BuildUrl)
 	_, callerFilePath, _, _ = runtime.Caller(0)
 	basepath                = filepath.Join(filepath.Dir(callerFilePath), "..", "..", "..")
-	validStatus             = []string{"passed", "failed", "skipped"}
+	validStatus             = map[string]string{"pass": "passed", "fail": "failed", "skip": "skipped"}
+	rancherTestCommitID     = os.Getenv(qase.RancherTestCommitID)
 )
 
 const (
+	// Doc: https://developers.qase.io/reference/get-cases
 	requestLimit = 100
+	// Doc: https://developers.qase.io/reference/create-run
+	descriptionLimit = 10000
+	imageReportPath  = "/app/image-report/image-report.txt"
+	testResultsJSON  = "results.json"
 )
 
 func main() {
-	logrus.Info("Running QASE reporter")
+	logrus.Info("Running QASE reporter v2")
 	if projectIDEnvVar == "" {
 		logrus.Warningf("Project env var not provided, defaulting to %s", qaseactions.RancherManagerProjectID)
 		projectIDEnvVar = qaseactions.RancherManagerProjectID
 	}
 
-	if runIDEnvVar != "" {
-		client := qase.SetupQaseClient()
+	if runIDEnvVar != "" || testRunName != "" {
+		qaseService := qase.SetupQaseClient()
 
-		runID, err := strconv.ParseInt(runIDEnvVar, 10, 64)
+		runID := int64(0)
+		err := error(nil)
+
+		if runIDEnvVar != "" {
+			runID, err = strconv.ParseInt(runIDEnvVar, 10, 64)
+		}
+
+		runDescription := createRunDescription(buildUrl, rancherTestCommitID)
 
 		if testRunName != "" {
-			resp, err := client.CreateTestRun(testRunName, projectIDEnvVar, "")
+			resp, err := qaseService.CreateTestRun(testRunName, projectIDEnvVar, runDescription)
 			if err != nil {
 				logrus.Error("error creating test run: ", err)
 			} else {
@@ -58,9 +74,17 @@ func main() {
 			logrus.Fatalf("error reporting converting string to int64: %v", err)
 		}
 
-		err = reportTestQases(client, int32(runID))
+		err = reportTestQases(qaseService, int32(runID))
 		if err != nil {
 			logrus.Error("error reporting: ", err)
+		}
+
+		isCompleteRun, _ := strconv.ParseBool(testRunComplete)
+		if isCompleteRun {
+			err = qaseService.CompleteTestRun(projectIDEnvVar, int32(runID))
+			if err != nil {
+				logrus.Error("error update reporting: ", err)
+			}
 		}
 	} else {
 		logrus.Warningf("QASE run ID not provided")
@@ -86,6 +110,10 @@ func getAllAutomationTestCases(qaseService *qase.Service) (map[string]upstream.T
 	}
 
 	for _, testCase := range testCases {
+		if customFieldFilterEnvVar != "" && !hasCustomFieldValue(testCase.CustomFields, customFieldFilterEnvVar) {
+			continue
+		}
+
 		automationTestNameCustomField := getAutomationTestName(testCase.CustomFields)
 		if automationTestNameCustomField != "" {
 			testCaseNameMap[automationTestNameCustomField] = testCase
@@ -137,11 +165,7 @@ func parseTestResults(outputs []testresult.GoTestOutput) map[string]*testresult.
 		} else if output.Action == "output" && tableTestName != "" {
 			goTestResult := finalTestResults[tableTestName]
 			goTestResult.StackTrace += output.Output
-		} else if output.Action == qase.SkipStatus {
-			if tableTestName != "" {
-				delete(finalTestResults, tableTestName)
-			}
-		} else if (output.Action == qase.FailStatus || output.Action == qase.PassStatus) && tableTestName != "" {
+		} else if (output.Action == qase.FailStatus || output.Action == qase.PassStatus || output.Action == qase.SkipStatus) && tableTestName != "" {
 			if tableTestName != "" {
 				goTestResult := finalTestResults[tableTestName]
 				goTestResult.StackTrace += output.Output
@@ -173,7 +197,7 @@ func parseTestResults(outputs []testresult.GoTestOutput) map[string]*testresult.
 func reportTestQases(qaseService *qase.Service, testRunID int32) error {
 	resultsOutputs, err := readTestResults()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	goTestResults := parseTestResults(resultsOutputs)
@@ -194,7 +218,7 @@ func reportTestQases(qaseService *qase.Service, testRunID int32) error {
 			}
 
 			fullPackagePath := filepath.Join(basepath, packagePath[1])
-			qaseProjects, err := qase.GetSchemas(fullPackagePath)
+			qaseProjects, err := qase.GetSchemasByPrefix(fullPackagePath, schemaPrefixEnvVar)
 			if err != nil {
 				logrus.Warning(err)
 				continue
@@ -252,8 +276,8 @@ func updateTestInRun(client *upstream.APIClient, testResult testresult.GoTestRes
 		}
 	}
 
-	status := fmt.Sprintf("%sed", testResult.Status)
-	if !slices.Contains(validStatus, status) {
+	status, exists := validStatus[testResult.Status]
+	if !exists {
 		status = "failed"
 	}
 
@@ -284,4 +308,59 @@ func getAutomationTestName(customFields []upstream.CustomFieldValue) string {
 		}
 	}
 	return ""
+}
+
+func hasCustomFieldValue(customFields []upstream.CustomFieldValue, expectedValue string) bool {
+	for _, field := range customFields {
+		if field.Value != nil && *field.Value == expectedValue {
+			return true
+		}
+	}
+
+	return false
+}
+
+// createRunDescription build the Qase test run description
+func createRunDescription(buildUrl string, commitId string) string {
+	var description strings.Builder
+
+	if buildUrl != "" {
+		description.WriteString("Jenkins Job")
+		description.WriteString("\n")
+		description.WriteString(buildUrl)
+		description.WriteString("\n")
+	}
+
+	if commitId != "" {
+		description.WriteString("Rancher Test Commit ID")
+		description.WriteString("\n")
+		description.WriteString(commitId)
+		description.WriteString("\n")
+	}
+
+	versions := getVersionInformation()
+	if versions != "" {
+		if description.Len() > 0 {
+			description.WriteString("\n")
+		}
+		description.WriteString(versions)
+	}
+
+	s := description.String()
+	if len(s) > descriptionLimit {
+		s = s[:descriptionLimit]
+	}
+
+	return s
+}
+
+// getVersionInformation gets versions and commits id from cluster
+func getVersionInformation() string {
+	// Prepare the command: docker logs imageCapturer
+	data, err := os.ReadFile(imageReportPath)
+	if err != nil {
+		logrus.Warning(fmt.Errorf("Failed to read file: %v", err))
+	}
+
+	return string(data)
 }
