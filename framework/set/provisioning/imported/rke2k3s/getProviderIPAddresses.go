@@ -32,6 +32,11 @@ func getProviderIPAddresses(terraformConfig *config.TerraformConfig, terratestCo
 		vsphere.CreateVsphereComputeCluster(rootBody, terraformConfig, dataCenterValue)
 		rootBody.AppendNewline()
 
+		if terraformConfig.VsphereConfig.Pool != "" {
+			vsphere.CreateVsphereResourcePool(rootBody, terraformConfig, dataCenterValue)
+			rootBody.AppendNewline()
+		}
+
 		vsphere.CreateVsphereNetwork(rootBody, terraformConfig, dataCenterValue)
 		rootBody.AppendNewline()
 
