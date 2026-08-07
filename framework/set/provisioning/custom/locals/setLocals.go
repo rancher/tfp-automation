@@ -78,14 +78,14 @@ func setV2ClusterLocalBlock(localsBlockBody *hclwrite.Body, terraformConfig *con
 }
 
 func setCustomClusterLocalBlock(localsBlockBody *hclwrite.Body, name string, terraformConfig *config.TerraformConfig) {
-	originalNodeCommandExpression := rancher2.ClusterV2 + "." + name + "." + clusters.ClusterRegistrationToken + "[0]." + clusters.NodeCommand
+	originalNodeCommandExpression := "try(" + rancher2.ClusterV2 + "." + name + "." + clusters.ClusterRegistrationToken + "[0]." + clusters.NodeCommand + ", \"\")"
 	originalNodeCommand := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(originalNodeCommandExpression)},
 	}
 
 	localsBlockBody.SetAttributeRaw(name+"_"+clusters.OriginalNodeCommand, originalNodeCommand)
 
-	windowsOriginalNodeCommandExpression := rancher2.ClusterV2 + "." + name + "." + clusters.ClusterRegistrationToken + "[0]." + clusters.WindowsNodeCommand
+	windowsOriginalNodeCommandExpression := "try(" + rancher2.ClusterV2 + "." + name + "." + clusters.ClusterRegistrationToken + "[0]." + clusters.WindowsNodeCommand + ", \"\")"
 	windowsOriginalNodeCommand := hclwrite.Tokens{
 		{Type: hclsyntax.TokenIdent, Bytes: []byte(windowsOriginalNodeCommandExpression)},
 	}

@@ -334,6 +334,9 @@ jobs:
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
+          qase-custom-field-filter: ${{ vars.QASE_CUSTOM_FIELD_FILTER }}
+          qase-schema-prefix: ${{ vars.QASE_SCHEMA_PREFIX }}
+          qase-project-id: ${{ secrets.HB_QASE_PROJECT_ID }}
 
       - name: Reporting Results to Slack
         if: always() && env.REPORTING_ENABLED == 'true'
@@ -644,6 +647,9 @@ jobs:
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
+          qase-custom-field-filter: ${{ vars.QASE_CUSTOM_FIELD_FILTER }}
+          qase-schema-prefix: ${{ vars.QASE_SCHEMA_PREFIX }}
+          qase-project-id: ${{ secrets.HB_QASE_PROJECT_ID }}
 
       - name: Reporting Results to Slack
         if: always() && env.REPORTING_ENABLED == 'true'
@@ -955,6 +961,9 @@ jobs:
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
+          qase-custom-field-filter: ${{ vars.QASE_CUSTOM_FIELD_FILTER }}
+          qase-schema-prefix: ${{ vars.QASE_SCHEMA_PREFIX }}
+          qase-project-id: ${{ secrets.HB_QASE_PROJECT_ID }}
 
       - name: Reporting Results to Slack
         if: always() && env.REPORTING_ENABLED == 'true'
@@ -1266,6 +1275,9 @@ jobs:
         with:
           qase-test-run-id: ${{ steps.get-qase-id.outputs.id }}
           qase-automation-token: ${{ secrets.QASE_TOKEN }}
+          qase-custom-field-filter: ${{ vars.QASE_CUSTOM_FIELD_FILTER }}
+          qase-schema-prefix: ${{ vars.QASE_SCHEMA_PREFIX }}
+          qase-project-id: ${{ secrets.HB_QASE_PROJECT_ID }}
 
       - name: Reporting Results to Slack
         if: always() && env.REPORTING_ENABLED == 'true'

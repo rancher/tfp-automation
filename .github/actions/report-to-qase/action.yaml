@@ -8,11 +8,23 @@ inputs:
   qase-automation-token:
     description: "Qase Automation Token"
     required: true
+  qase-custom-field-filter:
+    description: "Qase Custom Field Filter"
+    required: false
+  qase-schema-prefix:
+    description: "Qase Schema Prefix"
+    required: false
+  qase-project-id:
+    description: "Qase Project ID"
+    required: false
 runs:
   using: composite
   steps:
     - run: |
         export QASE_TEST_RUN_ID=${{ inputs.qase-test-run-id }}; \
         export QASE_AUTOMATION_TOKEN=${{ inputs.qase-automation-token }}; \
+        export QASE_CUSTOM_FIELD_FILTER=${{ inputs.qase-custom-field-filter }}; \
+        export QASE_SCHEMA_PREFIX=${{ inputs.qase-schema-prefix }}; \
+        export QASE_PROJECT_ID=${{ inputs.qase-project-id }}; \
         ./pipeline/scripts/build_qase_reporter.sh; ./reporter
       shell: bash

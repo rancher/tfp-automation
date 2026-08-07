@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/modules"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
+	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/defaults/rancher2/clusters"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -52,6 +53,13 @@ func CustomWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.
 	}
 
 	provisionerBlockBody.SetAttributeRaw(general.Inline, regCommand)
+
+	clusterV2Expression := `[` + rancher2.ClusterV2 + `.` + clusterName + `]`
+	clusterV2 := hclwrite.Tokens{
+		{Type: hclsyntax.TokenIdent, Bytes: []byte(clusterV2Expression)},
+	}
+
+	nullResourceBlockBody.SetAttributeRaw(general.DependsOn, clusterV2)
 
 	return nil
 }
