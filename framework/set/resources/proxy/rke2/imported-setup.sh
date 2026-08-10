@@ -15,14 +15,14 @@ base64 -d <<< $PEM_FILE > /home/$USER/keyfile.pem
 PEM=/home/$USER/keyfile.pem
 chmod 600 $PEM
 
-curl -fsSL --max-time 30 -o rke2.linux-amd64.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-amd64.tar.gz
-curl -fsSL --max-time 30 -o rke2.linux-arm64.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-arm64.tar.gz
-curl -fsSL --max-time 30 -o rke2-images.linux-amd64.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-amd64.tar.zst
-curl -fsSL --max-time 30 -o rke2-images.linux-arm64.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-arm64.tar.zst
-curl -fsSL --max-time 30 -o sha256sum-amd64.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-amd64.txt
-curl -fsSL --max-time 30 -o sha256sum-arm64.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-arm64.txt
+curl -fsSL --max-time 120 -o rke2.linux-amd64.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-amd64.tar.gz
+curl -fsSL --max-time 120 -o rke2.linux-arm64.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-arm64.tar.gz
+curl -fsSL --max-time 120 -o rke2-images.linux-amd64.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-amd64.tar.zst
+curl -fsSL --max-time 120 -o rke2-images.linux-arm64.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-arm64.tar.zst
+curl -fsSL --max-time 120 -o sha256sum-amd64.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-amd64.txt
+curl -fsSL --max-time 120 -o sha256sum-arm64.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-arm64.txt
 
-curl -fsSL --max-time 30 -o install.sh https://get.rke2.io
+curl -fsSL --max-time 120 -o install.sh https://get.rke2.io
 chmod +x install.sh
 
 ARCH=$(uname -m)
@@ -46,8 +46,8 @@ echo "$CHECKSUM  /home/${USER}/rke2-images.linux-${ARCH}.tar.zst" | sha256sum -c
 
 echo "Installing kubectl"
 KUBECTL_VERSION="v1.36.0"
-curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
+curl -fsSL --max-time 120 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
+curl -fsSL --max-time 120 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
 echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
 sudo chmod +x kubectl
 

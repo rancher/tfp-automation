@@ -50,14 +50,14 @@ fi
 
 echo "Installing kubectl"
 KUBECTL_VERSION="v1.36.0"
-retryCmd curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-retryCmd curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
+retryCmd curl -fsSL --max-time 120 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
+retryCmd curl -fsSL --max-time 120 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
 echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-retryCmd curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+retryCmd curl -fsSL --max-time 120 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+retryCmd curl -fsSL --max-time 120 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+retryCmd curl -fsSL --max-time 120 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 
 echo "Validating checksum for rke2-images.linux-${ARCH}.tar.zst"
 ZIP_NAME="rke2-images.linux-${ARCH}.tar.zst"

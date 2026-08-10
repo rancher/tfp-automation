@@ -49,8 +49,8 @@ fi
 
 echo "Installing kubectl"
 KUBECTL_VERSION="v1.36.0"
-retryCmd curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-retryCmd curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
+retryCmd curl -fsSL --max-time 120 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
+retryCmd curl -fsSL --max-time 120 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
 echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
@@ -79,7 +79,7 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/k3s/registries.yaml > /dev/null
 
-retryCmd curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
+retryCmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
 chmod +x install.sh
 retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server sh install.sh
 
