@@ -59,7 +59,7 @@ require (
 	github.com/rancher/tests v0.0.0-20260807182903-06ab37e1aeac
 	github.com/rancher/tests/actions v0.0.0-20260807182903-06ab37e1aeac
 	github.com/sirupsen/logrus v1.9.4
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -132,6 +132,7 @@ require (
 	golang.org/x/tools v0.47.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/validator.v2 v2.0.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	howett.net/plist v1.0.1 // indirect
 	k8s.io/component-helpers v0.36.3 // indirect
 	k8s.io/streaming v0.36.3 // indirect
@@ -170,7 +171,6 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.40.0
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
