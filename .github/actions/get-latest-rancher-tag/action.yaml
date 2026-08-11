@@ -75,13 +75,14 @@ runs:
             if [ "$ASSET_COUNT" -lt 17 ]; then
               echo "Asset count: $ASSET_COUNT. Expected at least 17 assets..."
               LATEST_VERSION=""
-            else
-              echo "Checking for Prime artifacts for $LATEST_VERSION..."
-              curl -sf ${{ inputs.prime_artifacts_path }}/$LATEST_VERSION/rancher-images.txt > /dev/null
-              if [[ $? -ne 0 ]]; then
-                echo "Unable to reach: ${{ inputs.prime_artifacts_path }}/$LATEST_VERSION/rancher-images.txt"
-                LATEST_VERSION=""
-              fi
+            # Uncomment once v2.15 prime artifacts are available
+            # else
+            #   echo "Checking for Prime artifacts for $LATEST_VERSION..."
+            #   curl -sf ${{ inputs.prime_artifacts_path }}/$LATEST_VERSION/rancher-images.txt > /dev/null
+            #   if [[ $? -ne 0 ]]; then
+            #     echo "Unable to reach: ${{ inputs.prime_artifacts_path }}/$LATEST_VERSION/rancher-images.txt"
+            #     LATEST_VERSION=""
+            #   fi
             fi
           else
             RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)

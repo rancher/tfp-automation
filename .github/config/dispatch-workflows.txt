@@ -1,8 +1,5 @@
 day2-ops-rancher2.yaml
 post-release-sanity.yaml
 post-release-sanity-upgrade.yaml
-sanity-test.yaml
-sanity-turtles-off-test.yaml
-sanity-upgrade-test.yaml
 community-prime-upgrade-test.yaml
 prime-community-upgrade-test.yaml
