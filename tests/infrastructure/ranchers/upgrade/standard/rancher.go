@@ -70,11 +70,6 @@ func UpgradingRancher(t *testing.T, provider string, cattleConfig map[string]any
 		require.NoError(t, err)
 	}
 
-	if standaloneConfig.UpgradeLocalCluster {
-		err = provisioning.UpgradeLocalCluster(client, terraformConfig)
-		require.NoError(t, err)
-	}
-
 	return nil
 }
 

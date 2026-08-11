@@ -1,5 +1,1 @@
 day2-ops-rancher2.yaml
-post-release-sanity.yaml
-post-release-sanity-upgrade.yaml
-community-prime-upgrade-test.yaml
-prime-community-upgrade-test.yaml
