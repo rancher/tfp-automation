@@ -59,7 +59,7 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/k3s/registries.yaml > /dev/null
 
-retryCmd curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
+retryCmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
 chmod +x install.sh
 retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server sh install.sh
 

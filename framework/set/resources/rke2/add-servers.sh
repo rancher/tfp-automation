@@ -46,9 +46,9 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-retryCmd curl -fsSL --max-time 30 -o rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-retryCmd curl -fsSL --max-time 30 -o rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-retryCmd curl -fsSL --max-time 30 -o sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+retryCmd curl -fsSL --max-time 120 -o rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+retryCmd curl -fsSL --max-time 120 -o rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+retryCmd curl -fsSL --max-time 120 -o sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 
 echo "Validating checksum for rke2.linux-${ARCH}.tar.gz"
 ZIP_NAME="rke2.linux-${ARCH}.tar.gz"
@@ -92,7 +92,7 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee /etc/rancher/rke2/registries.yaml > /dev/null
 
-retryCmd curl -fsSL --max-time 30 -o install.sh https://get.rke2.io
+retryCmd curl -fsSL --max-time 120 -o install.sh https://get.rke2.io
 chmod +x install.sh
 
 retryCmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh
