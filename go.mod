@@ -38,7 +38,7 @@ replace (
 	k8s.io/mount-utils => k8s.io/mount-utils v0.36.3
 	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.36.3
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.36.3
-	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.13.4
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.13.2
 )
 
 require (
