@@ -14,10 +14,11 @@ Please see below for more details for your config. Please note that the config c
 7. [Setup RKE2 Cluster](#Setup-RKE2-Cluster)
 8. [Setup K3S Cluster](#Setup-K3S-Cluster)
 9. [Setup Airgap RKE2 Cluster](#Setup-Airgap-RKE2-Cluster)
-10. [Setup Dualstack RKE2 Cluster](#Setup-Dualstack-RKE2-Cluster)
-11. [Setup Dualstack K3S Cluster](#Setup-Dualstack-K3S-Cluster)
-12. [Setup IPv6 RKE2 Cluster](#Setup-IPv6-RKE2-Cluster)
-13. [Setup IPv6 K3S Cluster](#Setup-IPv6-K3S-Cluster)
+10. [Setup Airgap RKE2 Cluster](#Setup-Airgap-K3S-Cluster)
+11. [Setup Dualstack RKE2 Cluster](#Setup-Dualstack-RKE2-Cluster)
+12. [Setup Dualstack K3S Cluster](#Setup-Dualstack-K3S-Cluster)
+13. [Setup IPv6 RKE2 Cluster](#Setup-IPv6-RKE2-Cluster)
+14. [Setup IPv6 K3S Cluster](#Setup-IPv6-K3S-Cluster)
 
 ## Setup Rancher
 
@@ -708,6 +709,63 @@ See the below examples on how to run in the CLI:
 
 To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
+## Setup Airgap K3S cluster
+
+See below an example config on setting up a standalone airgapped RKE2 cluster:
+
+```yaml
+terraform:
+  privateKeyPath: ""
+  privateFullChainPath: ""
+  privateKeyPath: ""
+  resourcePrefix: ""
+  awsCredentials:
+    awsAccessKey: ""
+    awsSecretKey: ""
+  awsConfig:
+    ami: ""
+    awsKeyName: ""
+    awsInstanceType: ""
+    region: ""
+    awsSecurityGroups: [""]
+    awsSubnetID: ""
+    awsVpcID: ""
+    awsZoneLetter: ""
+    awsRootSize: 100
+    awsRoute53Zone: ""
+    awsUser: ""
+    registryRootSize: 500
+    sshConnectionType: "ssh"
+    timeout: ""
+  standalone:
+    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
+    osGroup: ""                                   # REQUIRED - fill with group of the instance created
+    osUser: ""                                    # REQUIRED - fill with username of the instance created
+    rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry
+    rancherChartRepository: ""                    # REQUIRED - fill with desired value. Must end with a trailing /
+    rancherHostname: ""                           # REQUIRED - fill with desired value
+    rancherImage: ""                              # REQUIRED - fill with desired value
+    rancherTagVersion: ""                         # REQUIRED - fill with desired value
+    repo: ""                                      # REQUIRED - fill with desired value
+    k3sVersion: ""                                # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.6)
+  standaloneRegistry:
+    assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
+    registryName: ""                              # REQUIRED - fill with desired value
+```
+
+Before running, be sure to run the following commands:
+
+```yaml
+export CATTLE_TEST_CONFIG=<path/to/yaml>
+export CLOUD_PROVIDER_VERSION=""
+```
+
+See the below examples on how to run in the CLI:
+
+`go run main.go --airgap-k3s`
+
+To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
+
 ## Setup Dualstack RKE2 cluster
 
 See below an example config on setting up a standalone dual-stack RKE2 cluster:
@@ -801,7 +859,7 @@ terraform:
     registryPassword: ""                          # REQUIRED
     registryUsername: ""                          # REQUIRED
     repo: ""                                      # REQUIRED - fill with desired value
-    k3sVersion: ""                               # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7+k3s1)
+    k3sVersion: ""                                # REQUIRED - the format MUST be in `v1.xx.x` (i.e. v1.32.7+k3s1)
 ```
 
 Before running, be sure to run the following commands:

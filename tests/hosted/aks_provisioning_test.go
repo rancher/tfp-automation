@@ -31,7 +31,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type TfpSanityAKSProvisioningTestSuite struct {
+type TfpAKSProvisioningTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
 	standardUserClient         *rancher.Client
@@ -45,7 +45,7 @@ type TfpSanityAKSProvisioningTestSuite struct {
 	terraformOptions           *terraform.Options
 }
 
-func (s *TfpSanityAKSProvisioningTestSuite) SetupSuite() {
+func (s *TfpAKSProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
@@ -54,7 +54,7 @@ func (s *TfpSanityAKSProvisioningTestSuite) SetupSuite() {
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
 }
 
-func (s *TfpSanityAKSProvisioningTestSuite) TestTfpProvisioningAKSSanity() {
+func (s *TfpAKSProvisioningTestSuite) TestTfpProvisioningAKSCluster() {
 	var err error
 	var testUser, testPassword string
 
@@ -74,7 +74,7 @@ func (s *TfpSanityAKSProvisioningTestSuite) TestTfpProvisioningAKSSanity() {
 		nodePools         []config.Nodepool
 		kubernetesVersion string
 	}{
-		{"Sanity_AKS", modules.HostedAzureAKS, aksNodePools, s.terratestConfig.AKSKubernetesVersion},
+		{"AKS_Hosted_Cluster", modules.HostedAzureAKS, aksNodePools, s.terratestConfig.AKSKubernetesVersion},
 	}
 
 	for _, tt := range tests {
@@ -129,6 +129,6 @@ func (s *TfpSanityAKSProvisioningTestSuite) TestTfpProvisioningAKSSanity() {
 	}
 }
 
-func TestTfpSanityAKSProvisioningTestSuite(t *testing.T) {
-	suite.Run(t, new(TfpSanityAKSProvisioningTestSuite))
+func TestTfpAKSProvisioningTestSuite(t *testing.T) {
+	suite.Run(t, new(TfpAKSProvisioningTestSuite))
 }

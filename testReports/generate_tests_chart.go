@@ -41,6 +41,7 @@ type TestResult struct {
 
 type datedResult struct {
 	TestResult
+	SourcePath string
 	ObservedAt time.Time
 }
 
@@ -52,6 +53,7 @@ func main() {
 	htmlPath := filepath.Join(resultsDir, testSummaryFile)
 	results := loadTestResults(resultsDir)
 	results = dedupeResults(results)
+	results = pruneStaleHistoryResults(results)
 	results = applyRetention(results, resolveRetentionDays())
 	writeHistory(results, historyOutputPath)
 	workflowMap := groupByWorkflow(results)
@@ -189,10 +191,43 @@ func normalizeResults(items []TestResult, sourcePath string) []datedResult {
 			tr.Timestamp = observedAt.UTC().Format(time.RFC3339)
 		}
 
-		clean = append(clean, datedResult{TestResult: tr, ObservedAt: observedAt})
+		clean = append(clean, datedResult{TestResult: tr, SourcePath: sourcePath, ObservedAt: observedAt})
 	}
 
 	return clean
+}
+
+func pruneStaleHistoryResults(items []datedResult) []datedResult {
+	activeJobs := make(map[string]struct{})
+
+	for _, item := range items {
+		if isHistorySource(item.SourcePath) {
+			continue
+		}
+
+		activeJobs[jobKey(item.Workflow, item.Job)] = struct{}{}
+	}
+
+	if len(activeJobs) == 0 {
+		return items
+	}
+
+	filtered := make([]datedResult, 0, len(items))
+	for _, item := range items {
+		if _, ok := activeJobs[jobKey(item.Workflow, item.Job)]; ok {
+			filtered = append(filtered, item)
+		}
+	}
+
+	return filtered
+}
+
+func isHistorySource(path string) bool {
+	return strings.Contains(filepath.ToSlash(path), "/history/")
+}
+
+func jobKey(workflow, job string) string {
+	return workflow + "|" + job
 }
 
 func parseObservedAt(tr TestResult) time.Time {

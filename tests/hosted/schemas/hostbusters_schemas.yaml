@@ -1,10 +1,10 @@
 - projects:
   - RRT
   - RM
-  suite: Go Automation/TFP/Sanity
+  suite: Go Automation/TFP/Hosted
   cases:
   - description: Provisions downstream AKS hosted cluster
-    title: Sanity_AKS
+    title: AKS_Hosted_Cluster
     priority: 4
     type: 8
     is_flaky: 0
@@ -25,7 +25,7 @@
       "18": Hostbusters
 
   - description: Provisions downstream EKS hosted cluster
-    title: Sanity_EKS
+    title: EKS_Hosted_Cluster
     priority: 4
     type: 8
     is_flaky: 0
@@ -46,13 +46,34 @@
       "18": Hostbusters
 
   - description: Provisions downstream GKE hosted cluster
-    title: Sanity_GKE
+    title: GKE_Hosted_Cluster
     priority: 4
     type: 8
     is_flaky: 0
     automation: 2
     steps:
     - action: Provision downstream GKE hosted cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+    custom_field:
+      "14": Validation
+      "18": Hostbusters
+
+  - description: Provisions downstream IPv6 EKS hosted cluster
+    title: IPv6_EKS_Hosted_Cluster
+    priority: 4
+    type: 8
+    is_flaky: 0
+    automation: 2
+    steps:
+    - action: Provision downstream IPv6 EKS hosted cluster
       expectedresult: ""
       data: ""
       position: 1
