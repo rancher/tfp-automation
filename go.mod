@@ -38,7 +38,8 @@ replace (
 	k8s.io/mount-utils => k8s.io/mount-utils v0.36.3
 	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.36.3
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.36.3
-	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.13.4
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.14.0
+	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.0
 )
 
 require (
@@ -112,6 +113,8 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20251013123823-9fd1530e3ec3 // indirect
 	github.com/lxzan/gws v1.8.9 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
+	github.com/onsi/ginkgo/v2 v2.32.0 // indirect
+	github.com/onsi/gomega v1.42.1 // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/rancher/ali-operator v1.14.0-rc.1 // indirect
@@ -136,8 +139,9 @@ require (
 	howett.net/plist v1.0.1 // indirect
 	k8s.io/component-helpers v0.36.3 // indirect
 	k8s.io/streaming v0.36.3 // indirect
+	sigs.k8s.io/cluster-api/api v0.0.0-00010101000000-000000000000 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.4.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
 )
 
 require (
@@ -188,7 +192,7 @@ require (
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-openapi/jsonpointer v0.22.4 // indirect
 	github.com/go-openapi/jsonreference v0.21.4 // indirect
 	github.com/go-openapi/swag v0.25.4 // indirect
@@ -227,7 +231,7 @@ require (
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/apiextensions-apiserver v0.36.1 // indirect
+	k8s.io/apiextensions-apiserver v0.36.3 // indirect
 	k8s.io/cli-runtime v0.36.3 // indirect
 	k8s.io/client-go v12.0.0+incompatible // indirect
 	k8s.io/component-base v0.36.3 // indirect
@@ -237,7 +241,6 @@ require (
 	k8s.io/kubectl v0.36.1 // indirect
 	k8s.io/utils v0.0.0-20260507154919-ff6756f316d2 // indirect
 	sigs.k8s.io/cli-utils v0.37.2 // indirect
-	sigs.k8s.io/cluster-api v1.12.2 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.21.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.21.1 // indirect
