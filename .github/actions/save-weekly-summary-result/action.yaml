@@ -1,0 +1,32 @@
+---
+name: Save Weekly Summary Result
+description: Create and upload weekly summary test result artifact
+inputs:
+  rancher_version:
+    description: Rancher version to include in the summary payload
+    required: true
+  workflow:
+    description: Workflow identifier used in payload and artifact naming
+    required: true
+  job:
+    description: Job identifier used in payload and artifact naming
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - id: save
+      shell: bash
+      run: |
+        artifact_name="test-result-${{ inputs.workflow }}-${{ inputs.job }}-${{ github.run_id }}"
+        artifact_path="${artifact_name}-${{ github.run_attempt }}.json"
+
+        echo "{\"date\": \"$(date -u \"+%B %d, %Y at %I:%M %p\")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ inputs.rancher_version }}\", \"workflow\": \"${{ inputs.workflow }}\", \"job\": \"${{ inputs.job }}\" }" > "$artifact_path"
+
+        echo "artifact_name=$artifact_name" >> "$GITHUB_OUTPUT"
+        echo "artifact_path=$artifact_path" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f #v7
+      with:
+        name: ${{ steps.save.outputs.artifact_name }}
+        path: ${{ steps.save.outputs.artifact_path }}

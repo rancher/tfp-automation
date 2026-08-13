@@ -2,7 +2,6 @@ package sanity
 
 import (
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -26,13 +25,13 @@ import (
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 
 	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
-	setupipv6 "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/ipv6"
+	setupstandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup/standard"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
-type TfpSanityIPv6HostedProvisioningTestSuite struct {
+type TfpGKEProvisioningTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
 	standardUserClient         *rancher.Client
@@ -46,21 +45,16 @@ type TfpSanityIPv6HostedProvisioningTestSuite struct {
 	terraformOptions           *terraform.Options
 }
 
-func (s *TfpSanityIPv6HostedProvisioningTestSuite) TearDownSuite() {
-	_, keyPath := rancher2.SetKeyPath(keypath.IPv6KeyPath, s.terratestConfig.PathToRepo, s.terraformConfig.Provider)
-	cleanup.Cleanup(s.T(), s.standaloneTerraformOptions, keyPath)
-}
-
-func (s *TfpSanityIPv6HostedProvisioningTestSuite) SetupSuite() {
+func (s *TfpGKEProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
 
-	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = setupipv6.SetupIPv6Rancher(s.T(), s.session, keypath.IPv6KeyPath, s.cattleConfig)
+	s.client, _, s.standaloneTerraformOptions, s.terraformOptions, s.cattleConfig = setupstandard.SetupRancher(s.T(), s.session, keypath.HostedKeyPath, s.cattleConfig)
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
 }
 
-func (s *TfpSanityIPv6HostedProvisioningTestSuite) TestTfpProvisioningSanityIPv6Hosted() {
+func (s *TfpGKEProvisioningTestSuite) TestTfpProvisioningGKECluster() {
 	var err error
 	var testUser, testPassword string
 
@@ -72,29 +66,25 @@ func (s *TfpSanityIPv6HostedProvisioningTestSuite) TestTfpProvisioningSanityIPv6
 
 	standardToken := standardUserToken.Token
 
-	eksNodePools := []config.Nodepool{{DiskSize: 100, InstanceType: s.terraformConfig.AWSConfig.AWSInstanceType, DesiredSize: 3, MaxSize: 3, MinSize: 3}}
+	gkeNodePools := []config.Nodepool{{Quantity: 1, MaxPodsConstraint: 110}}
 
 	tests := []struct {
 		name              string
-		nodeRoles         []config.Nodepool
 		module            string
+		nodePools         []config.Nodepool
 		kubernetesVersion string
 	}{
-		{"Sanity_IPv6_EKS", eksNodePools, modules.HostedAWSEKS, s.terratestConfig.EKSKubernetesVersion},
+		{"GKE_Hosted_Cluster", modules.HostedGoogleGKE, gkeNodePools, s.terratestConfig.GKEKubernetesVersion},
 	}
 
 	for _, tt := range tests {
-		if !(strings.Contains(s.terraformConfig.Standalone.RancherTagVersion, "v2.14") || strings.Contains(s.terraformConfig.Standalone.RancherTagVersion, "head")) {
-			s.T().Skip("Skipping IPv6 EKS test - only supported on Rancher v2.14+")
-		}
-
 		s.T().Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			rancher, terraform, terratest, _ := config.LoadTFPConfigs(s.cattleConfig)
 			rancher.AdminToken = standardToken
-			terratest.Nodepools = tt.nodeRoles
 			terraform.Module = tt.module
+			terratest.Nodepools = tt.nodePools
 			terratest.KubernetesVersion = tt.kubernetesVersion
 
 			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(s.terraformConfig, s.terratestConfig, s.terraformOptions, tt.name, configs.NestedRancherModuleDir)
@@ -103,9 +93,8 @@ func (s *TfpSanityIPv6HostedProvisioningTestSuite) TestTfpProvisioningSanityIPv6
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
-
 			terratest, err = provisioning.GetK8sVersion(s.standardUserClient, terraform, terratest)
-			require.NoError(t, err)
+			require.NoError(s.T(), err)
 
 			terraform = provisioning.UniquifyTerraform(terraform)
 
@@ -116,7 +105,7 @@ func (s *TfpSanityIPv6HostedProvisioningTestSuite) TestTfpProvisioningSanityIPv6
 			clusters, _ := provisioning.Provision(s.T(), s.client, s.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
-			err = provisioningActions.VerifyClusterReady(s.client, clusters[0])
+			err = provisioningActions.VerifyClusterReadyV3(s.client, clusters[0].Name)
 			require.NoError(s.T(), err)
 
 			logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
@@ -140,6 +129,6 @@ func (s *TfpSanityIPv6HostedProvisioningTestSuite) TestTfpProvisioningSanityIPv6
 	}
 }
 
-func TestTfpSanityIPv6HostedProvisioningTestSuite(t *testing.T) {
-	suite.Run(t, new(TfpSanityIPv6HostedProvisioningTestSuite))
+func TestTfpGKEProvisioningTestSuite(t *testing.T) {
+	suite.Run(t, new(TfpGKEProvisioningTestSuite))
 }

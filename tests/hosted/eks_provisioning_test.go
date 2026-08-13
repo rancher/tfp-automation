@@ -31,7 +31,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type TfpSanityEKSProvisioningTestSuite struct {
+type TfpEKSProvisioningTestSuite struct {
 	suite.Suite
 	client                     *rancher.Client
 	standardUserClient         *rancher.Client
@@ -45,7 +45,7 @@ type TfpSanityEKSProvisioningTestSuite struct {
 	terraformOptions           *terraform.Options
 }
 
-func (s *TfpSanityEKSProvisioningTestSuite) SetupSuite() {
+func (s *TfpEKSProvisioningTestSuite) SetupSuite() {
 	testSession := session.NewSession()
 	s.session = testSession
 	s.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
@@ -54,7 +54,7 @@ func (s *TfpSanityEKSProvisioningTestSuite) SetupSuite() {
 	s.rancherConfig, s.terraformConfig, s.terratestConfig, s.standaloneConfig = config.LoadTFPConfigs(s.cattleConfig)
 }
 
-func (s *TfpSanityEKSProvisioningTestSuite) TestTfpProvisioningEKSSanity() {
+func (s *TfpEKSProvisioningTestSuite) TestTfpProvisioningEKSCluster() {
 	var err error
 	var testUser, testPassword string
 
@@ -74,7 +74,7 @@ func (s *TfpSanityEKSProvisioningTestSuite) TestTfpProvisioningEKSSanity() {
 		nodePools         []config.Nodepool
 		kubernetesVersion string
 	}{
-		{"Sanity_EKS", modules.HostedAWSEKS, eksNodePools, s.terratestConfig.EKSKubernetesVersion},
+		{"EKS_Hosted_Cluster", modules.HostedAWSEKS, eksNodePools, s.terratestConfig.EKSKubernetesVersion},
 	}
 
 	for _, tt := range tests {
@@ -129,6 +129,6 @@ func (s *TfpSanityEKSProvisioningTestSuite) TestTfpProvisioningEKSSanity() {
 	}
 }
 
-func TestTfpSanityEKSProvisioningTestSuite(t *testing.T) {
-	suite.Run(t, new(TfpSanityEKSProvisioningTestSuite))
+func TestTfpEKSProvisioningTestSuite(t *testing.T) {
+	suite.Run(t, new(TfpEKSProvisioningTestSuite))
 }

@@ -1,5 +1,5 @@
 ---
-name: Sanity GKE Testing
+name: GKE Provisioning
 
 on:
   schedule:
@@ -38,8 +38,8 @@ permissions:
 env:
   CLOUD_PROVIDER_VERSION: "${{ vars.GCP_PROVIDER_VERSION }}"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
-  PACKAGE: "sanity"
-  TEST_SUITE: "^TestTfpSanityGKEProvisioningTestSuite$"
+  PACKAGE: "hosted"
+  TEST_SUITE: "^TestTfpGKEProvisioningTestSuite$"
   TIMEOUT: "2h"
 
 jobs:
@@ -55,7 +55,7 @@ jobs:
       CLOUD_PROVIDER: "gke"
       DOWNSTREAM_CLUSTER_PROVIDER: "google"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_16 }}"
-      HOSTNAME_PREFIX: "tfp-gke-216"
+      HOSTNAME_PREFIX: "gke-216"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -138,7 +138,7 @@ jobs:
           value: |
             ${{ 
               github.event.inputs.rancher_chart_version || 
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.rancher_chart_version) || 
               (github.event_name == 'schedule' && vars.RELEASED_RANCHER_CHART_VERSION_2_15) ||
               (github.event.inputs.run_all_versions == 'true' && vars.RELEASED_RANCHER_CHART_VERSION_2_15)
             }}
@@ -177,7 +177,7 @@ jobs:
             insecure: true
             cleanup: true
           terraform:
-            cni: "${{ secrets.CNI }}"
+            cni: "${{ vars.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             localHostedCluster: true
@@ -259,7 +259,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run GKE Provisioning Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -300,18 +300,13 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Save test result as artifact for weekly summary
+      - name: Save test result weekly summary
         if: always() && github.event_name == 'schedule'
-        run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-gke-test\", \"job\": \"v2-16\" }" > test-result-sanity-gke-test-v2-16-${{ github.run_id }}-${{ github.run_attempt }}.json
-        shell: bash
-
-      - name: Upload test result weekly summary
-        if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/save-weekly-summary-result
         with:
-          name: test-result-sanity-gke-test-v2-16-${{ github.run_id }}
-          path: test-result-sanity-gke-test-v2-16-${{ github.run_id }}-${{ github.run_attempt }}.json
+          rancher_version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          workflow: gke-provisioning
+          job: v2-16
   
   v2-15:
     if: |
@@ -325,7 +320,7 @@ jobs:
       CLOUD_PROVIDER: "gke"
       DOWNSTREAM_CLUSTER_PROVIDER: "google"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_15 }}"
-      HOSTNAME_PREFIX: "tfp-gke-215"
+      HOSTNAME_PREFIX: "gke-215"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -447,7 +442,7 @@ jobs:
             insecure: true
             cleanup: true
           terraform:
-            cni: "${{ secrets.CNI }}"
+            cni: "${{ vars.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             localHostedCluster: true
@@ -529,7 +524,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run GKE Provisioning Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -570,18 +565,13 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Save test result as artifact for weekly summary
+      - name: Save test result weekly summary
         if: always() && github.event_name == 'schedule'
-        run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-gke-test\", \"job\": \"v2-15\" }" > test-result-sanity-gke-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
-        shell: bash
-
-      - name: Upload test result weekly summary
-        if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/save-weekly-summary-result
         with:
-          name: test-result-sanity-gke-test-v2-15-${{ github.run_id }}
-          path: test-result-sanity-gke-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
+          rancher_version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          workflow: gke-provisioning
+          job: v2-15
 
   v2-14:
     if: |
@@ -595,7 +585,7 @@ jobs:
       CLOUD_PROVIDER: "gke"
       DOWNSTREAM_CLUSTER_PROVIDER: "google"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
-      HOSTNAME_PREFIX: "tfp-gke-214"
+      HOSTNAME_PREFIX: "gke-214"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -717,7 +707,7 @@ jobs:
             insecure: true
             cleanup: true
           terraform:
-            cni: "${{ secrets.CNI }}"
+            cni: "${{ vars.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             localHostedCluster: true
@@ -800,7 +790,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run GKE Provisioning Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -841,18 +831,13 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Save test result as artifact for weekly summary
+      - name: Save test result weekly summary
         if: always() && github.event_name == 'schedule'
-        run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-gke-test\", \"job\": \"v2-14\" }" > test-result-sanity-gke-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
-        shell: bash
-
-      - name: Upload test result weekly summary
-        if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/save-weekly-summary-result
         with:
-          name: test-result-sanity-gke-test-v2-14-${{ github.run_id }}
-          path: test-result-sanity-gke-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
+          rancher_version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          workflow: gke-provisioning
+          job: v2-14
 
   v2-13:
     if: |
@@ -865,7 +850,7 @@ jobs:
       CLOUD_PROVIDER: "gke"
       DOWNSTREAM_CLUSTER_PROVIDER: "google"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_13 }}"
-      HOSTNAME_PREFIX: "tfp-gke-213"
+      HOSTNAME_PREFIX: "gke-213"
       REPORTING_ENABLED: >-
         ${{
           github.event_name == 'schedule' ||
@@ -987,7 +972,7 @@ jobs:
             insecure: true
             cleanup: true
           terraform:
-            cni: "${{ secrets.CNI }}"
+            cni: "${{ vars.CNI }}"
             defaultClusterRoleForProjectMembers: "true"
             enableNetworkPolicy: false
             generateV3Token: true
@@ -1071,7 +1056,7 @@ jobs:
         run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
         shell: bash
 
-      - name: Run Sanity Test Suite
+      - name: Run GKE Provisioning Test Suite
         uses: ./.github/actions/run-test-suite
         with:
           package: ${{ env.PACKAGE }}
@@ -1112,15 +1097,10 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Save test result as artifact for weekly summary
+      - name: Save test result weekly summary
         if: always() && github.event_name == 'schedule'
-        run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-gke-test\", \"job\": \"v2-13\" }" > test-result-sanity-gke-test-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
-        shell: bash
-
-      - name: Upload test result weekly summary
-        if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/save-weekly-summary-result
         with:
-          name: test-result-sanity-gke-test-v2-13-${{ github.run_id }}
-          path: test-result-sanity-gke-test-v2-13-${{ github.run_id }}-${{ github.run_attempt }}.json
+          rancher_version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          workflow: gke-provisioning
+          job: v2-13
