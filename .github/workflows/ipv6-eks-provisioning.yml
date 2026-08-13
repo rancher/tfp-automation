@@ -57,10 +57,10 @@ env:
 
 jobs:
   v2-16:
-  #   if: |
-  #     github.event_name == 'schedule' ||
-  #     github.event.inputs.run_all_versions == 'true' ||
-  #     (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.run_all_versions == 'true' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.rancher_version, 'head'))
     name: ${{ github.event.inputs.rancher_version }}
     runs-on: ubuntu-latest
     environment: head
@@ -344,18 +344,13 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Save test result as artifact for weekly summary
+      - name: Save test result weekly summary
         if: always() && github.event_name == 'schedule'
-        run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-ipv6-hosted-cluster-test\", \"job\": \"v2-16\" }" > test-result-sanity-ipv6-hosted-cluster-test-v2-16-${{ github.run_id }}-${{ github.run_attempt }}.json
-        shell: bash
-
-      - name: Upload test result weekly summary
-        if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/save-weekly-summary-result
         with:
-          name: test-result-sanity-ipv6-hosted-cluster-test-v2-16-${{ github.run_id }}
-          path: test-result-sanity-ipv6-hosted-cluster-test-v2-16-${{ github.run_id }}-${{ github.run_attempt }}.json
+          rancher_version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          workflow: ipv6-eks-provisioning
+          job: v2-16
   
   v2-15:
     if: |
@@ -645,19 +640,13 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Save test result as artifact for weekly summary
+      - name: Save test result weekly summary
         if: always() && github.event_name == 'schedule'
-        run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-ipv6-hosted-cluster-test\", \"job\": \"v2-15\" }" > test-result-sanity-ipv6-hosted-cluster-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
-        shell: bash
-
-      - name: Upload test result weekly summary
-        if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/save-weekly-summary-result
         with:
-          name: test-result-sanity-ipv6-hosted-cluster-test-v2-15-${{ github.run_id }}
-          path: test-result-sanity-ipv6-hosted-cluster-test-v2-15-${{ github.run_id }}-${{ github.run_attempt }}.json
-
+          rancher_version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          workflow: ipv6-eks-provisioning
+          job: v2-15
   v2-14:
     if: |
       github.event_name == 'schedule' ||
@@ -947,15 +936,10 @@ jobs:
           job-status: ${{ steps.set-job-status.outputs.job_status }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Save test result as artifact for weekly summary
+      - name: Save test result weekly summary
         if: always() && github.event_name == 'schedule'
-        run: |
-          echo "{\"date\": \"$(date -u "+%B %d, %Y at %I:%M %p")\", \"status\": \"${{ job.status }}\", \"rancher_version\": \"${{ env.RANCHER_VERSION }}\", \"workflow\": \"sanity-ipv6-hosted-cluster-test\", \"job\": \"v2-14\" }" > test-result-sanity-ipv6-hosted-cluster-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
-        shell: bash
-
-      - name: Upload test result weekly summary
-        if: always() && github.event_name == 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/save-weekly-summary-result
         with:
-          name: test-result-sanity-ipv6-hosted-cluster-test-v2-14-${{ github.run_id }}
-          path: test-result-sanity-ipv6-hosted-cluster-test-v2-14-${{ github.run_id }}-${{ github.run_attempt }}.json
+          rancher_version: ${{ env.UPGRADED_RANCHER_VERSION }}
+          workflow: ipv6-eks-provisioning
+          job: v2-14
