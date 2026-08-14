@@ -27,7 +27,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Get workflow list from dispatch-workflows.yaml
+      - name: Get workflow list from dispatch-workflows.yml
         id: get-list
         uses: ./.github/actions/get-dispatch-workflow-list
 
@@ -250,7 +250,7 @@ jobs:
   trigger-tests-v215:
     needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v215, get-dispatch-workflow-list]
     if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v215 == 'true' && (needs.check-individual-tests-v215.outputs.failed_workflows_v215 != '' || github.event.inputs.override == 'true') }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
+    uses: ./.github/workflows/dispatch-workflows.yml
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v215 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v215 }}
@@ -259,7 +259,7 @@ jobs:
   trigger-tests-v214:
     needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v214, get-dispatch-workflow-list]
     if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v214 == 'true' && (needs.check-individual-tests-v214.outputs.failed_workflows_v214 != '' || github.event.inputs.override == 'true') }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
+    uses: ./.github/workflows/dispatch-workflows.yml
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v214 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v214 }}
@@ -268,7 +268,7 @@ jobs:
   trigger-tests-v213:
     needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v213, get-dispatch-workflow-list]
     if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v213 == 'true' && (needs.check-individual-tests-v213.outputs.failed_workflows_v213 != '' || github.event.inputs.override == 'true') }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
+    uses: ./.github/workflows/dispatch-workflows.yml
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v213 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v213 }}
@@ -277,7 +277,7 @@ jobs:
   trigger-tests-v212:
     needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v212, get-dispatch-workflow-list]
     if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v212 == 'true' && (needs.check-individual-tests-v212.outputs.failed_workflows_v212 != '' || github.event.inputs.override == 'true') }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
+    uses: ./.github/workflows/dispatch-workflows.yml
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v212 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v212 }}
@@ -286,7 +286,7 @@ jobs:
   trigger-tests-v211:
     needs: [check-latest-rancher-tag, set-latest-chart-version, check-individual-tests-v211, get-dispatch-workflow-list]
     if: ${{ needs.check-latest-rancher-tag.outputs.is_tag_new_v211 == 'true' && (needs.check-individual-tests-v211.outputs.failed_workflows_v211 != '' || github.event.inputs.override == 'true') }}
-    uses: ./.github/workflows/dispatch-workflows.yaml
+    uses: ./.github/workflows/dispatch-workflows.yml
     with:
       rancher_version: ${{ needs.check-latest-rancher-tag.outputs.latest_tag_v211 }}
       rancher_chart_version: ${{ needs.set-latest-chart-version.outputs.chart_version_v211 }}
