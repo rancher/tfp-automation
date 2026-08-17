@@ -110,7 +110,7 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string, 
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != rancherinternal.Head {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, terraformConfig, standaloneTerraformOptions)
 	}
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {

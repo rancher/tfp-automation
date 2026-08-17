@@ -6,6 +6,9 @@ RKE2_SERVER_TWO_IP=$3
 RKE2_SERVER_THREE_IP=$4
 USER=$5
 PEM_FILE=$6
+REPO=$7
+RANCHER_TAG_VERSION=$8
+RANCHER_CHART_REPO=$9
 
 set -e
 
@@ -20,6 +23,39 @@ curl -fsSL --max-time 30 -o rke2-images.linux-arm64.tar.zst https://github.com/r
 curl -fsSL --max-time 30 -o sha256sum-amd64.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-amd64.txt
 curl -fsSL --max-time 30 -o sha256sum-arm64.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-arm64.txt
 curl -fsSL --max-time 30 -o install.sh https://get.rke2.io
+
+if [[ $REPO == "prime-release" ]]; then
+    . /etc/os-release
+
+    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
+    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
+    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
+
+    HEAD_SERIES=""
+    if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
+        HEAD_SERIES="${BASH_REMATCH[1]}"
+    fi
+
+    if [[ -z "$HEAD_SERIES" && $RANCHER_TAG_VERSION == "head" ]]; then
+      HEAD_SERIES="${RANCHER_HEAD_SERIES:-}"
+      if [[ -z "$HEAD_SERIES" ]]; then
+        HEAD_SERIES=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher[].version' | sed -nE 's/^([0-9]+\.[0-9]+)\.[0-9]+.*-head$/\1/p' | sort -Vu | tail -n 1)
+      fi
+    fi
+
+    if [[ $RANCHER_TAG_VERSION == "head" && -z "$HEAD_SERIES" ]]; then
+        LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher | map(select(.version | test("^"))) | sort_by(.created) | .[-1].version')
+        RANCHER_TAG_VERSION="${LATEST_CHART_VERSION}"
+    fi
+
+    if [[ -n "$HEAD_SERIES" ]]; then
+        SERIES_FILTER="^${HEAD_SERIES//./\\\\.}"
+        LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r ".entries.rancher | map(select(.version | test(\"${SERIES_FILTER}\"))) | sort_by(.created) | .[-1].version")
+        RANCHER_TAG_VERSION="${LATEST_CHART_VERSION}"
+    fi
+
+    printf '%s\n' "${RANCHER_TAG_VERSION}" > "/home/${USER}/rancher-tag-version.txt"
+fi
 
 chmod +x install.sh
 
@@ -76,6 +112,12 @@ sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null r
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${RKE2_SERVER_THREE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-amd64.txt ${USER}@${RKE2_SERVER_THREE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${RKE2_SERVER_THREE_IP}:/home/${USER}/
+
+if [[ $REPO == "prime-release" ]]; then
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "/home/${USER}/rancher-tag-version.txt" ${USER}@${RKE2_SERVER_ONE_IP}:/home/${USER}/rancher-tag-version.txt
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "/home/${USER}/rancher-tag-version.txt" ${USER}@${RKE2_SERVER_TWO_IP}:/home/${USER}/rancher-tag-version.txt
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "/home/${USER}/rancher-tag-version.txt" ${USER}@${RKE2_SERVER_THREE_IP}:/home/${USER}/rancher-tag-version.txt
+fi
 
 mkdir -p ~/.kube
 sudo mv kubectl /usr/local/bin/

@@ -47,30 +47,44 @@ func CreateAirgapRancher(t *testing.T, provider string, cattleConfig map[string]
 	}
 
 	_, err = operations.ReplaceValue([]string{"terraform", "airgapBastion"}, terraformConfig.AirgapBastion, cattleConfig)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
 	_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "systemDefaultRegistry"}, terraformConfig.PrivateRegistries.SystemDefaultRegistry, cattleConfig)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
 	_, err = operations.ReplaceValue([]string{"terraform", "privateRegistries", "url"}, terraformConfig.PrivateRegistries.URL, cattleConfig)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
-	rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
+	rancherConfig, terraformConfig, terratestConfig, standaloneConfig = config.LoadTFPConfigs(cattleConfig)
 	infraConfig.WriteConfigToFile(os.Getenv(rancherinternal.ConfigEnvironmentKey), cattleConfig)
 
 	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
-	_, err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
-	require.NoError(t, err)
+	_, err = ssh.StartBastionSSHTunnel(bastion, standaloneConfig.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
+	if err != nil {
+		return err
+	}
 
 	testSession := session.NewSession()
 
-	client, err := ranchersetup.PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
-	require.NoError(t, err)
+	client, err := ranchersetup.PostRancherSetup(t, terraformOptions, rancherConfig, testSession, standaloneConfig.RancherHostname, keyPath, false)
+	if err != nil {
+		return err
+	}
 
 	_, err = operations.ReplaceValue([]string{"rancher", "adminToken"}, client.RancherConfig.AdminToken, cattleConfig)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
 
 	rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
 	infraConfig.WriteConfigToFile(os.Getenv(rancherinternal.ConfigEnvironmentKey), cattleConfig)
@@ -104,7 +118,7 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 	tunnel, err := ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
 	require.NoError(t, err)
 
-	client, err := ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
+	client, err := ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, standaloneConfig.RancherHostname, keyPath, false)
 	require.NoError(t, err)
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

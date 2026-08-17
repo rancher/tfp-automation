@@ -13,8 +13,10 @@ USER=${10}
 RANCHER_IMAGE=${11}
 FULL_CHAIN_FILE=${12}
 CERT_KEY_FILE=${13}
-ROUTE53_FQDN=${14}
-RANCHER_AGENT_IMAGE=${15}
+REPO=${14}
+RANCHER_CHART_REPO=${15}
+ROUTE53_FQDN=${16}
+RANCHER_AGENT_IMAGE=${17}
 
 set -e
 
@@ -101,9 +103,43 @@ create_registry() {
 
 fetch_images() {
     echo "Fetching Rancher image lists..."
-    curl -fsSL --max-time 30 -o /home/${USER}/rancher-images.txt ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt
-    curl -fsSL --max-time 30 -o /home/${USER}/rancher-windows-images.txt ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt
-    curl -fsSL --max-time 30 -o /home/${USER}/sha256sum.txt ${ASSET_DIR}${RANCHER_VERSION}/sha256sum.txt
+
+    if [[ $REPO == "prime-release" ]]; then
+        . /etc/os-release
+
+        [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
+        [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
+        [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
+
+        HEAD_SERIES=""
+        if [[ $RANCHER_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
+            HEAD_SERIES="${BASH_REMATCH[1]}"
+        fi
+
+        if [[ -z "$HEAD_SERIES" && $RANCHER_VERSION == "head" ]]; then
+            HEAD_SERIES="${RANCHER_HEAD_SERIES:-}"
+            if [[ -z "$HEAD_SERIES" ]]; then
+                HEAD_SERIES=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher[].version' | sed -nE 's/^([0-9]+\.[0-9]+)\.[0-9]+.*-head$/\1/p' | sort -Vu | tail -n 1)
+            fi
+        fi
+
+        if [[ $RANCHER_VERSION == "head" && -z "$HEAD_SERIES" ]]; then
+            LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher | map(select(.version | test("^"))) | sort_by(.created) | .[-1].version')
+        fi
+
+        if [[ -n "$HEAD_SERIES" ]]; then
+            SERIES_FILTER="^${HEAD_SERIES//./\\\\.}"
+            LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r ".entries.rancher | map(select(.version | test(\"${SERIES_FILTER}\"))) | sort_by(.created) | .[-1].version")
+        fi
+
+        curl -fsSL --max-time 30 -o /home/${USER}/rancher-images.txt ${ASSET_DIR}v${LATEST_CHART_VERSION}/rancher-images.txt
+        curl -fsSL --max-time 30 -o /home/${USER}/rancher-windows-images.txt ${ASSET_DIR}v${LATEST_CHART_VERSION}/rancher-windows-images.txt
+        curl -fsSL --max-time 30 -o /home/${USER}/sha256sum.txt ${ASSET_DIR}v${LATEST_CHART_VERSION}/sha256sum.txt
+    else
+        curl -fsSL --max-time 30 -o /home/${USER}/rancher-images.txt ${ASSET_DIR}${RANCHER_VERSION}/rancher-images.txt
+        curl -fsSL --max-time 30 -o /home/${USER}/rancher-windows-images.txt ${ASSET_DIR}${RANCHER_VERSION}/rancher-windows-images.txt
+        curl -fsSL --max-time 30 -o /home/${USER}/sha256sum.txt ${ASSET_DIR}${RANCHER_VERSION}/sha256sum.txt
+    fi
 
     echo "Validating checksums for Rancher image lists..."
     CHECKSUM_LINE=$(grep "rancher-images.txt" /home/${USER}/sha256sum.txt)

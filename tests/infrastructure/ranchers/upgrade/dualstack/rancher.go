@@ -86,7 +86,7 @@ func UpgradeDualStackRancher(t *testing.T, client *rancher.Client, serverNodeOne
 		_, dualStackKeyPath := rancher2.SetKeyPath(keypath.DualStackKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, dualStackKeyPath)
 
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, dualStackKeyPath, terraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, dualStackKeyPath, terraformConfig, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

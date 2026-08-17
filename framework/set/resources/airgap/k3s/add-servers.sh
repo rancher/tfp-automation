@@ -13,6 +13,7 @@ REGISTRY_PASSWORD=${10}
 RANCHER_IMAGE=${11}
 RANCHER_TAG_VERSION=${12}
 RANCHER_AGENT_IMAGE=${13}
+RANCHER_TAG_FILE=/home/${USER}/rancher-tag-version.txt
 PEM_FILE=/home/$USER/airgap.pem
 MAX_SSH_RETRIES=20
 SSH_RETRY_INTERVAL_SECONDS=10
@@ -118,6 +119,11 @@ setupNetworkingFunction=$(declare -f setup_networking)
 run_ssh "${K3S_NEW_SERVER_IP}" "${setupNetworkingFunction}; setup_networking"
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
+  if [ -f "$RANCHER_TAG_FILE" ]; then
+    RANCHER_TAG_VERSION=$(tr -d '\r\n' < "$RANCHER_TAG_FILE")
+    RANCHER_TAG_VERSION="v${RANCHER_TAG_VERSION}"
+  fi
+
   run_ssh "${K3S_NEW_SERVER_IP}" "sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}"
   run_ssh "${K3S_NEW_SERVER_IP}" "sudo docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}"
   run_ssh "${K3S_NEW_SERVER_IP}" "sudo systemctl restart k3s"

@@ -8,13 +8,45 @@ RKE2_TOKEN=$5
 RANCHER_IMAGE=$6
 RANCHER_TAG_VERSION=$7
 REGISTRY=$8
-REGISTRY_USERNAME=${9}
-REGISTRY_PASSWORD=${10}
-DOCKERHUB_USER=${11}
-DOCKERHUB_PASS=${12}
-RANCHER_AGENT_IMAGE=${13}
+REPO=$9
+RANCHER_TAG_VERSION=${10}
+RANCHER_CHART_REPO=${11}
+REGISTRY_USERNAME=${12}
+REGISTRY_PASSWORD=${13}
+DOCKERHUB_USER=${14}
+DOCKERHUB_PASS=${15}
+RANCHER_AGENT_IMAGE=${16}
 
 set -e
+
+if [[ $REPO == "prime-release" ]]; then
+  . /etc/os-release
+
+  [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
+  [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
+  [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
+
+  HEAD_SERIES=""
+  if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
+      HEAD_SERIES="${BASH_REMATCH[1]}"
+  fi
+
+  if [[ -z "$HEAD_SERIES" && $RANCHER_TAG_VERSION == "head" ]]; then
+    HEAD_SERIES="${RANCHER_HEAD_SERIES:-}"
+    if [[ -z "$HEAD_SERIES" ]]; then
+      HEAD_SERIES=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher[].version' | sed -nE 's/^([0-9]+\.[0-9]+)\.[0-9]+.*-head$/\1/p' | sort -Vu | tail -n 1)
+    fi
+  fi
+
+  if [[ $RANCHER_TAG_VERSION == "head" && -z "$HEAD_SERIES" ]]; then
+      LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher | map(select(.version | test("^"))) | sort_by(.created) | .[-1].version')
+  fi
+
+  if [[ -n "$HEAD_SERIES" ]]; then
+      SERIES_FILTER="^${HEAD_SERIES//./\\\\.}"
+      LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r ".entries.rancher | map(select(.version | test(\"${SERIES_FILTER}\"))) | sort_by(.created) | .[-1].version")
+  fi
+fi
 
 sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
@@ -97,6 +129,10 @@ if [ -n "${REGISTRY_USERNAME}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
 fi
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
+  if [ "$REPO" == "prime-release" ]; then
+    RANCHER_TAG_VERSION=${LATEST_CHART_VERSION}
+  fi
+
   sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}
   sudo docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}
   sudo systemctl restart rke2-server

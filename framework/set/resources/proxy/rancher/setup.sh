@@ -117,7 +117,11 @@ install_helm() {
 
 setup_helm_repo() {
     echo "Adding Helm chart repo"
-    helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+    if [ "$REPO" == "prime-release" ]; then
+        helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}
+    else
+        helm repo add rancher-${REPO} ${RANCHER_CHART_REPO}${REPO}
+    fi
 }
 
 install_cert_manager() {
@@ -136,6 +140,19 @@ install_cert_manager() {
 
     echo "Waiting 1 minute for Rancher"
     sleep 60
+}
+
+install_prime_head_rancher() {
+    kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/home/$USER/tls.crt --key=/home/$USER/tls.key
+
+    echo "Installing Rancher"
+    helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                         --set hostname=${HOSTNAME} \
+                                                                                         ${VERSION} \
+                                                                                         --set agentTLSMode=system-store \
+                                                                                         --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
+                                                                                         --set ingress.tls.source=secret \
+                                                                                         --devel
 }
 
 install_rancher() {
@@ -192,13 +209,50 @@ check_cluster_status
 install_helm
 setup_helm_repo
 
+if [[ $REPO == "prime-release" ]]; then
+    . /etc/os-release
+
+    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
+    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
+    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
+
+    HEAD_SERIES=""
+    if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
+        HEAD_SERIES="${BASH_REMATCH[1]}"
+    fi
+
+    if [[ -z "$HEAD_SERIES" && $RANCHER_TAG_VERSION == "head" ]]; then
+      HEAD_SERIES="${RANCHER_HEAD_SERIES:-}"
+      if [[ -z "$HEAD_SERIES" ]]; then
+        HEAD_SERIES=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher[].version' | sed -nE 's/^([0-9]+\.[0-9]+)\.[0-9]+.*-head$/\1/p' | sort -Vu | tail -n 1)
+      fi
+    fi
+
+    if [[ $RANCHER_TAG_VERSION == "head" && -z "$HEAD_SERIES" ]]; then
+        LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher | map(select(.version | test("^"))) | sort_by(.created) | .[-1].version')
+        VERSION="--version ${LATEST_CHART_VERSION}"
+    fi
+
+    if [[ -n "$HEAD_SERIES" ]]; then
+        SERIES_FILTER="^${HEAD_SERIES//./\\\\.}"
+        LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r ".entries.rancher | map(select(.version | test(\"${SERIES_FILTER}\"))) | sort_by(.created) | .[-1].version")
+        VERSION="--version ${LATEST_CHART_VERSION}"
+    fi
+fi
+
 # Needed to get the latest chart version if RANCHER_TAG_VERSION contains "head"
-if [[ $RANCHER_TAG_VERSION == *head* ]]; then
+if [[ $RANCHER_TAG_VERSION == *head* && $REPO != "prime-release" ]]; then
     LATEST_CHART_VERSION=$(helm search repo rancher-${REPO} --devel | tail -n +2 | head -n 1 | cut -f2)
     VERSION="--version ${LATEST_CHART_VERSION}"
 fi
 
 install_cert_manager
-install_rancher
+
+if [[ $REPO == "prime-release" ]]; then
+    install_prime_head_rancher
+else
+    install_rancher
+fi
+
 wait_for_rollout
 wait_for_rancher
