@@ -1,0 +1,68 @@
+---
+name: Report Prime Head Results
+description: "Reports prime head release testing results and sends Slack notifications for completed release lines"
+
+inputs:
+  complete_v215:
+    description: "Whether v2.15 prime head release testing is complete"
+    required: true
+  failed_workflows_v215:
+    description: "Comma-separated list of workflows that need v2.15 re-run"
+    required: true
+  slack-webhook-url:
+    description: "Slack webhook URL for notifications"
+    required: true
+  rancher-tag-bucket:
+    description: "S3 bucket for storing notification markers"
+    required: true
+  rancher-version-v215:
+    description: "Rancher version for v2.15 (e.g., v2.15-head)"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Report prime head results
+      run: |       
+        if [[ "${{ inputs.complete_v215 }}" != "true" ]]; then
+          echo "v2.15 workflows needing re-run:"
+          echo "${{ inputs.failed_workflows_v215 }}"
+        fi
+      shell: bash
+
+    - name: Check if Slack notification already sent
+      if: ${{ inputs.complete_v215 == 'true' }}
+      id: check_marker
+      run: |
+        TAG="${{ inputs.rancher-version-v215 }}"
+        BASE_TAG=$(echo "$TAG" | grep -oE '^v[0-9]+\.[0-9]+')
+        MARKER_FILE="slack_notified_${BASE_TAG}.txt"
+        
+        echo "BASE_TAG=$BASE_TAG" >> $GITHUB_ENV
+        echo "MARKER_FILE=$MARKER_FILE" >> $GITHUB_ENV
+        
+        if aws s3 ls "s3://${{ inputs.rancher-tag-bucket }}/${MARKER_FILE}" > /dev/null 2>&1; then
+          echo "Notification already sent for $BASE_TAG. Skipping."
+          echo "skip_slack=true" >> $GITHUB_OUTPUT
+        else
+          echo "skip_slack=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Send v2-15 release testing completion notification
+      if: ${{ inputs.complete_v215 == 'true' && steps.check_marker.outputs.skip_slack == 'false' }}
+      uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4
+      with:
+        webhook: ${{ inputs.slack-webhook-url }}
+        webhook-type: incoming-webhook
+        payload: |
+          {
+            "text": "*[rancher/tfp-automation]* :alert:\n`${{ env.BASE_TAG }}` Release Testing Completed :white_check_mark:"
+          }
+
+    - name: Write notification marker to S3
+      if: ${{ inputs.complete_v215 == 'true' && steps.check_marker.outputs.skip_slack == 'false' }}
+      run: |
+        echo "notified" > marker.txt
+        aws s3 cp marker.txt "s3://${{ inputs.rancher-tag-bucket }}/${MARKER_FILE}"
+      shell: bash

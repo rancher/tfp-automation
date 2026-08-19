@@ -1,1 +1,1 @@
-day2-ops-rancher2.yaml
+day2-ops-rancher2.yml
