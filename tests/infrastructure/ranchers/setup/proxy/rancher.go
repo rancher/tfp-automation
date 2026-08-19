@@ -80,7 +80,7 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 	require.NoError(t, err)
 
 	if standaloneConfig.RancherTagVersion != rancherinternal.Head {
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, standaloneTerraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.RancherTagVersion, keyPath, terraformConfig, standaloneTerraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

@@ -1,6 +1,8 @@
 package provisioning
 
 import (
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -21,11 +23,22 @@ func VerifyRegistry(t *testing.T, client *rancher.Client, clusterID string, terr
 }
 
 // VerifyRancherVersion validates that the expected rancher version matches the version of the rancher server.
-func VerifyRancherVersion(t *testing.T, hostURL, expectedVersion, keyPath string, terraformOptions *terraform.Options) {
+func VerifyRancherVersion(t *testing.T, hostURL, expectedVersion, keyPath string, terraformConfig *config.TerraformConfig,
+	terraformOptions *terraform.Options) {
 	resp, err := RequestRancherVersion(hostURL)
 	require.NoError(t, err)
 
 	logrus.Infof("Rancher version: %s | Rancher commit: %s", resp.RancherVersion, resp.GitCommit)
+
+	if strings.Contains(terraformConfig.Standalone.Repo, "prime-release") || strings.Contains(terraformConfig.Standalone.UpgradedRancherRepo, "prime-release") {
+		expectedVersionPrefix := strings.TrimSuffix(expectedVersion, "-head")
+		expectedVersionPrefix = strings.TrimSuffix(expectedVersionPrefix, ".x")
+		versionPattern := "^" + regexp.QuoteMeta(expectedVersionPrefix) + `\.[0-9]+-head$`
+
+		if matched, regexErr := regexp.MatchString(versionPattern, resp.RancherVersion); regexErr == nil && matched {
+			expectedVersion = resp.RancherVersion
+		}
+	}
 
 	if resp.RancherVersion != expectedVersion {
 		logrus.Infof("Expected version: %s | Actual version: %s", expectedVersion, resp.RancherVersion)

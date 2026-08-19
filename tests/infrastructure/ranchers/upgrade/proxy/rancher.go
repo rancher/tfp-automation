@@ -87,7 +87,7 @@ func UpgradeProxyRancher(t *testing.T, client *rancher.Client, proxyPrivateIP, p
 		_, proxyKeyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, proxyKeyPath)
 
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, proxyKeyPath, terraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, proxyKeyPath, terraformConfig, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

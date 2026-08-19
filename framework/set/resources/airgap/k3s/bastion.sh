@@ -6,6 +6,9 @@ K3S_SERVER_TWO_IP=$3
 K3S_SERVER_THREE_IP=$4
 USER=$5
 PEM_FILE=$6
+REPO=$7
+RANCHER_TAG_VERSION=$8
+RANCHER_CHART_REPO=$9
 
 set -e
 
@@ -20,6 +23,39 @@ curl -fsSL --max-time 30 -o k3s-airgap-images-arm64.tar.gz https://github.com/k3
 curl -fsSL --max-time 30 -o sha256sum-amd64.txt https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}/sha256sum-amd64.txt
 curl -fsSL --max-time 30 -o sha256sum-arm64.txt https://github.com/k3s-io/k3s/releases/download/${K8S_VERSION}/sha256sum-arm64.txt
 curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
+
+if [[ $REPO == "prime-release" ]]; then
+    . /etc/os-release
+
+    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
+    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
+    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
+
+    HEAD_SERIES=""
+    if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
+        HEAD_SERIES="${BASH_REMATCH[1]}"
+    fi
+
+    if [[ -z "$HEAD_SERIES" && $RANCHER_TAG_VERSION == "head" ]]; then
+      HEAD_SERIES="${RANCHER_HEAD_SERIES:-}"
+      if [[ -z "$HEAD_SERIES" ]]; then
+        HEAD_SERIES=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher[].version' | sed -nE 's/^([0-9]+\.[0-9]+)\.[0-9]+.*-head$/\1/p' | sort -Vu | tail -n 1)
+      fi
+    fi
+
+    if [[ $RANCHER_TAG_VERSION == "head" && -z "$HEAD_SERIES" ]]; then
+        LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r '.entries.rancher | map(select(.version | test("^"))) | sort_by(.created) | .[-1].version')
+        RANCHER_TAG_VERSION="${LATEST_CHART_VERSION}"
+    fi
+
+    if [[ -n "$HEAD_SERIES" ]]; then
+        SERIES_FILTER="^${HEAD_SERIES//./\\\\.}"
+        LATEST_CHART_VERSION=$(curl -fsSL ${RANCHER_CHART_REPO}/index.yaml | yq -r ".entries.rancher | map(select(.version | test(\"${SERIES_FILTER}\"))) | sort_by(.created) | .[-1].version")
+        RANCHER_TAG_VERSION="${LATEST_CHART_VERSION}"
+    fi
+
+    printf '%s\n' "${RANCHER_TAG_VERSION}" > "/home/${USER}/rancher-tag-version.txt"
+fi
 
 chmod +x k3s
 chmod +x install.sh
@@ -74,6 +110,12 @@ sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-amd64.txt ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/
+
+if [[ $REPO == "prime-release" ]]; then
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "/home/${USER}/rancher-tag-version.txt" ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/rancher-tag-version.txt
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "/home/${USER}/rancher-tag-version.txt" ${USER}@${K3S_SERVER_TWO_IP}:/home/${USER}/rancher-tag-version.txt
+    sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "/home/${USER}/rancher-tag-version.txt" ${USER}@${K3S_SERVER_THREE_IP}:/home/${USER}/rancher-tag-version.txt
+fi
 
 mkdir -p ~/.kube
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl

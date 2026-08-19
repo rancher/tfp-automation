@@ -86,7 +86,7 @@ func UpgradeIPv6Rancher(t *testing.T, client *rancher.Client, serverNodeOne stri
 		_, ipv6KeyPath := rancher2.SetKeyPath(keypath.IPv6KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, ipv6KeyPath)
 
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, ipv6KeyPath, terraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, ipv6KeyPath, terraformConfig, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

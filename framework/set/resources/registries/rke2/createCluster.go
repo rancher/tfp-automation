@@ -73,7 +73,9 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 
 	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
+		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
+		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+		terraformConfig.Standalone.RancherChartRepository
 
 	if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 		command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
@@ -107,7 +109,9 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 
 		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
-			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS
+			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
+			terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+			terraformConfig.Standalone.RancherChartRepository
 
 		if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 			command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +

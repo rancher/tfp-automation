@@ -101,7 +101,7 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 		_, sanityKeyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, sanityKeyPath)
 
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, sanityKeyPath, terraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, sanityKeyPath, terraformConfig, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

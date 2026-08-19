@@ -95,11 +95,11 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
 	require.NoError(t, err)
 
-	tunnel, err = ssh.StartBastionSSHTunnel(bastion, terraformConfig.Standalone.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
+	tunnel, err = ssh.StartBastionSSHTunnel(bastion, standaloneConfig.OSUser, sshKey, "8443", standaloneConfig.RancherHostname, "443")
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.AirgapKeyPath)
-	client, err = ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
+	client, err = ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, standaloneConfig.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
 	updatedCattleConfig, err := ranchersetup.UpdateRancherConfigMap(cattleConfig, client)
@@ -109,7 +109,7 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 		_, airgapKeyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, airgapKeyPath)
 
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, airgapKeyPath, terraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, airgapKeyPath, terraformConfig, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

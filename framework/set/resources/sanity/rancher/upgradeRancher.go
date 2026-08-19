@@ -50,7 +50,7 @@ func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bo
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("printf '" + string(scriptContent) + "' > /tmp/upgrade.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/upgrade.sh\n" + string(scriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/upgrade.sh"),
 		cty.StringVal(command),
 	}))

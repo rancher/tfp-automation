@@ -53,7 +53,8 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 	command := "/tmp/auth-registry.sh " + terraformConfig.Standalone.CertManagerVersion + " " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " +
 		terraformConfig.StandaloneRegistry.RegistryPassword + " " + terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " +
 		rke2AuthRegistryPublicDNS + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " +
-		terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey
+		terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey + " " +
+		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherChartRepository
 
 	if useSecureFQDN {
 		command += " " + rke2AuthRegistryRoute53FQDN
@@ -68,7 +69,7 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/auth-registry.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/auth-registry.sh\n" + string(registryScriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/auth-registry.sh"),
 		cty.StringVal(command),
 	}))
@@ -116,7 +117,8 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		command = "/tmp/unauth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2UnauthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.UpgradedRancherTagVersion + " " + terraformConfig.StandaloneRegistry.UpgradedAssetsPath + " " +
-			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage + " " + encodedFullChain + " " + encodedCertKey
+			terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.UpgradedRancherImage + " " + encodedFullChain + " " + encodedCertKey + " " +
+			terraformConfig.Standalone.UpgradedRancherRepo + " " + terraformConfig.Standalone.UpgradedRancherChartRepository
 
 		if useSecureFQDN {
 			command += " " + rke2UnauthRegistryRoute53FQDN
@@ -133,7 +135,8 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		command = "/tmp/unauth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword + " " + rke2UnauthRegistryPublicDNS + " " +
 			terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.Standalone.OSUser + " " +
-			terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey
+			terraformConfig.Standalone.RancherImage + " " + encodedFullChain + " " + encodedCertKey + " " + terraformConfig.Standalone.Repo + " " +
+			terraformConfig.Standalone.RancherChartRepository
 
 		if useSecureFQDN {
 			command += " " + rke2UnauthRegistryRoute53FQDN
@@ -149,7 +152,7 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/unauth-registry.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/unauth-registry.sh\n" + string(registryScriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/unauth-registry.sh"),
 		cty.StringVal(command),
 	}))
@@ -180,7 +183,8 @@ func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 	command := "/tmp/ecr-registry.sh " + terraformConfig.StandaloneRegistry.ECRURI + " " + terraformConfig.Standalone.RegistryUsername + " " +
 		terraformConfig.Standalone.RegistryPassword + " " + terraformConfig.Standalone.RancherTagVersion + " " + terraformConfig.Standalone.RancherImage + " " +
 		terraformConfig.Standalone.OSUser + " " + terraformConfig.StandaloneRegistry.AssetsPath + " " + terraformConfig.AWSCredentials.AWSAccessKey + " " +
-		terraformConfig.AWSCredentials.AWSSecretKey + " " + terraformConfig.AWSConfig.Region
+		terraformConfig.AWSCredentials.AWSSecretKey + " " + terraformConfig.AWSConfig.Region + " " + terraformConfig.Standalone.Repo + " " +
+		terraformConfig.Standalone.RancherChartRepository
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
@@ -189,7 +193,7 @@ func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("echo '" + string(registryScriptContent) + "' > /tmp/ecr-registry.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/ecr-registry.sh\n" + string(registryScriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/ecr-registry.sh"),
 		cty.StringVal(command),
 	}))
