@@ -1,69 +1,6 @@
 [
   {
     "date": "",
-    "status": "failure",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-08-17T12:06:46Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-08-17T12:06:46Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-08-17T12:06:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-08-18T00:09:11Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-08-18T00:09:11Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-08-18T00:09:11Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-08-18T06:08:23Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-08-18T06:08:23Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-08-18T06:08:23Z"
-  },
-  {
-    "date": "",
     "status": "success",
     "workflow": "aks-provisioning",
     "job": "v2-14",
@@ -143,27 +80,6 @@
     "date": "",
     "status": "success",
     "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-08-18T12:07:47Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-08-18T12:07:47Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-08-18T12:07:47Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
     "job": "v2-16",
     "timestamp": "2026-08-18T12:07:47Z"
   },
@@ -253,27 +169,6 @@
   },
   {
     "date": "",
-    "status": "failure",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-08-18T18:07:13Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-08-18T18:07:13Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-08-18T18:07:13Z"
-  },
-  {
-    "date": "",
     "status": "success",
     "workflow": "aks-provisioning",
     "job": "v2-14",
@@ -353,27 +248,6 @@
     "date": "",
     "status": "success",
     "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-08-19T00:08:59Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-08-19T00:08:59Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-08-19T00:08:59Z"
-  },
-  {
-    "date": "",
-    "status": "success",
-    "workflow": "ipv6-eks-provisioning",
     "job": "v2-16",
     "timestamp": "2026-08-19T00:08:59Z"
   },
@@ -463,23 +337,86 @@
   },
   {
     "date": "",
-    "status": "failure",
-    "workflow": "ipv6-eks-provisioning",
+    "status": "success",
+    "workflow": "aks-provisioning",
     "job": "v2-14",
-    "timestamp": "2026-08-19T06:09:07Z"
+    "timestamp": "2026-08-19T12:07:48Z"
   },
   {
     "date": "",
     "status": "success",
-    "workflow": "ipv6-eks-provisioning",
+    "workflow": "aks-provisioning",
     "job": "v2-15",
-    "timestamp": "2026-08-19T06:09:07Z"
+    "timestamp": "2026-08-19T12:07:48Z"
   },
   {
     "date": "",
     "status": "success",
-    "workflow": "ipv6-eks-provisioning",
+    "workflow": "aks-provisioning",
     "job": "v2-16",
-    "timestamp": "2026-08-19T06:09:07Z"
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "failure",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-14",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "failure",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-15",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "failure",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-16",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "failure",
+    "workflow": "eks-provisioning",
+    "job": "v2-14",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "failure",
+    "workflow": "eks-provisioning",
+    "job": "v2-15",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "failure",
+    "workflow": "eks-provisioning",
+    "job": "v2-16",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "success",
+    "workflow": "gke-provisioning",
+    "job": "v2-14",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "success",
+    "workflow": "gke-provisioning",
+    "job": "v2-15",
+    "timestamp": "2026-08-19T12:07:48Z"
+  },
+  {
+    "date": "",
+    "status": "success",
+    "workflow": "gke-provisioning",
+    "job": "v2-16",
+    "timestamp": "2026-08-19T12:07:48Z"
   }
 ]
