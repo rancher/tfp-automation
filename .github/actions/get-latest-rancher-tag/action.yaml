@@ -9,36 +9,18 @@ inputs:
     description: "Path to prime artifacts"
     required: true
 outputs:
-  latest_tag_v215:
-    description: "Latest tag for v2.15"
-    value: ${{ steps.set-outputs.outputs.latest_tag_v215 }}
   latest_tag_v214:
     description: "Latest tag for v2.14"
     value: ${{ steps.set-outputs.outputs.latest_tag_v214 }}
   latest_tag_v213:
     description: "Latest tag for v2.13"
     value: ${{ steps.set-outputs.outputs.latest_tag_v213 }}
-  latest_tag_v212:
-    description: "Latest tag for v2.12"
-    value: ${{ steps.set-outputs.outputs.latest_tag_v212 }}
-  latest_tag_v211:
-    description: "Latest tag for v2.11"
-    value: ${{ steps.set-outputs.outputs.latest_tag_v211 }}
-  previous_tag_v215:
-    description: "Previous tag for v2.15"
-    value: ${{ steps.set-outputs.outputs.previous_tag_v215 }}
   previous_tag_v214:
     description: "Previous tag for v2.14"
     value: ${{ steps.set-outputs.outputs.previous_tag_v214 }}
   previous_tag_v213:
     description: "Previous tag for v2.13"
     value: ${{ steps.set-outputs.outputs.previous_tag_v213 }}
-  previous_tag_v212:
-    description: "Previous tag for v2.12"
-    value: ${{ steps.set-outputs.outputs.previous_tag_v212 }}
-  previous_tag_v211:
-    description: "Previous tag for v2.11"
-    value: ${{ steps.set-outputs.outputs.previous_tag_v211 }}
 runs:
   using: composite
   steps:
@@ -66,31 +48,10 @@ runs:
           echo "Latest tag for $RELEASE_LINE: $LATEST_VERSION"
           echo "Previous tag for $RELEASE_LINE: $PREVIOUS_VERSION"
 
-          if [[ "$RELEASE_LINE" == "v2.15" ]]; then
-            RELEASE_JSON=$(curl -s "https://api.github.com/repos/rancher/rancher/releases/tags/$LATEST_VERSION")
-            ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
-
-            echo "Asset count for $LATEST_VERSION: $ASSET_COUNT"
-
-            if [ "$ASSET_COUNT" -lt 17 ]; then
-              echo "Asset count: $ASSET_COUNT. Expected at least 17 assets..."
-              LATEST_VERSION=""
-            # Uncomment once v2.15 prime artifacts are available
-            # else
-            #   echo "Checking for Prime artifacts for $LATEST_VERSION..."
-            #   curl -sf ${{ inputs.prime_artifacts_path }}/$LATEST_VERSION/rancher-images.txt > /dev/null
-            #   if [[ $? -ne 0 ]]; then
-            #     echo "Unable to reach: ${{ inputs.prime_artifacts_path }}/$LATEST_VERSION/rancher-images.txt"
-            #     LATEST_VERSION=""
-            #   fi
-            fi
-          else
-            RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)
-
-            if [[ $? -ne 0 ]]; then
-              echo "Unable to reach: ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt"
-              LATEST_VERSION=""
-            fi
+          RELEASE_JSON=$(curl -s ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt)
+          if [[ $? -ne 0 ]]; then
+            echo "Unable to reach: ${{ inputs.prime_artifacts_path }}/$RELEASE_LINE/rancher-images.txt"
+            LATEST_VERSION=""
           fi
 
           eval "LATEST_TAG_${SUFFIX}=$LATEST_VERSION"
@@ -101,14 +62,8 @@ runs:
       shell: bash
     - id: set-outputs
       run: |
-        echo "latest_tag_v215=${LATEST_TAG_v215}" >> $GITHUB_OUTPUT
         echo "latest_tag_v214=${LATEST_TAG_v214}" >> $GITHUB_OUTPUT
         echo "latest_tag_v213=${LATEST_TAG_v213}" >> $GITHUB_OUTPUT
-        echo "latest_tag_v212=${LATEST_TAG_v212}" >> $GITHUB_OUTPUT
-        echo "latest_tag_v211=${LATEST_TAG_v211}" >> $GITHUB_OUTPUT
-        echo "previous_tag_v215=${PREVIOUS_TAG_v215}" >> $GITHUB_OUTPUT
         echo "previous_tag_v214=${PREVIOUS_TAG_v214}" >> $GITHUB_OUTPUT
         echo "previous_tag_v213=${PREVIOUS_TAG_v213}" >> $GITHUB_OUTPUT
-        echo "previous_tag_v212=${PREVIOUS_TAG_v212}" >> $GITHUB_OUTPUT
-        echo "previous_tag_v211=${PREVIOUS_TAG_v211}" >> $GITHUB_OUTPUT
       shell: bash
