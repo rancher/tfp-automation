@@ -28,26 +28,32 @@ runs:
         for release in $SANITIZED_RELEASES; do
           ALL_PASSED=true
           FAILED_WORKFLOWS=""
-          JOB_NAME="v${release:1:1}.${release:2}"
+          JOB_KEY="v${release:1:1}-${release:2}"
+          JOB_VERSION="v${release:1:1}.${release:2}-head"
           
           echo "Checking $release jobs..."
           for workflow in ${WORKFLOWS//,/ }; do
-            RESPONSE=$(gh api repos/${{ github.repository }}/actions/workflows/${workflow}/runs \
-              --jq '[.workflow_runs[] | select(.head_branch=="main" and .event=="schedule")] | .[0]')
-            
-            if [[ -z "$RESPONSE" ]] || [[ "$RESPONSE" == "null" ]]; then
+            RUN_IDS=$(gh api repos/${{ github.repository }}/actions/workflows/${workflow}/runs \
+              --jq '[.workflow_runs[] | select(.head_branch=="main" and (.event=="schedule" or .event=="workflow_dispatch"))] | .[0:30] | .[].id')
+
+            if [[ -z "$RUN_IDS" ]]; then
               echo "  $workflow: No recent runs found"
               ALL_PASSED=false
               FAILED_WORKFLOWS="${FAILED_WORKFLOWS}${workflow},"
               continue
             fi
 
-            RUN_ID=$(echo "$RESPONSE" | jq -r '.id')
-            
-            JOB_SUCCESS=$(gh api repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs \
-              --jq ".jobs[] | select(.name==\"${JOB_NAME}\" and .conclusion==\"success\") | .name" 2>/dev/null)
+            JOB_FOUND=""
+            for RUN_ID in $RUN_IDS; do
+              JOB_SUCCESS=$(gh api repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs \
+                --jq ".jobs[] | select((.name==\"${JOB_KEY}\" or .name==\"${JOB_VERSION}\") and .conclusion==\"success\") | .name" 2>/dev/null)
+              if [[ -n "$JOB_SUCCESS" ]]; then
+                JOB_FOUND="true"
+                break
+              fi
+            done
 
-            if [[ -z "$JOB_SUCCESS" ]]; then
+            if [[ -z "$JOB_FOUND" ]]; then
               echo "  - $workflow did not pass, needs to re-run..."
               ALL_PASSED=false
               FAILED_WORKFLOWS="${FAILED_WORKFLOWS}${workflow},"
