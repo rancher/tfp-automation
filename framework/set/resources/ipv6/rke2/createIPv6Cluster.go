@@ -60,10 +60,12 @@ func CreateIPv6RKE2Cluster(file *os.File, newFile *hclwrite.File, rootBody *hclw
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2BastionPublicIP, rke2Bastion)
 
 	command := "/tmp/bastion.sh " + terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " +
-		rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile
+		rke2ServerTwoPrivateIP + " " + rke2ServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile + " " +
+		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+		terraformConfig.Standalone.RancherChartRepository
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/bastion.sh\n" + string(bastionScriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
 		cty.StringVal(command),
 	}))
