@@ -60,10 +60,12 @@ func CreateIPv6K3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwr
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicIP, k3sBastion)
 
 	command := "/tmp/bastion.sh " + terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " +
-		k3sServerTwoPrivateIP + " " + k3sServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile
+		k3sServerTwoPrivateIP + " " + k3sServerThreePrivateIP + " " + terraformConfig.Standalone.OSUser + " " + encodedPEMFile + " " +
+		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherTagVersion + " " +
+		terraformConfig.Standalone.RancherChartRepository
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("echo '" + string(bastionScriptContent) + "' > /tmp/bastion.sh"),
+		cty.StringVal("cat <<'EOF' > /tmp/bastion.sh\n" + string(bastionScriptContent) + "\nEOF"),
 		cty.StringVal("chmod +x /tmp/bastion.sh"),
 		cty.StringVal(command),
 	}))
