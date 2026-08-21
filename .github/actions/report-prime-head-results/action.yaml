@@ -3,11 +3,11 @@ name: Report Prime Head Results
 description: "Reports prime head release testing results and sends Slack notifications for completed release lines"
 
 inputs:
-  complete_v215:
-    description: "Whether v2.15 prime head release testing is complete"
+  complete:
+    description: "Whether prime head release testing is complete for this release line"
     required: true
-  failed_workflows_v215:
-    description: "Comma-separated list of workflows that need v2.15 re-run"
+  failed_workflows:
+    description: "Comma-separated list of workflows that need a re-run"
     required: true
   slack-webhook-url:
     description: "Slack webhook URL for notifications"
@@ -15,8 +15,8 @@ inputs:
   rancher-tag-bucket:
     description: "S3 bucket for storing notification markers"
     required: true
-  rancher-version-v215:
-    description: "Rancher version for v2.15 (e.g., v2.15-head)"
+  rancher-version:
+    description: "Rancher version for this release line (e.g., v2.15-head)"
     required: true
 
 runs:
@@ -24,17 +24,17 @@ runs:
   steps:
     - name: Report prime head results
       run: |       
-        if [[ "${{ inputs.complete_v215 }}" != "true" ]]; then
-          echo "v2.15 workflows needing re-run:"
-          echo "${{ inputs.failed_workflows_v215 }}"
+        if [[ "${{ inputs.complete }}" != "true" ]]; then
+          echo "Workflows needing re-run:"
+          echo "${{ inputs.failed_workflows }}"
         fi
       shell: bash
 
     - name: Check if Slack notification already sent
-      if: ${{ inputs.complete_v215 == 'true' }}
+      if: ${{ inputs.complete == 'true' }}
       id: check_marker
       run: |
-        TAG="${{ inputs.rancher-version-v215 }}"
+        TAG="${{ inputs.rancher-version }}"
         BASE_TAG=$(echo "$TAG" | grep -oE '^v[0-9]+\.[0-9]+')
         MARKER_FILE="slack_notified_${BASE_TAG}.txt"
         
@@ -49,8 +49,8 @@ runs:
         fi
       shell: bash
 
-    - name: Send v2-15 release testing completion notification
-      if: ${{ inputs.complete_v215 == 'true' && steps.check_marker.outputs.skip_slack == 'false' }}
+    - name: Send release testing completion notification
+      if: ${{ inputs.complete == 'true' && steps.check_marker.outputs.skip_slack == 'false' }}
       uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4
       with:
         webhook: ${{ inputs.slack-webhook-url }}
@@ -61,7 +61,7 @@ runs:
           }
 
     - name: Write notification marker to S3
-      if: ${{ inputs.complete_v215 == 'true' && steps.check_marker.outputs.skip_slack == 'false' }}
+      if: ${{ inputs.complete == 'true' && steps.check_marker.outputs.skip_slack == 'false' }}
       run: |
         echo "notified" > marker.txt
         aws s3 cp marker.txt "s3://${{ inputs.rancher-tag-bucket }}/${MARKER_FILE}"
