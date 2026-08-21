@@ -148,8 +148,12 @@ install_prime_head_rancher() {
 
     echo "Installing Rancher"
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
+                                                                                         --set systemDefaultRegistry=${REGISTRY} \
+                                                                                         --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
+                                                                                         --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:v${LATEST_CHART_VERSION}" \
                                                                                          --set hostname=${HOSTNAME} \
                                                                                          ${VERSION} \
+                                                                                         ${IMAGE_PULL_SECRET} \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                          --set ingress.tls.source=secret \
