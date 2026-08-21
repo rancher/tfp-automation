@@ -24,8 +24,23 @@ runs:
         GH_TOKEN: ${{ github.token }}
       run: |
         WORKFLOWS="${{ inputs.dispatch-workflow-list }}"
-        
-        for release in $SANITIZED_RELEASES; do
+
+        workflow_applies_to_head_release() {
+          local workflow="$1"
+          local job_version="$2"
+          local workflow_path=".github/workflows/$workflow"
+
+          if [[ ! -f "$workflow_path" ]]; then
+            return 0
+          fi
+
+          grep -qF "startsWith(github.event.inputs.rancher_version, '$job_version')" "$workflow_path" || \
+          grep -qF "startsWith(inputs.rancher_version, '$job_version')" "$workflow_path" || \
+          grep -qF "startsWith(github.event.inputs.rancher_version, 'head')" "$workflow_path" || \
+          grep -qF "startsWith(inputs.rancher_version, 'head')" "$workflow_path"
+        }
+
+        for release in ${SANITIZED_RELEASES//,/ }; do
           ALL_PASSED=true
           FAILED_WORKFLOWS=""
           JOB_KEY="v${release:1:1}-${release:2}"
@@ -44,6 +59,11 @@ runs:
             fi
 
             JOB_FOUND=""
+            if ! workflow_applies_to_head_release "$workflow" "$JOB_VERSION"; then
+              echo "  - $workflow does not run for $JOB_VERSION, skipping..."
+              continue
+            fi
+
             for RUN_ID in $RUN_IDS; do
               JOB_SUCCESS=$(gh api repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs \
                 --jq ".jobs[] | select((.name==\"${JOB_KEY}\" or .name==\"${JOB_VERSION}\") and .conclusion==\"success\") | .name" 2>/dev/null)
