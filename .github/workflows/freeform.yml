@@ -1,0 +1,175 @@
+---
+name: Freeform
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Name of the workflow run"
+        required: true
+      config_yaml:
+        description: "Base64-encoded config.yaml contents. Encode locally with: base64 -i config.yaml | tr -d '\n'"
+        required: true
+        type: string
+      package:
+        description: "Package to test (i.e. rancher2/provisioning)"
+        required: true
+      test_suite:
+        description: "Test suite to run (i.e. ^TestSuiteName$)"
+        required: true
+      reporting:
+        description: "Enable reporting to Qase"
+        required: false
+        default: false
+        type: boolean
+      qase_id:
+        description: "Qase Test Run ID for the current workflow run"
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  CLOUD_PROVIDER_VERSION: "6.50.0"
+  RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_16 }}"
+  LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
+  TIMEOUT: "3h"
+
+jobs:
+  freeform:
+    name: ${{ github.event.inputs.name }}
+    runs-on: ubuntu-latest
+    env:
+      REPORTING_ENABLED: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          submodules: recursive
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get AWS credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@2cb1a461cbd4865ac4299648312e4704c646cd53 # v3
+        with:
+          secret-ids: |
+            AWS_ACCESS_KEY, ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_KEY, ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: "Fetch and Set DockerHub Credentials"
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 #v3
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
+            secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
+
+      - name: Mask Dockerhub Credentials
+        run: |
+          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
+          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+
+      - name: Whitelist Runner IP
+        uses: ./.github/actions/whitelist-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.AWS_REGION }}"
+
+      - name: Set up SSH Keys
+        uses: ./.github/actions/setup-ssh-keys
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key-name: ${{ secrets.SSH_PRIVATE_KEY_NAME }}
+          windows-ssh-private-key: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY }}
+          windows-ssh-private-key-name: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_NAME }}
+
+      - name: Set up certificates
+        id: setup-certs
+        uses: ./.github/actions/setup-certs
+        with:
+          private-full-chain: ${{ secrets.PRIVATE_FULL_CHAIN }}
+          private-full-chain-name: ${{ vars.PRIVATE_FULL_CHAIN_NAME}}
+          private-cert-key: ${{ secrets.PRIVATE_CERT_KEY }}
+          private-cert-key-name: ${{ vars.PRIVATE_CERT_KEY_NAME }}
+
+      - name: Uniquify hostname prefix
+        uses: ./.github/actions/uniquify-hostname
+
+      - name: Create config.yaml
+        env:
+          CONFIG_YAML_B64: ${{ github.event.inputs.config_yaml }}
+        run: |
+          echo "::add-mask::$CONFIG_YAML_B64"
+          echo "$CONFIG_YAML_B64" | base64 -d > config.yaml
+
+      - name: Override config values
+        env:
+          AWS_SECURITY_GROUPS: ${{ secrets.AWS_SECURITY_GROUPS }}
+          AWS_SECURITY_GROUP_NAMES: ${{ secrets.AWS_SECURITY_GROUP_NAMES }}
+          SSH_PRIVATE_KEY_PATH: ${{ secrets.SSH_PRIVATE_KEY_PATH }}
+          WINDOWS_SSH_PRIVATE_KEY_PATH: ${{ secrets.WINDOWS_SSH_PRIVATE_KEY_PATH }}
+          PATH_TO_REPO: ${{ secrets.PATH_TO_REPO }}
+        run: |
+          yq -i '.terraform.awsConfig.awsSecurityGroups = (env(AWS_SECURITY_GROUPS) | split(","))' config.yaml
+          yq -i '.terraform.awsConfig.awsSecurityGroupNames = (env(AWS_SECURITY_GROUP_NAMES) | split(","))' config.yaml
+          yq -i '.terraform.privateKeyPath = strenv(SSH_PRIVATE_KEY_PATH)' config.yaml
+          yq -i '.terraform.privateFullChainPath = "${{ steps.setup-certs.outputs.private-full-chain-path }}"' config.yaml
+          yq -i '.terraform.privateCertKeyPath = "${{ steps.setup-certs.outputs.private-cert-key-path }}"' config.yaml
+          yq -i '.terraform.windowsPrivateKeyPath = strenv(WINDOWS_SSH_PRIVATE_KEY_PATH)' config.yaml
+          yq -i '.terratest.pathToRepo = strenv(PATH_TO_REPO)' config.yaml
+
+      - name: Export CATTLE_TEST_CONFIG
+        run: echo "CATTLE_TEST_CONFIG=${{ github.workspace }}/config.yaml" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set up Go environment
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Build Packages
+        run: ./.github/scripts/build-packages.sh
+
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@c4a0df2e75a225d979a444342dd3db752b53619f
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_version: "${{ vars.TERRAFORM_VERSION }}"
+          terraform_wrapper: false
+
+      - name: Setup Rancher2 Provider if RC is present
+        if: contains(env.RANCHER2_PROVIDER_VERSION, '-rc')
+        run: /home/runner/${{ secrets.PATH_TO_REPO }}/scripts/setup-provider.sh rancher2 v${{ env.RANCHER2_PROVIDER_VERSION }}
+        shell: bash
+
+      - name: Run Test Suite
+        uses: ./.github/actions/run-test-suite
+        with:
+          package: ${{ github.event.inputs.package }}
+          test-suite: ${{ github.event.inputs.test_suite }}
+          timeout: ${{ env.TIMEOUT }}
+
+      - name: Revoke Runner IP
+        if: always()
+        uses: ./.github/actions/revoke-runner-ip
+        with:
+          prefix-list-id: ${{ secrets.AWS_MANAGED_PREFIX_LIST_ID }}
+          region: "${{ vars.AWS_REGION }}"
+
+      - name: Reporting Results to Qase
+        if: always() && env.REPORTING_ENABLED == 'true'
+        uses: ./.github/actions/report-to-qase
+        with:
+          qase-test-run-id: ${{ github.event.inputs.qase_id }}
+          qase-automation-token: ${{ secrets.QASE_TOKEN }}
+          qase-custom-field-filter: ${{ vars.QASE_CUSTOM_FIELD_FILTER }}
+          qase-schema-prefix: ${{ vars.QASE_SCHEMA_PREFIX }}
+          qase-project-id: ${{ secrets.HB_QASE_PROJECT_ID }}
