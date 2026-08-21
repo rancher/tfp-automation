@@ -11,6 +11,9 @@ inputs:
   timeout:
     description: "Timeout"
     required: true
+  tags:
+    description: "Tags to run"
+    required: false
 runs:
   using: composite
   steps:
@@ -18,6 +21,12 @@ runs:
       id: tests
       run: |
         set +e
-        gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }} \
-        --junitfile results.xml --jsonfile results.json -- -parallel 4 -timeout=${{ inputs.timeout }} -v -run "${{ inputs.test-suite }}"
+
+        if [[ -n "${{ inputs.tags }}" ]]; then
+          gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }} \
+          --junitfile results.xml --jsonfile results.json -- -parallel 4 -timeout=${{ inputs.timeout }} -v -tags="${{ inputs.tags }}" -run "${{ inputs.test-suite }}"
+        else
+          gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/${{ inputs.package }} \
+          --junitfile results.xml --jsonfile results.json -- -parallel 4 -timeout=${{ inputs.timeout }} -v -run "${{ inputs.test-suite }}"
+        fi
       shell: bash
