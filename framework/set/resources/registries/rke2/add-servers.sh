@@ -9,15 +9,40 @@ RANCHER_IMAGE=$6
 RANCHER_TAG_VERSION=$7
 REGISTRY=$8
 REPO=$9
-RANCHER_TAG_VERSION=${10}
-RANCHER_CHART_REPO=${11}
-REGISTRY_USERNAME=${12}
-REGISTRY_PASSWORD=${13}
-DOCKERHUB_USER=${14}
-DOCKERHUB_PASS=${15}
-RANCHER_AGENT_IMAGE=${16}
+RANCHER_CHART_REPO=${10}
+REGISTRY_USERNAME=${11}
+REGISTRY_PASSWORD=${12}
+DOCKERHUB_USER=${13}
+DOCKERHUB_PASS=${14}
+RANCHER_AGENT_IMAGE=${15}
+MAX_CMD_RETRIES=20
+CMD_RETRY_INTERVAL_SECONDS=10
 
 set -e
+
+retryCmd() {
+  local attempt=1
+  local rc=0
+
+  while [ "$attempt" -le "$MAX_CMD_RETRIES" ]; do
+    if "$@"; then
+      return 0
+    else
+      rc=$?
+    fi
+
+    if [ "$attempt" -eq "$MAX_CMD_RETRIES" ]; then
+      echo "Command failed after ${MAX_CMD_RETRIES} attempts (exit ${rc}): $*" >&2
+      return "$rc"
+    fi
+
+    echo "Command failed on attempt ${attempt}/${MAX_CMD_RETRIES} (exit ${rc}), retrying in ${CMD_RETRY_INTERVAL_SECONDS}s: $*" >&2
+    sleep "$CMD_RETRY_INTERVAL_SECONDS"
+    attempt=$((attempt + 1))
+  done
+
+  return "$rc"
+}
 
 if [[ $REPO == "prime-release" ]]; then
   . /etc/os-release
@@ -93,10 +118,10 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
-curl -fsSL --max-time 30 -o /home/${USER}/install.sh https://get.rke2.io
+retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+retryCmd curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+retryCmd curl -fsSL --max-time 30 -o /home/${USER}/install.sh https://get.rke2.io
 
 echo "Validating checksum for rke2-images.linux-${ARCH}.tar.zst"
 ZIP_NAME="rke2-images.linux-${ARCH}.tar.zst"
@@ -111,9 +136,9 @@ CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
 echo "$CHECKSUM  /home/${USER}/rke2-images.linux-${ARCH}.tar.zst" | sha256sum -c -
 
 sudo chmod +x /home/${USER}/install.sh
-sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh /home/${USER}/install.sh
-sudo systemctl enable rke2-server
-sudo systemctl start rke2-server
+retryCmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh /home/${USER}/install.sh
+retryCmd sudo systemctl enable rke2-server
+retryCmd sudo systemctl start rke2-server
 
 sudo tee /etc/docker/daemon.json > /dev/null << EOF
 {
