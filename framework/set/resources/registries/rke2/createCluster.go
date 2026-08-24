@@ -1,6 +1,7 @@
 package rke2
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 
@@ -74,8 +75,7 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
 		terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
-		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-		terraformConfig.Standalone.RancherChartRepository
+		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherChartRepository
 
 	if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 		command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
@@ -90,8 +90,10 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 		command += " \"\""
 	}
 
+	encodedScript := base64.StdEncoding.EncodeToString(script)
+
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
+		cty.StringVal("echo " + encodedScript + " | base64 -d > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
 		cty.StringVal(command),
 	}))
@@ -110,8 +112,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " +
 			terraformConfig.Standalone.RancherImage + " " + terraformConfig.Standalone.RancherTagVersion + " " + registryPublicDNS + " " +
-			terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherTagVersion + " " +
-			terraformConfig.Standalone.RancherChartRepository
+			terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.RancherChartRepository
 
 		if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 			command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
@@ -126,8 +127,10 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 			command += " \"\""
 		}
 
+		encodedScript := base64.StdEncoding.EncodeToString(script)
+
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
-			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
+			cty.StringVal("echo " + encodedScript + " | base64 -d > /tmp/add-servers.sh"),
 			cty.StringVal("chmod +x /tmp/add-servers.sh"),
 			cty.StringVal(command),
 		}))

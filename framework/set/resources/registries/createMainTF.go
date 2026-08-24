@@ -18,15 +18,15 @@ import (
 )
 
 const (
-	authRegistryPublicDNS         = "auth_registry_public_dns"
-	unauthRegistryPublicDNS       = "unauth_registry_public_dns"
-	authGlobalRegistryPublicDNS   = "auth_global_registry_public_dns"
-	unauthGlobalRegistryPublicDNS = "unauth_global_registry_public_dns"
-	ecrRegistryPublicDNS          = "ecr_registry_public_dns"
+	authRegistryPublicDNSConst         = "auth_registry_public_dns"
+	unauthRegistryPublicDNSConst       = "unauth_registry_public_dns"
+	authGlobalRegistryPublicDNSConst   = "auth_global_registry_public_dns"
+	unauthGlobalRegistryPublicDNSConst = "unauth_global_registry_public_dns"
+	ecrRegistryPublicDNSConst          = "ecr_registry_public_dns"
 
-	authRegistryRoute53FQDN         = "auth_registry_route_53_fqdn"
-	authGlobalRegistryRoute53FQDN   = "auth_global_registry_route_53_fqdn"
-	unauthGlobalRegistryRoute53FQDN = "unauth_global_registry_route_53_fqdn"
+	authRegistryRoute53FQDNConst         = "auth_registry_route_53_fqdn"
+	authGlobalRegistryRoute53FQDNConst   = "auth_global_registry_route_53_fqdn"
+	unauthGlobalRegistryRoute53FQDNConst = "unauth_global_registry_route_53_fqdn"
 
 	authRegistry         = "auth"
 	unauthRegistry       = "unauth"
@@ -76,17 +76,17 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	var authGlobalRegistryPublicDNS, authGlobalRegistryRoute53FQDN, unauthGlobalRegistryPublicDNS, unauthGlobalRegistryRoute53FQDN string
 
 	if terraformConfig.StandaloneRegistry.CreateAuthGlobalRegistry {
-		authGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, authGlobalRegistryPublicDNS)
-		authGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, authGlobalRegistryRoute53FQDN)
+		authGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, authGlobalRegistryPublicDNSConst)
+		authGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, authGlobalRegistryRoute53FQDNConst)
 	} else if terraformConfig.StandaloneRegistry.CreateUnauthGlobalRegistry {
-		unauthGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, unauthGlobalRegistryPublicDNS)
-		unauthGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, unauthGlobalRegistryRoute53FQDN)
+		unauthGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, unauthGlobalRegistryPublicDNSConst)
+		unauthGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, unauthGlobalRegistryRoute53FQDNConst)
 	}
 
-	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
-	unauthRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthRegistryPublicDNS)
-	authRegistryRoute53FQDN := terraform.Output(t, terraformOptions, authRegistryRoute53FQDN)
-	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
+	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNSConst)
+	unauthRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthRegistryPublicDNSConst)
+	authRegistryRoute53FQDN := terraform.Output(t, terraformOptions, authRegistryRoute53FQDNConst)
+	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNSConst)
 	serverOnePublicDNS := terraform.Output(t, terraformOptions, serverOnePublicDNS)
 	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
 	serverTwoPublicDNS := terraform.Output(t, terraformOptions, serverTwoPublicDNS)
