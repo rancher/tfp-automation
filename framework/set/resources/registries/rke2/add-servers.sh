@@ -155,7 +155,7 @@ fi
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
   if [ "$REPO" == "prime-release" ]; then
-    RANCHER_TAG_VERSION=${LATEST_CHART_VERSION}
+    RANCHER_TAG_VERSION="v${LATEST_CHART_VERSION}"
   fi
 
   sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}
