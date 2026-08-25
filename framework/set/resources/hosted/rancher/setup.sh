@@ -104,6 +104,24 @@ install_helm() {
     rm helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
 }
 
+install_yq() {
+    if command -v yq >/dev/null 2>&1; then
+        echo "yq already installed"
+        return
+    fi
+
+    ARCH=$(uname -m)
+    if [[ $ARCH == "x86_64" ]]; then
+        ARCH="amd64"
+    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
+        ARCH="arm64"
+    fi
+
+    curl -fsSL --max-time 30 -o yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}
+    sudo install -o root -g root -m 0755 yq /usr/local/bin/yq
+    rm yq
+}
+
 setup_helm_repo() {
     echo "Adding Helm chart repo"
     if [ "$REPO" == "prime-release" ]; then
@@ -246,16 +264,12 @@ install_gke_traefik() {
 }
 
 install_prime_head_rancher() {
-    kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/home/$USER/tls.crt --key=/home/$USER/tls.key
-
     echo "Installing Rancher"
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
-                                                                                         --set systemDefaultRegistry=${REGISTRY} \
                                                                                          --set hostname=${HOSTNAME} \
                                                                                          ${VERSION} \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                         --set useBundledSystemChart=true \
                                                                                          --set ingress.tls.source=secret \
                                                                                          --devel
 }
@@ -352,11 +366,7 @@ install_helm
 setup_helm_repo
 
 if [[ $REPO == "prime-release" ]]; then
-    . /etc/os-release
-
-    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
+    install_yq
 
     HEAD_SERIES=""
     if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then

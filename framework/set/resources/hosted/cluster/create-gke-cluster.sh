@@ -51,7 +51,7 @@ rm kubectl
 
 echo "Creating GKE cluster..."
 gcloud container clusters create ${RESOURCE_PREFIX} --zone=${ZONE} --num-nodes=3 \
-                                                                       --cluster-version=1.33 \
+                                                                       --cluster-version=1.35 \
                                                                        --machine-type=${MACHINE_TYPE} \
                                                                        --disk-size=100 \
                                                                        --release-channel=regular > /dev/null 2>&1
