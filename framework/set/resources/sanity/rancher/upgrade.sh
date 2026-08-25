@@ -107,8 +107,6 @@ upgrade_default_rancher() {
                                                                                         ${VERSION} \
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
-                                                                                        --set 'extraEnv[0].name=CATTLE_SYSTEM_DEFAULT_REGISTRY' \
-                                                                                        --set 'extraEnv[0].value=""' \
                                                                                         --set agentTLSMode=system-store \
                                                                                         --set ingress.tls.source=secret \
                                                                                         --devel
