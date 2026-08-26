@@ -34,7 +34,7 @@ mv $CERT_KEY_PATH /home/$USER/tls.key
 
 if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
-    IMAGE="--set rancherImage=${RANCHER_IMAGE}"
+    IMAGE="--set rancherImage=${REGISTRY}/${RANCHER_IMAGE}"
     VERSION="--version ${CHART_VERSION}"
 else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
@@ -152,6 +152,7 @@ install_prime_head_rancher() {
                                                                                          --set 'extraEnv[0].name=CATTLE_AGENT_IMAGE' \
                                                                                          --set "extraEnv[0].value=${RANCHER_AGENT_IMAGE}:v${LATEST_CHART_VERSION}" \
                                                                                          --set hostname=${HOSTNAME} \
+                                                                                         ${IMAGE} \
                                                                                          ${VERSION} \
                                                                                          ${IMAGE_PULL_SECRET} \
                                                                                          --set agentTLSMode=system-store \
