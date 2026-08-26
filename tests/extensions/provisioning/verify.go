@@ -33,7 +33,7 @@ func VerifyRancherVersion(t *testing.T, hostURL, expectedVersion, keyPath string
 	if strings.Contains(terraformConfig.Standalone.Repo, "prime-release") || strings.Contains(terraformConfig.Standalone.UpgradedRancherRepo, "prime-release") {
 		expectedVersionPrefix := strings.TrimSuffix(expectedVersion, "-head")
 		expectedVersionPrefix = strings.TrimSuffix(expectedVersionPrefix, ".x")
-		versionPattern := "^" + regexp.QuoteMeta(expectedVersionPrefix) + `\.[0-9]+-head$`
+		versionPattern := "^" + regexp.QuoteMeta(expectedVersionPrefix) + `\.[0-9]+(-head|-rc[0-9]+)$`
 
 		if matched, regexErr := regexp.MatchString(versionPattern, resp.RancherVersion); regexErr == nil && matched {
 			expectedVersion = resp.RancherVersion

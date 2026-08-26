@@ -96,13 +96,6 @@ node {
       sh "docker stop ${testContainer}"
       sh "docker rm -v ${testContainer}"
       sh "docker rmi -f ${imageName}"
-      if (testPackage?.toLowerCase().contains("sanity")) {
-        try {
-          slackSend(channel: "${SLACK_CHANNEL}", message: "${env.JOB_NAME} Build #${env.BUILD_NUMBER} finished. More details: ${env.BUILD_URL}")
-        } catch (err) {
-          echo "slackSend failed, will not report to channel: ${SLACK_CHANNEL}"
-        }
-      }
     }
   }
 }
