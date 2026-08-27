@@ -1,4 +1,4 @@
-//go:build validation
+//go:build validation || sanity
 
 package provisioning
 
@@ -82,12 +82,15 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 	standardToken := standardUserToken.Token
 
 	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
+	rke2Module, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
 
 	tests := []struct {
 		name      string
+		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"8_nodes_3_etcd_2_cp_3_worker", nodeRolesDedicated},
+		{"Node_Driver_TFP_RKE2", rke2Module, nodeRolesDedicated},
+		{"Node_Driver_TFP_K3S", k3sModule, nodeRolesDedicated},
 	}
 
 	for _, tt := range tests {
@@ -97,6 +100,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 			rancher, terraform, terratest, _ := config.LoadTFPConfigs(p.cattleConfig)
 			rancher.AdminToken = standardToken
 			terratest.Nodepools = tt.nodeRoles
+			terraform.Module = tt.module
 
 			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(p.terraformConfig, p.terratestConfig, p.terraformOptions, tt.name, configs.NestedRancherModuleDir)
 			require.NoError(t, err)
