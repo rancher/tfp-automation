@@ -3,14 +3,39 @@
   - RM
   suite: Go Automation/TFP/Provisioning
   cases:
-  - description: Provisions downstream RKE2/K3S node driver cluster
-    title: 8_nodes_3_etcd_2_cp_3_worker
+  - description: Provisions downstream RKE2 node driver cluster
+    title: Node_Driver_TFP_RKE2
     priority: 4
     type: 8
     automation: 2
     attachments: []
     steps:
-    - action: Provision downstream RKE2/K3S cluster
+    - action: Provision downstream RKE2 node driver cluster
+      expectedresult: ""
+      data: ""
+      position: 1
+      attachments: []
+      steps: []
+    - action: Post cluster creation checks
+      expectedresult: ""
+      data: ""
+      position: 2
+      attachments: []
+      steps: []
+    tags: []
+    params: {}
+    parameters: []
+    customfield:
+      "14": Validation
+      "18": Hostbusters
+  - description: Provisions downstream K3S node driver cluster
+    title: Node_Driver_TFP_K3S
+    priority: 4
+    type: 8
+    automation: 2
+    attachments: []
+    steps:
+    - action: Provision downstream K3S node driver cluster
       expectedresult: ""
       data: ""
       position: 1
