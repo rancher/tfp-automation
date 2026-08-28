@@ -5,11 +5,13 @@ on:
   workflow_dispatch:
     inputs:
       rancher_version:
-        description: "Rancher version"
+        description: "Rancher tag version (i.e. v2.15-head)"
+        required: true
       rancher_chart_version:
-        description: "Rancher chart version"
+        description: "Rancher chart version (i.e. 2.15.0 - no leading v)"
+        required: true
       rancher2_provider_version:
-        description: "Rancher2 provider version"
+        description: "Rancher2 provider version (i.e. 14.1.1 - no leading v)"
         required: true
       local_cluster_type:
         description: "Local cluster type to setup Rancher"
@@ -20,7 +22,7 @@ on:
           - k3s
           - rke2
       local_cluster_k8s_version:
-        description: "Local cluster Kubernetes version"
+        description: "Kubernetes version for the local cluster (i.e. v1.35.6, remove suffix)"
         required: true
       reporting:
         description: "Enable reporting to Slack"
