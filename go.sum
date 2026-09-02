@@ -256,8 +256,8 @@ github.com/prometheus/common v0.67.5 h1:pIgK94WWlQt1WLwAC5j2ynLaBRDiinoAb86HZHTU
 github.com/prometheus/common v0.67.5/go.mod h1:SjE/0MzDEEAyrdr5Gqc6G+sXI67maCxzaT3A2+HqjUw=
 github.com/prometheus/procfs v0.19.2 h1:zUMhqEW66Ex7OXIiDkll3tl9a1ZdilUOd/F6ZXw4Vws=
 github.com/prometheus/procfs v0.19.2/go.mod h1:M0aotyiemPhBCM0z5w87kL22CxfcH05ZpYlu+b4J7mw=
-github.com/qase-tms/qase-go/qase-api-client v1.2.12 h1:Lj0gufi71Lq11LD/mpGJ/IIKxHLMlfQp16pdFy4JgXY=
-github.com/qase-tms/qase-go/qase-api-client v1.2.12/go.mod h1:Za2AZQxuqkyc09vqHSlnceLjc40zFAAXMwhPPAMptMo=
+github.com/qase-tms/qase-go/qase-api-client v1.2.13 h1:vSWthc8eJuIsO0WFMEve9ozEJWz3NLo/tXq1bwrMDFM=
+github.com/qase-tms/qase-go/qase-api-client v1.2.13/go.mod h1:Za2AZQxuqkyc09vqHSlnceLjc40zFAAXMwhPPAMptMo=
 github.com/rancher/aks-operator v1.15.0-rc.1 h1:+a6A3a1eGgtZVG+/Xi0us/4HVQSsG9j3CADKOGT6OqM=
 github.com/rancher/aks-operator v1.15.0-rc.1/go.mod h1:cAYS9zWnBcUDn2DPQbYbRty/gyYHXHKr5V9MUB7gG7w=
 github.com/rancher/ali-operator v1.14.0-rc.1 h1:K/9sFAdo7QM8rD+ZpPM8YkwhLee4NHqvu5psNEdZArU=
