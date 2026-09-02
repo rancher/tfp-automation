@@ -59,7 +59,7 @@ require (
 	github.com/rancher/shepherd v0.0.0-20260804191050-69556e75d7d6
 	github.com/rancher/tests v0.0.0-20260807182903-06ab37e1aeac
 	github.com/rancher/tests/actions v0.0.0-20260807182903-06ab37e1aeac
-	github.com/sirupsen/logrus v1.10.1
+	github.com/sirupsen/logrus v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 
