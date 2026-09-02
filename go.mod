@@ -53,7 +53,7 @@ require (
 	github.com/go-echarts/go-echarts/v2 v2.7.2
 	github.com/gruntwork-io/terratest v1.0.1
 	github.com/imdario/mergo v1.0.2
-	github.com/qase-tms/qase-go/qase-api-client v1.2.12
+	github.com/qase-tms/qase-go/qase-api-client v1.2.13
 	github.com/rancher/norman v0.10.0
 	github.com/rancher/rancher/pkg/apis v0.0.0
 	github.com/rancher/shepherd v0.0.0-20260804191050-69556e75d7d6
