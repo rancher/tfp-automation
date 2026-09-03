@@ -102,7 +102,7 @@ require (
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
 	github.com/hashicorp/go-getter/v2 v2.2.3 // indirect
-	github.com/henrygd/beszel v0.18.2 // indirect
+	github.com/henrygd/beszel v0.18.7 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
