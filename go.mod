@@ -38,7 +38,7 @@ replace (
 	k8s.io/mount-utils => k8s.io/mount-utils v0.37.0
 	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.36.4
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.36.4
-	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.14.0
+	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.14.1
 	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.0
 )
 
