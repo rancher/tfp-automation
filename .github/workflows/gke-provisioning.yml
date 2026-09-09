@@ -20,6 +20,11 @@ on:
         required: false
         default: false
         type: boolean
+      environment_cleanup:
+        description: "Enable environment cleanup after test run"
+        required: false
+        default: true
+        type: boolean
   workflow_call:
     inputs:
       rancher_version:
@@ -248,7 +253,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
@@ -494,7 +499,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
@@ -741,7 +746,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}

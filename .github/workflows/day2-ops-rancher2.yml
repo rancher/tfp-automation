@@ -28,6 +28,11 @@ on:
         options:
           - k3s
           - rke2
+      environment_cleanup:
+        description: "Enable environment cleanup after test run"
+        required: false
+        default: true
+        type: boolean
   workflow_call:
     inputs:
       rancher_version:
@@ -294,12 +299,12 @@ jobs:
           reporting: ${{ env.REPORTING_ENABLED }}
 
       - name: Cleanup Infrastructure
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -307,7 +312,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
@@ -582,12 +587,12 @@ jobs:
           reporting: ${{ env.REPORTING_ENABLED }}
 
       - name: Cleanup Infrastructure
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -595,7 +600,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
@@ -872,12 +877,12 @@ jobs:
           reporting: ${{ env.REPORTING_ENABLED }}
 
       - name: Cleanup Infrastructure
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -885,7 +890,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
@@ -1162,12 +1167,12 @@ jobs:
           reporting: ${{ env.REPORTING_ENABLED }}
 
       - name: Cleanup Infrastructure
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -1175,7 +1180,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
-        if: always()
+        if: always() && github.event.inputs.environment_cleanup == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
