@@ -92,10 +92,12 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
 
-      - name: Mask Dockerhub Credentials
-        run: |
-          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
-          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+      - name: Masking Secrets
+        uses: ./.github/actions/mask-secrets
+        with:
+          secrets: |
+            ${{ env.DOCKERHUB_USERNAME }}
+            ${{ env.DOCKERHUB_PASSWORD }}
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -338,10 +340,12 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
 
-      - name: Mask Dockerhub Credentials
-        run: |
-          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
-          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+      - name: Masking Secrets
+        uses: ./.github/actions/mask-secrets
+        with:
+          secrets: |
+            ${{ env.DOCKERHUB_USERNAME }}
+            ${{ env.DOCKERHUB_PASSWORD }}
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
@@ -584,10 +588,12 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials username | DOCKERHUB_USERNAME ;
             secret/data/github/repo/${{ github.repository }}/dockerhub/org-token/credentials password | DOCKERHUB_PASSWORD
 
-      - name: Mask Dockerhub Credentials
-        run: |
-          echo "::add-mask::${{ env.DOCKERHUB_USERNAME }}"
-          echo "::add-mask::${{ env.DOCKERHUB_PASSWORD }}"
+      - name: Masking Secrets
+        uses: ./.github/actions/mask-secrets
+        with:
+          secrets: |
+            ${{ env.DOCKERHUB_USERNAME }}
+            ${{ env.DOCKERHUB_PASSWORD }}
 
       - name: Set up SSH Keys
         uses: ./.github/actions/setup-ssh-keys
