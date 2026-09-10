@@ -41,11 +41,27 @@ permissions:
   contents: read
 
 env:
+  CLOUD_PROVIDER: "azure"
   CLOUD_PROVIDER_VERSION: "${{ vars.AZURE_PROVIDER_VERSION }}"
+  DOWNSTREAM_CLUSTER_PROVIDER: "azure"
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "hosted"
   TEST_SUITE: "^TestTfpAKSProvisioningTestSuite$"
   TIMEOUT: "2h"
+  REPORTING_ENABLED: >-
+    ${{
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_call' ||
+      github.actor == 'github-actions[bot]' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
+    }}
+  CLEANUP_ENABLED: >-
+    ${{
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_call' ||
+      github.actor == 'github-actions[bot]' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment_cleanup == 'true' )
+    }}
 
 jobs:
   v2-16:
@@ -57,17 +73,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: prime-head
     env:
-      CLOUD_PROVIDER: "azure"
-      DOWNSTREAM_CLUSTER_PROVIDER: "azure"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_16 }}"
       HOSTNAME_PREFIX: "aks-216"
-      REPORTING_ENABLED: >-
-        ${{
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_call' ||
-          github.actor == 'github-actions[bot]' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
-        }}
 
     steps:
       - name: Checkout repository
@@ -267,7 +274,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
@@ -317,17 +324,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: prime-head
     env:
-      CLOUD_PROVIDER: "azure"
-      DOWNSTREAM_CLUSTER_PROVIDER: "azure"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_15 }}"
       HOSTNAME_PREFIX: "aks-215"
-      REPORTING_ENABLED: >-
-        ${{
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_call' ||
-          github.actor == 'github-actions[bot]' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
-        }}
 
     steps:
       - name: Checkout repository
@@ -527,7 +525,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
@@ -577,17 +575,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: prime-head
     env:
-      CLOUD_PROVIDER: "azure"
-      DOWNSTREAM_CLUSTER_PROVIDER: "azure"
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "aks-214"
-      REPORTING_ENABLED: >-
-        ${{
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_call' ||
-          github.actor == 'github-actions[bot]' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
-        }}
 
     steps:
       - name: Checkout repository
@@ -789,7 +778,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           cloud-provider: ${{ env.CLOUD_PROVIDER }}
