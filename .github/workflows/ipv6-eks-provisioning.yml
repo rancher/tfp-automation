@@ -59,6 +59,20 @@ env:
   PACKAGE: "hosted"
   TEST_SUITE: "^TestTfpIPv6EKSProvisioningTestSuite$"
   TIMEOUT: "2h"
+  REPORTING_ENABLED: >-
+    ${{
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_call' ||
+      github.actor == 'github-actions[bot]' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
+    }}
+  CLEANUP_ENABLED: >-
+    ${{
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_call' ||
+      github.actor == 'github-actions[bot]' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment_cleanup == 'true' )
+    }}
 
 jobs:
   v2-16:
@@ -72,13 +86,6 @@ jobs:
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_16 }}"
       HOSTNAME_PREFIX: "ipv6-eks-216"
-      REPORTING_ENABLED: >-
-        ${{
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_call' ||
-          github.actor == 'github-actions[bot]' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
-        }}
 
     steps:
       - name: Checkout repository
@@ -304,7 +311,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -312,7 +319,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
@@ -368,13 +375,6 @@ jobs:
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_15 }}"
       HOSTNAME_PREFIX: "ipv6-eks-215"
-      REPORTING_ENABLED: >-
-        ${{
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_call' ||
-          github.actor == 'github-actions[bot]' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
-        }}
 
     steps:
       - name: Checkout repository
@@ -600,7 +600,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -608,7 +608,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
@@ -662,13 +662,6 @@ jobs:
     env:
       RANCHER2_PROVIDER_VERSION: "${{ vars.RANCHER2_PROVIDER_VERSION_2_14 }}"
       HOSTNAME_PREFIX: "ipv6-eks-214"
-      REPORTING_ENABLED: >-
-        ${{
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_call' ||
-          github.actor == 'github-actions[bot]' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
-        }}
 
     steps:
       - name: Checkout repository
@@ -895,7 +888,7 @@ jobs:
           timeout: ${{ env.TIMEOUT }}
 
       - name: Cloud Provider Infrastructure Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "${{ env.HOSTNAME_PREFIX }}"
@@ -903,7 +896,7 @@ jobs:
           iam-role: ${{ secrets.TFP_IAM_ROLE }}
 
       - name: Cloud Provider Downstream Cleanup
-        if: always() && github.event.inputs.environment_cleanup == 'true'
+        if: always() && env.CLEANUP_ENABLED == 'true'
         uses: ./.github/actions/cloud-provider-cleanup
         with:
           prefix: "auto-${{ env.HOSTNAME_PREFIX }}"
