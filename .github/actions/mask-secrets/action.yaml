@@ -1,0 +1,25 @@
+---
+name: Masking Secrets
+description: "Masks newline-delimited secret values"
+inputs:
+  secrets:
+    description: "Newline-delimited secret values to mask"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        MASKED_SECRETS: ${{ inputs.secrets }}
+      run: |
+        mask_multiline() {
+          local content="$1"
+          while IFS= read -r line; do
+            if [[ -n "$line" ]]; then
+              echo "::add-mask::$line"
+            fi
+          done <<< "$content"
+        }
+
+        mask_multiline "$MASKED_SECRETS"
