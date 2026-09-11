@@ -149,6 +149,8 @@ install_prime_head_rancher() {
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
                                                                                          --set hostname=${HOSTNAME} \
                                                                                          ${VERSION} \
+                                                                                         --set proxy="http://${BASTION}:${PROXY_PORT}" \
+                                                                                         --set noProxy="${NO_PROXY}" \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                          --set ingress.tls.source=secret \
