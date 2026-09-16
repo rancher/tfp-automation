@@ -34,15 +34,16 @@ runs:
       if: ${{ inputs.complete == 'true' }}
       id: check_marker
       run: |
-        TAG="${{ inputs.rancher-version }}"
-        BASE_TAG=$(echo "$TAG" | grep -oE '^v[0-9]+\.[0-9]+')
-        MARKER_FILE="slack_notified_${BASE_TAG}.txt"
-        
-        echo "BASE_TAG=$BASE_TAG" >> $GITHUB_ENV
+        NOTIFICATION_TAG="${{ inputs.rancher-version }}"
+
+        DATE_RAN=$(date -u +%G-W%V)
+        MARKER_FILE="slack_notified_${NOTIFICATION_TAG}_${DATE_RAN}.txt"
+
+        echo "NOTIFICATION_TAG=$NOTIFICATION_TAG" >> $GITHUB_ENV
         echo "MARKER_FILE=$MARKER_FILE" >> $GITHUB_ENV
         
         if aws s3 ls "s3://${{ inputs.rancher-tag-bucket }}/${MARKER_FILE}" > /dev/null 2>&1; then
-          echo "Notification already sent for $BASE_TAG. Skipping."
+          echo "Notification already sent for $NOTIFICATION_TAG. Skipping..."
           echo "skip_slack=true" >> $GITHUB_OUTPUT
         else
           echo "skip_slack=false" >> $GITHUB_OUTPUT
@@ -57,7 +58,7 @@ runs:
         webhook-type: incoming-webhook
         payload: |
           {
-            "text": "*[rancher/tfp-automation]* :alert:\n`${{ env.BASE_TAG }}` Release Testing Completed :white_check_mark:"
+            "text": "*[rancher/tfp-automation]* :alert:\n`${{ env.NOTIFICATION_TAG }}` Release Testing Completed :white_check_mark:"
           }
 
     - name: Write notification marker to S3
