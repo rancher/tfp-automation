@@ -42,13 +42,13 @@ runs:
 
     - if: ${{ inputs.downstream-cluster-provider == 'aws' }}
       name: Get AWS credentials from Secrets Manager
-      uses: aws-actions/aws-secretsmanager-get-secrets@2cb1a461cbd4865ac4299648312e4704c646cd53 # v3
+      uses: aws-actions/aws-secretsmanager-get-secrets@2297f9a879480a9e3af9b293ed15c70caf8e1c88 # v3
       with:
         secret-ids: |
           AWS_ACCESS_KEY, ${{ inputs.aws-access-key-id }}
           AWS_SECRET_KEY, ${{ inputs.aws-secret-access-key }}
 
     - name: Login to Azure
-      uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3
       with:
         creds: '{"clientId":"${{ inputs.azure-client-id }}","clientSecret":"${{ inputs.azure-client-secret }}","subscriptionId":"${{ inputs.azure-subscription-id }}","tenantId":"${{ inputs.azure-tenant-id }}"}'
