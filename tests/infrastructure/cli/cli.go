@@ -24,31 +24,31 @@ import (
 )
 
 var setupClusterFuncs = map[string]func(*testing.T, string) error{
-	"--airgap-rke2": clusters.CreateAirgappedRKE2Cluster,
-	"--airgap-k3s":  clusters.CreateAirgappedK3SCluster,
-	"--dual-rke2":   clusters.CreateDualStackRKE2Cluster,
-	"--dual-k3s":    clusters.CreateDualStackK3SCluster,
-	"--ipv6-rke2":   clusters.CreateIPv6RKE2Cluster,
-	"--ipv6-k3s":    clusters.CreateIPv6K3SCluster,
-	"--normal-rke2": clusters.CreateRKE2Cluster,
-	"--normal-k3s":  clusters.CreateK3SCluster,
-	"--proxy-rke2":  clusters.CreateProxyRKE2Cluster,
-	"--proxy-k3s":   clusters.CreateProxyK3SCluster,
+	"--airgap-rke2":   clusters.CreateAirgappedRKE2Cluster,
+	"--airgap-k3s":    clusters.CreateAirgappedK3SCluster,
+	"--dual-rke2":     clusters.CreateDualStackRKE2Cluster,
+	"--dual-k3s":      clusters.CreateDualStackK3SCluster,
+	"--ipv6-rke2":     clusters.CreateIPv6RKE2Cluster,
+	"--ipv6-k3s":      clusters.CreateIPv6K3SCluster,
+	"--standard-rke2": clusters.CreateRKE2Cluster,
+	"--standard-k3s":  clusters.CreateK3SCluster,
+	"--proxy-rke2":    clusters.CreateProxyRKE2Cluster,
+	"--proxy-k3s":     clusters.CreateProxyK3SCluster,
 }
 
 var setupRancherFuncs = map[string]func(*testing.T, string, map[string]any) error{
-	"--airgap:fresh":   setupairgap.CreateAirgapRancher,
-	"--airgap:upgrade": upgradeairgap.UpgradingAirgapRancher,
-	"--dual:fresh":     setupdualstack.CreateDualStackRancher,
-	"--dual:upgrade":   upgradedualstack.UpgradingDualStackRancher,
-	"--hosted:fresh":   setuphosted.CreateHostedClusterRancher,
-	"--ipv6:fresh":     setupipv6.CreateIPv6Rancher,
-	"--ipv6:upgrade":   upgradeipv6.UpgradingIPv6Rancher,
-	"--normal:fresh":   setupstandard.CreateRancher,
-	"--normal:upgrade": upgradestandard.UpgradingRancher,
-	"--proxy:fresh":    setupproxy.CreateProxyRancher,
-	"--proxy:upgrade":  upgradeproxy.UpgradingProxyRancher,
-	"--registry:fresh": setupregistry.CreateRegistryRancher,
+	"--airgap:fresh":     setupairgap.CreateAirgapRancher,
+	"--airgap:upgrade":   upgradeairgap.UpgradingAirgapRancher,
+	"--dual:fresh":       setupdualstack.CreateDualStackRancher,
+	"--dual:upgrade":     upgradedualstack.UpgradingDualStackRancher,
+	"--hosted:fresh":     setuphosted.CreateHostedClusterRancher,
+	"--ipv6:fresh":       setupipv6.CreateIPv6Rancher,
+	"--ipv6:upgrade":     upgradeipv6.UpgradingIPv6Rancher,
+	"--standard:fresh":   setupstandard.CreateRancher,
+	"--standard:upgrade": upgradestandard.UpgradingRancher,
+	"--proxy:fresh":      setupproxy.CreateProxyRancher,
+	"--proxy:upgrade":    upgradeproxy.UpgradingProxyRancher,
+	"--registry:fresh":   setupregistry.CreateRegistryRancher,
 }
 
 var setupRegistryFuncs = map[string]func(*testing.T, string) error{
