@@ -119,8 +119,8 @@ export KUBERNETES_VERSION=""
 
 See the below examples on how to run in the CLI:
 
-`go run main.go --normal fresh` \
-`go run main.go --normal upgrade`
+`go run main.go --standard fresh` \
+`go run main.go --standard upgrade`
 
 To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
@@ -579,7 +579,7 @@ export CLOUD_PROVIDER_VERSION=""
 
 See the below examples on how to run in the CLI:
 
-`go run main.go --normal-rke2`
+`go run main.go --standard-rke2`
 
 To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
@@ -644,7 +644,7 @@ export CLOUD_PROVIDER_VERSION=""
 
 See the below examples on how to run in the CLI:
 
-`go run main.go --normal-k3s`
+`go run main.go --standard-k3s`
 
 To create a Rancher environment in the GUI, simply run command `go run main.go --web` and follow the prompts.
 
