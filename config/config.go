@@ -223,6 +223,8 @@ type TerraformConfig struct {
 	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
 	Proxy                               *Proxy                       `json:"proxy,omitempty" yaml:"proxy,omitempty"`
 	Provider                            string                       `json:"provider,omitempty" yaml:"provider,omitempty"`
+	ProviderVersion                     string                       `json:"providerVersion,omitempty" yaml:"providerVersion,omitempty"`
+	ProviderVersions                    map[string]string            `json:"providerVersions,omitempty" yaml:"providerVersions,omitempty"`
 	Standalone                          *Standalone                  `json:"standalone,omitempty" yaml:"standalone,omitempty"`
 	StandaloneRegistry                  *StandaloneRegistry          `json:"standaloneRegistry,omitempty" yaml:"standaloneRegistry,omitempty"`
 	TimeSleep                           string                       `json:"timeSleep,omitempty" yaml:"timeSleep,omitempty"`
