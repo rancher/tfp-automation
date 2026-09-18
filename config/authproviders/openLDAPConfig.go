@@ -8,4 +8,9 @@ type OpenLDAPConfig struct {
 	UserSearchBase                 string   `json:"userSearchBase,omitempty" yaml:"userSearchBase,omitempty"`
 	TestUsername                   string   `json:"testUsername,omitempty" yaml:"testUsername,omitempty"`
 	TestPassword                   string   `json:"testPassword,omitempty" yaml:"testPassword,omitempty"`
+
+	GroupSearchBase              string `json:"groupSearchBase,omitempty" yaml:"groupSearchBase,omitempty"`
+	Enabled                      *bool  `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	TLS                          *bool  `json:"tls,omitempty" yaml:"tls,omitempty"`
+	NestedGroupMembershipEnabled *bool  `json:"nestedGroupMembershipEnabled,omitempty" yaml:"nestedGroupMembershipEnabled,omitempty"`
 }

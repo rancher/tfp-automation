@@ -136,7 +136,7 @@ require (
 	howett.net/plist v1.0.1 // indirect
 	k8s.io/component-helpers v0.37.0 // indirect
 	k8s.io/streaming v0.37.0 // indirect
-	sigs.k8s.io/cluster-api/api v0.0.0-00010101000000-000000000000 // indirect
+	sigs.k8s.io/cluster-api/api v1.14.2 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
 )
