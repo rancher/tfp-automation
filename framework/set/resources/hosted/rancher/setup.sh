@@ -270,7 +270,7 @@ install_prime_head_rancher() {
                                                                                          ${VERSION} \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                         --set ingress.tls.source=secret \
+                                                                                         --set ingress.tls.source=traefik \
                                                                                          --devel
 }
 
