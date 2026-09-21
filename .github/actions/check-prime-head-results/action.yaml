@@ -39,24 +39,20 @@ runs:
 
         workflow_applies_to_head_release() {
           local workflow="$1"
-          local job_version="$2"
+          local selector="$2"
           local workflow_path=".github/workflows/$workflow"
 
           if [[ ! -f "$workflow_path" ]]; then
             return 0
           fi
 
-          grep -qF "startsWith(github.event.inputs.rancher_version, '$job_version')" "$workflow_path" || \
-          grep -qF "startsWith(inputs.rancher_version, '$job_version')" "$workflow_path" || \
-          grep -qF "startsWith(github.event.inputs.rancher_version, 'head')" "$workflow_path" || \
-          grep -qF "startsWith(inputs.rancher_version, 'head')" "$workflow_path"
+          grep -qF "fromJSON(needs.prepare-matrix.outputs.matrix)" "$workflow_path" && \
+          grep -qF "$selector)" "$workflow_path"
         }
 
         for release in ${SANITIZED_RELEASES//,/ }; do
           ALL_PASSED=true
           FAILED_WORKFLOWS=""
-          JOB_KEY="v${release:1:1}-${release:2}"
-          JOB_VERSION="v${release:1:1}.${release:2}-head"
           
           echo "Checking $release jobs..."
           for workflow in ${WORKFLOWS//,/ }; do
@@ -71,14 +67,19 @@ runs:
             fi
 
             JOB_FOUND=""
-            if ! workflow_applies_to_head_release "$workflow" "$JOB_VERSION"; then
-              echo "  - $workflow does not run for $JOB_VERSION, skipping..."
+            MATRIX_SELECTOR="head"
+            if [[ "$release" != "v215" ]]; then
+              MATRIX_SELECTOR="v2.${release:2}-head"
+            fi
+
+            if ! workflow_applies_to_head_release "$workflow" "$MATRIX_SELECTOR"; then
+              echo "  - $workflow does not run for $MATRIX_SELECTOR, skipping..."
               continue
             fi
 
             for RUN_ID in $RUN_IDS; do
               JOB_SUCCESS=$(gh api repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs \
-                --jq ".jobs[] | select((.name==\"${JOB_KEY}\" or .name==\"${JOB_VERSION}\") and .conclusion==\"success\") | .name" 2>/dev/null)
+                --jq ".jobs[] | select((.name==\"${MATRIX_SELECTOR}\" or (.name | endswith(\"${MATRIX_SELECTOR}\"))) and .conclusion==\"success\") | .name" 2>/dev/null)
               if [[ -n "$JOB_SUCCESS" ]]; then
                 JOB_FOUND="true"
                 break
