@@ -229,6 +229,27 @@ type TerraformConfig struct {
 	StandaloneRegistry                  *StandaloneRegistry          `json:"standaloneRegistry,omitempty" yaml:"standaloneRegistry,omitempty"`
 	TimeSleep                           string                       `json:"timeSleep,omitempty" yaml:"timeSleep,omitempty"`
 	WindowsPrivateKeyPath               string                       `json:"windowsPrivateKeyPath,omitempty" yaml:"windowsPrivateKeyPath,omitempty"`
+	RancherConfig                       *RancherConfig               `json:"rancherConfig,omitempty" yaml:"rancherConfig,omitempty"`
+}
+
+// RancherConfig holds the infrastructure configuration used to provision the local Rancher server,
+// kept independent of TerraformConfig.AWSConfig which downstream clusters are provisioned with.
+type RancherConfig struct {
+	AWSConfig aws.Config `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
+}
+
+// RancherTerraformConfig returns a copy of the TerraformConfig with its AWSConfig replaced by the nested
+// RancherConfig's AWSConfig (terraform.rancherConfig.awsConfig), so the local Rancher server infrastructure
+// can be provisioned independently of downstream clusters. If RancherConfig is unset, t is returned unchanged.
+func (t *TerraformConfig) RancherTerraformConfig() *TerraformConfig {
+	if t.RancherConfig == nil {
+		return t
+	}
+
+	rancherTerraformConfig := *t
+	rancherTerraformConfig.AWSConfig = t.RancherConfig.AWSConfig
+
+	return &rancherTerraformConfig
 }
 
 type Snapshots struct {

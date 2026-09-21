@@ -31,7 +31,7 @@ func CreateHostedClusterRancher(t *testing.T, provider string, cattleConfig map[
 	_, keyPath := rancher2.SetKeyPath(keypath.HostedKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	_, err := hosted.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	_, err := hosted.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	if err != nil {
 		return err
 	}
