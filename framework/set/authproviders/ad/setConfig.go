@@ -20,6 +20,12 @@ const (
 	userSearchBase         = "user_search_base"
 	testUsername           = "test_username"
 	testPassword           = "test_password"
+
+	groupSearchBase              = "group_search_base"
+	enabled                      = "enabled"
+	tls                          = "tls"
+	startTLS                     = "start_tls"
+	nestedGroupMembershipEnabled = "nested_group_membership_enabled"
 )
 
 // SetAD is a function that will set the AD configurations in the main.tf file.
@@ -34,6 +40,26 @@ func SetAD(terraformConfig *config.TerraformConfig, newFile *hclwrite.File, root
 	adBlockBody.SetAttributeValue(userSearchBase, cty.StringVal(terraformConfig.ADConfig.UserSearchBase))
 	adBlockBody.SetAttributeValue(testUsername, cty.StringVal(terraformConfig.ADConfig.TestUsername))
 	adBlockBody.SetAttributeValue(testPassword, cty.StringVal(terraformConfig.ADConfig.TestPassword))
+
+	if terraformConfig.ADConfig.GroupSearchBase != "" {
+		adBlockBody.SetAttributeValue(groupSearchBase, cty.StringVal(terraformConfig.ADConfig.GroupSearchBase))
+	}
+
+	if terraformConfig.ADConfig.TLS != nil {
+		adBlockBody.SetAttributeValue(tls, cty.BoolVal(*terraformConfig.ADConfig.TLS))
+	}
+
+	if terraformConfig.ADConfig.StartTLS != nil {
+		adBlockBody.SetAttributeValue(startTLS, cty.BoolVal(*terraformConfig.ADConfig.StartTLS))
+	}
+
+	if terraformConfig.ADConfig.NestedGroupMembershipEnabled != nil {
+		adBlockBody.SetAttributeValue(nestedGroupMembershipEnabled, cty.BoolVal(*terraformConfig.ADConfig.NestedGroupMembershipEnabled))
+	}
+
+	if terraformConfig.ADConfig.Enabled != nil {
+		adBlockBody.SetAttributeValue(enabled, cty.BoolVal(*terraformConfig.ADConfig.Enabled))
+	}
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {

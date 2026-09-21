@@ -14,7 +14,6 @@ import (
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
-	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
@@ -76,8 +75,6 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 		{"OpenLDAP", authproviders.OpenLDAP},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
-
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
@@ -92,7 +89,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
+			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
@@ -118,8 +115,6 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 		{r.terraformConfig.AuthProvider},
 	}
 
-	testUser, testPassword := configs.CreateTestCredentials()
-
 	for _, tt := range tests {
 		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
 		defer file.Close()
@@ -134,7 +129,7 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
 			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
 			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, testUser, testPassword, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
+			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
 		})
 
 		params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
