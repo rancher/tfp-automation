@@ -10,6 +10,7 @@ import (
 	"github.com/rancher/shepherd/extensions/token"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/providerversion"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/aws"
 	"github.com/rancher/tfp-automation/framework/set/defaults/providers/linode"
@@ -47,7 +48,6 @@ const (
 	user                    = "user"
 	userID                  = "user_id"
 	username                = "username"
-	providerEnvVar          = "RANCHER2_PROVIDER_VERSION"
 	cloudProviderEnvVar     = "CLOUD_PROVIDER_VERSION"
 	localProviderEnvVar     = "LOCALS_PROVIDER_VERSION"
 	rkeEnvVar               = "RKE_PROVIDER_VERSION"
@@ -56,7 +56,7 @@ const (
 // SetProvidersAndUsersTF is a helper function that will set the general Terraform configurations in the main.tf file.
 func SetProvidersAndUsersTF(rancherConfig *rancher.Config, authProvider bool, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	terraformConfig *config.TerraformConfig, customModule bool) (*hclwrite.File, *hclwrite.Body) {
-	createRequiredProviders(rootBody, terraformConfig, customModule)
+	createRequiredProviders(rancherConfig, rootBody, terraformConfig, customModule)
 	createProvider(rancherConfig, rootBody, terraformConfig, customModule)
 	createProviderAlias(rancherConfig, rootBody)
 
@@ -64,7 +64,7 @@ func SetProvidersAndUsersTF(rancherConfig *rancher.Config, authProvider bool, ne
 }
 
 // createRequiredProviders creates the required_providers block.
-func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customModule bool) {
+func createRequiredProviders(rancherConfig *rancher.Config, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customModule bool) {
 	tfBlock := rootBody.AppendNewBlock(terraform, nil)
 	tfBlockBody := tfBlock.Body()
 
@@ -75,7 +75,7 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 		return
 	}
 
-	source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion := getRequiredProviderVersions(terraformConfig)
+	source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion := getRequiredProviderVersions(rancherConfig, terraformConfig)
 
 	if rancherProviderVersion != "" {
 		reqProvsBlockBody.SetAttributeValue(rancher2Const, cty.ObjectVal(map[string]cty.Value{
@@ -124,7 +124,7 @@ func createRequiredProviders(rootBody *hclwrite.Body, terraformConfig *config.Te
 
 // createProvider creates a provider block for the given rancher config.
 func createProvider(rancherConfig *rancher.Config, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, customModule bool) {
-	_, _, cloudProviderVersion, _, _ := getRequiredProviderVersions(terraformConfig)
+	_, _, cloudProviderVersion, _, _ := getRequiredProviderVersions(rancherConfig, terraformConfig)
 
 	if terraformConfig == nil {
 		return
@@ -217,7 +217,7 @@ func createProviderAlias(rancherConfig *rancher.Config, rootBody *hclwrite.Body)
 }
 
 // Determines the required providers from the list of configs.
-func getRequiredProviderVersions(terraformConfig *config.TerraformConfig) (source, rancherProviderVersion, rkeProviderVersion, localProviderVersion,
+func getRequiredProviderVersions(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig) (source, rancherProviderVersion, rkeProviderVersion, localProviderVersion,
 	cloudProviderVersion string) {
 	if terraformConfig == nil {
 		return source, rancherProviderVersion, rkeProviderVersion, localProviderVersion, cloudProviderVersion
@@ -225,9 +225,9 @@ func getRequiredProviderVersions(terraformConfig *config.TerraformConfig) (sourc
 
 	module := terraformConfig.Module
 
-	rancherProviderVersion = os.Getenv(providerEnvVar)
-	if rancherProviderVersion == "" {
-		logrus.Fatalf("Expected env var not set %s", providerEnvVar)
+	rancherProviderVersion, err := resolveRancherProviderVersion(rancherConfig, terraformConfig)
+	if err != nil {
+		logrus.Fatalf("Failed to determine the rancher2 provider version: %v", err)
 	}
 
 	source = "rancher/rancher2"
@@ -249,4 +249,18 @@ func getRequiredProviderVersions(terraformConfig *config.TerraformConfig) (sourc
 	}
 
 	return source, rancherProviderVersion, cloudProviderVersion, localProviderVersion, rkeProviderVersion
+}
+
+// resolveRancherProviderVersion determines the rancher2 provider version to pin for the Rancher under test.
+func resolveRancherProviderVersion(rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig) (string, error) {
+	var host, adminToken string
+	var skipVerify bool
+
+	if rancherConfig != nil {
+		host = rancherConfig.Host
+		adminToken = rancherConfig.AdminToken
+		skipVerify = rancherConfig.Insecure != nil && *rancherConfig.Insecure
+	}
+
+	return providerversion.Resolve(host, adminToken, skipVerify, terraformConfig.ProviderVersion, terraformConfig.ProviderVersions)
 }

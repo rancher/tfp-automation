@@ -20,6 +20,11 @@ const (
 	userSearchBase                 = "user_search_base"
 	testUsername                   = "test_username"
 	testPassword                   = "test_password"
+
+	groupSearchBase              = "group_search_base"
+	enabled                      = "enabled"
+	tls                          = "tls"
+	nestedGroupMembershipEnabled = "nested_group_membership_enabled"
 )
 
 // SetOpenLDAP is a function that will set the OpenLDAP configurations in the main.tf file.
@@ -34,6 +39,22 @@ func SetOpenLDAP(terraformConfig *config.TerraformConfig, newFile *hclwrite.File
 	openLDAPBlockBody.SetAttributeValue(userSearchBase, cty.StringVal(terraformConfig.OpenLDAPConfig.UserSearchBase))
 	openLDAPBlockBody.SetAttributeValue(testUsername, cty.StringVal(terraformConfig.OpenLDAPConfig.TestUsername))
 	openLDAPBlockBody.SetAttributeValue(testPassword, cty.StringVal(terraformConfig.OpenLDAPConfig.TestPassword))
+
+	if terraformConfig.OpenLDAPConfig.GroupSearchBase != "" {
+		openLDAPBlockBody.SetAttributeValue(groupSearchBase, cty.StringVal(terraformConfig.OpenLDAPConfig.GroupSearchBase))
+	}
+
+	if terraformConfig.OpenLDAPConfig.TLS != nil {
+		openLDAPBlockBody.SetAttributeValue(tls, cty.BoolVal(*terraformConfig.OpenLDAPConfig.TLS))
+	}
+
+	if terraformConfig.OpenLDAPConfig.NestedGroupMembershipEnabled != nil {
+		openLDAPBlockBody.SetAttributeValue(nestedGroupMembershipEnabled, cty.BoolVal(*terraformConfig.OpenLDAPConfig.NestedGroupMembershipEnabled))
+	}
+
+	if terraformConfig.OpenLDAPConfig.Enabled != nil {
+		openLDAPBlockBody.SetAttributeValue(enabled, cty.BoolVal(*terraformConfig.OpenLDAPConfig.Enabled))
+	}
 
 	_, err := file.Write(newFile.Bytes())
 	if err != nil {
