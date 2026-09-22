@@ -2,27 +2,6 @@
   {
     "date": "",
     "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
     "workflow": "day2-ops-rancher2",
     "job": "v2-13",
     "timestamp": "2026-09-15T12:10:08Z"
@@ -47,69 +26,6 @@
     "workflow": "day2-ops-rancher2",
     "job": "v2-16",
     "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-15T12:10:08Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-15T18:07:32Z"
   },
   {
     "date": "",
@@ -142,69 +58,6 @@
   {
     "date": "",
     "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-15T18:07:32Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
     "workflow": "day2-ops-rancher2",
     "job": "v2-13",
     "timestamp": "2026-09-16T00:17:17Z"
@@ -229,69 +82,6 @@
     "workflow": "day2-ops-rancher2",
     "job": "v2-16",
     "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T06:11:46Z"
   },
   {
     "date": "",
@@ -324,69 +114,6 @@
   {
     "date": "",
     "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T06:11:46Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
     "workflow": "day2-ops-rancher2",
     "job": "v2-13",
     "timestamp": "2026-09-16T12:10:23Z"
@@ -411,69 +138,6 @@
     "workflow": "day2-ops-rancher2",
     "job": "v2-16",
     "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T12:10:23Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T18:08:33Z"
   },
   {
     "date": "",
@@ -506,69 +170,6 @@
   {
     "date": "",
     "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-16T18:08:33Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
     "workflow": "day2-ops-rancher2",
     "job": "v2-13",
     "timestamp": "2026-09-17T00:17:17Z"
@@ -593,69 +194,6 @@
     "workflow": "day2-ops-rancher2",
     "job": "v2-16",
     "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-17T00:17:17Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-17T06:12:10Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-17T06:12:10Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "aks-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-17T06:12:10Z"
   },
   {
     "date": "",
@@ -688,43 +226,29 @@
   {
     "date": "",
     "status": "failure",
-    "workflow": "eks-provisioning",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-13",
+    "timestamp": "2026-09-22T12:10:11Z"
+  },
+  {
+    "date": "",
+    "status": "success",
+    "workflow": "day2-ops-rancher2",
     "job": "v2-14",
-    "timestamp": "2026-09-17T06:12:10Z"
+    "timestamp": "2026-09-22T12:10:11Z"
   },
   {
     "date": "",
-    "status": "failure",
-    "workflow": "eks-provisioning",
+    "status": "success",
+    "workflow": "day2-ops-rancher2",
     "job": "v2-15",
-    "timestamp": "2026-09-17T06:12:10Z"
+    "timestamp": "2026-09-22T12:10:11Z"
   },
   {
     "date": "",
     "status": "failure",
-    "workflow": "eks-provisioning",
+    "workflow": "day2-ops-rancher2",
     "job": "v2-16",
-    "timestamp": "2026-09-17T06:12:10Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-14",
-    "timestamp": "2026-09-17T06:12:10Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-15",
-    "timestamp": "2026-09-17T06:12:10Z"
-  },
-  {
-    "date": "",
-    "status": "failure",
-    "workflow": "gke-provisioning",
-    "job": "v2-16",
-    "timestamp": "2026-09-17T06:12:10Z"
+    "timestamp": "2026-09-22T12:10:11Z"
   }
 ]
