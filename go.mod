@@ -45,7 +45,7 @@ replace (
 require (
 	github.com/go-echarts/go-echarts/v2 v2.7.2
 	github.com/gruntwork-io/terratest v1.0.1
-	github.com/hashicorp/hcl/v2 v2.24.0
+	github.com/hashicorp/hcl/v2 v2.25.0
 	github.com/imdario/mergo v1.0.2
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/qase-tms/qase-go/qase-api-client v1.2.13
