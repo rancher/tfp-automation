@@ -180,56 +180,57 @@ type StandaloneRegistry struct {
 }
 
 type TerraformConfig struct {
-	AWSConfig                           aws.Config                   `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
-	AWSCredentials                      aws.Credentials              `json:"awsCredentials,omitempty" yaml:"awsCredentials,omitempty"`
-	AzureConfig                         azure.Config                 `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
-	AzureCredentials                    azure.Credentials            `json:"azureCredentials,omitempty" yaml:"azureCredentials,omitempty"`
-	GoogleConfig                        google.Config                `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
-	GoogleCredentials                   google.Credentials           `json:"googleCredentials,omitempty" yaml:"googleCredentials,omitempty"`
-	HarvesterConfig                     harvester.Config             `json:"harvesterConfig,omitempty" yaml:"harvesterConfig,omitempty"`
-	HarvesterCredentials                harvester.Credentials        `json:"harvesterCredentials,omitempty" yaml:"harvesterCredentials,omitempty"`
-	LinodeConfig                        linode.Config                `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
-	LinodeCredentials                   linode.Credentials           `json:"linodeCredentials,omitempty" yaml:"linodeCredentials,omitempty"`
-	VsphereConfig                       vsphere.Config               `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`
-	VsphereCredentials                  vsphere.Credentials          `json:"vsphereCredentials,omitempty" yaml:"vsphereCredentials,omitempty"`
-	ADConfig                            authproviders.ADConfig       `json:"adConfig,omitempty" yaml:"adConfig,omitempty"`
-	AzureADConfig                       authproviders.AzureADConfig  `json:"azureADConfig,omitempty" yaml:"azureADConfig,omitempty"`
-	GithubConfig                        authproviders.GithubConfig   `json:"githubConfig,omitempty" yaml:"githubConfig,omitempty"`
-	OktaConfig                          authproviders.OktaConfig     `json:"oktaConfig,omitempty" yaml:"oktaConfig,omitempty"`
-	OpenLDAPConfig                      authproviders.OpenLDAPConfig `json:"openLDAPConfig,omitempty" yaml:"openLDAPConfig,omitempty"`
-	AirgapBastion                       string                       `json:"airgapBastion,omitempty" yaml:"airgapBastion,omitempty"`
-	AuthProvider                        string                       `json:"authProvider,omitempty" yaml:"authProvider,omitempty"`
-	ResourcePrefix                      string                       `json:"resourcePrefix,omitempty" yaml:"resourcePrefix,omitempty"`
-	CNI                                 string                       `json:"cni,omitempty" yaml:"cni,omitempty"`
-	ChartValues                         string                       `json:"chartValues,omitempty" yaml:"chartValues,omitempty"`
-	DataDirectories                     *DataDirectories             `json:"dataDirectories,omitempty" yaml:"dataDirectories,omitempty"`
-	DisableKubeProxy                    string                       `json:"disable-kube-proxy,omitempty" yaml:"disable-kube-proxy,omitempty"`
-	DefaultClusterRoleForProjectMembers string                       `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
-	DownstreamClusterProvider           string                       `json:"downstreamClusterProvider,omitempty" yaml:"downstreamClusterProvider,omitempty"`
-	EnableNetworkPolicy                 bool                         `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
-	ETCD                                *rkev1.ETCD                  `json:"etcd,omitempty" yaml:"etcd,omitempty"`
-	GenerateV3Token                     bool                         `json:"generateV3Token,omitempty" yaml:"generateV3Token,omitempty" default:"false"`
-	LocalAuthEndpoint                   bool                         `json:"localAuthEndpoint,omitempty" yaml:"localAuthEndpoint,omitempty" default:"false"`
-	LocalCluster                        string                       `json:"localCluster,omitempty" yaml:"localCluster,omitempty" default:"rke2"`
-	LocalHostedCluster                  bool                         `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`
-	ARMAchitecture                      bool                         `json:"armArchitecture,omitempty" yaml:"armArchitecture,omitempty" default:"false"`
-	MixedArchitecture                   bool                         `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`
-	Module                              string                       `json:"module,omitempty" yaml:"module,omitempty"`
-	NetworkPlugin                       string                       `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
-	PartnerRC                           bool                         `json:"partnerRC,omitempty" yaml:"partnerRC,omitempty" default:"false"`
-	PrivateFullChainPath                string                       `json:"privateFullChainPath,omitempty" yaml:"privateFullChainPath,omitempty"`
-	PrivateCertKeyPath                  string                       `json:"privateCertKeyPath,omitempty" yaml:"privateCertKeyPath,omitempty"`
-	PrivateKeyPath                      string                       `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
-	PrivateRegistries                   *PrivateRegistries           `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
-	Proxy                               *Proxy                       `json:"proxy,omitempty" yaml:"proxy,omitempty"`
-	Provider                            string                       `json:"provider,omitempty" yaml:"provider,omitempty"`
-	ProviderVersion                     string                       `json:"providerVersion,omitempty" yaml:"providerVersion,omitempty"`
-	ProviderVersions                    map[string]string            `json:"providerVersions,omitempty" yaml:"providerVersions,omitempty"`
-	Standalone                          *Standalone                  `json:"standalone,omitempty" yaml:"standalone,omitempty"`
-	StandaloneRegistry                  *StandaloneRegistry          `json:"standaloneRegistry,omitempty" yaml:"standaloneRegistry,omitempty"`
-	TimeSleep                           string                       `json:"timeSleep,omitempty" yaml:"timeSleep,omitempty"`
-	WindowsPrivateKeyPath               string                       `json:"windowsPrivateKeyPath,omitempty" yaml:"windowsPrivateKeyPath,omitempty"`
-	RancherConfig                       *RancherConfig               `json:"rancherConfig,omitempty" yaml:"rancherConfig,omitempty"`
+	AWSConfig                           aws.Config                       `json:"awsConfig,omitempty" yaml:"awsConfig,omitempty"`
+	AWSCredentials                      aws.Credentials                  `json:"awsCredentials,omitempty" yaml:"awsCredentials,omitempty"`
+	AzureConfig                         azure.Config                     `json:"azureConfig,omitempty" yaml:"azureConfig,omitempty"`
+	AzureCredentials                    azure.Credentials                `json:"azureCredentials,omitempty" yaml:"azureCredentials,omitempty"`
+	GoogleConfig                        google.Config                    `json:"googleConfig,omitempty" yaml:"googleConfig,omitempty"`
+	GoogleCredentials                   google.Credentials               `json:"googleCredentials,omitempty" yaml:"googleCredentials,omitempty"`
+	HarvesterConfig                     harvester.Config                 `json:"harvesterConfig,omitempty" yaml:"harvesterConfig,omitempty"`
+	HarvesterCredentials                harvester.Credentials            `json:"harvesterCredentials,omitempty" yaml:"harvesterCredentials,omitempty"`
+	LinodeConfig                        linode.Config                    `json:"linodeConfig,omitempty" yaml:"linodeConfig,omitempty"`
+	LinodeCredentials                   linode.Credentials               `json:"linodeCredentials,omitempty" yaml:"linodeCredentials,omitempty"`
+	VsphereConfig                       vsphere.Config                   `json:"vsphereConfig,omitempty" yaml:"vsphereConfig,omitempty"`
+	VsphereCredentials                  vsphere.Credentials              `json:"vsphereCredentials,omitempty" yaml:"vsphereCredentials,omitempty"`
+	ADConfig                            authproviders.ADConfig           `json:"adConfig,omitempty" yaml:"adConfig,omitempty"`
+	AzureADConfig                       authproviders.AzureADConfig      `json:"azureADConfig,omitempty" yaml:"azureADConfig,omitempty"`
+	GithubConfig                        authproviders.GithubConfig       `json:"githubConfig,omitempty" yaml:"githubConfig,omitempty"`
+	KeycloakSAMLConfig                  authproviders.KeycloakSAMLConfig `json:"keycloakSAMLConfig,omitempty" yaml:"keycloakSAMLConfig,omitempty"`
+	OktaConfig                          authproviders.OktaConfig         `json:"oktaConfig,omitempty" yaml:"oktaConfig,omitempty"`
+	OpenLDAPConfig                      authproviders.OpenLDAPConfig     `json:"openLDAPConfig,omitempty" yaml:"openLDAPConfig,omitempty"`
+	AirgapBastion                       string                           `json:"airgapBastion,omitempty" yaml:"airgapBastion,omitempty"`
+	AuthProvider                        string                           `json:"authProvider,omitempty" yaml:"authProvider,omitempty"`
+	ResourcePrefix                      string                           `json:"resourcePrefix,omitempty" yaml:"resourcePrefix,omitempty"`
+	CNI                                 string                           `json:"cni,omitempty" yaml:"cni,omitempty"`
+	ChartValues                         string                           `json:"chartValues,omitempty" yaml:"chartValues,omitempty"`
+	DataDirectories                     *DataDirectories                 `json:"dataDirectories,omitempty" yaml:"dataDirectories,omitempty"`
+	DisableKubeProxy                    string                           `json:"disable-kube-proxy,omitempty" yaml:"disable-kube-proxy,omitempty"`
+	DefaultClusterRoleForProjectMembers string                           `json:"defaultClusterRoleForProjectMembers,omitempty" yaml:"defaultClusterRoleForProjectMembers,omitempty"`
+	DownstreamClusterProvider           string                           `json:"downstreamClusterProvider,omitempty" yaml:"downstreamClusterProvider,omitempty"`
+	EnableNetworkPolicy                 bool                             `json:"enableNetworkPolicy,omitempty" yaml:"enableNetworkPolicy,omitempty"`
+	ETCD                                *rkev1.ETCD                      `json:"etcd,omitempty" yaml:"etcd,omitempty"`
+	GenerateV3Token                     bool                             `json:"generateV3Token,omitempty" yaml:"generateV3Token,omitempty" default:"false"`
+	LocalAuthEndpoint                   bool                             `json:"localAuthEndpoint,omitempty" yaml:"localAuthEndpoint,omitempty" default:"false"`
+	LocalCluster                        string                           `json:"localCluster,omitempty" yaml:"localCluster,omitempty" default:"rke2"`
+	LocalHostedCluster                  bool                             `json:"localHostedCluster,omitempty" yaml:"localHostedCluster,omitempty"`
+	ARMAchitecture                      bool                             `json:"armArchitecture,omitempty" yaml:"armArchitecture,omitempty" default:"false"`
+	MixedArchitecture                   bool                             `json:"mixedArchitecture,omitempty" yaml:"mixedArchitecture,omitempty" default:"false"`
+	Module                              string                           `json:"module,omitempty" yaml:"module,omitempty"`
+	NetworkPlugin                       string                           `json:"networkPlugin,omitempty" yaml:"networkPlugin,omitempty"`
+	PartnerRC                           bool                             `json:"partnerRC,omitempty" yaml:"partnerRC,omitempty" default:"false"`
+	PrivateFullChainPath                string                           `json:"privateFullChainPath,omitempty" yaml:"privateFullChainPath,omitempty"`
+	PrivateCertKeyPath                  string                           `json:"privateCertKeyPath,omitempty" yaml:"privateCertKeyPath,omitempty"`
+	PrivateKeyPath                      string                           `json:"privateKeyPath,omitempty" yaml:"privateKeyPath,omitempty"`
+	PrivateRegistries                   *PrivateRegistries               `json:"privateRegistries,omitempty" yaml:"privateRegistries,omitempty"`
+	Proxy                               *Proxy                           `json:"proxy,omitempty" yaml:"proxy,omitempty"`
+	Provider                            string                           `json:"provider,omitempty" yaml:"provider,omitempty"`
+	ProviderVersion                     string                           `json:"providerVersion,omitempty" yaml:"providerVersion,omitempty"`
+	ProviderVersions                    map[string]string                `json:"providerVersions,omitempty" yaml:"providerVersions,omitempty"`
+	Standalone                          *Standalone                      `json:"standalone,omitempty" yaml:"standalone,omitempty"`
+	StandaloneRegistry                  *StandaloneRegistry              `json:"standaloneRegistry,omitempty" yaml:"standaloneRegistry,omitempty"`
+	TimeSleep                           string                           `json:"timeSleep,omitempty" yaml:"timeSleep,omitempty"`
+	WindowsPrivateKeyPath               string                           `json:"windowsPrivateKeyPath,omitempty" yaml:"windowsPrivateKeyPath,omitempty"`
+	RancherConfig                       *RancherConfig                   `json:"rancherConfig,omitempty" yaml:"rancherConfig,omitempty"`
 }
 
 // RancherConfig holds the infrastructure configuration used to provision the local Rancher server,
