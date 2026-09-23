@@ -33,16 +33,6 @@ on:
         required: false
         default: true
         type: boolean
-  workflow_call:
-    inputs:
-      rancher_version:
-        description: "Rancher tag version provided from check-rancher-tag workflow"
-        required: true
-        type: string
-      rancher_chart_version:
-        description: "Rancher chart version provided from check-rancher-tag workflow"
-        required: true
-        type: string
 
 permissions:
   id-token: write
@@ -61,14 +51,12 @@ env:
   REPORTING_ENABLED: >-
     ${{
       github.event_name == 'schedule' ||
-      github.event_name == 'workflow_call' ||
       github.actor == 'github-actions[bot]' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.reporting == 'true' )
     }}
   CLEANUP_ENABLED: >-
     ${{
       github.event_name == 'schedule' ||
-      github.event_name == 'workflow_call' ||
       github.actor == 'github-actions[bot]' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment_cleanup == 'true' )
     }}
@@ -86,13 +74,12 @@ jobs:
         shell: bash
         run: |
           if [[ "$RUN_ALL_VERSIONS" == "true" || "$GITHUB_EVENT_NAME" == "schedule" ]]; then
-            versions='["16", "15", "14", "13"]'
+            versions='["16", "15", "14"]'
           else
             case "$RANCHER_VERSION_INPUT" in
               head) versions='["16"]' ;;
               v2.15-head) versions='["15"]' ;;
               v2.14-head) versions='["14"]' ;;
-              v2.13-head) versions='["13"]' ;;
               *) versions='[]' ;;
             esac
           fi
