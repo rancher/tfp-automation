@@ -41,7 +41,7 @@ func CreateAirgapRancher(t *testing.T, provider string, cattleConfig map[string]
 	_, keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	_, bastion, err := airgap.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	_, bastion, err := airgap.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func SetupAirgapRancher(t *testing.T, session *session.Session, moduleKeyPath st
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	registry, bastion, err := airgap.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	registry, bastion, err := airgap.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	require.NoError(t, err)
 
 	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)

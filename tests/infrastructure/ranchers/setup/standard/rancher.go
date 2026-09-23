@@ -37,7 +37,7 @@ func CreateRancher(t *testing.T, provider string, cattleConfig map[string]any) e
 	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	_, err := sanity.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	_, err := sanity.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	if err != nil {
 		return err
 	}
@@ -86,10 +86,10 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string, 
 	var serverNodeOne string
 
 	if terraformConfig.LocalHostedCluster {
-		serverNodeOne, err = hosted.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+		serverNodeOne, err = hosted.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 		require.NoError(t, err)
 	} else {
-		serverNodeOne, err = sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+		serverNodeOne, err = sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 		require.NoError(t, err)
 	}
 

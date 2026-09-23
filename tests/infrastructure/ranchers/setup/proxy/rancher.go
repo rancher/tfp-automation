@@ -39,7 +39,7 @@ func CreateProxyRancher(t *testing.T, provider string, cattleConfig map[string]a
 	_, keyPath := rancher2.SetKeyPath(keypath.ProxyKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	_, _, err := proxy.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	_, _, err := proxy.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func SetupProxyRancher(t *testing.T, session *session.Session, moduleKeyPath str
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	proxyBastion, proxyPrivateIP, err := proxy.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	proxyBastion, proxyPrivateIP, err := proxy.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	require.NoError(t, err)
 
 	// For providers that do not have built-in DNS records, this will update the Rancher server URL.

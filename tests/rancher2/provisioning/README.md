@@ -75,6 +75,12 @@ terraform:
     windowsAWSUser: ""
     windowsInstanceType: ""
     windowsKeyName: ""
+
+  # OPTIONAL - infrastructure used to provision the local Rancher server, kept separate from awsConfig
+  # above (which is used for downstream cluster provisioning) so instance types etc. can differ.
+  rancherConfig:
+    awsConfig:
+      awsInstanceType: ""
   
   # Set if provider: vsphere
   vsphereCredentials:
@@ -166,6 +172,12 @@ terraform:
     windows2022Password: ""
     windowsInstanceType: ""
     windowsKeyName: ""
+
+  # OPTIONAL - infrastructure used to provision the local Rancher server, kept separate from awsConfig
+  # above (which is used for downstream cluster provisioning) so instance types etc. can differ.
+  rancherConfig:
+    awsConfig:
+      awsInstanceType: ""
 
   # Set if provider: vsphere
   vsphereCredentials:

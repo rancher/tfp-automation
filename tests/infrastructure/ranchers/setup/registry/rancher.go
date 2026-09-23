@@ -41,7 +41,7 @@ func CreateRegistryRancher(t *testing.T, provider string, cattleConfig map[strin
 	_, keyPath := rancher2.SetKeyPath(keypath.RegistryKeyPath, terratestConfig.PathToRepo, registryType)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	_, _, _, err := registries.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	_, _, _, err := registries.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func SetupRegistryRancher(t *testing.T, session *session.Session, moduleKeyPath 
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, registryType)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	authRegistry, unauthRegistry, globalRegistry, err := registries.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	authRegistry, unauthRegistry, globalRegistry, err := registries.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	require.NoError(t, err)
 
 	client, err := ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)

@@ -37,6 +37,12 @@ terraform:
     windowsKeyName: ""
   windowsPrivateKeyPath: ""
 
+  # OPTIONAL - infrastructure used to provision the local Rancher server, kept separate from awsConfig
+  # above (which is used for downstream cluster provisioning) so instance types etc. can differ.
+  rancherConfig:
+    awsConfig:
+      awsInstanceType: ""
+
 # STANDALONE CONFIG - IMPORTED CLUSTERS
   standalone:
     rke2Version: "v1.32.3+rke2r1"

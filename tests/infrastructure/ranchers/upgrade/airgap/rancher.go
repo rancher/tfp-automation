@@ -40,7 +40,7 @@ func UpgradingAirgapRancher(t *testing.T, provider string, cattleConfig map[stri
 	_, keyPath := rancher2.SetKeyPath(keypath.AirgapKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	registry, bastion, err := resources.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	registry, bastion, err := resources.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	require.NoError(t, err)
 
 	sshKey, err := os.ReadFile(terraformConfig.PrivateKeyPath)
@@ -63,7 +63,7 @@ func UpgradingAirgapRancher(t *testing.T, provider string, cattleConfig map[stri
 	_, upgradeKeyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	upgradeTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, upgradeKeyPath)
 
-	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, upgradeKeyPath, rancherConfig, terraformConfig, terratestConfig, "", "", bastion, registry)
+	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, upgradeKeyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig, "", "", bastion, registry)
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.AirgapKeyPath)
@@ -85,7 +85,7 @@ func UpgradeAirgapRancher(t *testing.T, client *rancher.Client, bastion, registr
 	_, keyPath := rancher2.SetKeyPath(keypath.UpgradeKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	upgradeTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig, "", "", bastion, registry)
+	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig, "", "", bastion, registry)
 	require.NoError(t, err)
 
 	tunnel.StopBastionSSHTunnel()

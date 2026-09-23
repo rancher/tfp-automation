@@ -36,7 +36,7 @@ func CreateIPv6Rancher(t *testing.T, provider string, cattleConfig map[string]an
 	_, keyPath := rancher2.SetKeyPath(keypath.IPv6KeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	_, err := ipv6.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	_, err := ipv6.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func SetupIPv6Rancher(t *testing.T, session *session.Session, moduleKeyPath stri
 	_, keyPath := rancher2.SetKeyPath(moduleKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	bastionNode, err := ipv6.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig, terratestConfig)
+	bastionNode, err := ipv6.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	require.NoError(t, err)
 
 	client, err := ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, false)
