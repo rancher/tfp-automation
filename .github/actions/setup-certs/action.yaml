@@ -14,7 +14,6 @@ inputs:
   private-cert-key-name:
     description: "Private Certificate Key Name"
     required: true
-
 outputs:
   private-full-chain-path:
     description: "Path to private full chain PEM in workspace .ssh"
@@ -22,21 +21,62 @@ outputs:
   private-cert-key-path:
     description: "Path to private cert key PEM in workspace .ssh"
     value: ${{ steps.write-certs.outputs.private-cert-key-path }}
-
 runs:
   using: composite
   steps:
     - id: write-certs
       run: |
-        full_chain_path="${GITHUB_WORKSPACE}/.ssh/${{ inputs.private-full-chain-name }}.pem"
-        cert_key_path="${GITHUB_WORKSPACE}/.ssh/${{ inputs.private-cert-key-name }}.pem"
+        set +x
 
-        echo "${{ inputs.private-full-chain }}" > "$full_chain_path"
+        mask_multiline() {
+          local content="$1"
+          while IFS= read -r line; do
+            if [[ -n "$line" ]]; then
+              echo "::add-mask::$line"
+            fi
+          done <<< "$content"
+        }
+
+        # Mask raw input payloads immediately in case values are passed in non-standard formats.
+        mask_multiline "$PRIVATE_FULL_CHAIN"
+        mask_multiline "$PRIVATE_CERT_KEY"
+        echo "::add-mask::$PRIVATE_FULL_CHAIN_NAME"
+        echo "::add-mask::$PRIVATE_CERT_KEY_NAME"
+
+        normalize_secret_value() {
+          local raw="$1"
+          local parsed
+
+          if parsed=$(printf '%s' "$raw" | jq -er '.value' 2>/dev/null); then
+            printf '%s' "$parsed"
+            return
+          fi
+
+          printf '%s' "$raw"
+        }
+
+        private_full_chain="$(normalize_secret_value "$PRIVATE_FULL_CHAIN")"
+        private_cert_key="$(normalize_secret_value "$PRIVATE_CERT_KEY")"
+
+        mask_multiline "$private_full_chain"
+        mask_multiline "$private_cert_key"
+        echo "::add-mask::$PRIVATE_FULL_CHAIN_NAME"
+        echo "::add-mask::$PRIVATE_CERT_KEY_NAME"
+
+        full_chain_path="${GITHUB_WORKSPACE}/.ssh/${PRIVATE_FULL_CHAIN_NAME}"
+        cert_key_path="${GITHUB_WORKSPACE}/.ssh/${PRIVATE_CERT_KEY_NAME}"
+
+        printf '%s' "$private_full_chain" > "$full_chain_path"
         chmod 600 "$full_chain_path"
 
-        echo "${{ inputs.private-cert-key }}" > "$cert_key_path"
+        printf '%s' "$private_cert_key" > "$cert_key_path"
         chmod 600 "$cert_key_path"
 
         echo "private-full-chain-path=$full_chain_path" >> "$GITHUB_OUTPUT"
         echo "private-cert-key-path=$cert_key_path" >> "$GITHUB_OUTPUT"
+      env:
+        PRIVATE_FULL_CHAIN: ${{ inputs.private-full-chain }}
+        PRIVATE_FULL_CHAIN_NAME: ${{ inputs.private-full-chain-name }}
+        PRIVATE_CERT_KEY: ${{ inputs.private-cert-key }}
+        PRIVATE_CERT_KEY_NAME: ${{ inputs.private-cert-key-name }}
       shell: bash

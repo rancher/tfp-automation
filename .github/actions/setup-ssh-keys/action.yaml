@@ -1,6 +1,6 @@
 ---
 name: Setup SSH Keys
-description: "Sets up SSH keys for Linux and Windows"
+description: "Sets up SSH keys for Linux"
 inputs:
   ssh-private-key:
     description: "SSH Private Key"
@@ -8,21 +8,98 @@ inputs:
   ssh-private-key-name:
     description: "SSH Private Key Name"
     required: true
-  windows-ssh-private-key:
-    description: "Windows SSH Private Key"
-    required: true
-  windows-ssh-private-key-name:
-    description: "Windows SSH Private Key Name"
-    required: true
+outputs:
+  ssh-private-key-name:
+    description: "Normalized Linux SSH private key name (without .pem suffix)"
+    value: ${{ steps.write-keys.outputs.ssh-private-key-name }}
+  ssh-private-key-path:
+    description: "Path to Linux SSH private key in workspace .ssh"
+    value: ${{ steps.write-keys.outputs.ssh-private-key-path }}
 runs:
   using: composite
   steps:
-    - run: |
-        mkdir -p .ssh
+    - id: write-keys
+      run: |
+        set +x
 
-        echo "${{ inputs.ssh-private-key }}" > .ssh/${{ inputs.ssh-private-key-name }}.pem
-        chmod 600 .ssh/${{ inputs.ssh-private-key-name }}.pem
+        mask_multiline() {
+          local content="$1"
+          while IFS= read -r line; do
+            if [[ -n "$line" ]]; then
+              echo "::add-mask::$line"
+            fi
+          done <<< "$content"
+        }
 
-        echo "${{ inputs.windows-ssh-private-key }}" > .ssh/${{ inputs.windows-ssh-private-key-name }}.pem
-        chmod 600 .ssh/${{ inputs.windows-ssh-private-key-name }}.pem
+        # Mask raw input payloads immediately in case values are passed in non-standard formats.
+        mask_multiline "$SSH_PRIVATE_KEY"
+        echo "::add-mask::$SSH_PRIVATE_KEY_NAME"
+
+        normalize_secret_value() {
+          local raw="$1"
+          local parsed
+
+          if parsed=$(printf '%s' "$raw" | jq -er '.value' 2>/dev/null); then
+            printf '%s' "$parsed"
+            return
+          fi
+
+          printf '%s' "$raw"
+        }
+
+        normalize_private_key_payload() {
+          local key="$1"
+
+          # Strip CR characters that can break OpenSSH parsing on Linux runners.
+          key="${key//$'\r'/}"
+
+          # If secret content uses escaped newlines, decode them to real newlines.
+          if [[ "$key" != *$'\n'* && "$key" == *"\\n"* ]]; then
+            key="${key//\\n/$'\n'}"
+          fi
+
+          printf '%s' "$key"
+        }
+
+        ssh_private_key="$(normalize_secret_value "$SSH_PRIVATE_KEY")"
+        ssh_private_key_name="$(normalize_secret_value "$SSH_PRIVATE_KEY_NAME")"
+
+        ssh_private_key="$(normalize_private_key_payload "$ssh_private_key")"
+
+        mask_multiline "$ssh_private_key"
+        echo "::add-mask::$ssh_private_key_name"
+
+        # Key names in AWS are typically bare key pair names. Accept either with or without .pem suffix.
+        ssh_private_key_name="${ssh_private_key_name%.pem}"
+
+        if [[ -z "$ssh_private_key_name" ]]; then
+          echo "SSH key names cannot be empty after normalization"
+          exit 1
+        fi
+
+        if [[ ! "$ssh_private_key" =~ -----BEGIN[[:space:]][A-Z[:space:]]*PRIVATE[[:space:]]KEY----- ]]; then
+          echo "Linux SSH private key secret does not look like a valid private key payload"
+          exit 1
+        fi
+
+        workspace_root="${GITHUB_WORKSPACE:-/home/runner/work/tfp-automation/tfp-automation}"
+        ssh_dir="${workspace_root}/.ssh"
+
+        mkdir -p "$ssh_dir"
+
+        ssh_private_key_path="${ssh_dir}/${ssh_private_key_name}.pem"
+
+        printf '%s\n' "$ssh_private_key" > "$ssh_private_key_path"
+        chmod 600 "$ssh_private_key_path"
+
+        if ! ssh-keygen -yf "$ssh_private_key_path" >/dev/null 2>&1; then
+          echo "Linux SSH private key could not be parsed after normalization"
+          exit 1
+        fi
+
+        echo "ssh-private-key-name=$ssh_private_key_name" >> "$GITHUB_OUTPUT"
+        echo "ssh-private-key-path=$ssh_private_key_path" >> "$GITHUB_OUTPUT"
+      env:
+        SSH_PRIVATE_KEY: ${{ inputs.ssh-private-key }}
+        SSH_PRIVATE_KEY_NAME: ${{ inputs.ssh-private-key-name }}
       shell: bash
