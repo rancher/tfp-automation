@@ -43,6 +43,21 @@ terraform:
     awsUser: "<HB_AWS_OS_USER>"
     sshConnectionType: "<HB_SSH_CONNECTION_TYPE>"
     timeout: "<HB_SSH_TIMEOUT>"
+  standalone:
+    bootstrapPassword: "<HB_RANCHER_ADMIN_PASSWORD>"
+    certManagerVersion: "<HB_CERT_MANAGER_VERSION>"
+    certType: "<HB_CERT_TYPE>"
+    chartVersion: "<required>"
+    osUser: "<HB_AWS_OS_USER>"
+    osGroup: "<HB_AWS_OS_GROUP>"
+    rancherTagVersion: "<required>"
+    rancherChartRepository: "<HB_PRIME_HEAD_HELM_CHART_URL>"
+    repo: "<HB_PRIME_HEAD_REPO>"
+    rancherImage: "<HB_PRIME_HEAD_RANCHER_IMAGE>"
+    rancherHostname: "<HB_RANCHER_HOSTNAME>"
+    registryPassword: "<HB_DOCKERHUB_PASSWORD>"
+    registryUsername: "<HB_DOCKERHUB_USERNAME>"
+    rke2Version: "<HB_RKE2_VERSION>"
 
 terratest:
   pathToRepo: "<HB_TFP_PATH_TO_REPO>"

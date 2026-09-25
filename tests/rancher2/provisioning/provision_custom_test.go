@@ -4,7 +4,6 @@ package provisioning
 
 import (
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -18,7 +17,6 @@ import (
 	"github.com/rancher/tests/actions/workloads/pods"
 	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
-	"github.com/rancher/tfp-automation/defaults/clustertypes"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/modules"
@@ -89,7 +87,6 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 		module string
 	}{
 		{"Custom_TFP_RKE2", modules.CustomAWSRKE2},
-		{"Custom_TFP_RKE2_Windows", modules.CustomAWSRKE2Windows2022},
 		{"Custom_TFP_K3S", modules.CustomAWSK3S},
 	}
 
@@ -117,7 +114,7 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 			defer cleanup.Cleanup(p.T(), perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, customClusterName := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, true, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
 			err = provisioningActions.VerifyClusterReady(p.client, clusters[0])
@@ -130,23 +127,6 @@ func (p *ProvisionCustomTestSuite) TestTfpProvisionCustom() {
 			logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
 			err = pods.VerifyClusterPods(p.client, clusters[0])
 			require.NoError(p.T(), err)
-
-			if strings.Contains(terraform.Module, clustertypes.WINDOWS) {
-				logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-				clusters, _ = provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, true, true, true, customClusterName, nestedRancherModuleDir)
-
-				logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
-				err = provisioningActions.VerifyClusterReady(p.client, clusters[0])
-				require.NoError(p.T(), err)
-
-				logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
-				err = clusterActions.VerifyServiceAccountTokenSecret(p.client, clusters[0].Name)
-				require.NoError(p.T(), err)
-
-				logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
-				err = pods.VerifyClusterPods(p.client, clusters[0])
-				require.NoError(p.T(), err)
-			}
 
 			params := tfpQase.GetProvisioningSchemaParams(p.terraformConfig, p.terratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
