@@ -4,7 +4,10 @@ description: "Masks newline-delimited secret values"
 inputs:
   secrets:
     description: "Newline-delimited secret values to mask"
-    required: true
+    required: false
+  secret-env-vars:
+    description: "Newline-delimited names of environment variables containing secrets to mask"
+    required: false
 
 runs:
   using: composite
@@ -12,14 +15,31 @@ runs:
     - shell: bash
       env:
         MASKED_SECRETS: ${{ inputs.secrets }}
+        MASKED_SECRET_ENV_VARS: ${{ inputs.secret-env-vars }}
       run: |
+        set +x
+
         mask_multiline() {
           local content="$1"
           while IFS= read -r line; do
             if [[ -n "$line" ]]; then
-              echo "::add-mask::$line"
+              local escaped="${line//'%'/'%25'}"
+              escaped="${escaped//$'\r'/'%0D'}"
+              escaped="${escaped//$'\n'/'%0A'}"
+              printf '::add-mask::%s\n' "$escaped"
             fi
           done <<< "$content"
         }
 
         mask_multiline "$MASKED_SECRETS"
+
+        while IFS= read -r name; do
+          if [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] && [[ -v $name ]]; then
+            content="${!name}"
+            mask_multiline "$content"
+
+            if value=$(printf '%s' "$content" | jq -er '.value' 2>/dev/null); then
+              mask_multiline "$value"
+            fi
+          fi
+        done <<< "$MASKED_SECRET_ENV_VARS"

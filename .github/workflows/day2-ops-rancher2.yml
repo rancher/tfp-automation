@@ -157,12 +157,15 @@ jobs:
       - name: Masking Secrets
         uses: ./.github/actions/mask-secrets
         with:
-          secrets: |
-            ${{ env.DOCKERHUB_USERNAME }}
-            ${{ env.DOCKERHUB_PASSWORD }}
-            ${{ fromJSON(env.HB_SSH_PRIVATE_KEY).value }}
-            ${{ fromJSON(env.HB_PRIVATE_FULL_CHAIN).value }}
-            ${{ fromJSON(env.HB_PRIVATE_CERT_KEY).value }}
+          secret-env-vars: |
+            DOCKERHUB_USERNAME
+            DOCKERHUB_PASSWORD
+            HB_SSH_PRIVATE_KEY
+            HB_SSH_PRIVATE_KEY_NAME
+            HB_PRIVATE_FULL_CHAIN
+            HB_PRIVATE_FULL_CHAIN_NAME
+            HB_PRIVATE_CERT_KEY
+            HB_PRIVATE_CERT_KEY_NAME
 
       - name: Whitelist Runner IP
         id: whitelist-runner-ip
