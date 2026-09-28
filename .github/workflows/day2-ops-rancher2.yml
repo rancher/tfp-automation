@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
-    name: ${{ vars[format('RANCHER_VERSION_2_{0}_HEAD', matrix.version)] }}
+    name: ${{ vars[format('HB_RANCHER_VERSION_2_{0}_HEAD', matrix.version)] }}
     runs-on: ubuntu-latest
     environment: prime-head
     env:
