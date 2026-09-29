@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/scripts"
 	airgap "github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
@@ -52,7 +53,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		_, err = scripts.InitAndApplyE(t, terraformOptions)
 		if err != nil && *rancherConfig.Cleanup {
 			logrus.Infof("Error while updating private registry. Cleaning up...")
 			cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -66,7 +67,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		_, err = scripts.InitAndApplyE(t, terraformOptions)
 		if err != nil && *rancherConfig.Cleanup {
 			logrus.Infof("Error while upgrading Airgap Rancher. Cleaning up...")
 			cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -79,7 +80,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		_, err = scripts.InitAndApplyE(t, terraformOptions)
 		if err != nil && *rancherConfig.Cleanup {
 			logrus.Infof("Error while upgrading Proxy Rancher. Cleaning up...")
 			cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -92,7 +93,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		_, err = terraform.InitAndApplyE(t, terraformOptions)
+		_, err = scripts.InitAndApplyE(t, terraformOptions)
 		if err != nil && *rancherConfig.Cleanup {
 			logrus.Infof("Error while upgrading Rancher. Cleaning up...")
 			cleanup.Cleanup(t, terraformOptions, keyPath)

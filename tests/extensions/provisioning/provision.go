@@ -15,6 +15,7 @@ import (
 	"github.com/rancher/tests/actions/clusters"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/providers"
+	"github.com/rancher/tfp-automation/framework/scripts"
 	framework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/stretchr/testify/require"
 )
@@ -40,7 +41,7 @@ func Provision(t *testing.T, client, standardUserClient *rancher.Client, rancher
 		GoogleDriverImport(t, terraformOptions)
 	}
 
-	output, err := terraform.InitAndApplyE(t, terraformOptions)
+	output, err := scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil {
 		if output == "" {
 			var fatalErr retry.FatalError

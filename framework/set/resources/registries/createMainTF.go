@@ -9,6 +9,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/scripts"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/registries/rancher"
@@ -66,7 +67,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating resources. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -99,7 +100,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		logrus.Fatalf("Error creating unauthenticated registry: %v", err)
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating registries. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -120,7 +121,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		}
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating registries. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -134,7 +135,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		logrus.Fatalf("Error creating authenticated registry: %v", err)
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating registries. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -148,7 +149,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		logrus.Fatalf("Error creating ecr registry: %v", err)
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating registries. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -172,7 +173,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating RKE2 cluster. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -186,7 +187,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating Rancher server. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)

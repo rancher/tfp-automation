@@ -20,7 +20,7 @@ import (
 	upgradeproxy "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/proxy"
 	upgradestandard "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/upgrade/standard"
 	"github.com/rancher/tfp-automation/tests/infrastructure/registries"
-	"github.com/stretchr/testify/require"
+	"github.com/sirupsen/logrus"
 )
 
 var setupClusterFuncs = map[string]func(*testing.T, string) error{
@@ -69,22 +69,28 @@ func RunCLI() int {
 
 		if setupFunc, ok := setupRancherFuncs[key]; ok {
 			cattleConfig := config.LoadConfigFromFile(os.Getenv(config.ConfigEnvironmentKey))
-			err := setupFunc(t, "", cattleConfig)
-			require.NoError(t, err)
+			if err := setupFunc(t, "", cattleConfig); err != nil {
+				logrus.Errorf("%s failed: %v", key, err)
+				return 1
+			}
 
 			return 0
 		}
 	} else {
 		if setupFunc, ok := setupClusterFuncs[key]; ok {
-			err := setupFunc(t, "")
-			require.NoError(t, err)
+			if err := setupFunc(t, ""); err != nil {
+				logrus.Errorf("%s failed: %v", key, err)
+				return 1
+			}
 
 			return 0
 		}
 
 		if setupFunc, ok := setupRegistryFuncs[key]; ok {
-			err := setupFunc(t, "")
-			require.NoError(t, err)
+			if err := setupFunc(t, ""); err != nil {
+				logrus.Errorf("%s failed: %v", key, err)
+				return 1
+			}
 
 			return 0
 		}

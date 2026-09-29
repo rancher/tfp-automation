@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/rancher/tests/actions/pipeline"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/require"
 	kwait "k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -20,9 +20,13 @@ import (
 func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancherConfig *rancher.Config, session *session.Session, host,
 	keyPath string, isUpgrade bool) (*rancher.Client, error) {
 	adminToken, err := CreateAdminToken(t, terraformOptions, rancherConfig)
-	if err != nil && *rancherConfig.Cleanup {
-		logrus.Warnf("Failed to create admin token: %v. Attempting to clean up infrastructure...", err)
-		cleanup.Cleanup(t, terraformOptions, keyPath)
+	if err != nil {
+		if *rancherConfig.Cleanup {
+			logrus.Warnf("Failed to create admin token: %v. Attempting to clean up infrastructure...", err)
+			cleanup.Cleanup(t, terraformOptions, keyPath)
+		}
+
+		return nil, fmt.Errorf("failed to create admin token: %w", err)
 	}
 
 	rancherConfig.AdminToken = adminToken.Token
@@ -47,7 +51,9 @@ func PostRancherSetup(t *testing.T, terraformOptions *terraform.Options, rancher
 
 	if !isUpgrade {
 		err = pipeline.PostRancherInstall(client, client.RancherConfig.AdminPassword)
-		require.NoError(t, err)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return client, nil

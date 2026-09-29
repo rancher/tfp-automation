@@ -27,16 +27,19 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 
 	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/sanity/rancher/setup.sh")
 
+	logrus.Debug("Reading setup script from path: ", scriptPath)
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {
 		return nil, err
 	}
 
+	logrus.Debug("Reading private full chain file from path: ", terraformConfig.PrivateFullChainPath)
 	privateFullChain, err := os.ReadFile(terraformConfig.PrivateFullChainPath)
 	if err != nil {
 		return nil, err
 	}
 
+	logrus.Debug("Reading private cert key file from path: ", terraformConfig.PrivateCertKeyPath)
 	privateCertKey, err := os.ReadFile(terraformConfig.PrivateCertKeyPath)
 	if err != nil {
 		return nil, err
