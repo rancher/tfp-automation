@@ -9,6 +9,7 @@ import (
 	shepherdConfig "github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/scripts"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2"
@@ -57,7 +58,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating resources. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -82,7 +83,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating registry. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -104,7 +105,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		}
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating local cluster. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -118,7 +119,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating Rancher server. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)

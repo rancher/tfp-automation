@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/providers"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/scripts"
 	"github.com/rancher/tfp-automation/framework/set/resources/k3s"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
@@ -58,7 +59,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating resources. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -97,7 +98,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		}
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating local cluster. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
@@ -111,7 +112,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating Rancher server. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)

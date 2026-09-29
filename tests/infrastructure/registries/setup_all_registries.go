@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
+	"github.com/rancher/tfp-automation/framework/scripts"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
@@ -69,7 +70,7 @@ func SetupAllRegistries(t *testing.T, provider string) error {
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	require.NoError(t, err)
 
-	_, err = terraform.InitAndApplyE(t, terraformOptions)
+	_, err = scripts.InitAndApplyE(t, terraformOptions)
 	if err != nil && *rancherConfig.Cleanup {
 		logrus.Infof("Error while creating resources. Cleaning up...")
 		cleanup.Cleanup(t, terraformOptions, keyPath)
