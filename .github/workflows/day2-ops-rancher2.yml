@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
-    name: ${{ vars[format('HB_RANCHER_VERSION_2_{0}_HEAD', matrix.version)] }}
+    name: v2-${{ matrix.version }}
     runs-on: ubuntu-latest
     environment: prime-head
     env:
@@ -128,6 +128,7 @@ jobs:
             HB_RANCHER_VERSION_2_16_HEAD, HB_RANCHER_VERSION_2_16_HEAD
             HB_RANCHER_VERSION_2_15_HEAD, HB_RANCHER_VERSION_2_15_HEAD
             HB_RANCHER_VERSION_2_14_HEAD, HB_RANCHER_VERSION_2_14_HEAD
+            HB_RELEASED_RANCHER_CHART_VERSION_2_16, HB_RELEASED_RANCHER_CHART_VERSION_2_16
             HB_RELEASED_RANCHER_CHART_VERSION_2_15, HB_RELEASED_RANCHER_CHART_VERSION_2_15
             HB_RELEASED_RANCHER_CHART_VERSION_2_14, HB_RELEASED_RANCHER_CHART_VERSION_2_14
             HB_RKE2_VERSION_2_16, HB_RKE2_VERSION_2_16
