@@ -18,6 +18,7 @@ DOCKERHUB_PASS=${15}
 RANCHER_AGENT_IMAGE=${16}
 
 USER=$(whoami)
+REGISTRY_HOST="${REGISTRY%%/*}"
 
 echo "Decoding certificate files..."
 base64 -d <<< "$FULL_CHAIN_FILE" > /home/$USER/fullchain.pem
@@ -122,7 +123,7 @@ sudo tee /etc/docker/daemon.json >/dev/null
     
     sudo systemctl restart docker && sudo systemctl daemon-reload
     sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
-    sudo docker login https://${REGISTRY} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
+    sudo docker login https://${REGISTRY_HOST} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
 }
 
 install_cert_manager() {

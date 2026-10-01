@@ -15,6 +15,7 @@ REPO=${12}
 RANCHER_CHART_REPO=${13}
 ROUTE53_FQDN=${14}
 RANCHER_AGENT_IMAGE=${15}
+REGISTRY_PATH=${16}
 
 set -e
 
@@ -35,6 +36,13 @@ CERT_KEY_PATH=/home/$USER/privkey.pem
 REGISTRY_ENDPOINT="${HOST}"
 if [ -n "${ROUTE53_FQDN}" ]; then
     REGISTRY_ENDPOINT="${ROUTE53_FQDN}"
+fi
+
+REGISTRY_IMAGE_PREFIX="${REGISTRY_ENDPOINT}"
+if [ -n "${REGISTRY_PATH}" ]; then
+    REGISTRY_PATH="${REGISTRY_PATH#/}"
+    REGISTRY_PATH="${REGISTRY_PATH%/}"
+    REGISTRY_IMAGE_PREFIX="${REGISTRY_IMAGE_PREFIX}/${REGISTRY_PATH}"
 fi
 
 docker_login() {
@@ -169,8 +177,8 @@ cert_manager_images() {
 
     for IMAGE in "${CERT_MANAGER_IMAGES[@]}"; do
         sudo docker pull ${IMAGE}
-        sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE}
-        sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE}
+        sudo docker tag ${IMAGE} ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
+        sudo docker push ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
     done
 }
 
@@ -191,8 +199,8 @@ copy_images() {
     # So we need to omit that from the source.
     if [[ -n "${RANCHER_AGENT_IMAGE}" ]]; then
         IMAGE_TAG=$(grep -m1 'rancher/rancher-agent:' /home/${USER}/rancher-images.txt | rev | cut -d: -f1 | rev)
-        crane copy "${RANCHER_IMAGE}:${IMAGE_TAG}" "${REGISTRY_ENDPOINT}/${RANCHER_IMAGE}:${IMAGE_TAG}" --insecure &
-        crane copy "${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" "${REGISTRY_ENDPOINT}/${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" --insecure &
+        crane copy "${RANCHER_IMAGE}:${IMAGE_TAG}" "${REGISTRY_IMAGE_PREFIX}/${RANCHER_IMAGE}:${IMAGE_TAG}" --insecure &
+        crane copy "${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" "${REGISTRY_IMAGE_PREFIX}/${RANCHER_AGENT_IMAGE}:${IMAGE_TAG}" --insecure &
     fi
 
     PARALLEL_ACTIONS=10
@@ -200,7 +208,7 @@ copy_images() {
 
     while read -r IMAGE; do
         [[ -z "$IMAGE" ]] && continue
-        crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure &
+        crane copy "docker.io/${IMAGE}" "${REGISTRY_IMAGE_PREFIX}/${IMAGE}" --insecure &
 
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
@@ -213,7 +221,7 @@ copy_images() {
     COUNTER=0
     while read -r IMAGE; do
         [[ -z "$IMAGE" ]] && continue
-        crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure &
+        crane copy "docker.io/${IMAGE}" "${REGISTRY_IMAGE_PREFIX}/${IMAGE}" --insecure &
 
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
@@ -238,7 +246,7 @@ copy_windows_images() {
         mapfile -t VERSIONS < <(grep -oP "${PATTERN}:\\K[^ ]+" /home/${USER}/rancher-images.txt | tail -n 30)
         for VERSION in "${VERSIONS[@]}"; do
             SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
-            DEST_IMAGE="${REGISTRY_ENDPOINT}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
+            DEST_IMAGE="${REGISTRY_IMAGE_PREFIX}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}"
 
             crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all &
             COUNTER=$((COUNTER+1))
@@ -249,7 +257,7 @@ copy_windows_images() {
             if [ "${PATTERN}" == "rke2-runtime" ]; then
                 WINS_SUFFIX="-windows-amd64"
                 SRC_IMAGE="docker.io/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
-                DEST_IMAGE="${REGISTRY_ENDPOINT}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
+                DEST_IMAGE="${REGISTRY_IMAGE_PREFIX}/rancher/${IMAGE_PATTERNS[$PATTERN]}:${VERSION}${WINS_SUFFIX}"
 
                 crane copy "${SRC_IMAGE}" "${DEST_IMAGE}" --insecure --platform all &
 
@@ -266,7 +274,7 @@ copy_windows_images() {
     COUNTER=0
     mapfile -t WINDOWS_IMAGES < /home/${USER}/rancher-windows-images.txt
     for IMAGE in "${WINDOWS_IMAGES[@]}"; do
-        crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure --platform all &
+        crane copy "docker.io/${IMAGE}" "${REGISTRY_IMAGE_PREFIX}/${IMAGE}" --insecure --platform all &
 
         COUNTER=$((COUNTER+1))
         if (( COUNTER % PARALLEL_ACTIONS == 0 )); then
@@ -286,7 +294,7 @@ verify_images() {
     mapfile -t IMAGES < /home/${USER}/rancher-images.txt
     for IMAGE in "${IMAGES[@]}"; do
         {
-            TARGET_IMAGE=${REGISTRY_ENDPOINT}/${IMAGE}
+            TARGET_IMAGE=${REGISTRY_IMAGE_PREFIX}/${IMAGE}
             if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else
@@ -321,7 +329,7 @@ verify_windows_images() {
                 echo "${IMAGE} exists"
             else
                 echo "${IMAGE} is missing, fixing..."
-                crane copy "docker.io/${IMAGE}" "${REGISTRY_ENDPOINT}/${IMAGE}" --insecure &
+                crane copy "docker.io/${IMAGE}" "${REGISTRY_IMAGE_PREFIX}/${IMAGE}" --insecure &
                 echo "${IMAGE} pushed successfully."
             fi
         } &

@@ -18,6 +18,17 @@ RANCHER_AGENT_IMAGE=${15}
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
 
+REGISTRY_HOST="${REGISTRY%%/*}"
+REGISTRY_PATH="${REGISTRY#*/}"
+if [[ "${REGISTRY_PATH}" == "${REGISTRY}" ]]; then
+  REGISTRY_PATH=""
+fi
+
+REGISTRY_REWRITE_PREFIX="rancher"
+if [[ -n "${REGISTRY_PATH}" ]]; then
+  REGISTRY_REWRITE_PREFIX="${REGISTRY_PATH}/rancher"
+fi
+
 set -e
 
 retryCmd() {
@@ -87,11 +98,11 @@ if [ -z "$REGISTRY_USERNAME" ] || [ -z "$REGISTRY_PASSWORD" ]; then
 mirrors:
   "docker.io":
     endpoint:
-      - "https://${REGISTRY}"
+      - "https://${REGISTRY_HOST}"
     rewrite:
-      "^rancher/(.*)": "${REGISTRY}/rancher/\$1"
+      "^rancher/(.*)": "${REGISTRY_REWRITE_PREFIX}/\$1"
 configs:
-  "${REGISTRY}":
+  "${REGISTRY_HOST}":
     tls:
       insecure_skip_verify: true
 EOF
@@ -100,11 +111,11 @@ else
 mirrors:
   "docker.io":
     endpoint:
-      - "https://${REGISTRY}"
+      - "https://${REGISTRY_HOST}"
     rewrite:
-      "^rancher/(.*)": "${REGISTRY}/rancher/\$1"
+      "^rancher/(.*)": "${REGISTRY_REWRITE_PREFIX}/\$1"
 configs:
-  "${REGISTRY}":
+  "${REGISTRY_HOST}":
     auth:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"
@@ -142,7 +153,7 @@ retryCmd sudo systemctl start rke2-server
 
 sudo tee /etc/docker/daemon.json > /dev/null << EOF
 {
-  "insecure-registries" : [ "${REGISTRY}" ]
+  "insecure-registries" : [ "${REGISTRY_HOST}" ]
 }
 EOF
 
@@ -150,7 +161,7 @@ sudo systemctl restart docker && sudo systemctl daemon-reload
 
 if [ -n "${REGISTRY_USERNAME}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
   sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
-  sudo docker login https://${REGISTRY} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
+  sudo docker login https://${REGISTRY_HOST} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
 fi
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then

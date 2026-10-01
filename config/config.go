@@ -173,6 +173,7 @@ type StandaloneRegistry struct {
 	GlobalRegistryFQDN         string `json:"globalRegistryFQDN,omitempty" yaml:"globalRegistryFQDN,omitempty"`
 	UnauthRegistryFQDN         string `json:"unauthRegistryFQDN,omitempty" yaml:"unauthRegistryFQDN,omitempty"`
 	RegistryName               string `json:"registryName,omitempty" yaml:"registryName,omitempty"`
+	RegistryPath               string `json:"registryPath,omitempty" yaml:"registryPath,omitempty"`
 	RegistryPassword           string `json:"registryPassword,omitempty" yaml:"registryPassword,omitempty"`
 	RegistryUsername           string `json:"registryUsername,omitempty" yaml:"registryUsername,omitempty"`
 	UpgradedAssetsPath         string `json:"upgradedAssetsPath,omitempty" yaml:"upgradedAssetsPath,omitempty"`

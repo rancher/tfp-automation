@@ -333,6 +333,7 @@ terraform:
     assetsPath: ""                                # REQUIRED - ensure that you end with a trailing `/`
     authenticated: true                           # REQUIRED - true if you want an authenticated registry, false for a non-authenticated registry
     registryName: ""                              # REQUIRED (authenticated registry only)
+    registryPath: ""                              # OPTIONAL - path namespace appended after the registry hostname
     registryPassword: ""                          # REQUIRED (authenticated registry only)
     registryUsername: ""                          # REQUIRED (authenticated registry only)
 ```
