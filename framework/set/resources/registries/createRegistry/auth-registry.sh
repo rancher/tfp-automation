@@ -17,6 +17,7 @@ REPO=${14}
 RANCHER_CHART_REPO=${15}
 ROUTE53_FQDN=${16}
 RANCHER_AGENT_IMAGE=${17}
+REGISTRY_PATH=${18}
 
 set -e
 
@@ -37,6 +38,13 @@ CERT_KEY_PATH=/home/$USER/privkey.pem
 REGISTRY_ENDPOINT="${HOST}"
 if [ -n "${ROUTE53_FQDN}" ]; then
     REGISTRY_ENDPOINT="${ROUTE53_FQDN}"
+fi
+
+REGISTRY_IMAGE_PREFIX="${REGISTRY_ENDPOINT}"
+if [ -n "${REGISTRY_PATH}" ]; then
+    REGISTRY_PATH="${REGISTRY_PATH#/}"
+    REGISTRY_PATH="${REGISTRY_PATH%/}"
+    REGISTRY_IMAGE_PREFIX="${REGISTRY_IMAGE_PREFIX}/${REGISTRY_PATH}"
 fi
 
 docker_login() {
@@ -177,8 +185,8 @@ cert_manager_images() {
 
     for IMAGE in "${CERT_MANAGER_IMAGES[@]}"; do
         sudo docker pull ${IMAGE}
-        sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE}
-        sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE}
+        sudo docker tag ${IMAGE} ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
+        sudo docker push ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
     done
 }
 
@@ -188,7 +196,7 @@ manage_images() {
 
     COUNTER=0
     for IMAGE in "${IMAGES[@]}"; do
-        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${REGISTRY_ENDPOINT}/${IMAGE} && sudo docker push ${REGISTRY_ENDPOINT}/${IMAGE} &
+        sudo docker pull ${IMAGE} && sudo docker tag ${IMAGE} ${REGISTRY_IMAGE_PREFIX}/${IMAGE} && sudo docker push ${REGISTRY_IMAGE_PREFIX}/${IMAGE} &
         COUNTER=$((COUNTER+1))
         
         if (( $COUNTER % $PARALLEL_ACTIONS == 0 )); then
@@ -208,7 +216,7 @@ verify_images() {
 
     for IMAGE in "${IMAGES[@]}"; do
         {
-            TARGET_IMAGE=${REGISTRY_ENDPOINT}/${IMAGE}
+            TARGET_IMAGE=${REGISTRY_IMAGE_PREFIX}/${IMAGE}
             if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else

@@ -2,6 +2,7 @@ package registries
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -163,6 +164,10 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		globalRegistryPublicDNS = unauthGlobalRegistryRoute53FQDN
 	} else {
 		globalRegistryPublicDNS = authGlobalRegistryRoute53FQDN
+	}
+
+	if registryPath := strings.Trim(terraformConfig.StandaloneRegistry.RegistryPath, "/"); registryPath != "" {
+		globalRegistryPublicDNS = strings.TrimRight(globalRegistryPublicDNS, "/") + "/" + registryPath
 	}
 
 	file = sanity.OpenFile(file, keyPath)

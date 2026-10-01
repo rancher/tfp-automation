@@ -20,6 +20,8 @@ const (
 	globalRegistry = "global_registry"
 	unauthRegistry = "unauth_registry"
 	ecrRegistry    = "ecr_registry"
+
+	blankCommand = " \"\""
 )
 
 // CreateAuthenticatedRegistry is a helper function that will create an authenticated registry.
@@ -59,13 +61,19 @@ func CreateAuthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBody
 	if useSecureFQDN {
 		command += " " + rke2AuthRegistryRoute53FQDN
 	} else {
-		command += " \"\""
+		command += blankCommand
 	}
 
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	} else {
-		command += " \"\""
+		command += blankCommand
+	}
+
+	if terraformConfig.StandaloneRegistry.RegistryPath != "" {
+		command += " \"" + terraformConfig.StandaloneRegistry.RegistryPath + "\""
+	} else {
+		command += blankCommand
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
@@ -123,13 +131,19 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		if useSecureFQDN {
 			command += " " + rke2UnauthRegistryRoute53FQDN
 		} else {
-			command += " \"\""
+			command += blankCommand
 		}
 
 		if terraformConfig.Standalone.UpgradedRancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.UpgradedRancherAgentImage
 		} else {
-			command += " \"\""
+			command += blankCommand
+		}
+
+		if terraformConfig.StandaloneRegistry.RegistryPath != "" {
+			command += " \"" + terraformConfig.StandaloneRegistry.RegistryPath + "\""
+		} else {
+			command += blankCommand
 		}
 	} else {
 		command = "/tmp/unauth-registry.sh " + terraformConfig.StandaloneRegistry.RegistryName + " " + terraformConfig.Standalone.CertManagerVersion + " " +
@@ -141,13 +155,19 @@ func CreateUnauthenticatedRegistry(file *os.File, newFile *hclwrite.File, rootBo
 		if useSecureFQDN {
 			command += " " + rke2UnauthRegistryRoute53FQDN
 		} else {
-			command += " \"\""
+			command += blankCommand
 		}
 
 		if terraformConfig.Standalone.RancherAgentImage != "" {
 			command += " " + terraformConfig.Standalone.RancherAgentImage
 		} else {
-			command += " \"\""
+			command += blankCommand
+		}
+
+		if terraformConfig.StandaloneRegistry.RegistryPath != "" {
+			command += " \"" + terraformConfig.StandaloneRegistry.RegistryPath + "\""
+		} else {
+			command += blankCommand
 		}
 	}
 
@@ -189,7 +209,7 @@ func CreateECRRegistry(file *os.File, newFile *hclwrite.File, rootBody *hclwrite
 	if terraformConfig.Standalone.RancherAgentImage != "" {
 		command += " " + terraformConfig.Standalone.RancherAgentImage
 	} else {
-		command += " \"\""
+		command += blankCommand
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
