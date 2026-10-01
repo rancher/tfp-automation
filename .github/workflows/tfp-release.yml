@@ -197,7 +197,7 @@ jobs:
         run: go install gotest.tools/gotestsum@c4a0df2e75a225d979a444342dd3db752b53619f
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 #v4
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: "${{ fromJSON(env.HB_TERRAFORM_VERSION).value }}"
           terraform_wrapper: false
