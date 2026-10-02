@@ -42,6 +42,7 @@ sudo mkdir -p /etc/rancher/k3s
 
 echo "token: ${K3S_TOKEN}
 cluster-init: true
+secrets-encryption: true
 tls-san:
   - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
 
