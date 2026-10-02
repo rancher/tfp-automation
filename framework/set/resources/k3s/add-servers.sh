@@ -42,6 +42,7 @@ sudo hostnamectl set-hostname ${K3S_NEW_SERVER_IP}
 sudo mkdir -p /etc/rancher/k3s
 
 echo "token: ${K3S_TOKEN}
+secrets-encryption: true
 tls-san:
   - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
 
