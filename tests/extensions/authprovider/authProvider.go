@@ -10,7 +10,9 @@ import (
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
+	"github.com/rancher/tfp-automation/framework/providerversion"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/ad"
+	"github.com/rancher/tfp-automation/framework/set/authproviders/keycloakOIDC"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/keycloakSAML"
 	"github.com/rancher/tfp-automation/framework/set/authproviders/ldap"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/rancher2"
@@ -47,6 +49,9 @@ func apply(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.
 	err := setAuthProvider(rancherConfig, terraformConfig, enabled, newFile, rootBody, file)
 	require.NoError(t, err)
 
+	err = providerversion.ClearStaleLock(terraformOptions.TerraformDir)
+	require.NoError(t, err)
+
 	terraform.InitAndApply(t, terraformOptions)
 }
 
@@ -60,6 +65,9 @@ func setAuthProvider(rancherConfig *rancher.Config, terraformConfig *config.Terr
 	case authproviders.KeycloakSAML:
 		terraformConfig.KeycloakSAMLConfig.Enabled = &enabled
 		return keycloakSAML.SetKeycloakSAML(rancherConfig, terraformConfig, newFile, rootBody, file)
+	case authproviders.KeycloakOIDC:
+		terraformConfig.KeycloakOIDCConfig.Enabled = &enabled
+		return keycloakOIDC.SetKeycloakOIDC(rancherConfig, terraformConfig, newFile, rootBody, file)
 	case authproviders.OpenLDAP:
 		terraformConfig.OpenLDAPConfig.Enabled = &enabled
 		return ldap.SetOpenLDAP(terraformConfig, newFile, rootBody, file)

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/shepherd/clients/rancher"
 	"github.com/rancher/tfp-automation/config"
+	"github.com/rancher/tfp-automation/framework/providerversion"
 	framework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/stretchr/testify/require"
 )
@@ -19,6 +20,9 @@ func AuthConfig(t *testing.T, rancherConfig *rancher.Config, terraformConfig *co
 	require.True(t, isSupported)
 
 	err := framework.AuthConfig(rancherConfig, configMap, newFile, rootBody, file)
+	require.NoError(t, err)
+
+	err = providerversion.ClearStaleLock(terraformOptions.TerraformDir)
 	require.NoError(t, err)
 
 	terraform.InitAndApply(t, terraformOptions)
