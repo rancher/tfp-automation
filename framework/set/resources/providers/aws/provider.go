@@ -41,6 +41,7 @@ func CreateAWSProviderBlock(rootBody *hclwrite.Body, terraformConfig *config.Ter
 	awsProvBlockBody.SetAttributeValue(aws.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
 	awsProvBlockBody.SetAttributeValue(aws.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
 	awsProvBlockBody.SetAttributeValue(aws.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
+	aws.SetCIDefaultTags(awsProvBlockBody)
 }
 
 // CreateAWSLocalBlock will set up the local block. Returns the local block.

@@ -31,6 +31,10 @@ func SetAWSRKE2K3SMachineConfig(machineConfigBlockBody *hclwrite.Body, terraform
 	awsConfigBlockBody.SetAttributeValue(amazon.VPCID, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
 	awsConfigBlockBody.SetAttributeValue(amazon.Zone, cty.StringVal(terraformConfig.AWSConfig.AWSZoneLetter))
 
+	if ciTags := aws.CIMachineConfigTags(); ciTags != "" {
+		awsConfigBlockBody.SetAttributeValue(aws.Tags, cty.StringVal(ciTags))
+	}
+
 	if terraformConfig.AWSConfig.EnablePrimaryIPv6 {
 		awsConfigBlockBody.SetAttributeValue(amazon.EnablePrimaryIPv6, cty.BoolVal(true))
 		awsConfigBlockBody.SetAttributeValue(amazon.HTTPProtocolIPv6, cty.StringVal(terraformConfig.AWSConfig.HTTPProtocolIPv6))
