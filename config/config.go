@@ -197,6 +197,7 @@ type TerraformConfig struct {
 	AzureADConfig                       authproviders.AzureADConfig      `json:"azureADConfig,omitempty" yaml:"azureADConfig,omitempty"`
 	GithubConfig                        authproviders.GithubConfig       `json:"githubConfig,omitempty" yaml:"githubConfig,omitempty"`
 	KeycloakSAMLConfig                  authproviders.KeycloakSAMLConfig `json:"keycloakSAMLConfig,omitempty" yaml:"keycloakSAMLConfig,omitempty"`
+	KeycloakOIDCConfig                  authproviders.KeycloakOIDCConfig `json:"keycloakOIDCConfig,omitempty" yaml:"keycloakOIDCConfig,omitempty"`
 	OktaConfig                          authproviders.OktaConfig         `json:"oktaConfig,omitempty" yaml:"oktaConfig,omitempty"`
 	OpenLDAPConfig                      authproviders.OpenLDAPConfig     `json:"openLDAPConfig,omitempty" yaml:"openLDAPConfig,omitempty"`
 	AirgapBastion                       string                           `json:"airgapBastion,omitempty" yaml:"airgapBastion,omitempty"`
