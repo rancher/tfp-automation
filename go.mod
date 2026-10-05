@@ -43,7 +43,7 @@ replace (
 )
 
 require (
-	github.com/go-echarts/go-echarts/v2 v2.7.2
+	github.com/go-echarts/go-echarts/v2 v2.7.3
 	github.com/gruntwork-io/terratest v1.0.1
 	github.com/hashicorp/hcl/v2 v2.25.0
 	github.com/imdario/mergo v1.0.2
