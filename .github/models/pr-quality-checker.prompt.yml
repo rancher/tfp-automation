@@ -14,7 +14,7 @@ messages:
       - Does the commit message accurately summarize the change?
       - Suggest improvements if needed.
 
-      If any of these do not meet the criteria, start your response with "BLOCKING:" and explain what must be improved.
+      If any of these do not meet the criteria, explain what must be improved, but DO NOT block the PR from being merged. Merely give a suggestion for improvement.
       If all criteria are met, start your response with "PASS:" followed by a single, clear, and descriptive sentence explaining that the PR title, generated description, and commit message all meet the quality standards and no changes are required.
 
       PR Title:
