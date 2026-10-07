@@ -63,12 +63,6 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		command += " \"\""
 	}
 
-	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.Turtles != "" {
-		command += " " + terraformConfig.Standalone.FeatureFlags.Turtles
-	} else {
-		command += " \"\""
-	}
-
 	if terraformConfig.Standalone.FeatureFlags != nil && terraformConfig.Standalone.FeatureFlags.MCM != "" {
 		command += " " + terraformConfig.Standalone.FeatureFlags.MCM
 	} else {

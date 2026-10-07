@@ -20,7 +20,6 @@ func GetProvisioningSchemaParams(terraform *config.TerraformConfig, terratest *c
 		getAMIParam(terraform),
 		getWindowsAMIParam(terraform),
 		getK8sParam(terratest),
-		getTurtlesParam(terraform),
 	)
 
 	return params
@@ -124,20 +123,4 @@ func getWindowsAMIParam(terraform *config.TerraformConfig) upstream.TestCasePara
 
 func getK8sParam(terratest *config.TerratestConfig) upstream.TestCaseParameterCreate {
 	return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: "K8sVersion", Values: []string{terratest.KubernetesVersion}}}
-}
-
-func getTurtlesParam(terraform *config.TerraformConfig) upstream.TestCaseParameterCreate {
-	var turtles, title, value string
-
-	if terraform.Standalone != nil && terraform.Standalone.FeatureFlags != nil {
-		turtles = terraform.Standalone.FeatureFlags.Turtles
-
-		title = "Turtles status: "
-		value = turtles
-
-		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: title, Values: []string{value}}}
-
-	}
-
-	return upstream.TestCaseParameterCreate{}
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
-	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	resources "github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
@@ -51,12 +50,8 @@ func UpgradingAirgapRancher(t *testing.T, provider string, cattleConfig map[stri
 
 	testSession := session.NewSession()
 
-	client, err := ranchersetup.PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
+	_, err = ranchersetup.PostRancherSetup(t, terraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, false)
 	require.NoError(t, err)
-
-	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
-		ranchersetup.ToggleFeatureFlag(client, featureDefaults.Turtles, standaloneConfig.FeatureFlags.Turtles)
-	}
 
 	terraformConfig.Standalone.UpgradeAirgapRancher = true
 
@@ -67,7 +62,7 @@ func UpgradingAirgapRancher(t *testing.T, provider string, cattleConfig map[stri
 	require.NoError(t, err)
 
 	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.AirgapKeyPath)
-	client, err = ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, true)
+	_, err = ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
 	return nil

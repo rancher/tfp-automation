@@ -91,7 +91,6 @@ type DataDirectories struct {
 
 type FeatureFlags struct {
 	MCM         string `json:"mcm,omitempty" yaml:"mcm,omitempty"`
-	Turtles     string `json:"turtles,omitempty" yaml:"turtles,omitempty"`
 	UpgradedMCM string `json:"upgradedMCM,omitempty" yaml:"upgradedMCM,omitempty"`
 }
 

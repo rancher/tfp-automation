@@ -9,7 +9,6 @@ import (
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
 	"github.com/rancher/shepherd/pkg/config/operations"
 	"github.com/rancher/shepherd/pkg/session"
-	"github.com/rancher/tests/actions/features"
 	reg "github.com/rancher/tests/actions/registries"
 	"github.com/rancher/tests/actions/workloads/deployment"
 	"github.com/rancher/tests/actions/workloads/pods"
@@ -18,7 +17,6 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	"github.com/rancher/tfp-automation/framework"
-	featureDefaults "github.com/rancher/tfp-automation/framework/set/defaults/features"
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	"github.com/rancher/tfp-automation/tests/extensions/ssh"
@@ -88,15 +86,6 @@ func CreateAirgapRancher(t *testing.T, provider string, cattleConfig map[string]
 
 	rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
 	infraConfig.WriteConfigToFile(os.Getenv(rancherinternal.ConfigEnvironmentKey), cattleConfig)
-
-	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.Turtles != "" {
-		switch standaloneConfig.FeatureFlags.Turtles {
-		case featureDefaults.ToggledOff:
-			features.UpdateFeatureFlag(client, featureDefaults.Turtles, false)
-		case featureDefaults.ToggledOn:
-			features.UpdateFeatureFlag(client, featureDefaults.Turtles, true)
-		}
-	}
 
 	return nil
 }
