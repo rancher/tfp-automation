@@ -3,22 +3,14 @@
 package rbac
 
 import (
-	"os"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
-	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
-	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
@@ -26,117 +18,71 @@ import (
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rb "github.com/rancher/tfp-automation/tests/extensions/rbac"
-
-	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
+	"github.com/rancher/tfp-automation/tests/rancher2/resources"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-type RBACTestSuite struct {
-	suite.Suite
-	client             *rancher.Client
-	standardUserClient *rancher.Client
-	session            *session.Session
-	cattleConfig       map[string]any
-	rancherConfig      *rancher.Config
-	terraformConfig    *config.TerraformConfig
-	terratestConfig    *config.TerratestConfig
-	terraformOptions   *terraform.Options
-}
+func TestTfpRBAC(t *testing.T) {
+	t.Parallel()
 
-func (r *RBACTestSuite) SetupSuite() {
-	var err error
-
-	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-
-	r.cattleConfig, err = configDefaults.LoadPackageDefaults(r.cattleConfig, "")
-	require.NoError(r.T(), err)
-
-	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
-
-	testSession := session.NewSession()
-	r.session = testSession
-
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
-
-	r.terraformOptions = terraformOptions
-
-	client, err := ranchersetup.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
-	require.NoError(r.T(), err)
-
-	r.client = client
-}
-
-func (r *RBACTestSuite) TestTfpRBAC() {
-	var err error
-	var testUser, testPassword string
-
-	r.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(r.client)
-	require.NoError(r.T(), err)
-
-	standardUserToken, err := ranchersetup.CreateStandardUserToken(r.T(), r.terraformOptions, r.rancherConfig, testUser, testPassword)
-	require.NoError(r.T(), err)
-
-	standardToken := standardUserToken.Token
-
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-	rke2Module, _, k3sModule := provisioning.DownstreamClusterModules(r.terraformConfig)
+	r := resources.Setup(t)
 
 	tests := []struct {
 		name     string
 		module   string
 		rbacRole config.Role
 	}{
-		{"RKE2_Cluster_Owner", rke2Module, config.ClusterOwner},
-		{"RKE2_Project_Owner", rke2Module, config.ProjectOwner},
-		{"K3S_Cluster_Owner", k3sModule, config.ClusterOwner},
-		{"K3S_Project_Owner", k3sModule, config.ProjectOwner},
+		{"RKE2_Cluster_Owner", r.RKE2Module, config.ClusterOwner},
+		{"RKE2_Project_Owner", r.RKE2Module, config.ProjectOwner},
+		{"K3S_Cluster_Owner", r.K3SModule, config.ClusterOwner},
+		{"K3S_Project_Owner", r.K3SModule, config.ProjectOwner},
 	}
 
 	for _, tt := range tests {
-		r.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(r.cattleConfig)
-			rancher.AdminToken = standardToken
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(r.CattleConfig)
+			rancher.AdminToken = r.StandardToken
 			terraform.Module = tt.module
-			terratest.Nodepools = nodeRolesDedicated
+			terratest.Nodepools = r.NodeRoles
 
-			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(r.terraformConfig, r.terratestConfig, r.terraformOptions, tt.name, "/modules/rancher2")
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(r.TerraformConfig, r.TerratestConfig, r.TerraformOptions, tt.name, "/modules/rancher2")
 			require.NoError(t, err)
-			defer os.RemoveAll(nestedRancherModuleDir)
+			defer func() {
+				resources.RemoveDirectory(t, r.RancherConfig, nestedRancherModuleDir)
+			}()
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			terratest, err = provisioning.GetK8sVersion(r.client, terraform, terratest)
-			require.NoError(r.T(), err)
+			terratest, err = provisioning.GetK8sVersion(r.Client, terraform, terratest)
+			require.NoError(t, err)
 
 			terraform = provisioning.UniquifyTerraform(terraform)
 
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(r.T(), perTestTerraformOptions, keyPath)
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.TerratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(t, perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, _ := provisioning.Provision(r.T(), r.client, r.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(t, r.Client, r.StandardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
-			err = provisioningActions.VerifyClusterReady(r.client, clusters[0])
-			require.NoError(r.T(), err)
+			err = provisioningActions.VerifyClusterReady(r.Client, clusters[0])
+			require.NoError(t, err)
 
 			logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
-			err = clusterActions.VerifyServiceAccountTokenSecret(r.client, clusters[0].Name)
-			require.NoError(r.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(r.Client, clusters[0].Name)
+			require.NoError(t, err)
 
 			logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
-			err = pods.VerifyClusterPods(r.client, clusters[0])
-			require.NoError(r.T(), err)
+			err = pods.VerifyClusterPods(r.Client, clusters[0])
+			require.NoError(t, err)
 
-			rb.RBAC(r.T(), r.client, rancher, terraform, terratest, perTestTerraformOptions, []map[string]any{r.cattleConfig}, tt.rbacRole, newFile, rootBody, file, nestedRancherModuleDir)
+			rb.RBAC(t, r.Client, rancher, terraform, terratest, perTestTerraformOptions, []map[string]any{r.CattleConfig}, tt.rbacRole, newFile, rootBody, file, nestedRancherModuleDir)
 
-			params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
+			params := tfpQase.GetProvisioningSchemaParams(r.TerraformConfig, r.TerratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -144,11 +90,7 @@ func (r *RBACTestSuite) TestTfpRBAC() {
 		})
 	}
 
-	if r.terratestConfig.LocalQaseReporting {
-		results.ReportTest(r.terratestConfig)
+	if r.TerratestConfig.LocalQaseReporting {
+		results.ReportTest(r.TerratestConfig)
 	}
-}
-
-func TestTfpRBACTestSuite(t *testing.T) {
-	suite.Run(t, new(RBACTestSuite))
 }

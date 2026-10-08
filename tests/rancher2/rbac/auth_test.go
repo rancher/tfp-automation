@@ -3,68 +3,25 @@
 package rbac
 
 import (
-	"os"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/session"
-	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/authproviders"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	"github.com/rancher/tfp-automation/tests/extensions/rbac"
-
-	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
+	"github.com/rancher/tfp-automation/tests/rancher2/resources"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-type AuthConfigTestSuite struct {
-	suite.Suite
-	client           *rancher.Client
-	session          *session.Session
-	cattleConfig     map[string]any
-	rancherConfig    *rancher.Config
-	terraformConfig  *config.TerraformConfig
-	terratestConfig  *config.TerratestConfig
-	terraformOptions *terraform.Options
-}
+func TestTfpAuthConfig(t *testing.T) {
+	r := resources.Setup(t)
 
-func (r *AuthConfigTestSuite) SetupSuite() {
-	var err error
-
-	r.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-
-	r.cattleConfig, err = configDefaults.LoadPackageDefaults(r.cattleConfig, "")
-	require.NoError(r.T(), err)
-
-	r.rancherConfig, r.terraformConfig, r.terratestConfig, _ = config.LoadTFPConfigs(r.cattleConfig)
-
-	testSession := session.NewSession()
-	r.session = testSession
-
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(r.T(), r.terraformConfig, r.terratestConfig, keyPath)
-
-	r.terraformOptions = terraformOptions
-
-	client, err := ranchersetup.PostRancherSetup(r.T(), r.terraformOptions, r.rancherConfig, r.session, r.rancherConfig.Host, keyPath, false)
-	require.NoError(r.T(), err)
-
-	r.client = client
-}
-
-func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 	tests := []struct {
 		name         string
 		authProvider string
@@ -76,74 +33,72 @@ func (r *AuthConfigTestSuite) TestTfpAuthConfig() {
 	}
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.TerratestConfig)
 		defer file.Close()
 
-		rancher, terraform, _, _ := config.LoadTFPConfigs(r.cattleConfig)
-		rancher.AdminToken = r.client.RancherConfig.AdminToken
+		rancher, terraform, _, _ := config.LoadTFPConfigs(r.CattleConfig)
+		rancher.AdminToken = r.Client.RancherConfig.AdminToken
 		terraform.AuthProvider = tt.authProvider
 
 		terraform = provisioning.UniquifyTerraform(terraform)
 
-		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
+		t.Run(tt.name, func(t *testing.T) {
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.TerratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(t, r.TerraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
+			rbac.AuthConfig(t, rancher, terraform, r.TerraformOptions, []map[string]any{r.CattleConfig}, newFile, rootBody, file)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
+		params := tfpQase.GetProvisioningSchemaParams(r.TerraformConfig, r.TerratestConfig)
 		err := qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
 		}
 	}
 
-	if r.terratestConfig.LocalQaseReporting {
-		results.ReportTest(r.terratestConfig)
+	if r.TerratestConfig.LocalQaseReporting {
+		results.ReportTest(r.TerratestConfig)
 	}
 }
 
-func (r *AuthConfigTestSuite) TestTfpAuthConfigDynamicInput() {
-	if r.terraformConfig.AuthProvider == "" {
-		r.T().Skip("No auth provider specified")
+func TestTfpAuthConfigDynamicInput(t *testing.T) {
+	r := resources.Setup(t)
+
+	if r.TerraformConfig.AuthProvider == "" {
+		t.Skip("No auth provider specified")
 	}
 
 	tests := []struct {
 		name string
 	}{
-		{r.terraformConfig.AuthProvider},
+		{r.TerraformConfig.AuthProvider},
 	}
 
 	for _, tt := range tests {
-		newFile, rootBody, file := rancher2.InitializeMainTF(r.terratestConfig)
+		newFile, rootBody, file := rancher2.InitializeMainTF(r.TerratestConfig)
 		defer file.Close()
 
-		rancher, terraform, _, _ := config.LoadTFPConfigs(r.cattleConfig)
-		rancher.AdminToken = r.client.RancherConfig.AdminToken
-		terraform.AuthProvider = r.terraformConfig.AuthProvider
+		rancher, terraform, _, _ := config.LoadTFPConfigs(r.CattleConfig)
+		rancher.AdminToken = r.Client.RancherConfig.AdminToken
+		terraform.AuthProvider = r.TerraformConfig.AuthProvider
 
 		terraform = provisioning.UniquifyTerraform(terraform)
 
-		r.Run((tt.name), func() {
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(r.T(), r.terraformOptions, keyPath)
+		t.Run(tt.name, func(t *testing.T) {
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, r.TerratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(t, r.TerraformOptions, keyPath)
 
-			rbac.AuthConfig(r.T(), rancher, terraform, r.terraformOptions, []map[string]any{r.cattleConfig}, newFile, rootBody, file)
+			rbac.AuthConfig(t, rancher, terraform, r.TerraformOptions, []map[string]any{r.CattleConfig}, newFile, rootBody, file)
 		})
 
-		params := tfpQase.GetProvisioningSchemaParams(r.terraformConfig, r.terratestConfig)
+		params := tfpQase.GetProvisioningSchemaParams(r.TerraformConfig, r.TerratestConfig)
 		err := qase.UpdateSchemaParameters(tt.name, params)
 		if err != nil {
 			logrus.Warningf("Failed to upload schema parameters %s", err)
 		}
 	}
 
-	if r.terratestConfig.LocalQaseReporting {
-		results.ReportTest(r.terratestConfig)
+	if r.TerratestConfig.LocalQaseReporting {
+		results.ReportTest(r.TerratestConfig)
 	}
-}
-
-func TestTfpAuthConfigTestSuite(t *testing.T) {
-	suite.Run(t, new(AuthConfigTestSuite))
 }
