@@ -48,8 +48,7 @@ To see what goes into the `terraform` block in addition to the `rancher`, please
 See the below examples on how to run the tests:
 
 ### Snapshot restore
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/snapshot --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestore$"` \
-`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/snapshot --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=dynamic -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestoreDynamicInput$"`
+`gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/snapshot --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run TestTfpSnapshotRestore` \
 
 If the specified test passes immediately without warning, try adding the -count=1 flag to get around this issue. This will avoid previous results from interfering with the new test run.
 
@@ -60,4 +59,4 @@ If you are planning to report to Qase locally, then you will need to have the fo
      - `QASE_AUTOMATION_TOKEN=""`
      - `QASE_TEST_RUN_ID=""`
 3. Append `./reporter` to the end of the `gotestsum` command. See an example below::
-     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/snapshot --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run "TestTfpSnapshotRestoreTestSuite/TestTfpSnapshotRestore$";/path/to/tfp-automation/reporter`
+     - `gotestsum --format standard-verbose --packages=github.com/rancher/tfp-automation/tests/rancher2/snapshot --junitfile results.xml --jsonfile results.json -- -timeout=60m -tags=validation -v -run TestTfpSnapshotRestore;/path/to/tfp-automation/reporter`

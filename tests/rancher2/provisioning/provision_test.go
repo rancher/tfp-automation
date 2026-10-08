@@ -3,136 +3,82 @@
 package provisioning
 
 import (
-	"os"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/rancher/shepherd/clients/rancher"
-	shepherdConfig "github.com/rancher/shepherd/pkg/config"
-	"github.com/rancher/shepherd/pkg/session"
 	clusterActions "github.com/rancher/tests/actions/clusters"
-	configDefaults "github.com/rancher/tests/actions/config/defaults"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
 	"github.com/rancher/tests/actions/qase"
 	"github.com/rancher/tests/actions/workloads/pods"
-	"github.com/rancher/tests/validation/provisioning/resources/standarduser"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/configs"
 	"github.com/rancher/tfp-automation/defaults/keypath"
-	"github.com/rancher/tfp-automation/framework"
 	cleanup "github.com/rancher/tfp-automation/framework/cleanup"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	tfpQase "github.com/rancher/tfp-automation/pipeline/qase"
 	"github.com/rancher/tfp-automation/pipeline/qase/results"
 	nested "github.com/rancher/tfp-automation/tests/extensions/nestedModules"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
-
-	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
+	"github.com/rancher/tfp-automation/tests/rancher2/resources"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-type ProvisionTestSuite struct {
-	suite.Suite
-	client             *rancher.Client
-	standardUserClient *rancher.Client
-	session            *session.Session
-	cattleConfig       map[string]any
-	rancherConfig      *rancher.Config
-	terraformConfig    *config.TerraformConfig
-	terratestConfig    *config.TerratestConfig
-	terraformOptions   *terraform.Options
-}
+func TestTfpProvision(t *testing.T) {
+	t.Parallel()
 
-func (p *ProvisionTestSuite) SetupSuite() {
-	var err error
-
-	p.cattleConfig = shepherdConfig.LoadConfigFromFile(os.Getenv(shepherdConfig.ConfigEnvironmentKey))
-
-	p.cattleConfig, err = configDefaults.LoadPackageDefaults(p.cattleConfig, "")
-	require.NoError(p.T(), err)
-
-	p.rancherConfig, p.terraformConfig, p.terratestConfig, _ = config.LoadTFPConfigs(p.cattleConfig)
-
-	testSession := session.NewSession()
-	p.session = testSession
-
-	_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
-	terraformOptions := framework.Setup(p.T(), p.terraformConfig, p.terratestConfig, keyPath)
-
-	p.terraformOptions = terraformOptions
-
-	client, err := ranchersetup.PostRancherSetup(p.T(), p.terraformOptions, p.rancherConfig, p.session, p.rancherConfig.Host, keyPath, false)
-	require.NoError(p.T(), err)
-
-	p.client = client
-}
-
-func (p *ProvisionTestSuite) TestTfpProvision() {
-	var err error
-	var testUser, testPassword string
-
-	p.standardUserClient, testUser, testPassword, err = standarduser.CreateStandardUser(p.client)
-	require.NoError(p.T(), err)
-
-	standardUserToken, err := ranchersetup.CreateStandardUserToken(p.T(), p.terraformOptions, p.rancherConfig, testUser, testPassword)
-	require.NoError(p.T(), err)
-
-	standardToken := standardUserToken.Token
-
-	nodeRolesDedicated := []config.Nodepool{config.EtcdNodePool, config.ControlPlaneNodePool, config.WorkerNodePool}
-	rke2Module, _, k3sModule := provisioning.DownstreamClusterModules(p.terraformConfig)
+	p := resources.Setup(t)
 
 	tests := []struct {
 		name      string
 		module    string
 		nodeRoles []config.Nodepool
 	}{
-		{"Node_Driver_TFP_RKE2", rke2Module, nodeRolesDedicated},
-		{"Node_Driver_TFP_K3S", k3sModule, nodeRolesDedicated},
+		{"Node_Driver_TFP_RKE2", p.RKE2Module, p.NodeRoles},
+		{"Node_Driver_TFP_K3S", p.K3SModule, p.NodeRoles},
 	}
 
 	for _, tt := range tests {
-		p.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			rancher, terraform, terratest, _ := config.LoadTFPConfigs(p.cattleConfig)
-			rancher.AdminToken = standardToken
+			rancher, terraform, terratest, _ := config.LoadTFPConfigs(p.CattleConfig)
+			rancher.AdminToken = p.StandardToken
 			terratest.Nodepools = tt.nodeRoles
 			terraform.Module = tt.module
 
-			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(p.terraformConfig, p.terratestConfig, p.terraformOptions, tt.name, configs.NestedRancherModuleDir)
+			nestedRancherModuleDir, perTestTerraformOptions, err := nested.CreateNestedModules(p.TerraformConfig, p.TerratestConfig, p.TerraformOptions, tt.name, configs.NestedRancherModuleDir)
 			require.NoError(t, err)
-			defer os.RemoveAll(nestedRancherModuleDir)
+			defer func() {
+				resources.RemoveDirectory(t, p.RancherConfig, nestedRancherModuleDir)
+			}()
 
 			newFile, rootBody, file := rancher2.InitializeNestedMainTFs(nestedRancherModuleDir)
 			defer file.Close()
 
-			terratest, err = provisioning.GetK8sVersion(p.client, terraform, terratest)
-			require.NoError(p.T(), err)
+			terratest, err = provisioning.GetK8sVersion(p.Client, terraform, terratest)
+			require.NoError(t, err)
 
 			terraform = provisioning.UniquifyTerraform(terraform)
 
-			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.terratestConfig.PathToRepo, "")
-			defer cleanup.Cleanup(p.T(), perTestTerraformOptions, keyPath)
+			_, keyPath := rancher2.SetKeyPath(keypath.RancherKeyPath, p.TerratestConfig.PathToRepo, "")
+			defer cleanup.Cleanup(t, perTestTerraformOptions, keyPath)
 
 			logrus.Infof("Provisioning cluster (%s)", terraform.ResourcePrefix)
-			clusters, _ := provisioning.Provision(p.T(), p.client, p.standardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
+			clusters, _ := provisioning.Provision(t, p.Client, p.StandardUserClient, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 
 			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
-			err = provisioningActions.VerifyClusterReady(p.client, clusters[0])
-			require.NoError(p.T(), err)
+			err = provisioningActions.VerifyClusterReady(p.Client, clusters[0])
+			require.NoError(t, err)
 
 			logrus.Infof("Verifying service account token secret (%s)", clusters[0].Name)
-			err = clusterActions.VerifyServiceAccountTokenSecret(p.client, clusters[0].Name)
-			require.NoError(p.T(), err)
+			err = clusterActions.VerifyServiceAccountTokenSecret(p.Client, clusters[0].Name)
+			require.NoError(t, err)
 
 			logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
-			err = pods.VerifyClusterPods(p.client, clusters[0])
-			require.NoError(p.T(), err)
+			err = pods.VerifyClusterPods(p.Client, clusters[0])
+			require.NoError(t, err)
 
-			params := tfpQase.GetProvisioningSchemaParams(p.terraformConfig, p.terratestConfig)
+			params := tfpQase.GetProvisioningSchemaParams(p.TerraformConfig, p.TerratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
 				logrus.Warningf("Failed to upload schema parameters %s", err)
@@ -140,11 +86,7 @@ func (p *ProvisionTestSuite) TestTfpProvision() {
 		})
 	}
 
-	if p.terratestConfig.LocalQaseReporting {
-		results.ReportTest(p.terratestConfig)
+	if p.TerratestConfig.LocalQaseReporting {
+		results.ReportTest(p.TerratestConfig)
 	}
-}
-
-func TestTfpProvisionTestSuite(t *testing.T) {
-	suite.Run(t, new(ProvisionTestSuite))
 }
