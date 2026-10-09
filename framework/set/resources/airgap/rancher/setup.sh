@@ -14,19 +14,23 @@ CERT_KEY_FILE=${11}
 RANCHER_AGENT_IMAGE=${12}
 
 USER=$(whoami)
+INGRESS_TLS_SOURCE=""
 
-echo "Decoding certificate files..."
-base64 -d <<< "$FULL_CHAIN_FILE" > /home/$USER/fullchain.pem
-base64 -d <<< "$CERT_KEY_FILE" > /home/$USER/privkey.pem
+if [[ -n "$FULL_CHAIN_FILE" && -n "$CERT_KEY_FILE" ]]; then
+    INGRESS_TLS_SOURCE="--set ingress.tls.source=secret"
+    echo "Decoding certificate files..."
+    base64 -d <<< "$FULL_CHAIN_FILE" > /home/$USER/fullchain.pem
+    base64 -d <<< "$CERT_KEY_FILE" > /home/$USER/privkey.pem
 
-chmod 600 /home/$USER/fullchain.pem
-chmod 600 /home/$USER/privkey.pem
+	  chmod 600 /home/$USER/fullchain.pem
+	  chmod 600 /home/$USER/privkey.pem
 
-FULL_CHAIN_PATH=/home/$USER/fullchain.pem
-CERT_KEY_PATH=/home/$USER/privkey.pem
+    FULL_CHAIN_PATH=/home/$USER/fullchain.pem
+    CERT_KEY_PATH=/home/$USER/privkey.pem
 
-mv $FULL_CHAIN_PATH /home/$USER/tls.crt
-mv $CERT_KEY_PATH /home/$USER/tls.key
+    mv $FULL_CHAIN_PATH /home/$USER/tls.crt
+    mv $CERT_KEY_PATH /home/$USER/tls.key
+fi
 
 if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
@@ -124,7 +128,9 @@ install_cert_manager() {
 }
 
 install_prime_head_rancher() {
-    kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/home/$USER/tls.crt --key=/home/$USER/tls.key
+    if [[ -n "$INGRESS_TLS_SOURCE" ]]; then
+        kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/home/$USER/tls.crt --key=/home/$USER/tls.key
+    fi
 
     echo "Installing Rancher"
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -137,12 +143,14 @@ install_prime_head_rancher() {
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                          --set useBundledSystemChart=true \
-                                                                                         --set ingress.tls.source=secret \
+                                                                                         ${INGRESS_TLS_SOURCE} \
                                                                                          --devel
 }
 
 install_rancher() {
-  kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/home/$USER/tls.crt --key=/home/$USER/tls.key
+  if [[ -n "$INGRESS_TLS_SOURCE" ]]; then
+        kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/home/$USER/tls.crt --key=/home/$USER/tls.key
+  fi
 
   echo "Installing Rancher"
   if [ -n "$RANCHER_AGENT_IMAGE" ]; then
@@ -161,7 +169,7 @@ install_rancher() {
                                                                                      --set agentTLSMode=system-store \
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --set useBundledSystemChart=true \
-                                                                                     --set ingress.tls.source=secret \
+                                                                                     ${INGRESS_TLS_SOURCE} \
                                                                                      --devel
   else
     helm upgrade --install rancher rancher-${REPO}/rancher --namespace cattle-system --set global.cattle.psp.enabled=false \
@@ -173,7 +181,7 @@ install_rancher() {
                                                                                      --set agentTLSMode=system-store \
                                                                                      --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
                                                                                      --set useBundledSystemChart=true \
-                                                                                     --set ingress.tls.source=secret \
+                                                                                     ${INGRESS_TLS_SOURCE} \
                                                                                      --devel
     fi
 }

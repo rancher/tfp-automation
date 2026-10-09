@@ -11,6 +11,13 @@ RANCHER_AGENT_IMAGE=${8}
 PROXY_PORT="3228"
 NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,.svc\\,.cluster.local\\,cattle-system.svc\\,169.254.169.254"
 
+USER=$(whoami)
+INGRESS_TLS_SOURCE=""
+
+if [[ -f "/home/${USER}/tls.crt" && -f "/home/${USER}/tls.key" ]]; then
+    INGRESS_TLS_SOURCE="--set ingress.tls.source=secret"
+fi
+
 if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
@@ -49,7 +56,7 @@ upgrade_prime_head_rancher() {
                                                                                          --set noProxy="${NO_PROXY}" \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                         --set ingress.tls.source=secret \
+                                                                                         ${INGRESS_TLS_SOURCE} \
                                                                                          --devel
 }
 
@@ -70,7 +77,7 @@ upgrade_rancher() {
                                                                                         --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                         --set noProxy="${NO_PROXY}" \
                                                                                         --set agentTLSMode=system-store \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
 
     else
@@ -82,7 +89,7 @@ upgrade_rancher() {
                                                                                         --set proxy="http://${BASTION}:${PROXY_PORT}" \
                                                                                         --set noProxy="${NO_PROXY}" \
                                                                                         --set agentTLSMode=system-store \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
     fi
 }

@@ -9,6 +9,13 @@ RANCHER_IMAGE=$6
 RANCHER_AGENT_IMAGE=${7}
 UPGRADED_MCM=${8}
 
+USER=$(whoami)
+INGRESS_TLS_SOURCE=""
+
+if [[ -f "/home/${USER}/tls.crt" && -f "/home/${USER}/tls.key" ]]; then
+    INGRESS_TLS_SOURCE="--set ingress.tls.source=secret"
+fi
+
 if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${RANCHER_IMAGE}"
@@ -55,7 +62,7 @@ upgrade_mcm_off() {
                                                                                         --set 'extraEnv[3].name=CATTLE_FEATURES' \
                                                                                         --set 'extraEnv[3].value=multi-cluster-management=false' \
                                                                                         --set agentTLSMode=system-store \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
 
     else
@@ -67,7 +74,7 @@ upgrade_mcm_off() {
                                                                                         --set 'extraEnv[0].name=CATTLE_FEATURES' \
                                                                                         --set 'extraEnv[0].value=multi-cluster-management=false' \
                                                                                         --set agentTLSMode=system-store \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
     fi
 }
@@ -79,7 +86,7 @@ upgrade_prime_head_rancher() {
                                                                                          ${VERSION} \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                         --set ingress.tls.source=secret \
+                                                                                         ${INGRESS_TLS_SOURCE} \
                                                                                          --devel
 }
 
@@ -98,7 +105,7 @@ upgrade_default_rancher() {
                                                                                         --set 'extraEnv[2].name=CATTLE_BASE_UI_BRAND' \
                                                                                         --set 'extraEnv[2].value=suse' \
                                                                                         --set agentTLSMode=system-store \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
 
     else
@@ -108,7 +115,7 @@ upgrade_default_rancher() {
                                                                                         ${RANCHER_TAG} \
                                                                                         ${IMAGE} \
                                                                                         --set agentTLSMode=system-store \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
     fi
 }

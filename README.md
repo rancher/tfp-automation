@@ -75,7 +75,8 @@ terraform:
   localCluster: ""                          # Values - rke2 or k3s
   provider: ""                              # The following providers are supported: aws | linode | harvester
   privateKeyPath: ""
-  privateFullChainPath: ""
+  privateCertKeyPath: ""                    # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
+  privateFullChainPath: ""                  # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
   privateKeyPath: ""
   resourcePrefix: ""
   windowsPrivateKeyPath: ""
