@@ -100,7 +100,7 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, "", terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 	require.NoError(t, err)
 
-	terraform.Apply(t, terraformOptions)
+	terraform.ApplyContext(t, context.Background(), terraformOptions)
 
 	err = clusters.WaitClusterToBeUpgraded(client, clusterID)
 	require.NoError(t, err)
@@ -134,7 +134,7 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, "", terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 	require.NoError(t, err)
 
-	terraform.Apply(t, terraformOptions)
+	terraform.ApplyContext(t, context.Background(), terraformOptions)
 
 	cluster, err := client.Steve.SteveType(stevetypes.Provisioning).ByID(namespaces.FleetDefault + "/" + terraformConfig.ResourcePrefix)
 	require.NoError(t, err)

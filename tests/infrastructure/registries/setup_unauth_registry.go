@@ -1,6 +1,7 @@
 package registries
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -51,7 +52,7 @@ func SetupUnauthenticatedRegistry(t *testing.T, provider string) error {
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	unauthRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthRegistryPublicDNS)
 
@@ -60,7 +61,7 @@ func SetupUnauthenticatedRegistry(t *testing.T, provider string) error {
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, unauthRegistryPublicDNS, unauthRegistry, "", false)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	return nil
 }

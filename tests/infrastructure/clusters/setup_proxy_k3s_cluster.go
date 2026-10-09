@@ -1,6 +1,7 @@
 package clusters
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -50,7 +51,7 @@ func CreateProxyK3SCluster(t *testing.T, provider string) error {
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	bastionPublicDNS := terraform.Output(t, terraformOptions, bastionPublicDNS)
 	bastionPrivateIP := terraform.Output(t, terraformOptions, bastionPrivateIP)
@@ -63,14 +64,14 @@ func CreateProxyK3SCluster(t *testing.T, provider string) error {
 	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating K3S cluster...")
 	file, err = k3s.CreateK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	return nil
 }

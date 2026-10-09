@@ -1,6 +1,7 @@
 package authprovider
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -52,7 +53,7 @@ func apply(t *testing.T, rancherConfig *rancher.Config, terraformConfig *config.
 	err = providerversion.ClearStaleLock(terraformOptions.TerraformDir)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 }
 
 // setAuthProvider is a function that will set the auth provider resource with the given enabled state.

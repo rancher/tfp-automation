@@ -1,6 +1,7 @@
 package rbac
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -19,5 +20,5 @@ func RBAC(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, t
 	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, rbacRole, terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
 	require.NoError(t, err)
 
-	terraform.Apply(t, terraformOptions)
+	terraform.ApplyContext(t, context.Background(), terraformOptions)
 }

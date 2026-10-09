@@ -1,6 +1,7 @@
 package rbac
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -25,5 +26,5 @@ func AuthConfig(t *testing.T, rancherConfig *rancher.Config, terraformConfig *co
 	err = providerversion.ClearStaleLock(terraformOptions.TerraformDir)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 }

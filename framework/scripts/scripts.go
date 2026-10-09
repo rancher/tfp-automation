@@ -1,6 +1,7 @@
 package scripts
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -22,7 +23,7 @@ const (
 
 // InitAndApplyE runs terraform init and apply and returns a summary of each Terraform error.
 func InitAndApplyE(t *testing.T, terraformOptions *terraform.Options) (string, error) {
-	output, err := terraform.InitAndApplyE(t, terraformOptions)
+	output, err := terraform.InitAndApplyContextE(t, context.Background(), terraformOptions)
 	if err == nil {
 		return output, nil
 	}
