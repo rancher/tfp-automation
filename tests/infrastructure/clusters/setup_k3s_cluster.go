@@ -52,10 +52,10 @@ func CreateK3SCluster(t *testing.T, provider string) error {
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
-	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverTwoPublicIP := terraform.Output(t, terraformOptions, serverTwoPublicIP)
-	serverThreePublicIP := terraform.Output(t, terraformOptions, serverThreePublicIP)
+	serverOnePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePublicIP)
+	serverOnePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePrivateIP)
+	serverTwoPublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPublicIP)
+	serverThreePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating K3s cluster...")

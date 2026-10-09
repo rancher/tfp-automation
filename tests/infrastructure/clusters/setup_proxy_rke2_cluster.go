@@ -53,11 +53,11 @@ func CreateProxyRKE2Cluster(t *testing.T, provider string) error {
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	bastionPublicDNS := terraform.Output(t, terraformOptions, bastionPublicDNS)
-	bastionPrivateIP := terraform.Output(t, terraformOptions, bastionPrivateIP)
-	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverTwoPrivateIP := terraform.Output(t, terraformOptions, serverTwoPrivateIP)
-	serverThreePrivateIP := terraform.Output(t, terraformOptions, serverThreePrivateIP)
+	bastionPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, bastionPublicDNS)
+	bastionPrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, bastionPrivateIP)
+	serverOnePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePrivateIP)
+	serverTwoPrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPrivateIP)
+	serverThreePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePrivateIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")

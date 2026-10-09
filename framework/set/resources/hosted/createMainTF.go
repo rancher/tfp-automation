@@ -1,6 +1,7 @@
 package hosted
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -55,7 +56,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
+	serverOnePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePublicIP)
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating Hosted cluster...")
 	file, err = cluster.CreateHostedCluster(file, newFile, rootBody, terraformConfig, serverOnePublicIP, terratestConfig)

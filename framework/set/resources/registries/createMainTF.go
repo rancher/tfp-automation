@@ -1,6 +1,7 @@
 package registries
 
 import (
+	"context"
 	"os"
 	"strings"
 	"testing"
@@ -78,21 +79,21 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	var authGlobalRegistryPublicDNS, authGlobalRegistryRoute53FQDN, unauthGlobalRegistryPublicDNS, unauthGlobalRegistryRoute53FQDN string
 
 	if terraformConfig.StandaloneRegistry.CreateAuthGlobalRegistry {
-		authGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, authGlobalRegistryPublicDNSConst)
-		authGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, authGlobalRegistryRoute53FQDNConst)
+		authGlobalRegistryPublicDNS = terraform.OutputContext(t, context.Background(), terraformOptions, authGlobalRegistryPublicDNSConst)
+		authGlobalRegistryRoute53FQDN = terraform.OutputContext(t, context.Background(), terraformOptions, authGlobalRegistryRoute53FQDNConst)
 	} else if terraformConfig.StandaloneRegistry.CreateUnauthGlobalRegistry {
-		unauthGlobalRegistryPublicDNS = terraform.Output(t, terraformOptions, unauthGlobalRegistryPublicDNSConst)
-		unauthGlobalRegistryRoute53FQDN = terraform.Output(t, terraformOptions, unauthGlobalRegistryRoute53FQDNConst)
+		unauthGlobalRegistryPublicDNS = terraform.OutputContext(t, context.Background(), terraformOptions, unauthGlobalRegistryPublicDNSConst)
+		unauthGlobalRegistryRoute53FQDN = terraform.OutputContext(t, context.Background(), terraformOptions, unauthGlobalRegistryRoute53FQDNConst)
 	}
 
-	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNSConst)
-	unauthRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthRegistryPublicDNSConst)
-	authRegistryRoute53FQDN := terraform.Output(t, terraformOptions, authRegistryRoute53FQDNConst)
-	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNSConst)
-	serverOnePublicDNS := terraform.Output(t, terraformOptions, serverOnePublicDNS)
-	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverTwoPublicDNS := terraform.Output(t, terraformOptions, serverTwoPublicDNS)
-	serverThreePublicDNS := terraform.Output(t, terraformOptions, serverThreePublicDNS)
+	authRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, authRegistryPublicDNSConst)
+	unauthRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, unauthRegistryPublicDNSConst)
+	authRegistryRoute53FQDN := terraform.OutputContext(t, context.Background(), terraformOptions, authRegistryRoute53FQDNConst)
+	ecrRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, ecrRegistryPublicDNSConst)
+	serverOnePublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePublicDNS)
+	serverOnePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePrivateIP)
+	serverTwoPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPublicDNS)
+	serverThreePublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating unauthenticated registry...")

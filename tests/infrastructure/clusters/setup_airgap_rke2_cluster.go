@@ -53,11 +53,11 @@ func CreateAirgappedRKE2Cluster(t *testing.T, provider string) error {
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	registryPublicIP := terraform.Output(t, terraformOptions, registryPublicIP)
-	bastionPublicIP := terraform.Output(t, terraformOptions, bastionPublicIP)
-	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverTwoPrivateIP := terraform.Output(t, terraformOptions, serverTwoPrivateIP)
-	serverThreePrivateIP := terraform.Output(t, terraformOptions, serverThreePrivateIP)
+	registryPublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, registryPublicIP)
+	bastionPublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, bastionPublicIP)
+	serverOnePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePrivateIP)
+	serverTwoPrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPrivateIP)
+	serverThreePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePrivateIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating registry...")
