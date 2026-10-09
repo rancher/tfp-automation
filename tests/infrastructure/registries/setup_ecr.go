@@ -54,7 +54,7 @@ func SetupECR(t *testing.T, provider string) error {
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
+	ecrRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, ecrRegistryPublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating ecr registry...")

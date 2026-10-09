@@ -1,6 +1,7 @@
 package ipv6
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -64,13 +65,13 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	bastionPublicIP := terraform.Output(t, terraformOptions, bastionPublicIP)
-	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
-	serverTwoPrivateIP := terraform.Output(t, terraformOptions, serverTwoPrivateIP)
-	serverTwoPublicIP := terraform.Output(t, terraformOptions, serverTwoPublicIP)
-	serverThreePrivateIP := terraform.Output(t, terraformOptions, serverThreePrivateIP)
-	serverThreePublicIP := terraform.Output(t, terraformOptions, serverThreePublicIP)
+	bastionPublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, bastionPublicIP)
+	serverOnePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePrivateIP)
+	serverOnePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePublicIP)
+	serverTwoPrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPrivateIP)
+	serverTwoPublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPublicIP)
+	serverThreePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePrivateIP)
+	serverThreePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicIP)
 
 	file = sanity.OpenFile(file, keyPath)
 	if terraformConfig.LocalCluster == "k3s" {

@@ -1,6 +1,7 @@
 package sanity
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -68,20 +69,20 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	switch terraformConfig.Provider {
 	case providers.Google:
-		loadBalancerHostname = terraform.Output(t, terraformOptions, googleLoadBalancerAddress) + sslipioSuffix
+		loadBalancerHostname = terraform.OutputContext(t, context.Background(), terraformOptions, googleLoadBalancerAddress) + sslipioSuffix
 		terraformConfig.Standalone.RancherHostname = loadBalancerHostname
 	case providers.Linode:
-		loadBalancerHostname = terraform.Output(t, terraformOptions, linodeBalancerHostname)
+		loadBalancerHostname = terraform.OutputContext(t, context.Background(), terraformOptions, linodeBalancerHostname)
 		terraformConfig.Standalone.RancherHostname = loadBalancerHostname
 	case providers.Harvester, providers.Vsphere:
-		loadBalancerHostname = terraform.Output(t, terraformOptions, serverOnePublicIP) + sslipioSuffix
+		loadBalancerHostname = terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePublicIP) + sslipioSuffix
 		terraformConfig.Standalone.RancherHostname = loadBalancerHostname
 	}
 
-	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
-	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverTwoPublicIP := terraform.Output(t, terraformOptions, serverTwoPublicIP)
-	serverThreePublicIP := terraform.Output(t, terraformOptions, serverThreePublicIP)
+	serverOnePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePublicIP)
+	serverOnePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePrivateIP)
+	serverTwoPublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPublicIP)
+	serverThreePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicIP)
 
 	file = OpenFile(file, keyPath)
 	if terraformConfig.LocalCluster == "k3s" {

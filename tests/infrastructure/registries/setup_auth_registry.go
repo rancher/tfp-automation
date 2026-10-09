@@ -54,7 +54,7 @@ func SetupAuthenticatedRegistry(t *testing.T, provider string) error {
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
+	authRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, authRegistryPublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")

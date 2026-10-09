@@ -1,6 +1,7 @@
 package airgap
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -65,11 +66,11 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	registryPublicDNS := terraform.Output(t, terraformOptions, registryPublicDNS)
-	bastionPublicDNS := terraform.Output(t, terraformOptions, bastionPublicDNS)
-	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
-	serverTwoPrivateIP := terraform.Output(t, terraformOptions, serverTwoPrivateIP)
-	serverThreePrivateIP := terraform.Output(t, terraformOptions, serverThreePrivateIP)
+	registryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, registryPublicDNS)
+	bastionPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, bastionPublicDNS)
+	serverOnePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePrivateIP)
+	serverTwoPrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPrivateIP)
+	serverThreePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePrivateIP)
 
 	// Needed for setting up an airgap Rancher server that is planned to be used for recurring runs.
 	terraformConfig.AirgapBastion = bastionPublicDNS

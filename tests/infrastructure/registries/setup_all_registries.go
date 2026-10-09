@@ -78,10 +78,10 @@ func SetupAllRegistries(t *testing.T, provider string) error {
 		return err
 	}
 
-	authRegistryPublicDNS := terraform.Output(t, terraformOptions, authRegistryPublicDNS)
-	unauthRegistryPublicDNS := terraform.Output(t, terraformOptions, unauthRegistryPublicDNS)
-	globalRegistryPublicDNS := terraform.Output(t, terraformOptions, globalRegistryPublicDNS)
-	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
+	authRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, authRegistryPublicDNS)
+	unauthRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, unauthRegistryPublicDNS)
+	globalRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, globalRegistryPublicDNS)
+	ecrRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, ecrRegistryPublicDNS)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating unauthenticated registry...")
