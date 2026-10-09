@@ -38,7 +38,8 @@ terraform:
   cni: ""
   provider: ""                                    # REQUIRED - supported values are aws | linode | harvester | vsphere
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  privateFullChainPath: ""
+  privateCertKeyPath: ""                          # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
+  privateFullChainPath: ""                        # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
   privateKeyPath: ""
   resourcePrefix: ""
   ##########################################
@@ -142,7 +143,8 @@ terraform:
   cni: ""
   provider: ""                                    # REQUIRED - supported values are aws
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  privateFullChainPath: ""
+  privateCertKeyPath: ""                          # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
+  privateFullChainPath: ""                        # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
   privateKeyPath: ""
   resourcePrefix: ""
   ##########################################
@@ -218,7 +220,8 @@ terraform:
   cni: ""
   provider: ""                                    # REQUIRED - supported values are aws
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  privateFullChainPath: ""
+  privateCertKeyPath: ""                          # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
+  privateFullChainPath: ""                        # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
   privateKeyPath: ""
   resourcePrefix: ""
   ##########################################
@@ -285,7 +288,8 @@ See below an example config on setting up an air-gapped Rancher server powered b
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  privateFullChainPath: ""
+  privateCertKeyPath: ""                          # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
+  privateFullChainPath: ""                        # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -368,7 +372,8 @@ See below an example config on setting up a Rancher server behind a proxy, power
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  privateFullChainPath: ""
+  privateCertKeyPath: ""                          # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
+  privateFullChainPath: ""                        # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -443,7 +448,8 @@ See below an example config on setting up a Rancher server with registries confi
 ```yaml
 terraform:
   privateKeyPath: ""                              # REQUIRED - specify private key that will be used to access created instances
-  privateFullChainPath: ""
+  privateCertKeyPath: ""                          # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
+  privateFullChainPath: ""                        # OPTIONAL: Set if provider is set to aws and you want a secured Rancher
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -520,7 +526,6 @@ terraform:
   cni: ""
   provider: ""                                # REQUIRED - supported values are aws | linode | harvester
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -593,7 +598,6 @@ terraform:
   cni: ""
   provider: ""                                # REQUIRED - supported values are aws | linode | harvester
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -656,7 +660,6 @@ See below an example config on setting up a standalone airgapped RKE2 cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -713,7 +716,6 @@ See below an example config on setting up a standalone airgapped RKE2 cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -770,7 +772,6 @@ See below an example config on setting up a standalone dual-stack RKE2 cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -824,7 +825,6 @@ See below an example config on setting up a standalone dual-stack K3S cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -879,7 +879,6 @@ See below an example config on setting up a standalone IPv6 RKE2 cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:
@@ -939,7 +938,6 @@ See below an example config on setting up a standalone IPv6 K3S cluster:
 ```yaml
 terraform:
   privateKeyPath: ""
-  privateFullChainPath: ""
   privateKeyPath: ""
   resourcePrefix: ""
   awsCredentials:

@@ -9,6 +9,13 @@ RANCHER_IMAGE=$6
 REGISTRY=$7
 RANCHER_AGENT_IMAGE=${8}
 
+USER=$(whoami)
+INGRESS_TLS_SOURCE=""
+
+if [[ -f "/home/${USER}/tls.crt" && -f "/home/${USER}/tls.key" ]]; then
+    INGRESS_TLS_SOURCE="--set ingress.tls.source=secret"
+fi
+
 if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
     RANCHER_TAG="--set rancherImageTag=${RANCHER_TAG_VERSION}" 
     IMAGE="--set rancherImage=${REGISTRY}/${RANCHER_IMAGE}"
@@ -54,7 +61,7 @@ upgrade_prime_head_rancher() {
                                                                                          ${VERSION} \
                                                                                          --set agentTLSMode=system-store \
                                                                                          --set bootstrapPassword=${BOOTSTRAP_PASSWORD} \
-                                                                                         --set ingress.tls.source=secret \
+                                                                                         ${INGRESS_TLS_SOURCE} \
                                                                                          --devel
 }
 
@@ -75,7 +82,7 @@ upgrade_default_rancher() {
                                                                                         --set 'extraEnv[2].value=suse' \
                                                                                         --set agentTLSMode=system-store \
                                                                                         --set useBundledSystemChart=true \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
 
   else
@@ -87,7 +94,7 @@ upgrade_default_rancher() {
                                                                                         --set systemDefaultRegistry=${REGISTRY} \
                                                                                         --set agentTLSMode=system-store \
                                                                                         --set useBundledSystemChart=true \
-                                                                                        --set ingress.tls.source=secret \
+                                                                                        ${INGRESS_TLS_SOURCE} \
                                                                                         --devel
     fi
 }

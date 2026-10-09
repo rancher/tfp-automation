@@ -31,18 +31,24 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		return nil, err
 	}
 
-	privateFullChain, err := os.ReadFile(terraformConfig.PrivateFullChainPath)
-	if err != nil {
-		return nil, err
-	}
+	var encodedFullChain, encodedCertKey string
 
-	privateCertKey, err := os.ReadFile(terraformConfig.PrivateCertKeyPath)
-	if err != nil {
-		return nil, err
-	}
+	if terraformConfig.PrivateFullChainPath != "" && terraformConfig.PrivateCertKeyPath != "" {
+		logrus.Debug("Reading private full chain file from path: ", terraformConfig.PrivateFullChainPath)
+		privateFullChain, err := os.ReadFile(terraformConfig.PrivateFullChainPath)
+		if err != nil {
+			return nil, err
+		}
 
-	encodedFullChain := base64.StdEncoding.EncodeToString((privateFullChain))
-	encodedCertKey := base64.StdEncoding.EncodeToString((privateCertKey))
+		logrus.Debug("Reading private cert key file from path: ", terraformConfig.PrivateCertKeyPath)
+		privateCertKey, err := os.ReadFile(terraformConfig.PrivateCertKeyPath)
+		if err != nil {
+			return nil, err
+		}
+
+		encodedFullChain = base64.StdEncoding.EncodeToString((privateFullChain))
+		encodedCertKey = base64.StdEncoding.EncodeToString((privateCertKey))
+	}
 
 	_, provisionerBlockBody := rke2.SSHNullResource(rootBody, terraformConfig, rke2ServerOnePublicDNS, installRancher)
 
@@ -50,7 +56,13 @@ func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Bod
 		terraformConfig.Standalone.Repo + " " + terraformConfig.Standalone.CertManagerVersion + " " +
 		terraformConfig.Standalone.RancherHostname + " " + terraformConfig.Standalone.RancherTagVersion + " " +
 		terraformConfig.Standalone.ChartVersion + " " + terraformConfig.Standalone.BootstrapPassword + " " +
-		terraformConfig.Standalone.RancherImage + " " + registryPublicDNS + " " + encodedFullChain + " " + encodedCertKey
+		terraformConfig.Standalone.RancherImage + " " + registryPublicDNS
+
+	if encodedFullChain != "" && encodedCertKey != "" {
+		command += " " + encodedFullChain + " " + encodedCertKey
+	} else {
+		command += " \"\" \"\""
+	}
 
 	if terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 		command += " " + terraformConfig.StandaloneRegistry.RegistryUsername + " " + terraformConfig.StandaloneRegistry.RegistryPassword + " " +
