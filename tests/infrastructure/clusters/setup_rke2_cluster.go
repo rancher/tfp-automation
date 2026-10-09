@@ -1,6 +1,7 @@
 package clusters
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -73,7 +74,7 @@ func CreateRKE2Cluster(t *testing.T, provider string) error {
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	serverOnePublicIP := terraform.Output(t, terraformOptions, serverOnePublicIP)
 	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
@@ -85,7 +86,7 @@ func CreateRKE2Cluster(t *testing.T, provider string) error {
 	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	return nil
 }

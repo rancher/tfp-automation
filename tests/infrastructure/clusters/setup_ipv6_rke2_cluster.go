@@ -1,6 +1,7 @@
 package clusters
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -49,7 +50,7 @@ func CreateIPv6RKE2Cluster(t *testing.T, provider string) error {
 	file, err := providerTunnel.CreateIPv6(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	bastionPublicIP := terraform.Output(t, terraformOptions, bastionPublicIP)
 	serverOnePrivateIP := terraform.Output(t, terraformOptions, serverOnePrivateIP)
@@ -65,7 +66,7 @@ func CreateIPv6RKE2Cluster(t *testing.T, provider string) error {
 		serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	return nil
 }

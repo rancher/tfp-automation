@@ -1,6 +1,7 @@
 package registries
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -51,7 +52,7 @@ func SetupECR(t *testing.T, provider string) error {
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	ecrRegistryPublicDNS := terraform.Output(t, terraformOptions, ecrRegistryPublicDNS)
 
@@ -60,7 +61,7 @@ func SetupECR(t *testing.T, provider string) error {
 	file, err = registry.CreateECRRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, ecrRegistryPublicDNS)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	return nil
 }

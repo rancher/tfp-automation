@@ -1,6 +1,7 @@
 package clusters
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -50,7 +51,7 @@ func CreateAirgappedK3SCluster(t *testing.T, provider string) error {
 	file, err := providerTunnel.CreateNonAirgap(file, newFile, tfBlockBody, rootBody, terraformConfig, terratestConfig, instances)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	registryPublicIP := terraform.Output(t, terraformOptions, registryPublicIP)
 	bastionPublicIP := terraform.Output(t, terraformOptions, bastionPublicIP)
@@ -63,14 +64,14 @@ func CreateAirgappedK3SCluster(t *testing.T, provider string) error {
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicIP, unauthRegistry, unauthGlobalRegistryRoute53FQDN, false)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating airgap K3S cluster...")
 	file, err = k3s.CreateAirgapK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicIP, registryPublicIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	return nil
 }

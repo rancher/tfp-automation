@@ -1,6 +1,7 @@
 package registries
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -87,28 +88,28 @@ func SetupAllRegistries(t *testing.T, provider string) error {
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, unauthRegistryPublicDNS, unauthRegistry, "", false)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating global registry...")
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry, "", false)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")
 	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, authRegistry, authRegistryPublicDNS, false)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating ecr registry...")
 	file, err = registry.CreateECRRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, ecrRegistryPublicDNS)
 	require.NoError(t, err)
 
-	terraform.InitAndApply(t, terraformOptions)
+	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
 	return nil
 }

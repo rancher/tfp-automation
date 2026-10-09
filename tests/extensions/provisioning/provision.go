@@ -1,6 +1,7 @@
 package provisioning
 
 import (
+	"context"
 	"errors"
 	"os"
 	"strings"
@@ -37,7 +38,7 @@ func Provision(t *testing.T, client, standardUserClient *rancher.Client, rancher
 	// If the provisioner is GKE, we need to run terraform import for the Google driver before applying the Terraform configuration.
 	// This is needed as the Google driver is inactive by default and needs to be imported to be activated.
 	if terraformConfig.Module == providers.GKE || strings.Contains(terraformConfig.Module, "google") {
-		terraform.Init(t, terraformOptions)
+		terraform.InitContext(t, context.Background(), terraformOptions)
 		GoogleDriverImport(t, terraformOptions)
 	}
 
