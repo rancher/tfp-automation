@@ -167,9 +167,11 @@ terraform:
     timeout: "5m"
     windowsAMI2019: ""
     windowsAMI2022: ""
+    windowsAMI2025: ""
     windowsAWSUser: ""
     windows2019Password: ""
     windows2022Password: ""
+    windows2025Password: ""
     windowsInstanceType: ""
     windowsKeyName: ""
 

@@ -67,7 +67,7 @@ func ImportNodes(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfi
 	var dependsOnServer string
 
 	switch terraformConfig.Module {
-	case modules.ImportedAWSRKE2Windows2019, modules.ImportedAWSRKE2Windows2022:
+	case modules.ImportedAWSRKE2Windows2019, modules.ImportedAWSRKE2Windows2022, modules.ImportedAWSRKE2Windows2025:
 		dependsOnServer = `[` + general.TimeSleep + `.` + general.TimeSleep + `-` + terraformConfig.ResourcePrefix + `-import_wins` + `]`
 	default:
 		if len(additionalServerNodeNames) == 0 && len(additionalAgentNodeNames) == 0 {

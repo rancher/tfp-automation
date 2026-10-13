@@ -41,6 +41,8 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2019AMI))
 	} else if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && strings.Contains(terraformConfig.Module, "2022") {
 		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2022AMI))
+	} else if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && strings.Contains(terraformConfig.Module, "2025") {
+		configBlockBody.SetAttributeValue(aws.Ami, cty.StringVal(terraformConfig.AWSConfig.Windows2025AMI))
 	}
 
 	configBlockBody.SetAttributeValue(aws.InstanceType, cty.StringVal(terraformConfig.AWSConfig.WindowsInstanceType))
@@ -84,6 +86,8 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
 	} else if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && strings.Contains(terraformConfig.Module, "2022") {
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
+	} else if strings.Contains(terraformConfig.Module, clustertypes.WINDOWS) && strings.Contains(terraformConfig.Module, "2025") {
+		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2025Password))
 	}
 
 	connectionBlockBody.SetAttributeValue(general.Insecure, cty.BoolVal(true))
@@ -99,7 +103,8 @@ func CreateWindowsAWSInstances(rootBody *hclwrite.Body, terraformConfig *config.
 	connectionBlockBody.SetAttributeValue(aws.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
 	configBlockBody.AppendNewline()
 
-	if terraformConfig.Module == modules.ImportedAWSRKE2Windows2019 || terraformConfig.Module == modules.ImportedAWSRKE2Windows2022 {
+	if terraformConfig.Module == modules.ImportedAWSRKE2Windows2019 || terraformConfig.Module == modules.ImportedAWSRKE2Windows2022 ||
+		terraformConfig.Module == modules.ImportedAWSRKE2Windows2025 {
 		nonWindowsNodeCount := customnodepools.TotalNodeCount(terratestConfig)
 		dependsOnResources := make([]string, 0, nonWindowsNodeCount)
 

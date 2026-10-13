@@ -11,6 +11,7 @@ const (
 	CustomAWSRKE2            = "aws_rke2_custom"
 	CustomAWSRKE2Windows2019 = "aws_rke2_windows_2019_custom"
 	CustomAWSRKE2Windows2022 = "aws_rke2_windows_2022_custom"
+	CustomAWSRKE2Windows2025 = "aws_rke2_windows_2025_custom"
 	CustomAWSK3S             = "aws_k3s_custom"
 
 	CustomVsphereRKE2 = "vsphere_rke2_custom"
@@ -29,6 +30,7 @@ const (
 	ImportedAWSRKE2            = "aws_rke2_imported"
 	ImportedAWSRKE2Windows2019 = "aws_rke2_windows_2019_imported"
 	ImportedAWSRKE2Windows2022 = "aws_rke2_windows_2022_imported"
+	ImportedAWSRKE2Windows2025 = "aws_rke2_windows_2025_imported"
 	ImportedAWSK3S             = "aws_k3s_imported"
 
 	ImportedVsphereRKE2 = "vsphere_rke2_imported"
@@ -41,6 +43,8 @@ const (
 	NodeDriverVsphereK3S  = "vsphere_k3s_nodedriver"
 
 	AirgapAWSRKE2            = "aws_rke2_airgap"
+	AirgapAWSRKE2Windows2019 = "aws_rke2_windows_2019_airgap"
 	AirgapAWSRKE2Windows2022 = "aws_rke2_windows_2022_airgap"
+	AirgapAWSRKE2Windows2025 = "aws_rke2_windows_2025_airgap"
 	AirgapAWSK3S             = "aws_k3s_airgap"
 )
