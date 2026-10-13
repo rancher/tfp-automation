@@ -118,6 +118,10 @@ func getWindowsAMIParam(terraform *config.TerraformConfig) upstream.TestCasePara
 		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: "Windows2022AMI", Values: []string{terraform.AWSConfig.Windows2022AMI}}}
 	}
 
+	if strings.Contains(terraform.Module, clustertypes.WINDOWS) && strings.Contains(terraform.Module, "2025") {
+		return upstream.TestCaseParameterCreate{ParameterSingle: &upstream.ParameterSingle{Title: "Windows2025AMI", Values: []string{terraform.AWSConfig.Windows2025AMI}}}
+	}
+
 	return upstream.TestCaseParameterCreate{}
 }
 
