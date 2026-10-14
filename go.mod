@@ -1,6 +1,6 @@
 module github.com/rancher/tfp-automation
 
-go 1.27.0
+go 1.27.2
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.27 // for compatibilty with docker 20.10.x
