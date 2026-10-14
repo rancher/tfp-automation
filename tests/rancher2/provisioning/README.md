@@ -170,8 +170,6 @@ terraform:
     windowsAMI2025: ""
     windowsAWSUser: ""
     windows2019Password: ""
-    windows2022Password: ""
-    windows2025Password: ""
     windowsInstanceType: ""
     windowsKeyName: ""
 

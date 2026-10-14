@@ -29,19 +29,25 @@ func CustomWindowsNullResource(rootBody *hclwrite.Body, terraformConfig *config.
 	connectionBlock := provisionerBlockBody.AppendNewBlock(general.Connection, nil)
 	connectionBlockBody := connectionBlock.Body()
 
-	connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.WinRM))
-	connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
+	if !strings.Contains(terraformConfig.Module, modules.CustomAWSRKE2Windows2019) {
+		connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.Ssh))
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 
-	if strings.Contains(terraformConfig.Module, modules.CustomAWSRKE2Windows2019) {
+		keyPathExpression := general.File + `("` + terraformConfig.WindowsPrivateKeyPath + `")`
+		keyPath := hclwrite.Tokens{
+			{Type: hclsyntax.TokenIdent, Bytes: []byte(keyPathExpression)},
+		}
+
+		connectionBlockBody.SetAttributeRaw(general.PrivateKey, keyPath)
+		connectionBlockBody.SetAttributeValue(general.TargetPlatform, cty.StringVal(general.Windows))
+	} else if strings.Contains(terraformConfig.Module, modules.CustomAWSRKE2Windows2019) {
+		connectionBlockBody.SetAttributeValue(general.Type, cty.StringVal(general.WinRM))
+		connectionBlockBody.SetAttributeValue(general.User, cty.StringVal(terraformConfig.AWSConfig.WindowsAWSUser))
 		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2019Password))
-	} else if strings.Contains(terraformConfig.Module, modules.CustomAWSRKE2Windows2022) {
-		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2022Password))
-	} else if strings.Contains(terraformConfig.Module, modules.CustomAWSRKE2Windows2025) {
-		connectionBlockBody.SetAttributeValue(general.Password, cty.StringVal(terraformConfig.AWSConfig.Windows2025Password))
+		connectionBlockBody.SetAttributeValue(general.Insecure, cty.BoolVal(true))
+		connectionBlockBody.SetAttributeValue(general.UseNTLM, cty.BoolVal(true))
+		connectionBlockBody.SetAttributeValue(aws.Timeout, cty.StringVal(terraformConfig.AWSConfig.Timeout))
 	}
-
-	connectionBlockBody.SetAttributeValue(general.Insecure, cty.BoolVal(true))
-	connectionBlockBody.SetAttributeValue(general.UseNTLM, cty.BoolVal(true))
 
 	hostExpression := aws.AwsInstance + `.` + clusterName + `-windows[` + general.Count + `.` + general.Index + `].` + general.PublicIp
 	host := hclwrite.Tokens{

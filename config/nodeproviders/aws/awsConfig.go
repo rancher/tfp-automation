@@ -44,8 +44,6 @@ type Config struct {
 	Windows2025AMI        string      `json:"windows2025AMI,omitempty" yaml:"windows2025AMI,omitempty"`
 	WindowsAWSUser        string      `json:"windowsAWSUser,omitempty" yaml:"windowsAWSUser,omitempty"`
 	Windows2019Password   string      `json:"windows2019Password,omitempty" yaml:"windows2019Password,omitempty"`
-	Windows2022Password   string      `json:"windows2022Password,omitempty" yaml:"windows2022Password,omitempty"`
-	Windows2025Password   string      `json:"windows2025Password,omitempty" yaml:"windows2025Password,omitempty"`
 	WindowsInstanceType   string      `json:"windowsInstanceType,omitempty" yaml:"windowsInstanceType,omitempty"`
 	WindowsKeyName        string      `json:"windowsKeyName,omitempty" yaml:"windowsKeyName,omitempty"`
 	WindowsVolumeType     string      `json:"windowsVolumeType,omitempty" yaml:"windowsVolumeType,omitempty"`
