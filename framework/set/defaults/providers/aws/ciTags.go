@@ -31,6 +31,7 @@ func sanitizeTagValue(value string) string {
 	return value
 }
 
+// CITags will return the ci_job and ci_build tags for the Jenkins or GitHub Actions build running this code, or an empty map outside of CI.
 func CITags() map[string]string {
 	var job, build string
 
@@ -63,12 +64,8 @@ func CITags() map[string]string {
 	return tags
 }
 
-func SetCIDefaultTags(awsProvBlockBody *hclwrite.Body) {
-	tags := CITags()
-	if len(tags) == 0 {
-		return
-	}
-
+// SetDefaultTags will add a default_tags block with the given tags to the aws provider block.
+func SetDefaultTags(awsProvBlockBody *hclwrite.Body, tags map[string]string) {
 	tagValues := map[string]cty.Value{}
 	for key, value := range tags {
 		tagValues[key] = cty.StringVal(value)
@@ -78,6 +75,7 @@ func SetCIDefaultTags(awsProvBlockBody *hclwrite.Body) {
 	defaultTagsBlock.Body().SetAttributeValue(Tags, cty.MapVal(tagValues))
 }
 
+// CIMachineConfigTags will return the CI tags in the "key1,value1,key2,value2" format used by amazonec2_config, or an empty string outside of CI.
 func CIMachineConfigTags() string {
 	tags := CITags()
 

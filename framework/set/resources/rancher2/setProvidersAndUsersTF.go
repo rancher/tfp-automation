@@ -137,7 +137,9 @@ func createProvider(rancherConfig *rancher.Config, rootBody *hclwrite.Body, terr
 		awsProvBlockBody.SetAttributeValue(aws.Region, cty.StringVal(terraformConfig.AWSConfig.Region))
 		awsProvBlockBody.SetAttributeValue(aws.AccessKey, cty.StringVal(terraformConfig.AWSCredentials.AWSAccessKey))
 		awsProvBlockBody.SetAttributeValue(aws.SecretKey, cty.StringVal(terraformConfig.AWSCredentials.AWSSecretKey))
-		aws.SetCIDefaultTags(awsProvBlockBody)
+		if ciTags := aws.CITags(); len(ciTags) > 0 {
+			aws.SetDefaultTags(awsProvBlockBody, ciTags)
+		}
 
 		rootBody.AppendNewline()
 		rootBody.AppendNewBlock(general.Provider, []string{general.Local})
