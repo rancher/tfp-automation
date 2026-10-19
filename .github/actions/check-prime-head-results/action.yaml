@@ -1,6 +1,6 @@
 ---
 name: Check Prime Head Results
-description: "Checks if all dispatch workflows have successful prime head job completions for specified release lines"
+description: "Checks if all dispatch workflows have successful prime head job completions within the past week for specified release lines"
 
 inputs:
   dispatch-workflow-list:
@@ -30,6 +30,7 @@ runs:
         GH_TOKEN: ${{ github.token }}
       run: |
         WORKFLOWS="${{ inputs.dispatch-workflow-list }}"
+        LAST_WEEK=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ")
 
         workflow_applies_to_head_release() {
           local workflow="$1"
@@ -50,11 +51,12 @@ runs:
           
           echo "Checking $release jobs..."
           for workflow in ${WORKFLOWS//,/ }; do
-            RUN_IDS=$(gh api repos/${{ github.repository }}/actions/workflows/${workflow}/runs \
-              --jq '[.workflow_runs[] | select(.head_branch=="main" and (.event=="schedule" or .event=="workflow_dispatch"))] | .[0:30] | .[].id')
+            RUN_IDS=$(gh api --method GET repos/${{ github.repository }}/actions/workflows/${workflow}/runs \
+              --paginate -f branch=main -f created=">=${LAST_WEEK}" -f per_page=100 \
+              --jq '.workflow_runs[] | select(.head_branch=="main" and (.event=="schedule" or .event=="workflow_dispatch")) | .id')
 
             if [[ -z "$RUN_IDS" ]]; then
-              echo "  $workflow: No recent runs found"
+              echo "  $workflow: No runs found within the past week"
               ALL_PASSED=false
               FAILED_WORKFLOWS="${FAILED_WORKFLOWS}${workflow},"
               continue
