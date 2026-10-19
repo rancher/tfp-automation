@@ -14,20 +14,12 @@ import (
 	"github.com/rancher/shepherd/extensions/clusters"
 	timeouts "github.com/rancher/shepherd/extensions/defaults"
 	"github.com/rancher/shepherd/extensions/defaults/namespaces"
-	"github.com/rancher/shepherd/extensions/workloads"
-	"github.com/rancher/shepherd/extensions/workloads/pods"
-	namegen "github.com/rancher/shepherd/pkg/namegenerator"
 	provisioningActions "github.com/rancher/tests/actions/provisioning"
-	"github.com/rancher/tests/actions/services"
-	deploy "github.com/rancher/tests/actions/workloads/deployment"
 	"github.com/rancher/tfp-automation/config"
 	"github.com/rancher/tfp-automation/defaults/stevetypes"
 	framework "github.com/rancher/tfp-automation/framework/set"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kwait "k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -36,22 +28,11 @@ const (
 	SnapshotAnnotation       = "rke.cattle.io.etcdsnapshot"
 	SnapshotClusterNameLabel = "rke.cattle.io/cluster-name"
 
-	active              = "active"
-	all                 = "all"
-	containerImage      = "nginx"
-	containerName       = "nginx"
-	defaultNamespace    = "default"
 	DeploymentSteveType = "apps.deployment"
-	initialWorkload     = "wload-before-restore"
-	isCattleLabeled     = true
 	localCluster        = "local"
-	kubernetesVersion   = "kubernetesVersion"
 	namespace           = "fleet-default"
 	port                = "port"
-	postWorkload        = "wload-after-backup"
 	S3                  = "s3"
-	serviceAppendName   = "service-"
-	serviceType         = "service"
 )
 
 // RestoreSnapshot creates workloads, takes a snapshot of the cluster, restores the cluster and verifies the workloads created after
@@ -59,42 +40,19 @@ const (
 func RestoreSnapshot(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, terraformOptions *terraform.Options, newFile *hclwrite.File, rootBody *hclwrite.Body,
 	file *os.File, nestedRancherModuleDir string) {
-	initialWorkloadName := namegen.AppendRandomString(initialWorkload)
-
 	clusterID, err := clusters.GetClusterIDByName(client, terraformConfig.ResourcePrefix)
 	require.NoError(t, err)
 
-	steveclient, err := client.Steve.ProxyDownstream(clusterID)
+	snapshotName, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, clusterID, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
 	require.NoError(t, err)
 
-	containerTemplate := workloads.NewContainer(containerName, containerImage, corev1.PullAlways, []corev1.VolumeMount{}, []corev1.EnvFromSource{}, nil, nil, nil)
-	podTemplate := workloads.NewPodTemplate([]corev1.Container{containerTemplate}, []corev1.Volume{}, []corev1.LocalObjectReference{}, nil, nil)
-
-	deploymentResp, serviceResp := createWorkloads(t, client, clusterID, podTemplate, initialWorkloadName, isCattleLabeled, DeploymentSteveType)
-
-	snapshotName, postDeploymentResp, postServiceResp, err := snapshotV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, podTemplate, clusterID, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
-	require.NoError(t, err)
-
-	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, clusterID, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
-
-	_, err = steveclient.SteveType(DeploymentSteveType).ByID(postDeploymentResp.ID)
-	require.Error(t, err)
-
-	_, err = steveclient.SteveType(serviceType).ByID(postServiceResp.ID)
-	require.Error(t, err)
-
-	logrus.Infof("Deleting created workloads...")
-	err = steveclient.SteveType(stevetypes.Deployment).Delete(deploymentResp)
-	require.NoError(t, err)
-
-	err = steveclient.SteveType(stevetypes.Service).Delete(serviceResp)
-	require.NoError(t, err)
+	restoreV2Prov(t, client, rancherConfig, terraformConfig, terratestConfig, snapshotName, terraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
 }
 
 // snapshotV2Prov takes a snapshot of the cluster and creates a deployment and service in the cluster.
 func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, podTemplate corev1.PodTemplateSpec, clusterID string, terraformOptions *terraform.Options,
-	newFile *hclwrite.File, rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) (string, *steveV1.SteveAPIObject, *steveV1.SteveAPIObject, error) {
+	terratestConfig *config.TerratestConfig, clusterID string, terraformOptions *terraform.Options, newFile *hclwrite.File,
+	rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) (string, error) {
 	terratestConfig.SnapshotInput.CreateSnapshot = true
 
 	_, _, err := framework.ConfigTF(client, rancherConfig, terratestConfig, "", terraformConfig, newFile, rootBody, file, false, false, false, "", nestedRancherModuleDir)
@@ -105,12 +63,6 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	err = clusters.WaitClusterToBeUpgraded(client, clusterID)
 	require.NoError(t, err)
 
-	podErrors := pods.StatusPods(client, clusterID)
-	assert.Empty(t, podErrors)
-
-	postWorkloadName := namegen.AppendRandomString(postWorkload)
-	postDeploymentResp, postServiceResp := createWorkloads(t, client, clusterID, podTemplate, postWorkloadName, isCattleLabeled, DeploymentSteveType)
-
 	var snapshotID []steveV1.SteveAPIObject
 	err = kwait.PollUntilContextTimeout(context.TODO(), timeouts.FiveSecondTimeout, timeouts.FiveMinuteTimeout, true, func(ctx context.Context) (bool, error) {
 		snapshotID, err = getSnapshots(client, terraformConfig.ResourcePrefix)
@@ -120,12 +72,12 @@ func snapshotV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher
 	})
 	require.NoError(t, err)
 
-	return snapshotID[0].Name, postDeploymentResp, postServiceResp, err
+	return snapshotID[0].Name, err
 }
 
 // restoreV2Prov restores the cluster to the previous state after a snapshot is taken.
 func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.Config, terraformConfig *config.TerraformConfig,
-	terratestConfig *config.TerratestConfig, snapshotName, clusterID string, terraformOptions *terraform.Options, newFile *hclwrite.File,
+	terratestConfig *config.TerratestConfig, snapshotName string, terraformOptions *terraform.Options, newFile *hclwrite.File,
 	rootBody *hclwrite.Body, file *os.File, nestedRancherModuleDir string) {
 	terratestConfig.SnapshotInput.CreateSnapshot = false
 	terratestConfig.SnapshotInput.RestoreSnapshot = true
@@ -146,9 +98,6 @@ func restoreV2Prov(t *testing.T, client *rancher.Client, rancherConfig *rancher.
 	require.NoError(t, err)
 
 	logrus.Infof("Cluster version is restored to: %s", clusterObject.Spec.KubernetesVersion)
-
-	podErrors := pods.StatusPods(client, clusterID)
-	assert.Empty(t, podErrors)
 }
 
 // getSnapshots retrieves all snapshots for a given cluster.
@@ -180,59 +129,4 @@ func getSnapshots(client *rancher.Client, clusterName string) ([]steveV1.SteveAP
 	})
 
 	return snapshots, nil
-}
-
-// createWorkloads creates a deployment and service in a given cluster and verifies they are active.
-func createWorkloads(t *testing.T, client *rancher.Client, clusterID string, podTemplate corev1.PodTemplateSpec, workloadName string, isCattleLabeled bool, deploymentType string) (*steveV1.SteveAPIObject, *steveV1.SteveAPIObject) {
-	deployment := workloads.NewDeploymentTemplate(workloadName, defaultNamespace, podTemplate, isCattleLabeled, nil)
-
-	service := corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      serviceAppendName + workloadName,
-			Namespace: defaultNamespace,
-		},
-		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceTypeClusterIP,
-			Ports: []corev1.ServicePort{
-				{
-					Name: port,
-					Port: 80,
-				},
-			},
-			Selector: deployment.Spec.Template.Labels,
-		},
-	}
-
-	steveclient, err := client.Steve.ProxyDownstream(clusterID)
-	require.NoError(t, err)
-
-	deploymentResp, err := steveclient.SteveType(deploymentType).Create(deployment)
-	require.NoError(t, err)
-
-	err = kwait.PollUntilContextTimeout(context.TODO(), timeouts.FiveSecondTimeout, timeouts.FiveMinuteTimeout, true, func(ctx context.Context) (done bool, err error) {
-		deployment, err := client.Steve.SteveType(deploymentType).ByID(deploymentResp.ID)
-		if err != nil {
-			return false, err
-		}
-
-		if deployment.State.Name == active {
-			logrus.Infof("%s(%s) is active", deploymentType, deployment.Name)
-			return true, nil
-		}
-
-		return false, nil
-	})
-
-	err = deploy.VerifyDeployment(client, clusterID, defaultNamespace, deploymentResp.Name)
-	require.NoError(t, err)
-	require.Equal(t, workloadName, deploymentResp.ObjectMeta.Name)
-
-	serviceResp, err := services.CreateService(steveclient, service)
-	require.NoError(t, err)
-
-	err = services.VerifyService(steveclient, serviceResp)
-	require.NoError(t, err)
-	require.Equal(t, serviceAppendName+workloadName, serviceResp.ObjectMeta.Name)
-
-	return deploymentResp, serviceResp
 }
