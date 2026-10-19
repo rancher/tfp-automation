@@ -89,6 +89,14 @@ func TestTfpSnapshotRestore(t *testing.T) {
 
 			RestoreSnapshot(t, s.Client, rancher, terraform, terratest, perTestTerraformOptions, newFile, rootBody, file, nestedRancherModuleDir)
 
+			logrus.Infof("Verifying the cluster is ready (%s)", clusters[0].Name)
+			err = provisioningActions.VerifyClusterReady(s.Client, clusters[0])
+			require.NoError(t, err)
+
+			logrus.Infof("Verifying cluster pods (%s)", clusters[0].Name)
+			err = pods.VerifyClusterPods(s.Client, clusters[0])
+			require.NoError(t, err)
+
 			params := tfpQase.GetProvisioningSchemaParams(s.TerraformConfig, s.TerratestConfig)
 			err = qase.UpdateSchemaParameters(tt.name, params)
 			if err != nil {
