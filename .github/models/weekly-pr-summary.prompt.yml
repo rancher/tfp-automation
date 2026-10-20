@@ -1,7 +1,6 @@
 ---
 name: Weekly PR Summarizer
 description: Summarizes pull requests opened in the past week for team
-model: gpt-5.4
 modelParameters:
   temperature: 0.5
 messages:
