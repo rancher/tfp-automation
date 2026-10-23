@@ -76,7 +76,7 @@ func CreateInternalTargetGroups(rootBody *hclwrite.Body, terraformConfig *config
 	targetGroupBlockBody.SetAttributeValue(aws.VpcId, cty.StringVal(terraformConfig.AWSConfig.AWSVpcID))
 	targetGroupBlockBody.SetAttributeValue(aws.TargetType, cty.StringVal(terraformConfig.AWSConfig.TargetType))
 	targetGroupBlockBody.SetAttributeValue(aws.IPAddressType, cty.StringVal(terraformConfig.AWSConfig.IPAddressType))
-	targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-internal-tg-"+strconv.FormatInt(port, 10)))
+	targetGroupBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-tg-"+strconv.FormatInt(port, 10)))
 
 	healthCheckGroupBlock := targetGroupBlockBody.AppendNewBlock(aws.HealthCheck, nil)
 	healthCheckGroupBlockBody := healthCheckGroupBlock.Body()

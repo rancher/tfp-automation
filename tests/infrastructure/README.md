@@ -681,7 +681,7 @@ terraform:
     sshConnectionType: "ssh"
     timeout: ""
   standalone:
-    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname but it must end with `-internal`
+    airgapInternalFQDN: ""                        # REQUIRED - Have the same name as the rancherHostname
     osGroup: ""                                   # REQUIRED - fill with group of the instance created
     osUser: ""                                    # REQUIRED - fill with username of the instance created
     rancherAgentImage: ""                         # OPTIONAL - fill out only if you are using a custom registry

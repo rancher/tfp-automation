@@ -104,7 +104,7 @@ func CreateRoute53InternalRecord(rootBody *hclwrite.Body, terraformConfig *confi
 	}
 
 	routeRecordBlockBody.SetAttributeRaw(zoneID, values)
-	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix+"-internal"))
+	routeRecordBlockBody.SetAttributeValue(name, cty.StringVal(terraformConfig.ResourcePrefix))
 	routeRecordBlockBody.SetAttributeValue(general.Type, cty.StringVal(CNAME))
 	routeRecordBlockBody.SetAttributeValue(ttl, cty.NumberIntVal(300))
 
