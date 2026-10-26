@@ -45,6 +45,11 @@ func CreateRancher(t *testing.T, provider string, cattleConfig map[string]any) e
 		_, err = operations.ReplaceValue([]string{"rancher", "host"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
 		require.NoError(t, err)
 
+		_, err = operations.ReplaceValue([]string{"terraform", "standalone", "rancherHostname"}, terraformConfig.Standalone.RancherHostname, cattleConfig)
+		if err != nil {
+			return err
+		}
+
 		rancherConfig, terraformConfig, terratestConfig, _ = config.LoadTFPConfigs(cattleConfig)
 		infraConfig.WriteConfigToFile(os.Getenv(rancherinternal.ConfigEnvironmentKey), cattleConfig)
 	}

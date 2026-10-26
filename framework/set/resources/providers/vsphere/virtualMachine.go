@@ -20,18 +20,22 @@ func CreateVsphereVirtualMachine(rootBody *hclwrite.Body, terraformConfig *confi
 	vmBlock := rootBody.AppendNewBlock(general.Resource, []string{vsphere.VsphereVirtualMachine, hostnamePrefix})
 	vmBlockBody := vmBlock.Body()
 
+	vmName := hostnamePrefix
+	if terraformConfig.ResourcePrefix != "" {
+		vmName = terraformConfig.ResourcePrefix + "-" + hostnamePrefix
+	}
 	if strings.Contains(terraformConfig.Module, general.Custom) {
 		totalNodeCount := customnodepools.TotalNodeCount(terratestConfig)
 		vmBlockBody.SetAttributeValue(general.Count, cty.NumberIntVal(totalNodeCount))
 
-		vmNameExpression := fmt.Sprintf(` "%s-${%s.%s}"`, hostnamePrefix, general.Count, general.Index)
+		vmNameExpression := fmt.Sprintf(` "%s-${%s.%s}"`, vmName, general.Count, general.Index)
 		vmNameValue := hclwrite.Tokens{
 			{Type: hclsyntax.TokenStringLit, Bytes: []byte(vmNameExpression)},
 		}
 
 		vmBlockBody.SetAttributeRaw(general.ResourceName, vmNameValue)
 	} else {
-		vmBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(hostnamePrefix))
+		vmBlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(vmName))
 	}
 
 	resourcePoolExpression := fmt.Sprintf(general.Data + `.` + vsphere.VsphereComputeCluster + `.` + vsphere.VsphereComputeCluster + `.` + resourcePoolID)
