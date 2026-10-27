@@ -22,8 +22,6 @@ type Config struct {
 	AWSZoneLetter         string      `json:"awsZoneLetter,omitempty" yaml:"awsZoneLetter,omitempty"`
 	ClusterCIDR           string      `json:"clusterCIDR,omitempty" yaml:"clusterCIDR,omitempty"`
 	ServiceCIDR           string      `json:"serviceCIDR,omitempty" yaml:"serviceCIDR,omitempty"`
-	EtcdSnapshotAccessKey string      `json:"etcdSnapshotAccessKey,omitempty" yaml:"etcdSnapshotAccessKey,omitempty"`
-	EtcdSnapshotSecretKey string      `json:"etcdSnapshotSecretKey,omitempty" yaml:"etcdSnapshotSecretKey,omitempty"`
 	EtcdSnapshotEndpoint  string      `json:"etcdSnapshotEndpoint,omitempty" yaml:"etcdSnapshotEndpoint,omitempty"`
 	EtcdSnapshotBucket    string      `json:"etcdSnapshotBucket,omitempty" yaml:"etcdSnapshotBucket,omitempty"`
 	EtcdSnapshotRegion    string      `json:"etcdSnapshotRegion,omitempty" yaml:"etcdSnapshotRegion,omitempty"`

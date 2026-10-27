@@ -141,7 +141,7 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
 	if terraformConfig.Standalone.S3Enabled {
-		command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+		command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
 			terraformConfig.AWSConfig.EtcdSnapshotRegion
 	}
@@ -168,7 +168,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 			terraformConfig.Standalone.RegistryPassword
 
 		if terraformConfig.Standalone.S3Enabled {
-			command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+			command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotRegion
 		}
