@@ -67,7 +67,7 @@ func CreateK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 	if terraformConfig.Standalone.S3Enabled {
 		command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
-			terraformConfig.AWSConfig.EtcdSnapshotRegion
+			terraformConfig.AWSConfig.Region
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
@@ -94,7 +94,7 @@ func AddK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 		if terraformConfig.Standalone.S3Enabled {
 			command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
-				terraformConfig.AWSConfig.EtcdSnapshotRegion
+				terraformConfig.AWSConfig.Region
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{

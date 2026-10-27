@@ -143,7 +143,7 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 	if terraformConfig.Standalone.S3Enabled {
 		command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
-			terraformConfig.AWSConfig.EtcdSnapshotRegion
+			terraformConfig.AWSConfig.Region
 	}
 
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
@@ -170,7 +170,7 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		if terraformConfig.Standalone.S3Enabled {
 			command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
-				terraformConfig.AWSConfig.EtcdSnapshotRegion
+				terraformConfig.AWSConfig.Region
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
