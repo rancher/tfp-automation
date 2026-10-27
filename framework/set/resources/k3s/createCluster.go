@@ -65,7 +65,7 @@ func CreateK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
 	if terraformConfig.Standalone.S3Enabled {
-		command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+		command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
 			terraformConfig.AWSConfig.EtcdSnapshotRegion
 	}
@@ -92,7 +92,7 @@ func AddK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
 		if terraformConfig.Standalone.S3Enabled {
-			command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+			command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotRegion
 		}
