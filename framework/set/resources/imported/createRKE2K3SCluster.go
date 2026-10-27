@@ -94,7 +94,7 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 	if terraformConfig.Standalone.S3Enabled {
 		command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
-			terraformConfig.AWSConfig.EtcdSnapshotRegion
+			terraformConfig.AWSConfig.Region
 	}
 
 	// For imported clusters, need to first put the script on the machine before running it.
@@ -149,7 +149,7 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 		if terraformConfig.Standalone.S3Enabled {
 			command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
-				terraformConfig.AWSConfig.EtcdSnapshotRegion
+				terraformConfig.AWSConfig.Region
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
@@ -212,7 +212,7 @@ func addImportedRKE2K3SAgentNodes(rootBody *hclwrite.Body, terraformConfig *conf
 		if terraformConfig.Standalone.S3Enabled {
 			command += " " + terraformConfig.AWSCredentials.AWSAccessKey + " " + terraformConfig.AWSCredentials.AWSSecretKey + " " +
 				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
-				terraformConfig.AWSConfig.EtcdSnapshotRegion
+				terraformConfig.AWSConfig.Region
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
