@@ -726,5 +726,26 @@
     "workflow": "day2-ops-rancher2",
     "job": "v2-16",
     "timestamp": "2026-10-27T12:10:39Z"
+  },
+  {
+    "date": "",
+    "status": "failure",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-14",
+    "timestamp": "2026-10-27T18:06:13Z"
+  },
+  {
+    "date": "",
+    "status": "success",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-15",
+    "timestamp": "2026-10-27T18:06:13Z"
+  },
+  {
+    "date": "",
+    "status": "success",
+    "workflow": "day2-ops-rancher2",
+    "job": "v2-16",
+    "timestamp": "2026-10-27T18:06:13Z"
   }
 ]
