@@ -8,6 +8,12 @@ RKE2_TOKEN=$5
 CNI=$6
 REGISTRY_USERNAME=$7
 REGISTRY_PASSWORD=$8
+ETCD_S3_ACCESS_KEY=${9}
+ETCD_S3_SECRET_KEY=${10}
+ETCD_S3_ENDPOINT=${11}
+ETCD_S3_BUCKET=${12}
+ETCD_S3_REGION=${13}
+
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
 
@@ -72,10 +78,25 @@ fi
 sudo mkdir -p /etc/rancher/rke2
 sudo touch /etc/rancher/rke2/config.yaml
 
-echo "cni: ${CNI}
+if [ -n "${ETCD_S3_ACCESS_KEY}" ]; then
+  echo "cni: ${CNI}
+token: ${RKE2_TOKEN}
+etcd-s3: true
+etcd-s3-skip-ssl-verify: true
+etcd-s3-access-key: ${ETCD_S3_ACCESS_KEY}
+etcd-s3-secret-key: ${ETCD_S3_SECRET_KEY}
+etcd-s3-endpoint: ${ETCD_S3_ENDPOINT}
+etcd-s3-bucket: ${ETCD_S3_BUCKET}
+etcd-s3-region: ${ETCD_S3_REGION}
+etcd-s3-insecure: true
+tls-san:
+  - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
+else
+  echo "cni: ${CNI}
 token: ${RKE2_TOKEN}
 tls-san:
   - ${RKE2_SERVER_IP}" | sudo tee /etc/rancher/rke2/config.yaml > /dev/null
+fi
 
 echo "mirrors:
   docker.io:

@@ -140,6 +140,12 @@ func createRKE2Server(rootBody *hclwrite.Body, terraformConfig *config.Terraform
 		terraformConfig.Standalone.RKE2Version + " " + rke2ServerOnePrivateIP + " " + rke2Token + " " + terraformConfig.CNI + " " +
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
+	if terraformConfig.Standalone.S3Enabled {
+		command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
+			terraformConfig.AWSConfig.EtcdSnapshotRegion
+	}
+
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
@@ -160,6 +166,12 @@ func addRKE2ServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafo
 		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.RKE2Version + " " +
 			rke2ServerOnePrivateIP + " " + instance + " " + rke2Token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
 			terraformConfig.Standalone.RegistryPassword
+
+		if terraformConfig.Standalone.S3Enabled {
+			command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotRegion
+		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),

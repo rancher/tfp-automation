@@ -64,6 +64,12 @@ func CreateK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformC
 		terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + k3sToken + " " +
 		terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
 
+	if terraformConfig.Standalone.S3Enabled {
+		command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
+			terraformConfig.AWSConfig.EtcdSnapshotRegion
+	}
+
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("printf '" + string(script) + "' > /tmp/init-server.sh"),
 		cty.StringVal("chmod +x /tmp/init-server.sh"),
@@ -84,6 +90,12 @@ func AddK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 			terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + instance + " " + k3sToken + " " +
 			terraformConfig.Standalone.RegistryUsername + " " + terraformConfig.Standalone.RegistryPassword
+
+		if terraformConfig.Standalone.S3Enabled {
+			command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotRegion
+		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 			cty.StringVal("printf '" + string(script) + "' > /tmp/add-servers.sh"),
