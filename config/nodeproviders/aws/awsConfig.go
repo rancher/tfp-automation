@@ -22,6 +22,12 @@ type Config struct {
 	AWSZoneLetter         string      `json:"awsZoneLetter,omitempty" yaml:"awsZoneLetter,omitempty"`
 	ClusterCIDR           string      `json:"clusterCIDR,omitempty" yaml:"clusterCIDR,omitempty"`
 	ServiceCIDR           string      `json:"serviceCIDR,omitempty" yaml:"serviceCIDR,omitempty"`
+	EtcdSnapshotAccessKey string      `json:"etcdSnapshotAccessKey,omitempty" yaml:"etcdSnapshotAccessKey,omitempty"`
+	EtcdSnapshotSecretKey string      `json:"etcdSnapshotSecretKey,omitempty" yaml:"etcdSnapshotSecretKey,omitempty"`
+	EtcdSnapshotEndpoint  string      `json:"etcdSnapshotEndpoint,omitempty" yaml:"etcdSnapshotEndpoint,omitempty"`
+	EtcdSnapshotBucket    string      `json:"etcdSnapshotBucket,omitempty" yaml:"etcdSnapshotBucket,omitempty"`
+	EtcdSnapshotRegion    string      `json:"etcdSnapshotRegion,omitempty" yaml:"etcdSnapshotRegion,omitempty"`
+	EtcdSnapshotInsecure  bool        `json:"etcdSnapshotInsecure,omitempty" yaml:"etcdSnapshotInsecure,omitempty" default:"false"`
 	EKSRegion             string      `json:"eksRegion,omitempty" yaml:"eksRegion,omitempty"`
 	EnablePrimaryIPv6     bool        `json:"enablePrimaryIPv6,omitempty" yaml:"enablePrimaryIPv6,omitempty" default:"false"`
 	HTTPProtocolIPv6      string      `json:"httpProtocolIPv6,omitempty" yaml:"httpProtocolIPv6,omitempty" default:"disabled"`

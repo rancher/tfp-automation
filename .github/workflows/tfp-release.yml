@@ -43,7 +43,7 @@ env:
   LOCAL_CLUSTER_K8S_VERSION: ${{ github.event.inputs.local_cluster_k8s_version }}
   LOCALS_PROVIDER_VERSION: "${{ vars.LOCALS_PROVIDER_VERSION }}"
   PACKAGE: "rancher2/provisioning"
-  TEST_SUITE: "^TestTfpProvisionTestSuite$"
+  TEST_SUITE: "TestTfpProvision"
   TIMEOUT: "2h"
 
 jobs:

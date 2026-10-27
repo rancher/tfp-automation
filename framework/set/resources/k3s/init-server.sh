@@ -7,6 +7,12 @@ K3S_SERVER_IP=$4
 K3S_TOKEN=$5
 REGISTRY_USERNAME=$6
 REGISTRY_PASSWORD=$7
+ETCD_S3_ACCESS_KEY=${8}
+ETCD_S3_SECRET_KEY=${9}
+ETCD_S3_ENDPOINT=${10}
+ETCD_S3_BUCKET=${11}
+ETCD_S3_REGION=${12}
+
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
 
@@ -40,11 +46,26 @@ sudo hostnamectl set-hostname ${K3S_SERVER_IP}
 
 sudo mkdir -p /etc/rancher/k3s
 
-echo "token: ${K3S_TOKEN}
+if [ -n "${ETCD_S3_ACCESS_KEY}" ]; then
+  echo "token: ${K3S_TOKEN}
+cluster-init: true
+secrets-encryption: true
+etcd-s3: true
+etcd-s3-access-key: ${ETCD_S3_ACCESS_KEY}
+etcd-s3-secret-key: ${ETCD_S3_SECRET_KEY}
+etcd-s3-endpoint: ${ETCD_S3_ENDPOINT}
+etcd-s3-bucket: ${ETCD_S3_BUCKET}
+etcd-s3-region: ${ETCD_S3_REGION}
+etcd-s3-insecure: true
+tls-san:
+  - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
+else
+  echo "token: ${K3S_TOKEN}
 cluster-init: true
 secrets-encryption: true
 tls-san:
   - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
+fi
 
 echo "mirrors:
   docker.io:

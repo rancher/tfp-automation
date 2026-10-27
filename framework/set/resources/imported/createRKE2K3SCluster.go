@@ -91,6 +91,12 @@ func createImportedRKE2K3SServer(rootBody *hclwrite.Body, terraformConfig *confi
 			terraformConfig.Standalone.RegistryPassword
 	}
 
+	if terraformConfig.Standalone.S3Enabled {
+		command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+			terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
+			terraformConfig.AWSConfig.EtcdSnapshotRegion
+	}
+
 	// For imported clusters, need to first put the script on the machine before running it.
 	provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
 		cty.StringVal("echo '" + string(script) + "' > /tmp/init-server.sh"),
@@ -138,6 +144,12 @@ func addImportedRKE2K3SServerNodes(rootBody *hclwrite.Body, terraformConfig *con
 			command = "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + version + " " + serverOnePrivateIP + " " +
 				instance + " " + token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
 				terraformConfig.Standalone.RegistryPassword
+		}
+
+		if terraformConfig.Standalone.S3Enabled {
+			command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotRegion
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
@@ -195,6 +207,12 @@ func addImportedRKE2K3SAgentNodes(rootBody *hclwrite.Body, terraformConfig *conf
 			command = "/tmp/add-agents.sh " + terraformConfig.Standalone.OSUser + " " + version + " " + serverOnePrivateIP + " " +
 				instance + " " + token + " " + terraformConfig.CNI + " " + terraformConfig.Standalone.RegistryUsername + " " +
 				terraformConfig.Standalone.RegistryPassword
+		}
+
+		if terraformConfig.Standalone.S3Enabled {
+			command += " " + terraformConfig.AWSConfig.EtcdSnapshotAccessKey + " " + terraformConfig.AWSConfig.EtcdSnapshotSecretKey + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotEndpoint + " " + terraformConfig.AWSConfig.EtcdSnapshotBucket + " " +
+				terraformConfig.AWSConfig.EtcdSnapshotRegion
 		}
 
 		provisionerBlockBody.SetAttributeValue(general.Inline, cty.ListVal([]cty.Value{
