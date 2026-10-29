@@ -30,7 +30,6 @@ const (
 	terraformRC         = ".terraformrc"
 	cliConfigEnvVar     = "TF_CLI_CONFIG_FILE"
 	defaultMirror       = ".terraform.d/plugins"
-	localSourceMarker   = "-rc"
 	alignedRancherMinor = 13
 	requestTimeout      = 30 * time.Second
 )
@@ -106,7 +105,7 @@ func resolveForServer(host, adminToken string, insecure bool, pinnedByMinor map[
 		return "", fmt.Errorf("no rancher2 provider major is known for Rancher %s, so set %s or pin it under terraform.providerVersions", minorKey, ProviderEnvVar)
 	}
 
-	candidates, origin, err := installableVersions()
+	candidates, origin, fromMirror, err := installableVersions()
 	if err != nil {
 		return "", fmt.Errorf("could not list the installable rancher2 provider versions, so set %s: %w", ProviderEnvVar, err)
 	}
@@ -115,14 +114,14 @@ func resolveForServer(host, adminToken string, insecure bool, pinnedByMinor map[
 		return "", fmt.Errorf("no rancher2 provider versions are installable from %s, so set %s", origin, ProviderEnvVar)
 	}
 
-	version := newestForMajor(candidates, major)
+	version := newestForMajor(candidates, major, fromMirror)
 	if version != "" {
 		logrus.Infof("Resolved the rancher2 provider %s for Rancher %s from %s", version, serverVersion, origin)
 
 		return version, nil
 	}
 
-	version = newestBelowMajor(candidates, major)
+	version = newestBelowMajor(candidates, major, fromMirror)
 	if version == "" {
 		return "", fmt.Errorf("none of the rancher2 provider versions in %s are usable with Rancher %s, so set %s", origin, serverVersion, ProviderEnvVar)
 	}
@@ -197,21 +196,21 @@ func providerMajor(rancherMinor string) (int, bool) {
 	return 0, false
 }
 
-// installableVersions lists the provider versions this machine can actually install.
-func installableVersions() ([]string, string, error) {
+// installableVersions lists the provider versions this machine can actually install, and reports whether they came from a filesystem mirror.
+func installableVersions() ([]string, string, bool, error) {
 	mirror := mirrorDirectory()
 	if mirror != "" {
 		versions, err := mirroredVersions(mirror)
 		if err != nil {
-			return nil, mirror, err
+			return nil, mirror, true, err
 		}
 
-		return versions, mirror, nil
+		return versions, mirror, true, nil
 	}
 
 	versions, err := registryVersions()
 
-	return versions, "the terraform registry", err
+	return versions, "the terraform registry", false, err
 }
 
 // cliConfigPath returns the terraform CLI configuration file, if one exists.
@@ -396,12 +395,12 @@ func registryVersions() ([]string, error) {
 }
 
 // newestForMajor returns the newest usable version carrying the given major.
-func newestForMajor(candidates []string, major int) string {
+func newestForMajor(candidates []string, major int, allowPrerelease bool) string {
 	var matching []string
 
 	for _, candidate := range candidates {
 		parts := versionPattern.FindStringSubmatch(candidate)
-		if parts == nil || strings.Contains(candidate, localSourceMarker) {
+		if parts == nil || (!allowPrerelease && parts[4] != "") {
 			continue
 		}
 
@@ -415,12 +414,12 @@ func newestForMajor(candidates []string, major int) string {
 }
 
 // newestBelowMajor returns the newest usable version carrying a major below the given one.
-func newestBelowMajor(candidates []string, major int) string {
+func newestBelowMajor(candidates []string, major int, allowPrerelease bool) string {
 	var matching []string
 
 	for _, candidate := range candidates {
 		parts := versionPattern.FindStringSubmatch(candidate)
-		if parts == nil || strings.Contains(candidate, localSourceMarker) {
+		if parts == nil || (!allowPrerelease && parts[4] != "") {
 			continue
 		}
 
