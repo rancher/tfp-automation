@@ -60,7 +60,8 @@ etcd-s3-insecure: true
 tls-san:
   - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
 else
-  echo "token: ${K3S_TOKEN}
+  echo "server: https://${K3S_SERVER_IP}:6443
+token: ${K3S_TOKEN}
 secrets-encryption: true
 tls-san:
   - ${K3S_SERVER_IP}" | sudo tee /etc/rancher/k3s/config.yaml > /dev/null
@@ -82,4 +83,4 @@ configs:
 
 retryCmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
 chmod +x install.sh
-retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="server --server https://${K3S_SERVER_IP}:6443" sh install.sh
+retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server sh install.sh
