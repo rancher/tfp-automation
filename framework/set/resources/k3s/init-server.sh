@@ -83,7 +83,7 @@ configs:
 
 retryCmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
 chmod +x install.sh
-retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server sh install.sh
+retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server sh install.sh
 
 sudo mkdir -p /home/${USER}/.kube
 sudo chown ${USER}:${GROUP} /etc/rancher/k3s/k3s.yaml
