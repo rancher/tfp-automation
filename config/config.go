@@ -5,7 +5,7 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/imdario/mergo"
+	"dario.cat/mergo"
 	rkev1 "github.com/rancher/rancher/pkg/apis/rke.cattle.io/v1"
 	"github.com/rancher/shepherd/clients/rancher"
 	shepherdConfig "github.com/rancher/shepherd/pkg/config"
