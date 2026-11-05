@@ -54,6 +54,7 @@ setupConfig() {
     sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
 token: ${K3S_TOKEN}
 cluster-init: true
+secrets-encryption: true
 tls-san:
   - ${K3S_SERVER_ONE_IP}
 EOF
@@ -103,7 +104,7 @@ runSSH "${K3S_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
 setupProxyFunction=$(declare -f setupProxy)
 runSSH "${K3S_SERVER_ONE_IP}" "${setupProxyFunction}; setupProxy"
 
-runSSH "${K3S_SERVER_ONE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
+runSSH "${K3S_SERVER_ONE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
 
 runSSH "${K3S_SERVER_ONE_IP}" "sudo mkdir -p /home/${USER}/.kube"
 runSSH "${K3S_SERVER_ONE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USER}/.kube/config"

@@ -51,7 +51,9 @@ runSSH() {
 setupConfig() {
     sudo mkdir -p /etc/rancher/k3s
     sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
+server: https://${K3S_SERVER_ONE_IP}:6443
 token: ${K3S_TOKEN}
+secrets-encryption: true
 tls-san:
   - ${K3S_SERVER_ONE_IP}
 EOF
@@ -99,4 +101,4 @@ runSSH "${K3S_NEW_SERVER_IP}" "${registryFunction}; setupRegistry"
 
 setupProxyFunction=$(declare -f setupProxy)
 runSSH "${K3S_NEW_SERVER_IP}" "${setupProxyFunction}; setupProxy"
-runSSH "${K3S_NEW_SERVER_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=\"server --server https://${K3S_SERVER_ONE_IP}:6443\" INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
+runSSH "${K3S_NEW_SERVER_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"

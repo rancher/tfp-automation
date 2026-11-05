@@ -48,6 +48,15 @@ runSSH() {
   return "$rc"
 }
 
+setupConfig() {
+    sudo mkdir -p /etc/rancher/k3s
+    sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
+server: https://${K3S_SERVER_ONE_IP}:6443
+token: ${K3S_TOKEN}
+EOF
+}
+
+
 setupRegistry() {
   sudo mkdir -p /etc/rancher/k3s
   sudo tee /etc/rancher/k3s/registries.yaml > /dev/null << EOF
@@ -83,9 +92,12 @@ EOF
 runSSH "${K3S_NEW_SERVER_IP}" "sudo hostnamectl set-hostname ${K3S_NEW_SERVER_IP}"
 runSSH "${K3S_NEW_SERVER_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
 
+configFunction=$(declare -f setupConfig)
+runSSH "${K3S_NEW_SERVER_IP}" "${configFunction}; setupConfig"
+
 registryFunction=$(declare -f setupRegistry)
 runSSH "${K3S_NEW_SERVER_IP}" "${registryFunction}; setupRegistry"
 
 setupProxyFunction=$(declare -f setupProxy)
 runSSH "${K3S_NEW_SERVER_IP}" "${setupProxyFunction}; setupProxy"
-runSSH "${K3S_NEW_SERVER_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=\"agent --server https://${K3S_SERVER_ONE_IP}:6443\" INSTALL_K3S_SKIP_DOWNLOAD=true sh /home/${USER}/install.sh"
+runSSH "${K3S_NEW_SERVER_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=agent INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
