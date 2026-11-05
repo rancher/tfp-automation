@@ -22,8 +22,6 @@ import (
 )
 
 const (
-	nodeBalancerHostname = "linode_node_balancer_hostname"
-
 	bastion     = "bastion"
 	serverOne   = "server1"
 	serverTwo   = "server2"
@@ -96,13 +94,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	}
 
 	file = sanity.OpenFile(file, keyPath)
-	if terraformConfig.LocalCluster == "k3s" {
+	switch terraformConfig.LocalCluster {
+	case "k3s":
 		logrus.Infof("Creating K3S cluster...")
 		file, err = k3s.CreateK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 		if err != nil {
 			return "", "", err
 		}
-	} else if terraformConfig.LocalCluster == "rke2" {
+	case "rke2":
 		logrus.Infof("Creating RKE2 cluster...")
 		file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 		if err != nil {

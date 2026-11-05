@@ -29,6 +29,10 @@ func SetRancher2ClusterV2(rootBody *hclwrite.Body, terraformConfig *config.Terra
 	rancher2ClusterV2BlockBody.SetAttributeValue(general.ResourceName, cty.StringVal(terraformConfig.ResourcePrefix))
 	rancher2ClusterV2BlockBody.SetAttributeValue(clusters.KubernetesVersion, cty.StringVal(terratestConfig.KubernetesVersion))
 
+	if terraformConfig.Proxy != nil && terraformConfig.Proxy.ProxyBastion != "" {
+		SetProxyConfig(rancher2ClusterV2BlockBody, terraformConfig)
+	}
+
 	if terraformConfig.LocalAuthEndpoint {
 		err := v2.SetLocalAuthEndpoint(terraformConfig, rancher2ClusterV2BlockBody)
 		if err != nil {
