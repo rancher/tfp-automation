@@ -8,6 +8,12 @@ inputs:
     required: true
 
 outputs:
+  complete_v216:
+    description: "Whether v2.16 prime head release testing is complete"
+    value: ${{ steps.check-releases.outputs.complete_v216 }}
+  failed_workflows_v216:
+    description: "Comma-separated list of workflows that need v2.16 re-run"
+    value: ${{ steps.check-releases.outputs.failed_workflows_v216 }}
   complete_v215:
     description: "Whether v2.15 prime head release testing is complete"
     value: ${{ steps.check-releases.outputs.complete_v215 }}
@@ -26,7 +32,7 @@ runs:
   steps:
     - id: check-releases
       env:
-        SANITIZED_RELEASES: "v215 v214"
+        SANITIZED_RELEASES: "v216 v215 v214"
         GH_TOKEN: ${{ github.token }}
       run: |
         WORKFLOWS="${{ inputs.dispatch-workflow-list }}"
@@ -64,7 +70,7 @@ runs:
 
             JOB_FOUND=""
             MATRIX_SELECTOR="head"
-            if [[ "$release" != "v215" ]]; then
+            if [[ "$release" != "v216" ]]; then
               MATRIX_SELECTOR="v2.${release:2}-head"
             fi
 

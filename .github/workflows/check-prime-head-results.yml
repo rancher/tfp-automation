@@ -26,8 +26,9 @@ jobs:
     needs: get-dispatch-workflow-list
     runs-on: ubuntu-latest
     env:
-      PRIME_HEAD_RELEASE_LINES: "v2.15 v2.14"
+      PRIME_HEAD_RELEASE_LINES: "v2.16 v2.15 v2.14"
     outputs:
+      chart_version_v216: ${{ steps.set-chart-version.outputs.chart_version_v216 }}
       chart_version_v215: ${{ steps.set-chart-version.outputs.chart_version_v215 }}
       chart_version_v214: ${{ steps.set-chart-version.outputs.chart_version_v214 }}
     steps:
@@ -49,9 +50,13 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
+      RANCHER_VERSION_V16: "head"
       RANCHER_VERSION_V215: "v2.15-head"
       RANCHER_VERSION_V214: "v2.14-head"
     outputs:
+      complete_v16: ${{ steps.check-results.outputs.complete_v16 }}
+      failed_workflows_v16: ${{ steps.check-results.outputs.failed_workflows_v16 }}
+      rancher_version_v16: ${{ steps.set-versions.outputs.rancher_version_v16 }}
       complete_v215: ${{ steps.check-results.outputs.complete_v215 }}
       failed_workflows_v215: ${{ steps.check-results.outputs.failed_workflows_v215 }}
       rancher_version_v215: ${{ steps.set-versions.outputs.rancher_version_v215 }}
@@ -71,6 +76,7 @@ jobs:
       - name: Set version outputs
         id: set-versions
         run: |
+          echo "rancher_version_v16=${RANCHER_VERSION_V16}" >> $GITHUB_OUTPUT
           echo "rancher_version_v215=${RANCHER_VERSION_V215}" >> $GITHUB_OUTPUT
           echo "rancher_version_v214=${RANCHER_VERSION_V214}" >> $GITHUB_OUTPUT
 
@@ -80,7 +86,29 @@ jobs:
         with:
           dispatch-workflow-list: ${{ needs.get-dispatch-workflow-list.outputs.workflow_list }}
 
+  report-prime-head-results-v216:
+    needs: check-prime-head-results
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6
+        with:
+          role-to-assume: ${{ secrets.TFP_IAM_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Report and notify v2.16 prime head results
+        uses: ./.github/actions/report-prime-head-results
+        with:
+          complete: ${{ needs.check-prime-head-results.outputs.complete_v216 }}
+          failed_workflows: ${{ needs.check-prime-head-results.outputs.failed_workflows_v216 }}
+          slack-webhook-url: ${{ secrets.TEAM_SLACK_WEBHOOK_URL }}
+          rancher-tag-bucket: ${{ secrets.RANCHER_TAG_BUCKET }}
+          rancher-version: ${{ needs.check-prime-head-results.outputs.rancher_version_v216 }}
+  
   report-prime-head-results-v215:
     needs: check-prime-head-results
     if: github.ref == 'refs/heads/main'
@@ -127,6 +155,15 @@ jobs:
           rancher-tag-bucket: ${{ secrets.RANCHER_TAG_BUCKET }}
           rancher-version: ${{ needs.check-prime-head-results.outputs.rancher_version_v214 }}
 
+  trigger-failed-prime-head-tests-v216:
+    needs: [check-prime-head-results, set-prime-head-chart-version]
+    if: ${{ needs.check-prime-head-results.outputs.failed_workflows_v216 != '' }}
+    uses: ./.github/workflows/dispatch-workflows.yml
+    with:
+      rancher_version: ${{ needs.check-prime-head-results.outputs.rancher_version_v216 }}
+      rancher_chart_version: ${{ needs.set-prime-head-chart-version.outputs.chart_version_v216 }}
+      workflow_list: ${{ needs.check-prime-head-results.outputs.failed_workflows_v216 }}
+  
   trigger-failed-prime-head-tests-v215:
     needs: [check-prime-head-results, set-prime-head-chart-version]
     if: ${{ needs.check-prime-head-results.outputs.failed_workflows_v215 != '' }}
