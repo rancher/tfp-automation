@@ -63,19 +63,21 @@ runs:
             fi
 
             JOB_FOUND=""
-            MATRIX_SELECTOR="head"
-            if [[ "$release" != "v215" ]]; then
-              MATRIX_SELECTOR="v2.${release:2}-head"
-            fi
+            MATRIX_VERSION=""
+            case "$release" in
+              v215) MATRIX_VERSION="15" ;;
+              v214) MATRIX_VERSION="14" ;;
+            esac
+            JOB_NAME="v2-${MATRIX_VERSION}"
 
-            if ! workflow_applies_to_head_release "$workflow" "$MATRIX_SELECTOR"; then
-              echo "  - $workflow does not run for $MATRIX_SELECTOR, skipping..."
+            if ! workflow_applies_to_head_release "$workflow" "v2.${MATRIX_VERSION}-head"; then
+              echo "  - $workflow does not run for v2.${MATRIX_VERSION}-head, skipping..."
               continue
             fi
 
             for RUN_ID in $RUN_IDS; do
               JOB_SUCCESS=$(gh api repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs \
-                --jq ".jobs[] | select((.name==\"${MATRIX_SELECTOR}\" or (.name | endswith(\"${MATRIX_SELECTOR}\"))) and .conclusion==\"success\") | .name" 2>/dev/null)
+                --jq ".jobs[] | select(.name==\"${JOB_NAME}\" and .conclusion==\"success\") | .name" 2>/dev/null)
               if [[ -n "$JOB_SUCCESS" ]]; then
                 JOB_FOUND="true"
                 break
