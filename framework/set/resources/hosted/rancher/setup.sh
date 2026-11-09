@@ -150,7 +150,7 @@ install_aks_traefik() {
     helm repo update
     helm upgrade --install traefik traefik/traefik \
                  --namespace traefik \
-                 --set service.type=LoadBalancer \
+                 --set service.spec.type=LoadBalancer \
                  --set service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
                  --create-namespace
 
@@ -189,7 +189,7 @@ install_eks_traefik() {
     helm repo update
     helm upgrade --install traefik traefik/traefik \
                  --namespace traefik \
-                 --set service.type=LoadBalancer \
+                 --set service.spec.type=LoadBalancer \
                  --set service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"=nlb  \
                  --set-string service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-internal"="false" \
                  --create-namespace
@@ -238,7 +238,7 @@ install_gke_traefik() {
     helm repo update
     helm upgrade --install traefik traefik/traefik \
                  --namespace traefik \
-                 --set service.type=LoadBalancer \
+                 --set service.spec.type=LoadBalancer \
                  --create-namespace
 
     kubectl get pods --namespace traefik
