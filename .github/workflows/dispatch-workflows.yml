@@ -12,6 +12,9 @@ on:
       workflow_list:
         required: true
         type: string
+      qase_test_run_id:
+        required: false
+        type: string
 
 jobs:
   prepare-matrix:
@@ -37,7 +40,12 @@ jobs:
         run: |
           echo "Dispatching: ${{ matrix.workflow }}"
 
+          INPUTS='{"rancher_version": "${{ inputs.rancher_version }}","rancher_chart_version": "${{ inputs.rancher_chart_version }}"}'
+          if [ -n "${{ inputs.qase_test_run_id }}" ]; then
+            INPUTS=$(echo "$INPUTS" | jq --arg qase "${{ inputs.qase_test_run_id }}" '. + {"qase_test_run_id": $qase}')
+          fi
+
           curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/${{ matrix.workflow }}/dispatches \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
-            -H "Content-Type: application/json" -d '{"ref": "main","inputs": {"rancher_version": "${{ inputs.rancher_version }}","rancher_chart_version": "${{ inputs.rancher_chart_version }}"}}'
+            -H "Content-Type: application/json" -d "{\"ref\": \"main\",\"inputs\": $INPUTS}"

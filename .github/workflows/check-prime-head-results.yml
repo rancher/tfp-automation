@@ -3,6 +3,11 @@ name: Check Prime Head Results
 
 on:
   workflow_dispatch:
+    inputs:
+      qase_test_run_id:
+        description: 'Optional Qase test run ID override. Use JSON format: {"16":"1234","15":"5678"}'
+        required: false
+        type: string
 
 permissions:
   id-token: write
@@ -135,6 +140,7 @@ jobs:
       rancher_version: ${{ needs.check-prime-head-results.outputs.rancher_version_v215 }}
       rancher_chart_version: ${{ needs.set-prime-head-chart-version.outputs.chart_version_v215 }}
       workflow_list: ${{ needs.check-prime-head-results.outputs.failed_workflows_v215 }}
+      qase_test_run_id: ${{ github.event.inputs.qase_test_run_id }}
 
   trigger-failed-prime-head-tests-v214:
     needs: [check-prime-head-results, set-prime-head-chart-version]
@@ -144,3 +150,4 @@ jobs:
       rancher_version: ${{ needs.check-prime-head-results.outputs.rancher_version_v214 }}
       rancher_chart_version: ${{ needs.set-prime-head-chart-version.outputs.chart_version_v214 }}
       workflow_list: ${{ needs.check-prime-head-results.outputs.failed_workflows_v214 }}
+      qase_test_run_id: ${{ github.event.inputs.qase_test_run_id }}
