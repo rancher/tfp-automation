@@ -1,0 +1,57 @@
+---
+name: Extract Qase ID
+description: "Extracts version-specific Qase ID from JSON mapping, plain ID, or returns default"
+inputs:
+  qase_test_run_id:
+    description: "Optional override: either a plain ID (e.g., 1234) or JSON mapping (e.g., {\"16\":\"123\",\"15\":\"456\"})"
+    required: false
+    type: string
+  version:
+    description: "Version number to extract (e.g., 16, 15)"
+    required: true
+    type: string
+  default_id:
+    description: "Default Qase ID to use if override not found"
+    required: true
+    type: string
+
+outputs:
+  id:
+    description: "Extracted version-specific Qase ID or default"
+    value: ${{ steps.extract.outputs.id }}
+runs:
+  using: composite
+  steps:
+    - id: extract
+      run: |
+        set -euo pipefail
+        
+        OVERRIDE_ID="${{ inputs.qase_test_run_id }}"
+        VERSION="${{ inputs.version }}"
+        DEFAULT_ID="${{ inputs.default_id }}"
+        
+        if [ -z "$OVERRIDE_ID" ]; then
+          echo "No override provided, using default: $DEFAULT_ID"
+          echo "id=$DEFAULT_ID" >> $GITHUB_OUTPUT
+
+          exit 0
+        fi
+
+        # Check if this is mapping Qase ID. If so, extract the version specific ID. Otherwise,
+        # it is not a mapping, so just set the given Qase ID.
+        if echo "$OVERRIDE_ID" | grep -q '^{'; then
+          echo "Detected JSON mapping. Attempting to extract version: $VERSION"          
+          EXTRACTED=$(echo "$OVERRIDE_ID" | grep -oE "$VERSION:[0-9]+" | cut -d: -f2)
+
+          if [ -n "$EXTRACTED" ]; then
+            echo "Successfully extracted Qase ID from mapping: $EXTRACTED"
+            echo "id=$EXTRACTED" >> $GITHUB_OUTPUT
+          else
+            echo "Version $VERSION not found in mapping, using default Qase ID: $DEFAULT_ID"
+            echo "id=$DEFAULT_ID" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "Using plain Qase ID override: $OVERRIDE_ID"
+          echo "id=$OVERRIDE_ID" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
