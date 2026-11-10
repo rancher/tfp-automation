@@ -81,7 +81,7 @@ jobs:
             versions='["16", "15", "14"]'
           else
             case "$RANCHER_VERSION_INPUT" in
-              head) versions='["16"]' ;;
+              v2.16-head) versions='["16"]' ;;
               v2.15-head) versions='["15"]' ;;
               v2.14-head) versions='["14"]' ;;
               *) versions='[]' ;;
@@ -165,6 +165,7 @@ jobs:
           secret-env-vars: |
             DOCKERHUB_USERNAME
             DOCKERHUB_PASSWORD
+            HB_QASE_AUTOMATION_TOKEN
             HB_SSH_PRIVATE_KEY
             HB_SSH_PRIVATE_KEY_NAME
             HB_PRIVATE_FULL_CHAIN
@@ -294,13 +295,21 @@ jobs:
       - name: Creating Rancher server
         run: go run /home/runner/${{ secrets.PATH_TO_REPO }}/tests/rancher2/recurring/createRancherServer.go
 
+      - name: Extract Qase Test Run ID
+        id: extract-qase-id
+        uses: ./.github/actions/extract-qase-id
+        with:
+          qase_test_run_id: ${{ github.event.inputs.qase_test_run_id || inputs.qase_test_run_id }}
+          version: ${{ matrix.version }}
+          default_id: ${{ steps.get-qase-id.outputs.id }}
+
       - name: Run Rancher2 Test Suite
         env:
-          QASE_TEST_RUN_ID: ${{ inputs.qase_test_run_id || steps.get-qase-id.outputs.id }}
-          QASE_AUTOMATION_TOKEN: ${{ secrets.QASE_TOKEN }}
+          QASE_TEST_RUN_ID: ${{ steps.extract-qase-id.outputs.id }}
+          QASE_AUTOMATION_TOKEN: ${{ fromJSON(env.HB_QASE_AUTOMATION_TOKEN).value }}
           QASE_CUSTOM_FIELD_FILTER: Hostbusters
           QASE_SCHEMA_PREFIX: hostbusters
-          QASE_PROJECT_ID: ${{ secrets.HB_QASE_PROJECT_ID }}
+          QASE_PROJECT_ID: ${{ fromJSON(env.HB_QASE_PROJECT_ID).value }}
         uses: ./.github/actions/run-rancher2-test-suite
         with:
           suite: ${{ matrix.suite }}
