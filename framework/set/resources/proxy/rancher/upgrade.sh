@@ -25,8 +25,14 @@ if [[ $RANCHER_TAG_VERSION == v2.11* || $RANCHER_TAG_VERSION == v2.10* ]]; then
 else
     IMAGE_REGISTRY="${RANCHER_IMAGE%%/*}"
 
-    if [[ -n "$RANCHER_AGENT_IMAGE" || "$RANCHER_IMAGE" == registry* ]]; then
-        IMAGE_REPOSITORY="rancher/rancher"
+    if [[ -n "$RANCHER_AGENT_IMAGE" ]]; then
+        VERSION_NUMBERS=$(echo "$RANCHER_TAG_VERSION" | sed 's/^v//' | cut -d. -f1,2)
+        
+        if (( $(echo "$VERSION_NUMBERS >= 2.16" | bc -l) )); then
+            IMAGE_REPOSITORY="rancher/rancher-server"
+        else
+            IMAGE_REPOSITORY="rancher/rancher"
+        fi
     else
         IMAGE_REPOSITORY="${RANCHER_IMAGE#*/}"
     fi

@@ -92,13 +92,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	}
 
 	file = sanity.OpenFile(file, keyPath)
-	if terraformConfig.LocalCluster == "k3s" {
+	switch terraformConfig.LocalCluster {
+	case "k3s":
 		logrus.Infof("Creating K3S cluster...")
 		file, err = k3s.CreateAirgapK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, registryPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 		if err != nil {
 			return "", "", err
 		}
-	} else if terraformConfig.LocalCluster == "rke2" {
+	case "rke2":
 		logrus.Infof("Creating RKE2 cluster...")
 		file, err = rke2.CreateAirgapRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, registryPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 		if err != nil {
