@@ -259,6 +259,7 @@ jobs:
             standalone:
               chartVersion: "${{ env.RANCHER_CHART_VERSION }}"
               k3sVersion: "${{ fromJSON(env[format('HB_K3S_VERSION_2_{0}', matrix.version)]).value }}${{ fromJSON(env.HB_K3S_VERSION_SUFFIX).value }}"
+              rancherImage: "${{ matrix.version >= '16' && '<HB_PRIME_HEAD_RANCHER_SERVER_IMAGE>' || '<HB_PRIME_HEAD_RANCHER_IMAGE>' }}"
               rancherTagVersion: "${{ env.RANCHER_VERSION }}"
               registryPassword: "${{ env.DOCKERHUB_PASSWORD }}"
               registryUsername: "${{ env.DOCKERHUB_USERNAME }}"
