@@ -101,7 +101,14 @@ fetch_images() {
     create_ecr_repositories
 
     if [ ! -z "${RANCHER_AGENT_IMAGE}" ]; then
-        sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
+        VERSION_NUMBERS=$(echo "$RANCHER_VERSION" | sed 's/^v//' | cut -d. -f1,2)
+        
+        if (( $(echo "$VERSION_NUMBERS >= 2.16" | bc -l) )); then
+            sudo sed -i "s|rancher/rancher-server:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
+        else
+            sudo sed -i "s|rancher/rancher:|${RANCHER_IMAGE}:|g" /home/${USER}/rancher-images.txt
+        fi
+        
         sudo sed -i "s|rancher/rancher-agent:|${RANCHER_AGENT_IMAGE}:|g" /home/${USER}/rancher-images.txt
     fi
 }
