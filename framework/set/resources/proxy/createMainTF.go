@@ -74,12 +74,13 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 
 	file = sanity.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")
-	if terraformConfig.LocalCluster == "k3s" {
+	switch terraformConfig.LocalCluster {
+	case "k3s":
 		file, err = k3sSquid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 		if err != nil {
 			return "", "", err
 		}
-	} else if terraformConfig.LocalCluster == "rke2" {
+	case "rke2":
 		file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 		if err != nil {
 			return "", "", err

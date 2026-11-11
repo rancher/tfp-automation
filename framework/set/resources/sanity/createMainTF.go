@@ -85,13 +85,14 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	serverThreePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicIP)
 
 	file = OpenFile(file, keyPath)
-	if terraformConfig.LocalCluster == "k3s" {
+	switch terraformConfig.LocalCluster {
+	case "k3s":
 		logrus.Infof("Creating K3S cluster...")
 		file, err = k3s.CreateK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
 		if err != nil {
 			return "", err
 		}
-	} else if terraformConfig.LocalCluster == "rke2" {
+	case "rke2":
 		logrus.Infof("Creating RKE2 cluster...")
 		file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
 		if err != nil {
