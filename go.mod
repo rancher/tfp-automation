@@ -38,7 +38,7 @@ replace (
 	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.37.2
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.37.2
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.14.4
-	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.3
+	sigs.k8s.io/cluster-api/api => sigs.k8s.io/cluster-api/api v1.14.4
 )
 
 require (
