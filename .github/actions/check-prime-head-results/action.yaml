@@ -14,19 +14,13 @@ outputs:
   failed_workflows_v215:
     description: "Comma-separated list of workflows that need v2.15 re-run"
     value: ${{ steps.check-releases.outputs.failed_workflows_v215 }}
-  complete_v214:
-    description: "Whether v2.14 prime head release testing is complete"
-    value: ${{ steps.check-releases.outputs.complete_v214 }}
-  failed_workflows_v214:
-    description: "Comma-separated list of workflows that need v2.14 re-run"
-    value: ${{ steps.check-releases.outputs.failed_workflows_v214 }}
 
 runs:
   using: composite
   steps:
     - id: check-releases
       env:
-        SANITIZED_RELEASES: "v215 v214"
+        SANITIZED_RELEASES: "v215"
         GH_TOKEN: ${{ github.token }}
       run: |
         WORKFLOWS="${{ inputs.dispatch-workflow-list }}"
@@ -66,7 +60,6 @@ runs:
             MATRIX_VERSION=""
             case "$release" in
               v215) MATRIX_VERSION="15" ;;
-              v214) MATRIX_VERSION="14" ;;
             esac
             JOB_NAME="v2-${MATRIX_VERSION}"
 
