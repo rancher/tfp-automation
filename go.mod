@@ -55,7 +55,7 @@ require (
 	github.com/rancher/tests/actions v0.0.0-20260925190906-17002625ce49
 	github.com/sirupsen/logrus v1.10.2
 	github.com/stretchr/testify v1.12.1
-	github.com/zclconf/go-cty v1.19.0
+	github.com/zclconf/go-cty v1.20.0
 	golang.org/x/crypto v0.59.0
 	golang.org/x/text v0.44.0
 	gopkg.in/yaml.v3 v3.0.1
