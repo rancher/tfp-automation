@@ -17,6 +17,8 @@ DOCKERHUB_PASS=${14}
 RANCHER_AGENT_IMAGE=${15}
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 REGISTRY_HOST="${REGISTRY%%/*}"
 REGISTRY_PATH="${REGISTRY#*/}"
@@ -31,7 +33,7 @@ fi
 
 set -e
 
-retryCmd() {
+retry_cmd() {
   local attempt=1
   local rc=0
 
@@ -55,13 +57,18 @@ retryCmd() {
   return "$rc"
 }
 
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+    if ! command -v "$pkg" &> /dev/null; then
+        MISSING_PACKAGES+=("$pkg")
+    fi
+done
+
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+    echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+    exit 1
+fi
+
 if [[ $REPO == "prime-release" ]]; then
-  . /etc/os-release
-
-  [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-  [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-  [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
   HEAD_SERIES=""
   if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
       HEAD_SERIES="${BASH_REMATCH[1]}"
@@ -129,10 +136,10 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-retryCmd curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-retryCmd curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
-retryCmd curl -fsSL --max-time 30 -o /home/${USER}/install.sh https://get.rke2.io
+retry_cmd curl -fsSL --max-time 30 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+retry_cmd curl -fsSL --max-time 30 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+retry_cmd curl -fsSL --max-time 30 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+retry_cmd curl -fsSL --max-time 30 -o /home/${USER}/install.sh https://get.rke2.io
 
 echo "Validating checksum for rke2-images.linux-${ARCH}.tar.zst"
 ZIP_NAME="rke2-images.linux-${ARCH}.tar.zst"
@@ -147,9 +154,9 @@ CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
 echo "$CHECKSUM  /home/${USER}/rke2-images.linux-${ARCH}.tar.zst" | sha256sum -c -
 
 sudo chmod +x /home/${USER}/install.sh
-retryCmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh /home/${USER}/install.sh
-retryCmd sudo systemctl enable rke2-server
-retryCmd sudo systemctl start rke2-server
+retry_cmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh /home/${USER}/install.sh
+retry_cmd sudo systemctl enable rke2-server
+retry_cmd sudo systemctl start rke2-server
 
 sudo tee /etc/docker/daemon.json > /dev/null << EOF
 {
@@ -160,8 +167,8 @@ EOF
 sudo systemctl restart docker && sudo systemctl daemon-reload
 
 if [ -n "${REGISTRY_USERNAME}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
-  sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
-  sudo docker login https://${REGISTRY_HOST} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
+  docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
+  docker login https://${REGISTRY_HOST} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
 fi
 
 if [ -n "$RANCHER_AGENT_IMAGE" ]; then
@@ -169,7 +176,7 @@ if [ -n "$RANCHER_AGENT_IMAGE" ]; then
     RANCHER_TAG_VERSION="v${LATEST_CHART_VERSION}"
   fi
 
-  sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}
-  sudo docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}
+  docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}
+  docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}
   sudo systemctl restart rke2-server
 fi

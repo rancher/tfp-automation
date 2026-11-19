@@ -14,8 +14,8 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/providers/aws"
 	proxy "github.com/rancher/tfp-automation/framework/set/resources/proxy/rancher"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
-	sanityRancher "github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
+	standardRancher "github.com/rancher/tfp-automation/framework/set/resources/standard/rancher"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,7 +29,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig, serverNode, proxyNode, bastionNode,
 	registryNode string) error {
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -44,7 +44,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	aws.CreateAWSProviderBlock(rootBody, terraformConfig)
 	rootBody.AppendNewline()
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	switch {
 	case terraformConfig.Standalone.UpgradeAirgapRancher:
 		logrus.Infof("Updating private registry...")
@@ -60,7 +60,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 			return err
 		}
 
-		file = sanity.OpenFile(file, keyPath)
+		file = standard.OpenFile(file, keyPath)
 		logrus.Infof("Upgrading Airgap Rancher...")
 		file, err = airgap.UpgradeAirgapRancher(file, newFile, rootBody, terraformConfig, terratestConfig, registryNode, bastionNode)
 		if err != nil {
@@ -88,7 +88,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		}
 	case terraformConfig.Standalone.UpgradeRancher, terraformConfig.Standalone.UpgradeDualStackRancher, terraformConfig.Standalone.UpgradeIPv6Rancher:
 		logrus.Infof("Upgrading Rancher...")
-		_, err := sanityRancher.UpgradeRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverNode)
+		_, err := standardRancher.UpgradeRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverNode)
 		if err != nil {
 			return err
 		}

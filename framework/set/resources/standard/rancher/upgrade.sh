@@ -8,7 +8,6 @@ CHART_VERSION=$5
 RANCHER_IMAGE=$6
 RANCHER_AGENT_IMAGE=${7}
 UPGRADED_MCM=${8}
-
 USER=$(whoami)
 INGRESS_TLS_SOURCE=""
 
@@ -41,6 +40,22 @@ else
 fi
 
 set -ex
+
+check_packages() {
+    REQUIRED_PACKAGES=("yq" "helm" "kubectl" "curl")
+    MISSING_PACKAGES=()
+
+    for pkg in "${REQUIRED_PACKAGES[@]}"; do
+        if ! command -v "$pkg" &> /dev/null; then
+            MISSING_PACKAGES+=("$pkg")
+        fi
+    done
+
+    if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+        echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+        exit 1
+    fi
+}
 
 setup_helm_repo() {
     echo "Adding Helm chart repo"
@@ -137,15 +152,10 @@ wait_for_rancher() {
     sleep 15
 }
 
+check_packages
 setup_helm_repo
 
 if [[ $REPO == "prime-release" ]]; then
-    . /etc/os-release
-
-    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
     HEAD_SERIES=""
     if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
         HEAD_SERIES="${BASH_REMATCH[1]}"

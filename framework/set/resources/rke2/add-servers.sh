@@ -13,13 +13,14 @@ ETCD_S3_SECRET_KEY=${10}
 ETCD_S3_ENDPOINT=${11}
 ETCD_S3_BUCKET=${12}
 ETCD_S3_REGION=${13}
-
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 set -e
 
-retryCmd() {
+retry_cmd() {
   local attempt=1
   local rc=0
 
@@ -43,6 +44,17 @@ retryCmd() {
   return "$rc"
 }
 
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+  if ! command -v "$pkg" &> /dev/null; then
+    MISSING_PACKAGES+=("$pkg")
+  fi
+done
+
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+  echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+  exit 1
+fi
+
 sudo hostnamectl set-hostname ${RKE2_NEW_SERVER_IP}
 
 ARCH=$(uname -m)
@@ -52,9 +64,9 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-retryCmd curl -fsSL --max-time 120 -o rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-retryCmd curl -fsSL --max-time 120 -o rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-retryCmd curl -fsSL --max-time 120 -o sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+retry_cmd curl -fsSL --max-time 120 -o rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+retry_cmd curl -fsSL --max-time 120 -o rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+retry_cmd curl -fsSL --max-time 120 -o sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 
 echo "Validating checksum for rke2.linux-${ARCH}.tar.gz"
 ZIP_NAME="rke2.linux-${ARCH}.tar.gz"
@@ -114,9 +126,9 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee /etc/rancher/rke2/registries.yaml > /dev/null
 
-retryCmd curl -fsSL --max-time 120 -o install.sh https://get.rke2.io
+retry_cmd curl -fsSL --max-time 120 -o install.sh https://get.rke2.io
 chmod +x install.sh
 
-retryCmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh
-retryCmd sudo systemctl enable rke2-server
-retryCmd sudo systemctl start rke2-server
+retry_cmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh
+retry_cmd sudo systemctl enable rke2-server
+retry_cmd sudo systemctl start rke2-server

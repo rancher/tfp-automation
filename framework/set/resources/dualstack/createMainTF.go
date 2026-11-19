@@ -14,8 +14,8 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/dualstack/k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/dualstack/rke2"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard/rancher"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ const (
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *shepherdConfig.Config,
 	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, error) {
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -66,7 +66,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	serverTwoPublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPublicIP)
 	serverThreePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicIP)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	if terraformConfig.LocalCluster == "k3s" {
 		logrus.Infof("Creating K3S cluster...")
 		file, err = k3s.CreateK3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP, serverOnePrivateIP, serverTwoPublicIP, serverThreePublicIP)
@@ -88,7 +88,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP)
 	if err != nil {

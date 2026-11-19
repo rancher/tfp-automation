@@ -15,7 +15,7 @@ SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
-runSSH() {
+run_ssh() {
   local server="$1"
   local cmd="$2"
   local attempt=1
@@ -49,7 +49,7 @@ runSSH() {
   return "$rc"
 }
 
-setupConfig() {
+setup_config() {
     sudo mkdir -p /etc/rancher/k3s
     sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
 token: ${K3S_TOKEN}
@@ -60,7 +60,7 @@ tls-san:
 EOF
 }
 
-setupRegistry() {
+setup_registry() {
   sudo tee /etc/rancher/k3s/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
@@ -78,7 +78,7 @@ configs:
 EOF
 }
 
-setupProxy() {
+setup_proxy() {
   cat <<EOF | sudo tee /etc/default/k3s > /dev/null
 HTTP_PROXY=http://${BASTION}:${PORT}
 HTTPS_PROXY=http://${BASTION}:${PORT}
@@ -91,27 +91,26 @@ https_proxy=http://${BASTION}:${PORT}
 EOF
 }
 
-runSSH "${K3S_SERVER_ONE_IP}" "sudo hostnamectl set-hostname ${K3S_SERVER_ONE_IP}"
-runSSH "${K3S_SERVER_ONE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
-runSSH "${K3S_SERVER_ONE_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
+run_ssh "${K3S_SERVER_ONE_IP}" "sudo hostnamectl set-hostname ${K3S_SERVER_ONE_IP}"
+run_ssh "${K3S_SERVER_ONE_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
 
-configFunction=$(declare -f setupConfig)
-runSSH "${K3S_SERVER_ONE_IP}" "${configFunction}; setupConfig"
+configFunction=$(declare -f setup_config)
+run_ssh "${K3S_SERVER_ONE_IP}" "${configFunction}; setup_config"
 
-registryFunction=$(declare -f setupRegistry)
-runSSH "${K3S_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
+registryFunction=$(declare -f setup_registry)
+run_ssh "${K3S_SERVER_ONE_IP}" "${registryFunction}; setup_registry"
 
-setupProxyFunction=$(declare -f setupProxy)
-runSSH "${K3S_SERVER_ONE_IP}" "${setupProxyFunction}; setupProxy"
+setupProxyFunction=$(declare -f setup_proxy)
+run_ssh "${K3S_SERVER_ONE_IP}" "${setupProxyFunction}; setup_proxy"
 
-runSSH "${K3S_SERVER_ONE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
+run_ssh "${K3S_SERVER_ONE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
 
-runSSH "${K3S_SERVER_ONE_IP}" "sudo mkdir -p /home/${USER}/.kube"
-runSSH "${K3S_SERVER_ONE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USER}/.kube/config"
-runSSH "${K3S_SERVER_ONE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
+run_ssh "${K3S_SERVER_ONE_IP}" "sudo mkdir -p /home/${USER}/.kube"
+run_ssh "${K3S_SERVER_ONE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USER}/.kube/config"
+run_ssh "${K3S_SERVER_ONE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
 
 if [ ! -s ~/.kube/config ]; then
-  runSSH "${K3S_SERVER_ONE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
+  run_ssh "${K3S_SERVER_ONE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
 fi
 
 sed -i "s|server: https://127.0.0.1:6443|server: https://${K3S_SERVER_ONE_IP}:6443|" ~/.kube/config

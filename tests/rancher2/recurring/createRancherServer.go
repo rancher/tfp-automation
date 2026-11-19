@@ -66,7 +66,7 @@ func main() {
 
 func setupRancher(t *testing.T, cattleConfig map[string]any) (*rancher.Client, string, *terraform.Options, *terraform.Options, map[string]any, error) {
 	testSession := session.NewSession()
-	client, serverNodeOne, standaloneTerraformOptions, terraformOptions, returnCattleConfig := setupstandard.SetupRancher(t, testSession, keypath.SanityKeyPath, cattleConfig)
+	client, serverNodeOne, standaloneTerraformOptions, terraformOptions, returnCattleConfig := setupstandard.SetupRancher(t, testSession, keypath.StandardKeyPath, cattleConfig)
 
 	return client, serverNodeOne, standaloneTerraformOptions, terraformOptions, returnCattleConfig, nil
 }

@@ -2,14 +2,26 @@
 
 K8S_VERSION=$1
 K3S_SERVER_ONE_IP=$2
-
 ARGS=("$@")
 ARG_COUNT=$#
 USER=${ARGS[$((ARG_COUNT - 2))]}
 PEM_FILE=${ARGS[$((ARG_COUNT - 1))]}
 K3S_SERVER_ADDITIONAL_IPS=("${ARGS[@]:2:$((ARG_COUNT - 4))}")
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 set -e
+
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+  if ! command -v "$pkg" &> /dev/null; then
+    MISSING_PACKAGES+=("$pkg")
+  fi
+done
+
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+  echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+  exit 1
+fi
 
 base64 -d <<< "$PEM_FILE" > /home/$USER/airgap.pem
 PEM=/home/$USER/airgap.pem
@@ -45,15 +57,7 @@ fi
 CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
 echo "$CHECKSUM k3s-airgap-images-${ARCH}.tar.gz" | sha256sum -c -
 
-echo "Installing kubectl"
-KUBECTL_VERSION="v1.36.0"
-curl -fsSL --max-time 120 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-curl -fsSL --max-time 120 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
-echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
-sudo chmod +x kubectl
-
 echo "Copying files to K3S server one"
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubectl ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-amd64.tar.gz ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/

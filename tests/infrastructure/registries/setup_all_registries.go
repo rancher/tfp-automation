@@ -16,7 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -56,7 +56,7 @@ func SetupAllRegistries(t *testing.T, provider string) error {
 	terraformConfig.StandaloneRegistry.Enabled = true
 
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -83,28 +83,28 @@ func SetupAllRegistries(t *testing.T, provider string) error {
 	globalRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, globalRegistryPublicDNS)
 	ecrRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, ecrRegistryPublicDNS)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating unauthenticated registry...")
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, unauthRegistryPublicDNS, unauthRegistry, "", false)
 	require.NoError(t, err)
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating global registry...")
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, globalRegistryPublicDNS, globalRegistry, "", false)
 	require.NoError(t, err)
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")
 	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, authRegistry, authRegistryPublicDNS, false)
 	require.NoError(t, err)
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating ecr registry...")
 	file, err = registry.CreateECRRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, ecrRegistryPublicDNS)
 	require.NoError(t, err)

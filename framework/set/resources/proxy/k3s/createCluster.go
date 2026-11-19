@@ -11,7 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework/set/defaults/general"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	sanity "github.com/rancher/tfp-automation/framework/set/resources/rke2"
+	standard "github.com/rancher/tfp-automation/framework/set/resources/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -58,7 +58,7 @@ func CreateK3SCluster(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.
 // createK3SServer is a helper function that will create the K3S server.
 func createK3SServer(rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig, k3sBastionPublicDNS,
 	k3sBastionPrivateIP, k3sServerOnePrivateIP, k3sToken string, script []byte) {
-	_, provisionerBlockBody := sanity.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicDNS, k3sServerOne)
+	_, provisionerBlockBody := standard.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicDNS, k3sServerOne)
 
 	command := "/tmp/init-server.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.OSGroup + " " +
 		terraformConfig.Standalone.K3SVersion + " " + k3sServerOnePrivateIP + " " + k3sToken + " " +
@@ -79,7 +79,7 @@ func addK3SServerNodes(rootBody *hclwrite.Body, terraformConfig *config.Terrafor
 
 	for i, instance := range instances {
 		host := hosts[i]
-		nullResourceBlockBody, provisionerBlockBody := sanity.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicDNS, host)
+		nullResourceBlockBody, provisionerBlockBody := standard.SSHNullResource(rootBody, terraformConfig, k3sBastionPublicDNS, host)
 
 		command := "/tmp/add-servers.sh " + terraformConfig.Standalone.OSUser + " " + terraformConfig.Standalone.K3SVersion + " " +
 			k3sServerOnePrivateIP + " " + instance + " " + k3sToken + " " + k3sBastionPrivateIP + " " + terraformConfig.Standalone.RegistryUsername + " " +

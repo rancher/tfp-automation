@@ -9,8 +9,21 @@ PEM_FILE=$6
 REPO=$7
 RANCHER_TAG_VERSION=$8
 RANCHER_CHART_REPO=$9
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 set -e
+
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+    if ! command -v "$pkg" &> /dev/null; then
+        MISSING_PACKAGES+=("$pkg")
+    fi
+done
+
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+    echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+    exit 1
+fi
 
 base64 -d <<< $PEM_FILE > /home/$USER/airgap.pem
 PEM=/home/$USER/airgap.pem
@@ -25,12 +38,6 @@ curl -fsSL --max-time 30 -o sha256sum-arm64.txt https://github.com/k3s-io/k3s/re
 curl -fsSL --max-time 30 -o install.sh https://get.k3s.io
 
 if [[ $REPO == "prime-release" ]]; then
-    . /etc/os-release
-
-    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
     HEAD_SERIES=""
     if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
         HEAD_SERIES="${BASH_REMATCH[1]}"
@@ -79,15 +86,7 @@ fi
 CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
 echo "$CHECKSUM k3s-airgap-images-${ARCH}.tar.gz" | sha256sum -c -
 
-echo "Installing kubectl"
-KUBECTL_VERSION="v1.36.0"
-curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
-echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
-sudo chmod +x kubectl
-
 echo "Copying files to K3S server one"
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubectl ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null k3s-airgap-images-amd64.tar.gz ${USER}@${K3S_SERVER_ONE_IP}:/home/${USER}/
@@ -118,5 +117,3 @@ if [[ $REPO == "prime-release" ]]; then
 fi
 
 mkdir -p ~/.kube
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-rm kubectl

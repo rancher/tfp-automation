@@ -19,6 +19,6 @@ const (
 	RKEKeyPath           = "/modules/rke"
 	RKE2KeyPath          = "/modules/rke2"
 	RancherKeyPath       = "/modules/rancher2"
-	SanityKeyPath        = "/modules/sanity"
+	StandardKeyPath      = "/modules/standard"
 	UpgradeKeyPath       = "/modules/upgrade"
 )

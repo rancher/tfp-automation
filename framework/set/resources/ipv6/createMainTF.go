@@ -14,8 +14,8 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/ipv6/k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/ipv6/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard/rancher"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,7 +41,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, error) {
 	var file *os.File
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -73,15 +73,16 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	serverThreePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePrivateIP)
 	serverThreePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicIP)
 
-	file = sanity.OpenFile(file, keyPath)
-	if terraformConfig.LocalCluster == "k3s" {
+	file = standard.OpenFile(file, keyPath)
+	switch terraformConfig.LocalCluster {
+	case "k3s":
 		logrus.Infof("Creating K3S cluster...")
 		file, err = k3s.CreateIPv6K3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicIP, serverOnePublicIP, serverTwoPublicIP, serverThreePublicIP,
 			serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 		if err != nil {
 			return "", err
 		}
-	} else if terraformConfig.LocalCluster == "rke2" {
+	case "rke2":
 		logrus.Infof("Creating RKE2 cluster...")
 		file, err = rke2.CreateIPv6RKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicIP, serverOnePublicIP, serverTwoPublicIP, serverThreePublicIP,
 			serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
@@ -98,7 +99,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	}
 
 	logrus.Infof("Creating Rancher server...")
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicIP)
 	if err != nil {
 		return "", err

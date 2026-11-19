@@ -16,7 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/hosted/gke"
 	"github.com/rancher/tfp-automation/framework/set/resources/hosted/rancher"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,7 +32,7 @@ const (
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *shepherdConfig.Config,
 	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, error) {
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -57,7 +57,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	}
 
 	serverOnePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverOnePublicIP)
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating Hosted cluster...")
 	file, err = cluster.CreateHostedCluster(file, newFile, rootBody, terraformConfig, serverOnePublicIP, terratestConfig)
 	if err != nil {
@@ -71,7 +71,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicIP)
 	if err != nil {

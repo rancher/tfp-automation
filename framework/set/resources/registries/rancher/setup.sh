@@ -63,21 +63,20 @@ fi
 
 set -ex
 
-install_kubectl() {
-    ARCH=$(uname -m)
-    if [[ $ARCH == "x86_64" ]]; then
-        ARCH="amd64"
-    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-        ARCH="arm64"
+check_packages() {
+    REQUIRED_PACKAGES=("docker" "yq" "helm" "kubectl" "curl")
+    MISSING_PACKAGES=()
+
+    for pkg in "${REQUIRED_PACKAGES[@]}"; do
+        if ! command -v "$pkg" &> /dev/null; then
+            MISSING_PACKAGES+=("$pkg")
+        fi
+    done
+
+    if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+        echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+        exit 1
     fi
-
-    echo "Installing kubectl"
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    mkdir -p ~/.kube
-    rm kubectl
-
-    kubectl create ns cattle-system
 }
 
 check_cluster_status() {
@@ -107,14 +106,6 @@ check_cluster_status() {
     done
 }
 
-install_helm() {
-    echo "Installing Helm"
-    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    chmod +x get_helm.sh
-    ./get_helm.sh
-    rm get_helm.sh
-}
-
 setup_helm_repo() {
     echo "Adding Helm chart repo"
     if [ "$REPO" == "prime-release" ]; then
@@ -132,8 +123,8 @@ docker_login() {
 sudo tee /etc/docker/daemon.json >/dev/null
     
     sudo systemctl restart docker && sudo systemctl daemon-reload
-    sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
-    sudo docker login https://${REGISTRY_HOST} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
+    docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASS}"
+    docker login https://${REGISTRY_HOST} -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}"
 }
 
 install_cert_manager() {
@@ -225,18 +216,11 @@ wait_for_rancher() {
     sleep 180
 }
 
-install_kubectl
+check_packages
 check_cluster_status
-install_helm
 setup_helm_repo
 
 if [[ $REPO == "prime-release" ]]; then
-    . /etc/os-release
-
-    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
     HEAD_SERIES=""
     if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
         HEAD_SERIES="${BASH_REMATCH[1]}"

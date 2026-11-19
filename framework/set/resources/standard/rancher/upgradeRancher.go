@@ -21,9 +21,9 @@ const (
 // UpgradeRancher is a function that will upgrade the Rancher configurations in the main.tf file.
 func UpgradeRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, rke2ServerOnePublicIP string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	userDir, _ := rancher2.SetKeyPath(keypath.StandardKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/sanity/rancher/upgrade.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/standard/rancher/upgrade.sh")
 
 	scriptContent, err := os.ReadFile(scriptPath)
 	if err != nil {

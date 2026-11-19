@@ -17,7 +17,7 @@ SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
-runSSH() {
+run_ssh() {
   local server="$1"
   local cmd="$2"
   local attempt=1
@@ -53,7 +53,7 @@ runSSH() {
   return "$rc"
 }
 
-setupConfig() {
+setup_config() {
     sudo mkdir -p /etc/rancher/k3s
     sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
 write-kubeconfig-mode: 644
@@ -66,7 +66,7 @@ tls-san:
 EOF
 }
 
-setupRegistry() {
+setup_registry() {
   sudo tee /etc/rancher/k3s/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
@@ -84,12 +84,12 @@ configs:
 EOF
 }
 
-runSSH "${K3S_NEW_SERVER_PRIVATE_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
+run_ssh "${K3S_NEW_SERVER_PRIVATE_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
 
-configFunction=$(declare -f setupConfig)
-runSSH "${K3S_NEW_SERVER_PRIVATE_IP}" "${configFunction}; setupConfig"
+configFunction=$(declare -f setup_config)
+run_ssh "${K3S_NEW_SERVER_PRIVATE_IP}" "${configFunction}; setup_config"
 
-registryFunction=$(declare -f setupRegistry)
-runSSH "${K3S_NEW_SERVER_PRIVATE_IP}" "${registryFunction}; setupRegistry"
+registryFunction=$(declare -f setup_registry)
+run_ssh "${K3S_NEW_SERVER_PRIVATE_IP}" "${registryFunction}; setup_registry"
 
-runSSH "${K3S_NEW_SERVER_PRIVATE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=\"server --server https://[${K3S_SERVER_ONE_PUBLIC_IP}]:6443\" INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
+run_ssh "${K3S_NEW_SERVER_PRIVATE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=\"server --server https://[${K3S_SERVER_ONE_PUBLIC_IP}]:6443\" INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"

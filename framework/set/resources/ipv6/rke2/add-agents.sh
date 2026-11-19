@@ -18,7 +18,7 @@ SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
-runSSH() {
+run_ssh() {
   local server="$1"
   local cmd="$2"
   local attempt=1
@@ -55,7 +55,7 @@ runSSH() {
   return "$rc"
 }
 
-setupConfig() {
+setup_config() {
     sudo mkdir -p /etc/rancher/rke2
     sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
 server: https://[${RKE2_SERVER_ONE_PUBLIC_IP}]:9345
@@ -71,7 +71,7 @@ tls-san:
 EOF
 }
 
-setupRegistry() {
+setup_registry() {
   sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
@@ -89,12 +89,12 @@ configs:
 EOF
 }
 
-configFunction=$(declare -f setupConfig)
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "${configFunction}; setupConfig"
+configFunction=$(declare -f setup_config)
+run_ssh "${RKE2_NEW_SERVER_PRIVATE_IP}" "${configFunction}; setup_config"
 
-registryFunction=$(declare -f setupRegistry)
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "${registryFunction}; setupRegistry"
+registryFunction=$(declare -f setup_registry)
+run_ssh "${RKE2_NEW_SERVER_PRIVATE_IP}" "${registryFunction}; setup_registry"
 
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} INSTALL_RKE2_TYPE=\"agent\" sh install.sh"
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo systemctl enable rke2-agent"
-runSSH "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo systemctl start rke2-agent"
+run_ssh "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} INSTALL_RKE2_TYPE=\"agent\" sh install.sh"
+run_ssh "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo systemctl enable rke2-agent"
+run_ssh "${RKE2_NEW_SERVER_PRIVATE_IP}" "sudo systemctl start rke2-agent"

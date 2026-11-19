@@ -15,7 +15,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/proxy/rke2/squid"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -36,7 +36,7 @@ func CreateProxyRKE2Cluster(t *testing.T, provider string) error {
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -59,14 +59,14 @@ func CreateProxyRKE2Cluster(t *testing.T, provider string) error {
 	serverTwoPrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPrivateIP)
 	serverThreePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePrivateIP)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating squid proxy...")
 	file, err = squid.CreateSquidProxy(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(t, err)
 
 	terraform.InitAndApplyContext(t, context.Background(), terraformOptions)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, bastionPrivateIP, serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)
 	require.NoError(t, err)
