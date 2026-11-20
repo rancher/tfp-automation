@@ -14,7 +14,6 @@ CERT_KEY_FILE=${11}
 RANCHER_AGENT_IMAGE=${12}
 PROXY_PORT="3228"
 NO_PROXY="localhost\\,127.0.0.0/8\\,10.0.0.0/8\\,172.0.0.0/8\\,192.168.0.0/16\\,.svc\\,.cluster.local\\,cattle-system.svc\\,169.254.169.254"
-
 USER=$(whoami)
 INGRESS_TLS_SOURCE=""
 
@@ -60,22 +59,20 @@ fi
 
 set -ex
 
-install_kubectl() {
-    ARCH=$(uname -m)
-    if [[ $ARCH == "x86_64" ]]; then
-        ARCH="amd64"
-    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-        ARCH="arm64"
-    fi
+check_packages() {
+    REQUIRED_PACKAGES=("yq" "helm" "kubectl" "curl")
+    MISSING_PACKAGES=()
 
-    echo "Installing kubectl"
-    KUBECTL_VERSION="v1.36.0"
-    curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-    curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
-    echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    mkdir -p ~/.kube
-    rm kubectl
+    for pkg in "${REQUIRED_PACKAGES[@]}"; do
+        if ! command -v "$pkg" &> /dev/null; then
+            MISSING_PACKAGES+=("$pkg")
+        fi
+    done
+
+    if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+        echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+        exit 1
+    fi
 }
 
 check_cluster_status() {
@@ -103,26 +100,6 @@ check_cluster_status() {
             break
         fi
     done
-}
-
-install_helm() {
-    HELM_VERSION="v4.1.4"
-    ARCH=$(uname -m)
-    if [[ $ARCH == "x86_64" ]]; then
-        ARCH="amd64"
-    elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-        ARCH="arm64"
-    fi
-
-    echo "Installing Helm"
-    curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
-    curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256 https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
-
-    echo "$(cat helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256) helm-${HELM_VERSION}-linux-${ARCH}.tar.gz" | sha256sum -c
-    tar -xf helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
-    sudo mv linux-${ARCH}/helm /usr/local/bin/helm
-    rm -rf linux-${ARCH} helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
-    rm helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
 }
 
 setup_helm_repo() {
@@ -220,18 +197,11 @@ wait_for_rancher() {
     sleep 180
 }
 
-install_kubectl
+check_packages
 check_cluster_status
-install_helm
 setup_helm_repo
 
 if [[ $REPO == "prime-release" ]]; then
-    . /etc/os-release
-
-    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
     HEAD_SERIES=""
     if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
         HEAD_SERIES="${BASH_REMATCH[1]}"

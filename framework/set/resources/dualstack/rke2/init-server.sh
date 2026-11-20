@@ -12,10 +12,12 @@ CLUSTER_CIDR=$9
 SERVICE_CIDR=${10}
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 set -e
 
-retryCmd() {
+retry_cmd() {
   local attempt=1
   local rc=0
 
@@ -39,6 +41,17 @@ retryCmd() {
   return "$rc"
 }
 
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+  if ! command -v "$pkg" &> /dev/null; then
+    MISSING_PACKAGES+=("$pkg")
+  fi
+done
+
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+  echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+  exit 1
+fi
+
 sudo hostnamectl set-hostname ${RKE2_SERVER_IP}
 
 ARCH=$(uname -m)
@@ -48,16 +61,9 @@ elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
     ARCH="arm64"
 fi
 
-echo "Installing kubectl"
-KUBECTL_VERSION="v1.36.0"
-retryCmd curl -fsSL --max-time 120 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-retryCmd curl -fsSL --max-time 120 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
-echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-
-retryCmd curl -fsSL --max-time 120 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
-retryCmd curl -fsSL --max-time 120 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
-retryCmd curl -fsSL --max-time 120 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
+retry_cmd curl -fsSL --max-time 120 -o /home/${USER}/rke2.linux-${ARCH}.tar.gz https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2.linux-${ARCH}.tar.gz
+retry_cmd curl -fsSL --max-time 120 -o /home/${USER}/rke2-images.linux-${ARCH}.tar.zst https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/rke2-images.linux-${ARCH}.tar.zst
+retry_cmd curl -fsSL --max-time 120 -o /home/${USER}/sha256sum-${ARCH}.txt https://github.com/rancher/rke2/releases/download/${K8S_VERSION}+rke2r1/sha256sum-${ARCH}.txt
 
 echo "Validating checksum for rke2-images.linux-${ARCH}.tar.zst"
 ZIP_NAME="rke2-images.linux-${ARCH}.tar.zst"
@@ -96,12 +102,12 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee /etc/rancher/rke2/registries.yaml > /dev/null
 
-retryCmd curl -sfL https://get.rke2.io --output /home/${USER}/install.sh
+retry_cmd curl -sfL https://get.rke2.io --output /home/${USER}/install.sh
 chmod +x /home/${USER}/install.sh
 
-retryCmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh /home/${USER}/install.sh
-retryCmd sudo systemctl enable rke2-server
-retryCmd sudo systemctl start rke2-server
+retry_cmd sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh /home/${USER}/install.sh
+retry_cmd sudo systemctl enable rke2-server
+retry_cmd sudo systemctl start rke2-server
 
 if [[ "${USER}" == "root" ]]; then
   sudo mkdir -p /root/.kube

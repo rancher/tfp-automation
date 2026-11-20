@@ -14,7 +14,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -37,7 +37,7 @@ func SetupAuthenticatedRegistry(t *testing.T, provider string) error {
 	terraformConfig.StandaloneRegistry.Enabled = true
 
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -56,7 +56,7 @@ func SetupAuthenticatedRegistry(t *testing.T, provider string) error {
 
 	authRegistryPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, authRegistryPublicDNS)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")
 	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, authRegistry, authRegistryPublicDNS, false)
 	require.NoError(t, err)

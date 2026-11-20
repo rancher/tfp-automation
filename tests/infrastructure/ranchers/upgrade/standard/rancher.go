@@ -11,7 +11,7 @@ import (
 	"github.com/rancher/tfp-automation/defaults/keypath"
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	resources "github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	resources "github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/rancher/tfp-automation/framework/set/resources/upgrade"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rancherinternal "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/internal"
@@ -29,7 +29,7 @@ func UpgradingRancher(t *testing.T, provider string, cattleConfig map[string]any
 		terraformConfig.Provider = provider
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.StandardKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	serverNodeOne, err := resources.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
@@ -53,7 +53,7 @@ func UpgradingRancher(t *testing.T, provider string, cattleConfig map[string]any
 	err = upgrade.CreateMainTF(t, upgradeTerraformOptions, upgradeKeyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig, serverNodeOne, "", "", "")
 	require.NoError(t, err)
 
-	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.SanityKeyPath)
+	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.StandardKeyPath)
 
 	if standaloneConfig.FeatureFlags != nil && standaloneConfig.FeatureFlags.UpgradedMCM == "" {
 		_, err = ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, testSession, terraformConfig.Standalone.RancherHostname, keyPath, true)
@@ -83,7 +83,7 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 
 	session = session.NewSession()
 
-	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.SanityKeyPath)
+	standaloneTerraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keypath.StandardKeyPath)
 	client, err = ranchersetup.PostRancherSetup(t, standaloneTerraformOptions, rancherConfig, session, terraformConfig.Standalone.RancherHostname, keyPath, true)
 	require.NoError(t, err)
 
@@ -91,10 +91,10 @@ func UpgradeRancher(t *testing.T, client *rancher.Client, serverNodeOne string, 
 	require.NoError(t, err)
 
 	if standaloneConfig.UpgradedRancherTagVersion != rancherinternal.Head {
-		_, sanityKeyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
-		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, sanityKeyPath)
+		_, standardKeyPath := rancher2.SetKeyPath(keypath.StandardKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+		terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, standardKeyPath)
 
-		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, sanityKeyPath, terraformConfig, terraformOptions)
+		provisioning.VerifyRancherVersion(t, rancherConfig.Host, standaloneConfig.UpgradedRancherTagVersion, standardKeyPath, terraformConfig, terraformOptions)
 	}
 
 	_, keyPath = rancher2.SetKeyPath(keypath.RancherKeyPath, terratestConfig.PathToRepo, "")

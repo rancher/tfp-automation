@@ -86,19 +86,28 @@ EOF
 }
 
 setup_networking() {
-  sudo systemctl disable systemd-resolved; sudo systemctl stop systemd-resolved
+  sudo systemctl disable --now systemd-resolved-varlink.socket systemd-resolved-monitor.socket 2>/dev/null
+  sudo systemctl disable --now systemd-resolved.service 2>/dev/null
   sleep 5
-  sudo sed -i.bak "s/^nameserver .*/nameserver ${VPC_IP}/" /etc/resolv.conf
-  sudo sed -i.bak "/^options /d" /etc/resolv.conf
+
+  if [ -L /etc/resolv.conf ]; then
+    sudo rm -f /etc/resolv.conf
+    sudo touch /etc/resolv.conf
+  fi
+
+  sudo sed -i.bak "/^nameserver /d;/^options /d" /etc/resolv.conf
+  echo "nameserver ${VPC_IP}" | sudo tee -a /etc/resolv.conf
   echo "options edns0" | sudo tee -a /etc/resolv.conf
 
-  sudo tee /etc/NetworkManager/conf.d/90-dns-none.conf > /dev/null << EOF
+  if [ -d /etc/NetworkManager ]; then
+    sudo mkdir -p /etc/NetworkManager/conf.d
+    sudo tee /etc/NetworkManager/conf.d/90-dns-none.conf > /dev/null << EOF
 [main]
 dns=none
 EOF
+  fi
 }
 
-run_ssh "${RKE2_SERVER_ONE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
 
 configFunction=$(declare -f setup_config)
 run_ssh "${RKE2_SERVER_ONE_IP}" "${configFunction}; setup_config"
@@ -123,8 +132,8 @@ if [ -n "$RANCHER_AGENT_IMAGE" ]; then
     RANCHER_TAG_VERSION="v${RANCHER_TAG_VERSION}"
   fi
 
-  run_ssh "${RKE2_SERVER_ONE_IP}" "sudo docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}"
-  run_ssh "${RKE2_SERVER_ONE_IP}" "sudo docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}"
+  run_ssh "${RKE2_SERVER_ONE_IP}" "docker pull ${REGISTRY}/${RANCHER_IMAGE}:${RANCHER_TAG_VERSION}"
+  run_ssh "${RKE2_SERVER_ONE_IP}" "docker pull ${REGISTRY}/${RANCHER_AGENT_IMAGE}:${RANCHER_TAG_VERSION}"
   run_ssh "${RKE2_SERVER_ONE_IP}" "sudo systemctl restart rke2-server"
 fi
 

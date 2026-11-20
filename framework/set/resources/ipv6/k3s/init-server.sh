@@ -16,7 +16,7 @@ SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
-runSSH() {
+run_ssh() {
   local server="$1"
   local cmd="$2"
   local attempt=1
@@ -51,7 +51,7 @@ runSSH() {
   return "$rc"
 }
 
-setupConfig() {
+setup_config() {
     sudo mkdir -p /etc/rancher/k3s
     sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
 write-kubeconfig-mode: 644
@@ -65,7 +65,7 @@ tls-san:
 EOF
 }
 
-setupRegistry() {
+setup_registry() {
   sudo tee /etc/rancher/k3s/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
@@ -83,23 +83,22 @@ configs:
 EOF
 }
 
-runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
-runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
+run_ssh "${K3S_SERVER_PRIVATE_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
 
-configFunction=$(declare -f setupConfig)
-runSSH "${K3S_SERVER_PRIVATE_IP}" "${configFunction}; setupConfig"
+configFunction=$(declare -f setup_config)
+run_ssh "${K3S_SERVER_PRIVATE_IP}" "${configFunction}; setup_config"
 
-registryFunction=$(declare -f setupRegistry)
-runSSH "${K3S_SERVER_PRIVATE_IP}" "${registryFunction}; setupRegistry"
+registryFunction=$(declare -f setup_registry)
+run_ssh "${K3S_SERVER_PRIVATE_IP}" "${registryFunction}; setup_registry"
 
-runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
+run_ssh "${K3S_SERVER_PRIVATE_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
 
-runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo mkdir -p /home/${USER}/.kube"
-runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USER}/.kube/config"
-runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
+run_ssh "${K3S_SERVER_PRIVATE_IP}" "sudo mkdir -p /home/${USER}/.kube"
+run_ssh "${K3S_SERVER_PRIVATE_IP}" "sudo cp /etc/rancher/k3s/k3s.yaml /home/${USER}/.kube/config"
+run_ssh "${K3S_SERVER_PRIVATE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
 
 if [ ! -s ~/.kube/config ]; then
-  runSSH "${K3S_SERVER_PRIVATE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
+  run_ssh "${K3S_SERVER_PRIVATE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
 fi
 
 sed -i "s|\[::1\]|[${K3S_SERVER_PUBLIC_IP}]|g" ~/.kube/config

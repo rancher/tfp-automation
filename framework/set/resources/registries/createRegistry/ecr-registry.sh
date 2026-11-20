@@ -13,10 +13,25 @@ AWS_REGION=${10}
 REPO=${11}
 RANCHER_CHART_REPO=${12}
 RANCHER_AGENT_IMAGE=${13}
+REQUIRED_PACKAGES=("docker" "curl")
+MISSING_PACKAGES=()
 
 set -e
 
 PARALLEL_ACTIONS=10
+
+check_packages() {
+    for pkg in "${REQUIRED_PACKAGES[@]}"; do
+        if ! command -v "$pkg" &> /dev/null; then
+            MISSING_PACKAGES+=("$pkg")
+        fi
+    done
+
+    if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+        echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+        exit 1
+    fi
+}
 
 configure_aws() {
     echo "Configuring AWS CLI..."
@@ -25,12 +40,12 @@ configure_aws() {
     aws configure set default.region "$AWS_REGION"
 
     echo "Logging into Amazon ECR..."
-    aws ecr get-login-password --region "$AWS_REGION" | sudo docker login --username AWS --password-stdin "${ECR}"
+    aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "${ECR}"
 }
 
 docker_login() {
     echo "Logging into Docker Hub..."
-    sudo docker login https://registry-1.docker.io -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    docker login https://registry-1.docker.io -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
 }
 
 copy_certs() {
@@ -48,12 +63,6 @@ copy_certs() {
 fetch_images() {
     echo "Downloading ${RANCHER_VERSION} image list and scripts..."
     if [[ $REPO == "prime-release" ]]; then
-        . /etc/os-release
-
-        [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-        [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-        [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
         HEAD_SERIES=""
         if [[ $RANCHER_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
             HEAD_SERIES="${BASH_REMATCH[1]}"
@@ -162,13 +171,13 @@ verify_images() {
     for IMAGE in "${IMAGES[@]}"; do
         {
             TARGET_IMAGE=${ECR}/${IMAGE}
-            if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
+            if docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else
                 echo "${IMAGE} is missing, fixing..."
-                sudo docker pull ${IMAGE}
-                sudo docker tag ${IMAGE} ${TARGET_IMAGE}
-                sudo docker push ${TARGET_IMAGE}
+                docker pull ${IMAGE}
+                docker tag ${IMAGE} ${TARGET_IMAGE}
+                docker push ${TARGET_IMAGE}
                 echo "${IMAGE} pushed successfully."
             fi
         } &
@@ -183,6 +192,7 @@ verify_images() {
     echo "Image verification complete."
 }
 
+check_packages
 configure_aws
 docker_login
 copy_certs

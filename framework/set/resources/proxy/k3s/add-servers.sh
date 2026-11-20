@@ -15,7 +15,7 @@ SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
-runSSH() {
+run_ssh() {
   local server="$1"
   local cmd="$2"
   local attempt=1
@@ -48,7 +48,7 @@ runSSH() {
   return "$rc"
 }
 
-setupConfig() {
+setup_config() {
     sudo mkdir -p /etc/rancher/k3s
     sudo tee /etc/rancher/k3s/config.yaml > /dev/null << EOF
 server: https://${K3S_SERVER_ONE_IP}:6443
@@ -59,7 +59,7 @@ tls-san:
 EOF
 }
 
-setupRegistry() {
+setup_registry() {
   sudo tee /etc/rancher/k3s/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
@@ -77,7 +77,7 @@ configs:
 EOF
 }
 
-setupProxy() {
+setup_proxy() {
   cat <<EOF | sudo tee /etc/default/k3s > /dev/null
 HTTP_PROXY=http://${BASTION}:${PORT}
 HTTPS_PROXY=http://${BASTION}:${PORT}
@@ -90,15 +90,15 @@ https_proxy=http://${BASTION}:${PORT}
 EOF
 }
 
-runSSH "${K3S_NEW_SERVER_IP}" "sudo hostnamectl set-hostname ${K3S_NEW_SERVER_IP}"
-runSSH "${K3S_NEW_SERVER_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
+run_ssh "${K3S_NEW_SERVER_IP}" "sudo hostnamectl set-hostname ${K3S_NEW_SERVER_IP}"
+run_ssh "${K3S_NEW_SERVER_IP}" "sudo mv /home/${USER}/k3s /usr/local/bin/"
 
-configFunction=$(declare -f setupConfig)
-runSSH "${K3S_NEW_SERVER_IP}" "${configFunction}; setupConfig"
+configFunction=$(declare -f setup_config)
+run_ssh "${K3S_NEW_SERVER_IP}" "${configFunction}; setup_config"
 
-registryFunction=$(declare -f setupRegistry)
-runSSH "${K3S_NEW_SERVER_IP}" "${registryFunction}; setupRegistry"
+registryFunction=$(declare -f setup_registry)
+run_ssh "${K3S_NEW_SERVER_IP}" "${registryFunction}; setup_registry"
 
-setupProxyFunction=$(declare -f setupProxy)
-runSSH "${K3S_NEW_SERVER_IP}" "${setupProxyFunction}; setupProxy"
-runSSH "${K3S_NEW_SERVER_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"
+setup_proxyFunction=$(declare -f setup_proxy)
+run_ssh "${K3S_NEW_SERVER_IP}" "${setup_proxyFunction}; setup_proxy"
+run_ssh "${K3S_NEW_SERVER_IP}" "sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server INSTALL_K3S_SKIP_DOWNLOAD=true sh install.sh"

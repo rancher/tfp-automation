@@ -16,7 +16,7 @@ SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
-runSSH() {
+run_ssh() {
   local server="$1"
   local cmd="$2"
   local attempt=1
@@ -52,7 +52,7 @@ runSSH() {
   return "$rc"
 }
 
-setupConfig() {
+setup_config() {
     sudo mkdir -p /etc/rancher/rke2
     sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
 cni: ${CNI}
@@ -67,7 +67,7 @@ tls-san:
 EOF
 }
 
-setupRegistry() {
+setup_registry() {
   sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
@@ -85,24 +85,22 @@ configs:
 EOF
 }
 
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
+configFunction=$(declare -f setup_config)
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "${configFunction}; setup_config"
 
-configFunction=$(declare -f setupConfig)
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "${configFunction}; setupConfig"
+registryFunction=$(declare -f setup_registry)
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "${registryFunction}; setup_registry"
 
-registryFunction=$(declare -f setupRegistry)
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "${registryFunction}; setupRegistry"
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh"
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo systemctl enable rke2-server"
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo systemctl start rke2-server"
 
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh"
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo systemctl enable rke2-server"
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo systemctl start rke2-server"
-
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo mkdir -p /home/${USER}/.kube"
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo cp /etc/rancher/rke2/rke2.yaml /home/${USER}/.kube/config"
-runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo mkdir -p /home/${USER}/.kube"
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo cp /etc/rancher/rke2/rke2.yaml /home/${USER}/.kube/config"
+run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
 
 if [ ! -s ~/.kube/config ]; then
-  runSSH "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
+  run_ssh "${RKE2_SERVER_ONE_PRIVATE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
 fi
 
 sed -i "s|\[::1\]|[${RKE2_SERVER_ONE_PUBLIC_IP}]|g" ~/.kube/config

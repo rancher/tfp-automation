@@ -1,4 +1,4 @@
-package sanity
+package standard
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/k3s"
 	tunnel "github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rke2"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity/rancher"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard/rancher"
 	"github.com/sirupsen/logrus"
 )
 

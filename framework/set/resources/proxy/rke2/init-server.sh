@@ -15,7 +15,7 @@ SSH_RETRY_INTERVAL_SECONDS=10
 
 set -e
 
-runSSH() {
+run_ssh() {
   local server="$1"
   local cmd="$2"
   local attempt=1
@@ -49,7 +49,7 @@ runSSH() {
   return "$rc"
 }
 
-setupConfig() {
+setup_config() {
     sudo mkdir -p /etc/rancher/rke2
     sudo tee /etc/rancher/rke2/config.yaml > /dev/null << EOF
 token: ${RKE2_TOKEN}
@@ -58,7 +58,7 @@ tls-san:
 EOF
 }
 
-setupRegistry() {
+setup_registry() {
   sudo tee /etc/rancher/rke2/registries.yaml > /dev/null << EOF
 mirrors:
   docker.io:
@@ -76,7 +76,7 @@ configs:
 EOF
 }
 
-setupProxy() {
+setup_proxy() {
   cat <<EOF | sudo tee /etc/default/rke2-server > /dev/null
 HTTP_PROXY=http://${BASTION}:${PORT}
 HTTPS_PROXY=http://${BASTION}:${PORT}
@@ -89,28 +89,27 @@ https_proxy=http://${BASTION}:${PORT}
 EOF
 }
 
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo hostnamectl set-hostname ${RKE2_SERVER_ONE_IP}"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo mv /home/${USER}/kubectl /usr/local/bin/"
+run_ssh "${RKE2_SERVER_ONE_IP}" "sudo hostnamectl set-hostname ${RKE2_SERVER_ONE_IP}"
 
-configFunction=$(declare -f setupConfig)
-runSSH "${RKE2_SERVER_ONE_IP}" "${configFunction}; setupConfig"
+configFunction=$(declare -f setup_config)
+run_ssh "${RKE2_SERVER_ONE_IP}" "${configFunction}; setup_config"
 
-registryFunction=$(declare -f setupRegistry)
-runSSH "${RKE2_SERVER_ONE_IP}" "${registryFunction}; setupRegistry"
+registryFunction=$(declare -f setup_registry)
+run_ssh "${RKE2_SERVER_ONE_IP}" "${registryFunction}; setup_registry"
 
-setupProxyFunction=$(declare -f setupProxy)
-runSSH "${RKE2_SERVER_ONE_IP}" "${setupProxyFunction}; setupProxy"
+setup_proxyFunction=$(declare -f setup_proxy)
+run_ssh "${RKE2_SERVER_ONE_IP}" "${setup_proxyFunction}; setup_proxy"
 
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl enable rke2-server"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo systemctl start rke2-server"
+run_ssh "${RKE2_SERVER_ONE_IP}" "sudo INSTALL_RKE2_ARTIFACT_PATH=/home/${USER} sh install.sh"
+run_ssh "${RKE2_SERVER_ONE_IP}" "sudo systemctl enable rke2-server"
+run_ssh "${RKE2_SERVER_ONE_IP}" "sudo systemctl start rke2-server"
 
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo mkdir -p /home/${USER}/.kube"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo cp /etc/rancher/rke2/rke2.yaml /home/${USER}/.kube/config"
-runSSH "${RKE2_SERVER_ONE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
+run_ssh "${RKE2_SERVER_ONE_IP}" "sudo mkdir -p /home/${USER}/.kube"
+run_ssh "${RKE2_SERVER_ONE_IP}" "sudo cp /etc/rancher/rke2/rke2.yaml /home/${USER}/.kube/config"
+run_ssh "${RKE2_SERVER_ONE_IP}" "sudo chown -R ${USER}:${GROUP} /home/${USER}/.kube"
 
 if [ ! -s ~/.kube/config ]; then
-  runSSH "${RKE2_SERVER_ONE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
+  run_ssh "${RKE2_SERVER_ONE_IP}" "sudo cat /home/${USER}/.kube/config" > ~/.kube/config
 fi
 
 sed -i "s|server: https://127.0.0.1:6443|server: https://${RKE2_SERVER_ONE_IP}:6443|" ~/.kube/config

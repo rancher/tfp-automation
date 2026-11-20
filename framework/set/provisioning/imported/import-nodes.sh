@@ -7,22 +7,6 @@ IMPORT_COMMAND=$4
 
 set -ex
 
-ARCH=$(uname -m)
-if [[ $ARCH == "x86_64" ]]; then
-    ARCH="amd64"
-elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-    ARCH="arm64"
-fi
-
-echo "Installing kubectl"
-KUBECTL_VERSION="v1.36.0"
-curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
-echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-mkdir -p ~/.kube
-rm kubectl
-
 echo ${PEM_FILE} | sudo base64 -d > /home/${USER}/key.pem
 echo "${IMPORT_COMMAND}" > /home/${USER}/import_command.txt
 IMPORT_COMMAND=$(cat /home/$USER/import_command.txt)

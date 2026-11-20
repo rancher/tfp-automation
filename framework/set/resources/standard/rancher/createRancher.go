@@ -23,9 +23,9 @@ const (
 // CreateRancher is a function that will set the Rancher configurations in the main.tf file.
 func CreateRancher(file *os.File, newFile *hclwrite.File, rootBody *hclwrite.Body, terraformConfig *config.TerraformConfig,
 	terratestConfig *config.TerratestConfig, rke2ServerOnePublicIP string) (*os.File, error) {
-	userDir, _ := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	userDir, _ := rancher2.SetKeyPath(keypath.StandardKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 
-	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/sanity/rancher/setup.sh")
+	scriptPath := filepath.Join(userDir, terratestConfig.PathToRepo, "/framework/set/resources/standard/rancher/setup.sh")
 
 	logrus.Debug("Reading setup script from path: ", scriptPath)
 	scriptContent, err := os.ReadFile(scriptPath)

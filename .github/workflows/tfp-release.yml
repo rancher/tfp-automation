@@ -224,7 +224,7 @@ jobs:
 
       - name: Cleanup Infrastructure
         if: always()
-        working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/sanity/aws
+        working-directory: /home/runner/${{ secrets.PATH_TO_REPO }}/modules/standard/aws
         run: terraform destroy -auto-approve > /dev/null 2>&1
 
       - name: Cloud Provider Infrastructure Cleanup

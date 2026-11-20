@@ -12,13 +12,14 @@ ETCD_S3_SECRET_KEY=${9}
 ETCD_S3_ENDPOINT=${10}
 ETCD_S3_BUCKET=${11}
 ETCD_S3_REGION=${12}
-
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 set -e
 
-retryCmd() {
+retry_cmd() {
   local attempt=1
   local rc=0
 
@@ -42,8 +43,18 @@ retryCmd() {
   return "$rc"
 }
 
-sudo hostnamectl set-hostname ${K3S_SERVER_IP}
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+  if ! command -v "$pkg" &> /dev/null; then
+    MISSING_PACKAGES+=("$pkg")
+  fi
+done
 
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+  echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+  exit 1
+fi
+
+sudo hostnamectl set-hostname ${K3S_SERVER_IP}
 sudo mkdir -p /etc/rancher/k3s
 
 if [ -n "${ETCD_S3_ACCESS_KEY}" ]; then
@@ -81,9 +92,9 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/k3s/registries.yaml > /dev/null
 
-retryCmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
+retry_cmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
 chmod +x install.sh
-retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server sh install.sh
+retry_cmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} INSTALL_K3S_EXEC=server sh install.sh
 
 sudo mkdir -p /home/${USER}/.kube
 sudo chown ${USER}:${GROUP} /etc/rancher/k3s/k3s.yaml

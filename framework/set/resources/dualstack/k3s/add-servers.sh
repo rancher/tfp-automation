@@ -12,10 +12,12 @@ CLUSTER_CIDR=$9
 SERVICE_CIDR=${10}
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 set -e
 
-retryCmd() {
+retry_cmd() {
   local attempt=1
   local rc=0
 
@@ -39,8 +41,18 @@ retryCmd() {
   return "$rc"
 }
 
-sudo hostnamectl set-hostname ${K3S_NEW_SERVER_IP}
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+  if ! command -v "$pkg" &> /dev/null; then
+    MISSING_PACKAGES+=("$pkg")
+  fi
+done
 
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+  echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+  exit 1
+fi
+
+sudo hostnamectl set-hostname ${K3S_NEW_SERVER_IP}
 sudo mkdir -p /etc/rancher/k3s
 
 echo "token: ${K3S_TOKEN}
@@ -65,6 +77,6 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/k3s/registries.yaml > /dev/null
 
-retryCmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
+retry_cmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
 chmod +x install.sh
-retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="server --server https://${K3S_SERVER_IP}:6443" sh install.sh
+retry_cmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC="server --server https://${K3S_SERVER_IP}:6443" sh install.sh

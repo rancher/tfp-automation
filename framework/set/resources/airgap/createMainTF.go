@@ -16,7 +16,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/airgap/rke2"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,7 +42,7 @@ const (
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *shepherdConfig.Config,
 	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, string, error) {
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -78,7 +78,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	terraformConfig.PrivateRegistries.URL = registryPublicDNS
 
 	logrus.Infof("Creating registry...")
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, registryPublicDNS, unauthRegistry, registryPublicDNS, false)
 	if err != nil {
 		return "", "", err
@@ -91,7 +91,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	switch terraformConfig.LocalCluster {
 	case "k3s":
 		logrus.Infof("Creating K3S cluster...")
@@ -114,7 +114,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateAirgapRancher(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicDNS, registryPublicDNS)
 	if err != nil {

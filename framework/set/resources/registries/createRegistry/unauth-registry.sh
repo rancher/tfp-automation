@@ -16,6 +16,8 @@ RANCHER_CHART_REPO=${13}
 ROUTE53_FQDN=${14}
 RANCHER_AGENT_IMAGE=${15}
 REGISTRY_PATH=${16}
+REQUIRED_PACKAGES=("docker" "curl")
+MISSING_PACKAGES=()
 
 set -e
 
@@ -45,14 +47,27 @@ if [ -n "${REGISTRY_PATH}" ]; then
     REGISTRY_IMAGE_PREFIX="${REGISTRY_IMAGE_PREFIX}/${REGISTRY_PATH}"
 fi
 
+check_packages() {
+    for pkg in "${REQUIRED_PACKAGES[@]}"; do
+        if ! command -v "$pkg" &> /dev/null; then
+            MISSING_PACKAGES+=("$pkg")
+        fi
+    done
+
+    if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+        echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+        exit 1
+    fi
+}
+
 docker_login() {
     echo "Logging into Docker Hub..."
-    sudo docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
+    docker login https://registry-1.docker.io -u "${DOCKERHUB_USER}" -p "${DOCKERHUB_PASSWORD}"
 }
 
 create_registry() {
     echo "Checking if the private registry already exists..."
-    if [ "$(sudo docker ps -q -f name=${REGISTRY_NAME})" ]; then
+    if [ "$(docker ps -q -f name=${REGISTRY_NAME})" ]; then
         echo "Private registry ${REGISTRY_NAME} already exists. Skipping..."
     else
         if [ -n "${ROUTE53_FQDN}" ]; then
@@ -77,7 +92,7 @@ create_registry() {
         sudo cp /home/${USER}/certs/domain.crt /etc/docker/certs.d/${REGISTRY_ENDPOINT}/ca.crt
 
         echo "Creating a private registry..."
-        sudo docker run -d --restart=always --name "${REGISTRY_NAME}" \
+        docker run -d --restart=always --name "${REGISTRY_NAME}" \
             -v /home/${USER}/certs:/certs \
             -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
             -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
@@ -105,12 +120,6 @@ fetch_images() {
     fi
 
     if [[ $REPO == "prime-release" ]]; then
-        . /etc/os-release
-
-        [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-        [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-        [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
         HEAD_SERIES=""
         if [[ $RANCHER_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
             HEAD_SERIES="${BASH_REMATCH[1]}"
@@ -183,9 +192,9 @@ cert_manager_images() {
     )
 
     for IMAGE in "${CERT_MANAGER_IMAGES[@]}"; do
-        sudo docker pull ${IMAGE}
-        sudo docker tag ${IMAGE} ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
-        sudo docker push ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
+        docker pull ${IMAGE}
+        docker tag ${IMAGE} ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
+        docker push ${REGISTRY_IMAGE_PREFIX}/${IMAGE}
     done
 }
 
@@ -302,13 +311,13 @@ verify_images() {
     for IMAGE in "${IMAGES[@]}"; do
         {
             TARGET_IMAGE=${REGISTRY_IMAGE_PREFIX}/${IMAGE}
-            if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
+            if docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else
                 echo "${IMAGE} is missing, fixing..."
-                sudo docker pull ${IMAGE}
-                sudo docker tag ${IMAGE} ${TARGET_IMAGE}
-                sudo docker push ${TARGET_IMAGE}
+                docker pull ${IMAGE}
+                docker tag ${IMAGE} ${TARGET_IMAGE}
+                docker push ${TARGET_IMAGE}
                 echo "${IMAGE} pushed successfully."
             fi
         } &
@@ -332,7 +341,7 @@ verify_windows_images() {
     for IMAGE in "${WINDOWS_IMAGES[@]}"; do
         {
             TARGET_IMAGE=${REGISTRY_ENDPOINT}/${IMAGE}
-            if sudo docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
+            if docker manifest inspect ${TARGET_IMAGE} >/dev/null 2>&1; then
                 echo "${IMAGE} exists"
             else
                 echo "${IMAGE} is missing, fixing..."
@@ -350,6 +359,7 @@ verify_windows_images() {
     wait
 }
 
+check_packages
 docker_login
 create_registry
 fetch_images

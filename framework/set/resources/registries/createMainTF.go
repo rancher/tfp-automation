@@ -16,7 +16,7 @@ import (
 	registry "github.com/rancher/tfp-automation/framework/set/resources/registries/createRegistry"
 	"github.com/rancher/tfp-automation/framework/set/resources/registries/rancher"
 	"github.com/rancher/tfp-automation/framework/set/resources/registries/rke2"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/sirupsen/logrus"
 )
 
@@ -52,7 +52,7 @@ const (
 func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath string, rancherConfig *shepherdConfig.Config,
 	terraformConfig *config.TerraformConfig, terratestConfig *config.TerratestConfig) (string, string, string, error) {
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -95,7 +95,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 	serverTwoPublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, serverTwoPublicDNS)
 	serverThreePublicDNS := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicDNS)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating unauthenticated registry...")
 	file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, unauthRegistryPublicDNS, unauthRegistry, unauthGlobalRegistryRoute53FQDN, false)
 	if err != nil {
@@ -109,7 +109,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating global registry...")
 	if !terraformConfig.StandaloneRegistry.UseAuthGlobalRegistry {
 		file, err = registry.CreateUnauthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, unauthGlobalRegistryPublicDNS, unauthGlobalRegistry, unauthGlobalRegistryRoute53FQDN, true)
@@ -130,7 +130,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating authenticated registry...")
 	file, err = registry.CreateAuthenticatedRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, authRegistryPublicDNS, authRegistry, authRegistryRoute53FQDN, true)
 	if err != nil {
@@ -144,7 +144,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating ecr registry...")
 	file, err = registry.CreateECRRegistry(file, newFile, rootBody, terraformConfig, terratestConfig, ecrRegistryPublicDNS)
 	if err != nil {
@@ -171,7 +171,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		globalRegistryPublicDNS = strings.TrimRight(globalRegistryPublicDNS, "/") + "/" + registryPath
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating RKE2 cluster...")
 	file, err = rke2.CreateRKE2Cluster(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicDNS, serverOnePrivateIP,
 		serverTwoPublicDNS, serverThreePublicDNS, globalRegistryPublicDNS)
@@ -186,7 +186,7 @@ func CreateMainTF(t *testing.T, terraformOptions *terraform.Options, keyPath str
 		return "", "", "", err
 	}
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating Rancher server...")
 	file, err = rancher.CreateRancher(file, newFile, rootBody, terraformConfig, terratestConfig, serverOnePublicDNS, globalRegistryPublicDNS)
 	if err != nil {

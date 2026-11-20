@@ -11,10 +11,12 @@ CLUSTER_CIDR=$8
 SERVICE_CIDR=$9
 MAX_CMD_RETRIES=20
 CMD_RETRY_INTERVAL_SECONDS=10
+REQUIRED_PACKAGES=("curl")
+MISSING_PACKAGES=()
 
 set -e
 
-retryCmd() {
+retry_cmd() {
   local attempt=1
   local rc=0
 
@@ -38,22 +40,18 @@ retryCmd() {
   return "$rc"
 }
 
-sudo hostnamectl set-hostname ${K3S_SERVER_IP}
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+  if ! command -v "$pkg" &> /dev/null; then
+    MISSING_PACKAGES+=("$pkg")
+  fi
+done
 
-ARCH=$(uname -m)
-if [[ $ARCH == "x86_64" ]]; then
-    ARCH="amd64"
-elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-    ARCH="arm64"
+if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+  echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+  exit 1
 fi
 
-echo "Installing kubectl"
-KUBECTL_VERSION="v1.36.0"
-retryCmd curl -fsSL --max-time 120 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-retryCmd curl -fsSL --max-time 120 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
-echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-
+sudo hostnamectl set-hostname ${K3S_SERVER_IP}
 sudo mkdir -p /etc/rancher/k3s
 
 echo "token: ${K3S_TOKEN}
@@ -79,9 +77,9 @@ configs:
       username: "${REGISTRY_USERNAME}"
       password: "${REGISTRY_PASSWORD}"" | sudo tee -a /etc/rancher/k3s/registries.yaml > /dev/null
 
-retryCmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
+retry_cmd curl -fsSL --max-time 120 -o install.sh https://get.k3s.io
 chmod +x install.sh
-retryCmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server sh install.sh
+retry_cmd sudo INSTALL_K3S_VERSION=${K8S_VERSION} K3S_TOKEN=${K3S_TOKEN} INSTALL_K3S_EXEC=server sh install.sh
 
 sudo mkdir -p /home/${USER}/.kube
 sudo chown ${USER}:${GROUP} /etc/rancher/k3s/k3s.yaml

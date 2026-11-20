@@ -15,7 +15,7 @@ import (
 	"github.com/rancher/tfp-automation/framework"
 	"github.com/rancher/tfp-automation/framework/set/resources/hosted"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/rancher/tfp-automation/tests/extensions/provisioning"
 	rancherinternal "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/internal"
 	ranchersetup "github.com/rancher/tfp-automation/tests/infrastructure/ranchers/setup"
@@ -32,10 +32,10 @@ func CreateRancher(t *testing.T, provider string, cattleConfig map[string]any) e
 		terraformConfig.Provider = provider
 	}
 
-	_, keyPath := rancher2.SetKeyPath(keypath.SanityKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
+	_, keyPath := rancher2.SetKeyPath(keypath.StandardKeyPath, terratestConfig.PathToRepo, terraformConfig.Provider)
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
-	_, err := sanity.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
+	_, err := standard.CreateMainTF(t, terraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func SetupRancher(t *testing.T, session *session.Session, moduleKeyPath string, 
 		serverNodeOne, err = hosted.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 		require.NoError(t, err)
 	} else {
-		serverNodeOne, err = sanity.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
+		serverNodeOne, err = standard.CreateMainTF(t, standaloneTerraformOptions, keyPath, rancherConfig, terraformConfig.RancherTerraformConfig(), terratestConfig)
 		require.NoError(t, err)
 	}
 

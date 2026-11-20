@@ -10,11 +10,24 @@ RKE2_SERVER_TWO_IP=$7
 RKE2_SERVER_THREE_IP=$8
 DOCKER_DIR="/etc/systemd/system/docker.service.d"
 PORT="3228"
+REQUIRED_PACKAGES=("docker" "curl")
+MISSING_PACKAGES=()
 
 set -e
 
+for pkg in "${REQUIRED_PACKAGES[@]}"; do
+    if ! command -v $pkg &> /dev/null; then
+        MISSING_PACKAGES+=($pkg)
+    fi
+done
+
+if [ ${#MISSING_PACKAGES[@]} -ne 0 ]; then
+    echo "Missing required packages: ${MISSING_PACKAGES[@]}"
+    exit 1
+fi
+
 echo "Logging into the private registry..."
-sudo docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+docker login https://registry-1.docker.io -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
 
 echo "Starting proxy..."
 sudo mkdir -p /home/$USER/squid
@@ -25,7 +38,7 @@ sudo mkdir -p /var/cache/squid
 sudo chown -R ${USER}:${GROUP} /var/cache/squid
 sudo chmod 777 /var/cache/squid
 
-sudo docker run -d -v ${PROXY_DIR}/squid.conf:/etc/squid/squid.conf -v /var/cache/squid:/var/cache/squid -p ${PORT}:${PORT} ubuntu/squid
+docker run -d -v ${PROXY_DIR}/squid.conf:/etc/squid/squid.conf -v /var/cache/squid:/var/cache/squid -p ${PORT}:${PORT} ubuntu/squid
 
 sudo mv /tmp/keyfile.pem /home/$USER/keyfile.pem
 PEM=/home/$USER/keyfile.pem
@@ -61,15 +74,7 @@ fi
 CHECKSUM=$(echo "$CHECKSUM_LINE" | awk "{print \$1}")
 echo "$CHECKSUM  /home/${USER}/rke2-images.linux-${ARCH}.tar.zst" | sha256sum -c -
 
-echo "Installing kubectl"
-KUBECTL_VERSION="v1.36.0"
-curl -fsSL --max-time 30 -o kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl
-curl -fsSL --max-time 30 -o kubectl.sha256 https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl.sha256
-echo "$(cat kubectl.sha256) kubectl" | sha256sum -c
-sudo chmod +x kubectl
-
 echo "Copying files to RKE2 server one"
-sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null kubectl ${USER}@${RKE2_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null install.sh ${USER}@${RKE2_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null rke2.linux-amd64.tar.gz ${USER}@${RKE2_SERVER_ONE_IP}:/home/${USER}/
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null rke2.linux-arm64.tar.gz ${USER}@${RKE2_SERVER_ONE_IP}:/home/${USER}/
@@ -97,4 +102,3 @@ sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null s
 sudo scp -i ${PEM} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sha256sum-arm64.txt ${USER}@${RKE2_SERVER_THREE_IP}:/home/${USER}/
 
 mkdir -p ~/.kube
-sudo mv kubectl /usr/local/bin/

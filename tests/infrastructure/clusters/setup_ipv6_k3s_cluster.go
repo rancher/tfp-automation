@@ -14,7 +14,7 @@ import (
 	"github.com/rancher/tfp-automation/framework/set/resources/ipv6/k3s"
 	"github.com/rancher/tfp-automation/framework/set/resources/providers"
 	"github.com/rancher/tfp-automation/framework/set/resources/rancher2"
-	"github.com/rancher/tfp-automation/framework/set/resources/sanity"
+	"github.com/rancher/tfp-automation/framework/set/resources/standard"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -35,7 +35,7 @@ func CreateIPv6K3SCluster(t *testing.T, provider string) error {
 	terraformOptions := framework.Setup(t, terraformConfig, terratestConfig, keyPath)
 
 	var file *os.File
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	defer file.Close()
 
 	newFile := hclwrite.NewEmptyFile()
@@ -60,7 +60,7 @@ func CreateIPv6K3SCluster(t *testing.T, provider string) error {
 	serverThreePrivateIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePrivateIP)
 	serverThreePublicIP := terraform.OutputContext(t, context.Background(), terraformOptions, serverThreePublicIP)
 
-	file = sanity.OpenFile(file, keyPath)
+	file = standard.OpenFile(file, keyPath)
 	logrus.Infof("Creating K3S cluster...")
 	file, err = k3s.CreateIPv6K3SCluster(file, newFile, rootBody, terraformConfig, terratestConfig, bastionPublicIP, serverOnePublicIP, serverTwoPublicIP, serverThreePublicIP,
 		serverOnePrivateIP, serverTwoPrivateIP, serverThreePrivateIP)

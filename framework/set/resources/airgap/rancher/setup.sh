@@ -58,6 +58,22 @@ fi
 
 set -ex
 
+check_packages() {
+    REQUIRED_PACKAGES=("yq" "helm" "kubectl" "curl")
+    MISSING_PACKAGES=()
+
+    for pkg in "${REQUIRED_PACKAGES[@]}"; do
+        if ! command -v "$pkg" &> /dev/null; then
+            MISSING_PACKAGES+=("$pkg")
+        fi
+    done
+
+    if [ "${#MISSING_PACKAGES[@]}" -gt 0 ]; then
+        echo "Error: missing required packages: ${MISSING_PACKAGES[*]}"
+        exit 1
+    fi
+}
+
 check_cluster_status() {
     EXPECTED_NODES=3
     TIMEOUT=300
@@ -83,26 +99,6 @@ check_cluster_status() {
             break
         fi
     done
-}
-
-install_helm() {
-  HELM_VERSION="v4.1.4"
-  ARCH=$(uname -m)
-  if [[ $ARCH == "x86_64" ]]; then
-      ARCH="amd64"
-  elif [[ $ARCH == "arm64" || $ARCH == "aarch64" ]]; then
-      ARCH="arm64"
-  fi
-
-  echo "Installing Helm"
-  curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
-  curl -fsSL --max-time 30 -o helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256 https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
-
-  echo "$(cat helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256) helm-${HELM_VERSION}-linux-${ARCH}.tar.gz" | sha256sum -c
-  tar -xf helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
-  sudo mv linux-${ARCH}/helm /usr/local/bin/helm
-  rm -rf linux-${ARCH} helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
-  rm helm-${HELM_VERSION}-linux-${ARCH}.tar.gz.sha256
 }
 
 setup_helm_repo() {
@@ -270,17 +266,11 @@ patch_rancher_fqdn() {
   kubectl -n cattle-system get deploy rancher
 }
 
+check_packages
 check_cluster_status
-install_helm
 setup_helm_repo
 
 if [[ $REPO == "prime-release" ]]; then
-    . /etc/os-release
-
-    [[ "${ID}" == "ubuntu" || "${ID}" == "debian" ]] && sudo apt update && sudo apt -y install yq
-    [[ "${ID}" == "rhel" || "${ID}" == "fedora" ]] && sudo yum install yq -y
-    [[ "${ID}" == "opensuse-leap" || "${ID}" == "sles" ]] && sudo zypper install  -y yq
-
     HEAD_SERIES=""
     if [[ $RANCHER_TAG_VERSION =~ ^v([0-9]+\.[0-9]+)-head$ ]]; then
         HEAD_SERIES="${BASH_REMATCH[1]}"
