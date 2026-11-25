@@ -30,6 +30,9 @@ const (
 	VolumeSize               = "volume_size"
 	Timeout                  = "timeout"
 
+	AMIFromInstance  = "aws_ami_from_instance"
+	SourceInstanceID = "source_instance_id"
+
 	InternalLoadBalancer = "aws_internal_lb"
 	LoadBalancer         = "aws_lb"
 

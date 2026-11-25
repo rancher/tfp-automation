@@ -2,6 +2,7 @@ package aws
 
 import (
 	"os"
+	"slices"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/rancher/tfp-automation/config"
@@ -77,8 +78,11 @@ func CreateAWSResources(file *os.File, newFile *hclwrite.File, tfBlockBody, root
 			return nil, err
 		}
 	} else {
-		CreateAWSLocalBlock(rootBody, terraformConfig)
-		rootBody.AppendNewline()
+		// The locals block references the server1/2/3 instances, so it is only valid when those are being created.
+		if slices.Contains(instances, serverOne) {
+			CreateAWSLocalBlock(rootBody, terraformConfig)
+			rootBody.AppendNewline()
+		}
 
 		_, err = file.Write(newFile.Bytes())
 		if err != nil {

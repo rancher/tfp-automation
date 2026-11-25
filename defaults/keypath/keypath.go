@@ -8,6 +8,7 @@ const (
 	DualStackRKE2KeyPath = "/modules/dualstackRKE2"
 	DualStackK3SKeyPath  = "/modules/dualstackK3S"
 	HostedKeyPath        = "/modules/hosted"
+	ImagesKeyPath        = "/modules/images"
 	IPv6KeyPath          = "/modules/ipv6"
 	IPv6RKE2KeyPath      = "/modules/ipv6RKE2"
 	IPv6K3SKeyPath       = "/modules/ipv6K3S"
